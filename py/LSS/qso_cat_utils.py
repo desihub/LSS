@@ -30,10 +30,15 @@ Remarks:
             * for release >= fuji: fiber_ok = (cat['COADD_FIBERSTATUS']==0) | (cat['COADD_FIBERSTATUS']==8388608) | (cat['COADD_FIBERSTATUS']==16777216)
             * the two last bits appeared in fuji, can add it for previous release without any impacts.
             * definition of maskbits: https://github.com/desihub/desispec/blob/master/py/desispec/maskbits.py
-       * From jura: 
+       * From Jura/Kibo: 
            * Several improvements from redrock (cf Allyson works ect...) since the SV.
            * New cuts to remove SKY fibers: https://github.com/desihub/desispec/issues/2278
            * OBJTYPE=SKY --> NO cuts on ZWARN due to OBJTYPE reject obejct with ZWARN expect ZWARN 0 and 4 
+       * From Kibo:
+           * New cut for QN for DESI QSO targets (Need to update the one for non-qso targets) from 0.95 to 0.99
+           * No more cut for z~3.7
+           * OBJTYPE != TGT are removed + no cut on ZWARN + keep fiberstatus : 2**3 (remove (cat['COADD_FIBERSTATUS']==8388608) | (cat['COADD_FIBERSTATUS']==16777216) this was only for very few objects mostly ly-alpha one.)
+
            
            
 """
@@ -358,7 +363,6 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
 
     # QN afterburner is run with a threshold 0.5. With VI, we choose 0.95 as final threshold. Note the new version of QN from Jura imporve the older one. Increase the confidence level to 0.99.
     log.info('Increase the QN threshold selection from 0.5 to 0.99.')
-    #qn['IS_QSO_QN_095'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.95
     qn['IS_QSO_QN_099'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.99
     qn['IS_QSO_QN_06'] = np.max(np.array([qn[name] for name in ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']]), axis=0) > 0.6
     
@@ -413,21 +417,11 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
   
     # Add quality cuts: cut on zwarn, objtype and cut on fiberstatus 
     bad_qso = QSO_cat['OBJTYPE'] != 'TGT'  # creating the excess (due to sky fiber) around z~3.7 and lower redshit.
-    #bad_qso |= ~ ((QSO_cat['ZWARN'] & 2**0 != 0) | (QSO_cat['ZWARN'] & 2**4 != 0)) ## DO we still need ZWARN CUT if we are using OBJTYPE?
-    bad_qso |= ~ ((QSO_cat['COADD_FIBERSTATUS'] == 0) | (QSO_cat['COADD_FIBERSTATUS'] == 8388608) | (QSO_cat['COADD_FIBERSTATUS'] == 16777216))
+    bad_qso |= ~ ((QSO_cat['COADD_FIBERSTATUS'] == 0) | (QSO_cat['COADD_FIBERSTATUS'] == 2**3))  # https://github.com/desihub/desispec/blob/main/py/desispec/maskbits.py#L56
     QSO_cat.loc[bad_qso, 'QSO_MASKBITS'] = 0
 
     # remove useless columns:
     QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN_06', 'IS_QSO_QN_099', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
-
-    # Correct bump at z~3.7 and ~5.2 (overlap between two arms of the spectrograph ..)
-    # With Iron and before:
-    #sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.95) | (QSO_cat['C_CIV'] < 0.95))
-    # From Jura : performance of QuasarNET at these redshift drastically decrease ... with these cuts I can recover most of the qso from DR1 with iron.. (I did also some visual investigation)
-    # NEED TO BE UPDATED WITH THE NEXT VERSION OF QN or come back to the previous one?.
-    sel_pb_redshift = (((QSO_cat['Z'] > 3.65) & (QSO_cat['Z'] < 3.9)) | ((QSO_cat['Z'] > 5.15) & (QSO_cat['Z'] < 5.35))) & ((QSO_cat['C_LYA'] < 0.5) | (QSO_cat['C_CIV'] < 0.5))
-    log.info(f'Remove bump at z~3.7: exclude {sel_pb_redshift.sum()} QSOs.')
-    QSO_cat.loc[sel_pb_redshift, 'QSO_MASKBITS'] = 0
 
     if keep_all:
         log.info('Return all the targets without any cut on QSO selection.')
