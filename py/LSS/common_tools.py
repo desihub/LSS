@@ -80,13 +80,13 @@ def goodz_infull(tp,dz,zcol='Z_not4clus'):
     return z_suc
 
 def make_hp(value, hpix, nside, fill_with=np.nan):
-	""" A Function to create a HEALPix map
-	"""
-	m_ = np.zeros(12*nside*nside)
-	m_[:] = fill_with
-	m_[hpix] = value
+    """ A Function to create a HEALPix map
+    """
+    m_ = np.zeros(12*nside*nside)
+    m_[:] = fill_with
+    m_[hpix] = value
 
-	return m_
+    return m_
 
 def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'):
     import healpy as hp
@@ -1590,11 +1590,11 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
             fa = _get_fa(tile)
             tl.append(fa)
     if par == 'y':
-		from concurrent.futures import ProcessPoolExecutor
-		
-		with ProcessPoolExecutor() as executor:
-			for fa in executor.map(tls, list(tls)):
-				tl.append(fa)
+        from concurrent.futures import ProcessPoolExecutor
+        
+        with ProcessPoolExecutor() as executor:
+            for fa in executor.map(tls, list(tls)):
+                tl.append(fa)
         
     dat_comb = vstack(tl)
     printlog('size combitles for ' + pa_hdu+' , '+str(len(dat_comb)),logger=logger)
