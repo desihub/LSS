@@ -249,19 +249,19 @@ outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
 test_dir(outdir)
 
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
-    print('--- START COMBD ---')
-    print('entering altmtl')
+    common.printlog('--- START COMBD ---',logger)
+    common.printlog('entering altmtl',logger)
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
-    print('entering common.combtiles_wdup_altmtl for FASSIGN')
+    common.printlog('entering common.combtiles_wdup_altmtl for FASSIGN',logger)
 
-    asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'])
+    asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],logger=logger)
     #asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],fba=True,tp='dark')
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
-    print('entering common.combtiles_wdup_altmtl for FAVAIL')
+    common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
 
     cols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
     if pdir == 'bright':
@@ -269,7 +269,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         cols.append('R_MAG_ABS')
         cols.append('G_R_OBS')
         cols.append('G_R_REST')
-    pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols)
+    pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
 if args.joindspec == 'y':
@@ -277,18 +277,18 @@ if args.joindspec == 'y':
     if asn is None:
         afn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
         asn = fitsio.read(afn)
-        print('loaded assignments')
+        common.printlog('loaded assignments',logger)
     if pa is None:
         pafn = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
         pa = Table(fitsio.read(pafn))
-        print('loaded potential assignements')
+        common.printlog('loaded potential assignements',logger)
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
     if gtl is not None:
         goodtl = np.isin(pa['TILELOCID'], gtl)
         pa = pa[goodtl]
 
 
-    print('about to join assignments and potential assignments')
+    common.printlog('about to join assignments and potential assignments',logger)
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     
     
@@ -297,7 +297,7 @@ if args.joindspec == 'y':
         #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
         fcoll = mocktools.create_collision_from_pota(fin, fcoll)
     else:
-        print('collision file already exist', fcoll)
+        common.printlog('collision file already exist '+ fcoll,logger)
 
     coll = Table(fitsio.read(fcoll))
     print('length before masking collisions '+str(len(tj)))
@@ -307,10 +307,11 @@ if args.joindspec == 'y':
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
     tj.write(outfs, format = 'fits', overwrite = True)
     print('wrote ' + outfs)
-    tc = ct.count_tiles_better('dat', pdir, specrel = '', survey = args.survey, indir = lssdir, gtl = gtl) 
-    outtc =  os.path.join(lssdir, 'Alltiles_' + pdir + '_tilelocs.dat.fits')
-    tc.write(outtc, format = 'fits', overwrite = True)
-    print('wrote '+outtc)
+    #don't do this anymore, it gets done within mkfulld
+    #tc = ct.count_tiles_better('dat', pdir, specrel = '', survey = args.survey, indir = lssdir, gtl = gtl) 
+    #outtc =  os.path.join(lssdir, 'Alltiles_' + pdir + '_tilelocs.dat.fits')
+    #tc.write(outtc, format = 'fits', overwrite = True)
+    #print('wrote '+outtc)
     print('*** END WITH COMBD ***')
 
 #specver = 'mock'    

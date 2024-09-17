@@ -1552,15 +1552,15 @@ def combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID', 'RA', 'D
     print('wrote ' + outf)
     return dat_comb
 
-def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID', 'RA', 'DEC']):
+def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID', 'RA', 'DEC'],par='y',logger=None):
     s = 0
     td = 0
     print('size of tiles', len(tiles))
     tl = []
-    tar_in = fitsio.read(tarf, columns=addcols)
-    tids = tar_in['TARGETID']
-    for tile in tiles['TILEID']:
-
+    
+    tids = fitsio.read(tarf,columns=['TARGETID'])['TARGETID']
+    
+    def _get_fa(tile):
         fadate = return_altmtl_fba_fadate(tile)
         ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
         if pa_hdu == 'FAVAIL':
@@ -1583,15 +1583,28 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
         fa = fa[sel]
         td += 1
         fa['TILEID'] = int(tile)
-        tl.append(fa)
-    dat_comb = vstack(tl)
-    print('size combitles for ',pa_hdu, len(dat_comb))
     
+    tls = tiles['TILEID']
+    if par == 'n':
+        for tile in tiles['TILEID']:
+            fa = _get_fa(tile)
+            tl.append(fa)
+    if par == 'y':
+		from concurrent.futures import ProcessPoolExecutor
+		
+		with ProcessPoolExecutor() as executor:
+			for fa in executor.map(tls, list(tls)):
+				tl.append(fa)
+        
+    dat_comb = vstack(tl)
+    printlog('size combitles for ' + pa_hdu+' , '+str(len(dat_comb)),logger=logger)
+    tar_in = fitsio.read(tarf, columns=addcols)
     dat_comb = join(dat_comb, tar_in, keys=['TARGETID'],join_type='left')
     print(len(dat_comb))
 
-    dat_comb.write(outf, format='fits', overwrite=True)
-    print('wrote ' + outf)
+    write_LSS_scratchcp(dat_comb,outf,logger=logger)
+    #dat_comb.write(outf, format='fits', overwrite=True)
+    #print('wrote ' + outf)
     return dat_comb
 
 
