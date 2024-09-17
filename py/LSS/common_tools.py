@@ -1552,7 +1552,7 @@ def combtiles_pa_wdup(tiles, fbadir, outdir, tarf, addcols=['TARGETID', 'RA', 'D
     print('wrote ' + outf)
     return dat_comb
 
-def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID', 'RA', 'DEC'],par='y',logger=None):
+def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID', 'RA', 'DEC'],par='n',logger=None):
     s = 0
     td = 0
     print('size of tiles', len(tiles))
@@ -1590,6 +1590,7 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
             fa = _get_fa(tile)
             tl.append(fa)
     if par == 'y':
+        #doesn't seem to work within function
         from concurrent.futures import ProcessPoolExecutor
         
         with ProcessPoolExecutor() as executor:
