@@ -1574,16 +1574,16 @@ def combtiles_wdup_altmtl(pa_hdu, tiles, fbadir, outf, tarf, addcols=['TARGETID'
             sel = fa['TARGETID'] >= 0
             fa = fa[sel]
             lb4join = len(fa)
-            td += 1
+            #td += 1
             fa['TILEID'] = int(tile)
             fa = join(fa,ft,keys=['TARGETID'])
             if len(fa) != lb4join:
                 print(tile,lb4join,len(fa))
         sel = fa['TARGETID'] >= 0
         fa = fa[sel]
-        td += 1
+        #td += 1
         fa['TILEID'] = int(tile)
-    
+        return fa
     tls = tiles['TILEID']
     if par == 'n':
         for tile in tiles['TILEID']:

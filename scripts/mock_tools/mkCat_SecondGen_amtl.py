@@ -279,15 +279,16 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
             sel = fa['TARGETID'] >= 0
             fa = fa[sel]
             lb4join = len(fa)
-            td += 1
+            #td += 1
             fa['TILEID'] = int(tile)
             fa = join(fa,ft,keys=['TARGETID'])
             if len(fa) != lb4join:
                 print(tile,lb4join,len(fa))
         sel = fa['TARGETID'] >= 0
         fa = fa[sel]
-        td += 1
+        #td += 1
         fa['TILEID'] = int(tile)
+        return fa
     pa_hdu = 'FASSIGN'
     addcols=['TARGETID','RSDZ','TRUEZ','ZWARN']
     tl = []    
