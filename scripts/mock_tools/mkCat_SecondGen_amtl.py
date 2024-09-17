@@ -341,10 +341,11 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         
     pa = vstack(tl)
     del tl
-    printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
+    common.printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
     tar_in = fitsio.read(tarf, columns=addcols)
     pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
     #print(len(dat_comb))
+    common.printlog('completed joinb to target info',logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
     common.write_LSS_scratchcp(pa,outf,logger=logger)
 
