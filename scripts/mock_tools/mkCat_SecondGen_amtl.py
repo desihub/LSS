@@ -257,19 +257,96 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
     common.printlog('entering common.combtiles_wdup_altmtl for FASSIGN',logger)
 
-    asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],logger=logger)
-    #asn = common.combtiles_assign_wdup(tiles,fbadir,outdir,tarf,addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],fba=True,tp='dark')
+    #asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],logger=logger)
+    s = 0
+    td = 0
+    print('size of tiles', len(tiles))
+    
+    
+    tids = fitsio.read(tarf,columns=['TARGETID'])['TARGETID']
+    #pa_hdu = 'FASSIGN'
+    def _get_fa(tile):
+        fadate = return_altmtl_fba_fadate(tile)
+        ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
+        if pa_hdu == 'FAVAIL':
+            fa = Table(fitsio.read(ffa, ext=pa_hdu))
+            sel = np.isin(fa['TARGETID'],tids)
+            fa = fa[sel] #for targets, we only want science targets
+        else:
+            tar_hdu = 'FTARGETS'
+            fa = Table(fitsio.read(ffa,ext=pa_hdu,columns=['TARGETID','LOCATION']))
+            ft = Table(fitsio.read(ffa,ext=tar_hdu,columns=['TARGETID','PRIORITY','SUBPRIORITY']))
+            sel = fa['TARGETID'] >= 0
+            fa = fa[sel]
+            lb4join = len(fa)
+            td += 1
+            fa['TILEID'] = int(tile)
+            fa = join(fa,ft,keys=['TARGETID'])
+            if len(fa) != lb4join:
+                print(tile,lb4join,len(fa))
+        sel = fa['TARGETID'] >= 0
+        fa = fa[sel]
+        td += 1
+        fa['TILEID'] = int(tile)
+    pa_hdu = 'FASSIGN'
+    addcols=['TARGETID','RSDZ','TRUEZ','ZWARN']
+    tl = []    
+    tls = tiles['TILEID']
+    if par == 'n':
+        for tile in tiles['TILEID']:
+            fa = _get_fa(tile)
+            tl.append(fa)
+    if par == 'y':
+        #doesn't seem to work within function
+        from concurrent.futures import ProcessPoolExecutor
+        
+        with ProcessPoolExecutor() as executor:
+            for fa in executor.map(_get_fa, list(tls)):
+                tl.append(fa)
+        
+    asn = vstack(tl)
+    printlog('size combitles for ' + pa_hdu+' , '+str(len(asn)),logger=logger)
+    tar_in = fitsio.read(tarf, columns=addcols)
+    asn = join(dat_comb, tar_in, keys=['TARGETID'],join_type='left')
+    #print(len(dat_comb))
+    outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
+    write_LSS_scratchcp(asn,outf,logger=logger)
+
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
 
-    cols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
+    pa_hdu = 'FAVAIL'
+    addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
     if pdir == 'bright':
-        cols.append('BGS_TARGET')
-        cols.append('R_MAG_ABS')
-        cols.append('G_R_OBS')
-        cols.append('G_R_REST')
-    pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
+        addcols.append('BGS_TARGET')
+        addcols.append('R_MAG_ABS')
+        addcols.append('G_R_OBS')
+        addcols.append('G_R_REST')
+    #pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
+    tl = []    
+    tls = tiles['TILEID']
+    if par == 'n':
+        for tile in tiles['TILEID']:
+            fa = _get_fa(tile)
+            tl.append(fa)
+    if par == 'y':
+        #doesn't seem to work within function
+        from concurrent.futures import ProcessPoolExecutor
+        
+        with ProcessPoolExecutor() as executor:
+            for fa in executor.map(_get_fa, list(tls)):
+                tl.append(fa)
+        
+    pa = vstack(tl)
+    printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
+    tar_in = fitsio.read(tarf, columns=addcols)
+    pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
+    #print(len(dat_comb))
+    outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
+    write_LSS_scratchcp(pa,outf,logger=logger)
+
+
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
 if args.joindspec == 'y':
