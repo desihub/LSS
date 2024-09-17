@@ -266,7 +266,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tids = fitsio.read(tarf,columns=['TARGETID'])['TARGETID']
     #pa_hdu = 'FASSIGN'
     def _get_fa(tile):
-        fadate = return_altmtl_fba_fadate(tile)
+        fadate = common.return_altmtl_fba_fadate(tile)
         ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
         if pa_hdu == 'FAVAIL':
             fa = Table(fitsio.read(ffa, ext=pa_hdu))
