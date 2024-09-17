@@ -162,13 +162,13 @@ if args.add_gtl == 'y':
 
 
 
-    print('--- Calculate good tiles from goodhardwARE IN DATA ---')
+    common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
     mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
 
     specdata_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
     specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specfc = common.cut_specdat(specf, badfib=mainp.badfib)
+    specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
     gtl = np.unique(specfc['TILELOCID'])
 
 
@@ -260,7 +260,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],logger=logger)
     s = 0
     td = 0
-    print('size of tiles', len(tiles))
+    common.printlog('size of tiles '+ str(len(tiles)),logger)
     
     
     tids = fitsio.read(tarf,columns=['TARGETID'])['TARGETID']
@@ -306,7 +306,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
                 tl.append(fa)
         
     asn = vstack(tl)
-    printlog('size combitles for ' + pa_hdu+' , '+str(len(asn)),logger=logger)
+    common.printlog('size combitles for ' + pa_hdu+' , '+str(len(asn)),logger=logger)
     tar_in = fitsio.read(tarf, columns=addcols)
     asn = join(dat_comb, tar_in, keys=['TARGETID'],join_type='left')
     #print(len(dat_comb))
