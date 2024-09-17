@@ -327,11 +327,11 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
     tl = []    
     tls = tiles['TILEID']
-    if par == 'n':
+    if args.par == 'n':
         for tile in tiles['TILEID']:
             fa = _get_fa(tile)
             tl.append(fa)
-    if par == 'y':
+    if args.par == 'y':
         #doesn't seem to work within function
         from concurrent.futures import ProcessPoolExecutor
         
