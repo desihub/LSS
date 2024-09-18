@@ -2825,7 +2825,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     except:
         common.printlog('filling masked Z rows did not succeed',logger)
     selm = dz['Z'] == 999999
-    common.printlog('999999s for Z '+str(len(dz[selm])))
+    common.printlog('999999s for Z '+str(len(dz[selm])),logger)
     selo = dz['LOCATION_ASSIGNED'] == True
     #print('unique Z for unassigned:')
     #print(np.unique(dz[~selo]['Z']))
