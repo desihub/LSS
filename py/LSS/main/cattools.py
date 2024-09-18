@@ -2733,16 +2733,16 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     
     dz = unique(dz,keys=['TARGETID'],keep='last')
     dz.remove_column('sort')
-    printlog('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])),logger)
-    printlog('cut number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI'])),logger)
-    printlog('cut number assigned at good priority and good hardware '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])),logger)
+    common.printlog('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])),logger)
+    common.printlog('cut number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI'])),logger)
+    common.printlog('cut number assigned at good priority and good hardware '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])),logger)
 
     #print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
     #print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
     #print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
 
 
-    printlog('length after cutting to unique targets '+str(len(dz)),logger)
+    common.printlog('length after cutting to unique targets '+str(len(dz)),logger)
     #dtl = Table.read(ftiles)
 
     dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
