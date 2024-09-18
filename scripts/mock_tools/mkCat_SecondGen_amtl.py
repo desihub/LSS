@@ -513,7 +513,7 @@ if args.fullr == 'y':
         #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
         outf = dirout+pdir+'_'+str(rann)+'_full_noveto.ran.fits'
         logger.info('about to make full ran '+outf)
-        ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir,logger=logger)
+        ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
 
         gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
