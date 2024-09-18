@@ -2906,7 +2906,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     lzs = np.isin(locl,loclz)
     for i in range(0,len(locl)):
         if i%100000 == 0:
-            common.print('at row '+str(i)+' of '+str(nloclt),logger)
+            common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
         nt = nlocl[i]
         nz = lzs[i]
         loc = locl[i]
