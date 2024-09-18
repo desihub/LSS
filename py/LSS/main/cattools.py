@@ -2566,7 +2566,7 @@ def addcol_ran(fn,rann,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/
     dz.write(fn,format='fits', overwrite=True)
     del dz
 
-def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None, mockz=None, mask_coll=False, mocknum=None, mockassigndir=None):
+def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,gtl_all=None, mockz=None, mask_coll=False, mocknum=None, mockassigndir=None,logger=None):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2613,17 +2613,17 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
-        print('removing QSO targets')
+        common.printlog('removing QSO targets',logger)
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
-    print(len(dz[wtype]))
+    #print(len(dz[wtype]))
     dz = dz[wtype]
 
     if mask_coll:
         coll = Table(fitsio.read(collf.replace('global','dvs_ro')))
-        print('length before masking collisions '+str(len(dz)))
+        common.printlog('length before masking collisions '+str(len(dz)),logger)
         dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
-        print('length after masking collisions '+str(len(dz)))
+        common.printlog('length after masking collisions '+str(len(dz)),logger)
 
     #instead of full spec data, we are going to get type specific data and cut to unique entries
     #in the end, we can only use the data associated with an observation
@@ -2636,13 +2636,13 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
         prog = 'bright'
 
     specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
-    print(specf)
+    #print(specf)
     fs = fitsio.read(specf.replace('global', 'dvs_ro'))
     fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
-    print('size of gtl', len(gtl))
+    #print('size of gtl', len(gtl))
 
     ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
     if mockz:
@@ -2662,28 +2662,29 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
-    print('Size of sample after cutting to gtl from data', len(dz[wg]))
+    common.printlog('Size of sample after cutting to gtl from data '+str(len(dz[wg])))
 
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
-    print(len(dz[wg]))
+    #print(len(dz[wg]))
     #print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
-    print('length after selecting type '+str(len(dz)))
+    common.printlog('length after selecting type '+str(len(dz)),logger)
     wz = dz['ZWARN'] != 999999 #this is what the null column becomes
     wz &= dz['ZWARN']*0 == 0 #just in case of nans
     dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['LOCATION_ASSIGNED'][wz] = 1
-    print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
-    print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
-    print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
+    common.printlog('number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])),logger)
+    common.printlog('number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.)),logger)
+    common.printlog('number assigned at good priority and good hardware '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.)),logger)
+    
     tlids = np.unique(dz['TILELOCID'][wz])
     wtl = np.isin(dz['TILELOCID'],tlids)
     dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
     dz['TILELOCID_ASSIGNED'][wtl] = 1
-    print('number of unique targets at assigned tilelocid:')
-    print(len(np.unique(dz[wtl]['TARGETID'])))
+    common.printlog('number of unique targets at assigned tilelocid: '+str(len(np.unique(dz[wtl]['TARGETID']))),logger)
+    #print(len(np.unique(dz[wtl]['TARGETID'])))
 
     cols = list(dz.dtype.names)
     #if tscol not in cols:
@@ -2716,7 +2717,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     ##AURE MAYBE KEEP OR NOT? SHOULD NOT HARM
     dz['ransort'] = np.random.random(len(dz))
     dz.sort('ransort')
-    print('randomly sorted')
+    common.printlog('randomly sorted',logger)
     dz.remove_column('ransort')
     if tp[:3] == 'QSO':
         selnp = dz['LOCATION_ASSIGNED'] == 0
@@ -2728,23 +2729,27 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
         dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
 
     dz.sort('sort')
-    print('sorted')
+    common.printlog('sorted',logger)
     
     dz = unique(dz,keys=['TARGETID'],keep='last')
     dz.remove_column('sort')
-    print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
-    print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
-    print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
+    printlog('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])),logger)
+    printlog('cut number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI'])),logger)
+    printlog('cut number assigned at good priority and good hardware '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC'])),logger)
+
+    #print('cut number assigned',np.sum(dz['LOCATION_ASSIGNED']))
+    #print('cut number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']))
+    #print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
 
 
-    print('length after cutting to unique targets '+str(len(dz)))
+    printlog('length after cutting to unique targets '+str(len(dz)),logger)
     #dtl = Table.read(ftiles)
 
     dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
     dz['NTILE'][~tin] = 0
-    print(np.unique(dz['NTILE']))
+    #print(np.unique(dz['NTILE']))
     if ftar is not None:
         print('joining to full imaging')
         remcol = ['RA','DEC','DESI_TARGET','BGS_TARGET']
@@ -2768,7 +2773,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     
     if len(imbits) > 0:
         dz = common.cutphotmask(dz,imbits)
-        print('length after imaging mask; should not have changed '+str(len(dz)))
+        common.printlog('length after imaging mask; should not have changed '+str(len(dz)),logger)
 
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
@@ -2818,19 +2823,19 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     try:
         dz['Z'] = dz['Z'].filled(999999)
     except:
-        print('filling masked Z rows did not succeed')
+        common.printlog('filling masked Z rows did not succeed',logger)
     selm = dz['Z'] == 999999
-    print('999999s for Z',len(dz[selm]))
+    common.printlog('999999s for Z '+str(len(dz[selm])))
     selo = dz['LOCATION_ASSIGNED'] == True
-    print('unique Z for unassigned:')
-    print(np.unique(dz[~selo]['Z']))
+    #print('unique Z for unassigned:')
+    #print(np.unique(dz[~selo]['Z']))
 
-    print('length after cutting to unique targetid '+str(len(dz)))
-    print('LOCATION_ASSIGNED numbers')
-    print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
+    common.printlog('length after cutting to unique targetid '+str(len(dz)),logger)
+    #print('LOCATION_ASSIGNED numbers')
+    #print(np.unique(dz['LOCATION_ASSIGNED'],return_counts=True))
 
-    print('TILELOCID_ASSIGNED numbers')
-    print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
+    #print('TILELOCID_ASSIGNED numbers')
+    #print(np.unique(dz['TILELOCID_ASSIGNED'],return_counts=True))
 
     probl = np.zeros(len(dz))
 
@@ -2838,7 +2843,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     compa = []
     tll = []
     ti = 0
-    print('getting completeness')
+    common.printlog('getting completeness',logger)
     dz['TILES'] = dz['TILES'].filled('0')
     dz.sort('TILES')
     tlsl = dz['TILES']
@@ -2863,10 +2868,10 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
                 break
 
         if ti%1000 == 0:
-            print('at tiles '+str(ti)+' of '+str(nts))
+            common.printlog('at tiles '+str(ti)+' of '+str(nts),logger)
 
         if nli == 0:
-            print('no data for '+str(tlslu[ti]))
+            common.printlog('no data for '+str(tlslu[ti]),logger)
             cp = 0
         else:
             cp = nai/nli#no/nt
@@ -2880,20 +2885,20 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
         fcompa.append(comp_dicta[tl])
     dz['COMP_TILE'] = np.array(fcompa)
     wc0 = dz['COMP_TILE'] == 0
-    print('number of targets in 0 completeness regions '+str(len(dz[wc0])))
+    common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
 
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
 
     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-    print(np.max(nloclz),np.min(loclz))
+    #print(np.max(nloclz),np.min(loclz))
     
-    print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+    #print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
     natloc = ~np.isin(dz['TILELOCID'],loclz)
-    print('number of unique targets around unassigned locations is '+str(np.sum(natloc)))
+    common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
 
-    print('getting fraction assigned for each tilelocid')
+    common.printlog('getting fraction assigned for each tilelocid',logger)
     nm = 0
     nmt =0
     pd = []
@@ -2901,7 +2906,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     lzs = np.isin(locl,loclz)
     for i in range(0,len(locl)):
         if i%100000 == 0:
-            print('at row '+str(i)+' of '+str(nloclt))
+            common.print('at row '+str(i)+' of '+str(nloclt),logger)
         nt = nlocl[i]
         nz = lzs[i]
         loc = locl[i]
@@ -2909,14 +2914,25 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     pd = dict(pd)
     for i in range(0,len(dz)):
         probl[i] = pd[dz['TILELOCID'][i]]
-    print('number of fibers with no observation, number targets on those fibers')
-    print(nm,nmt)
+    
+    #print('number of fibers with no observation, number targets on those fibers')
+    #print(nm,nmt)
+
+    #dz['FRACZ_TILELOCID'] = probl
+    #print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match')
+    #print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
+
+    #print(np.unique(dz['NTILE']))
+
+    common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
+    #print(nm,nmt)
 
     dz['FRACZ_TILELOCID'] = probl
-    print('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match')
-    print(np.sum(1./dz[wz]['FRACZ_TILELOCID']),np.sum(1./dz[wz]['COMP_TILE']),len(dz))
+    common.printlog('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match',logger)
+    common.printlog(str(np.sum(1./dz[wz]['FRACZ_TILELOCID']))+','+str(np.sum(1./dz[wz]['COMP_TILE']))+','+str(len(dz)),logger)
 
-    print(np.unique(dz['NTILE']))
+    common.printlog('number of unique tileid: '+str(np.unique(dz['NTILE'])),logger)
+
     
     #needs to change, because specver should still point to real data
     if mockz:
@@ -2928,7 +2944,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
         dz['PHOTSYS'][sel] = 'S'
                
     
-    common.write_LSS_scratchcp(dz,outf)
+    common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
 def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz='RSDZ',mask_coll=False,logger=None):

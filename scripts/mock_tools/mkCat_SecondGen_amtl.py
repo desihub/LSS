@@ -511,7 +511,7 @@ if args.fullr == 'y':
             ranfile, alltileloc = mocktools.createrancomb_wdupspec(lssdir, ranfile, alltileloc, os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits').format(MOCKNUM=mocknum), os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'datcomb_'+pdir+'_spec_zdone.fits'))
         #outf = os.path.join(dirout, args.tracer+notqso+'_'+str(rann)+'_full_noveto.ran.fits')
         #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
-        outf = dirout+pdir+'_'+str(rann)+'_full_noveto.ran.fits'
+        outf = dirout+'/'+pdir+'_'+str(rann)+'_full_noveto.ran.fits'
         logger.info('about to make full ran '+outf)
         ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
 
