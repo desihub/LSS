@@ -66,7 +66,7 @@ parser.add_argument("--apply_veto", help="apply vetos to the full files",default
 parser.add_argument("--apply_veto_ran", help="apply vetos to the full files",default='n')
 parser.add_argument("--mkclusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat", help="make the data clustering files; these are cut to a small subset of columns",default='n')
-parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
+#parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
 parser.add_argument("--mkclusran_allpot", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--mkclusdat_allpot", help="make the data clustering files; these are cut to a small subset of columns",default='n')
 
@@ -85,7 +85,7 @@ parser.add_argument("--par", help="run different random number in parallel?",def
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--equal_data_dens", help="if y, make mock n(z) equal data n(z)", default = 'n')
 parser.add_argument("--nran_clus_data", help="number of random catalogues to use for clustering data", default = 4)
-parser.add_argument("--use_map_veto", help="Tag for extraveto added in name, for example, _HPmapcut", default = '')
+parser.add_argument("--use_map_veto", help="Tag for extraveto added in name, for example, _HPmapcut", default = '_HPmapcut')
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
@@ -513,7 +513,7 @@ if args.fullr == 'y':
         #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
         outf = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
         logger.info('about to make full ran '+outf)
-        ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
+        ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir,logger=logger)
 
         gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
