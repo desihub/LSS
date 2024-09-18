@@ -509,8 +509,12 @@ if args.fullr == 'y':
         if not os.path.isfile(os.path.join(lssdir, ranfile.split('/')[-1])): ## or not os.path.isfile(os.path.join(lssdir, alltileloc.split('/')[-1])):
 
             ranfile, alltileloc = mocktools.createrancomb_wdupspec(lssdir, ranfile, alltileloc, os.path.join(maindir, 'fba'+str(mocknum), 'datcomb_' + pdir + 'assignwdup.fits').format(MOCKNUM=mocknum), os.path.join('/global/cfs/cdirs/desi/survey/catalogs', args.survey,'LSS', args.specdata, 'datcomb_'+pdir+'_spec_zdone.fits'))
-        outf = os.path.join(dirout, args.tracer+notqso+'_'+str(rann)+'_full_noveto.ran.fits')
-        ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
+        #outf = os.path.join(dirout, args.tracer+notqso+'_'+str(rann)+'_full_noveto.ran.fits')
+        #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
+        outf = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
+        logger.info('about to make full ran '+outf)
+        ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
+
         gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
     if args.par == 'n':
@@ -528,7 +532,7 @@ if args.fullr == 'y':
         #    if not os.path.isfile(os.path.join(dirout, args.tracer+notqso+'_'+str(ii)+'_full_noveto.ran.fits')):
         #        inds_t.append(ii)
         #(rannum[1]-rannum[0])*2
-        nproc = 6 #rx-rm #try 9 if runs out of memory
+        nproc = 9 #rx-rm #try 9 if runs out of memory
         
         ####HERE nproc = 18 #try 9 if runs out of memory
         with Pool(processes=nproc) as pool:
@@ -605,7 +609,8 @@ if args.apply_veto_ran == 'y':
     def _parfun2(rann):
         #print('applying vetos to random ' + str(rann))
         common.printlog('applying vetos to random ' + str(rann), logger)
-        fin = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
+        #fin = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
+        fin = os.path.join(dirout, pdir + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
         fout = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full'+args.use_map_veto + '.ran.fits')
         if args.tracer == 'LRG':
             common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann)

@@ -2740,7 +2740,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
 
-    dtl.keep_columns(['TARGETID','NTILE','TILES','TILELOCIDS'])
+    dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
     dz['NTILE'][~tin] = 0
