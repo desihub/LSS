@@ -2662,7 +2662,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     dz['GOODPRI'][selp] = 1
     
     wg = np.isin(dz['TILELOCID'],gtl)
-    common.printlog('Size of sample after cutting to gtl from data '+str(len(dz[wg])))
+    common.printlog('Size of sample after cutting to gtl from data '+str(len(dz[wg])),logger)
 
     if gtl_all is not None:
         wg &= np.isin(dz['TILELOCID'],gtl_all)
