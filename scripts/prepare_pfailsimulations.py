@@ -21,9 +21,9 @@ rank = MPI.COMM_WORLD.Get_rank()
 import warnings
 warnings.filterwarnings('ignore')
 
-#sys.path.insert(0,'/global/cfs/cdirs/desi/users/akrolew/LSS/py/LSS')
-#from ssr_tools_new import model_ssr, model_ssr_zfac
-#import LSS.common_tools as common
+sys.path.insert(0,'/global/cfs/cdirs/desi/users/akrolew/LSS/py/LSS')
+from ssr_tools_new import model_ssr, model_ssr_zfac
+import LSS.common_tools as common
 
 fibers_per_task = int(sys.argv[6])
 
@@ -61,13 +61,34 @@ def ash_code(tp):  # Make changes for Y1/daily will run
     
     
     if (survey == 'main') or (survey == 'Y1') or (survey == 'DA02') or (survey == 'DA2'):
-        if tp == 'BGS_FAINT':
-            zf = basedir+'/'+survey+'/LSS/'+specver+('/LSScats/%s/' % ver)+'BGS_ANY'+'_full_noveto.dat.fits'
-        elif tp == 'ELG_VLOnotqso':
-            zf = basedir+'/'+survey+'/LSS/'+specver+('/LSScats/%s/' % ver)+'ELG'+'_full_noveto.dat.fits'
+        if ((specver == 'jura-v1')  or (specver == 'kibo-v1')) and (tp[:3] != 'BGS'):
+            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_dark_spec_zdone.fits'
+        elif ((specver == 'jura-v1') or (specver == 'kibo-v1')) and (tp[:3] == 'BGS'):
+            zf = basedir+'/'+survey+'/LSS/'+specver+'/datcomb_bright_spec_zdone.fits'
         else:
-            zf = basedir+'/'+survey+'/LSS/'+specver+('/LSScats/%s/' % ver)+tp+'_full_noveto.dat.fits'
+            if tp == 'BGS_FAINT':
+                zf = basedir+'/'+survey+'/LSS/'+specver+('/LSScats/%s/' % ver)+'BGS_ANY'+'_full_noveto.dat.fits'
+            elif tp == 'ELG_VLOnotqso':
+                zf = basedir+'/'+survey+'/LSS/'+specver+('/LSScats/%s/' % ver)+'ELG'+'_full_noveto.dat.fits'
+            else:
+                zf = basedir+'/'+survey+'/LSS/'+specver+('/LSScats/%s/' % ver)+tp+'_full_noveto.dat.fits'
         dz = Table(fitsio.read(zf))
+        if (specver == 'jura-v1') or (specver == 'kibo-v1'):
+            if tp[:3] == 'BGS':
+                targs = Table(fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/BGS_ANYtargetsDR9v1.1.1.fits'))
+            else:
+                targs = Table(fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/%stargetsDR9v1.1.1.fits' % tp[:3]))
+            dz = join(dz, targs, keys='TARGETID',join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_TARG'])
+            if tp == 'LRG':
+                wtype = ((dz['DESI_TARGET'] & 2**0) != 0)
+            elif tp == 'ELG_LOPnotqso':
+                wtype = ((dz['DESI_TARGET'] & 2**5) != 0)
+                wtype &= ((dz['DESI_TARGET'] & 2**2) == 0)
+            elif tp == 'QSO':
+                wtype = ((dz['DESI_TARGET'] & 2**2) != 0)
+            elif tp == 'BGS_BRIGHT':
+            	wtype = ((dz['BGS_TARGET'] & 2**1) != 0)
+            dz = dz[wtype]
         if tp == 'ELG_LOPnotqso':
             wtype = ((dz['DESI_TARGET'] & 4) == 0) #remove QSO
             dz = dz[wtype]
@@ -113,10 +134,31 @@ def ash_code(tp):  # Make changes for Y1/daily will run
         wz &= dz['COADD_FIBERSTATUS'] == 0
 
         ff2 = dz[wz]
-        
+
+    if (tp == 'ELG_LOPnotqso') or (tp == 'ELG_VLOnotqso'):
+        if (specver == 'jura-v1') or (specver == 'kibo-v1'):
+            emlin = Table(fitsio.read(basedir+'/'+survey+'/LSS/'+specver+'/emlin_catalog.fits'))
+            emlin['TILEID'] = emlin['TILEID'].astype('int')
+            dz = join(dz, emlin, keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_EMLIN'])
+
+    if tp == 'QSO':
+        if (specver == 'jura-v1') or (specver == 'kibo-v1'):
+            qso = Table(fitsio.read(basedir+'/'+survey+'/QSO/%s/QSO_cat_%s_cumulative_v1.fits' % (specver.split('-')[0],specver.split('-')[0])))
+            dz = join(dz,qso,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+            dz['Z'].name = 'Z_orig' #rename the original redrock redshifts
+            dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+
 
     z_tot = dz['ZWARN'] != 999999
     z_tot &= dz['ZWARN']*0 == 0
+    z_tot &= ((dz['COADD_FIBERSTATUS'] == 0) | (dz['COADD_FIBERSTATUS'] == 8))
+    if tp[:3] == 'BGS':
+        z_tot &= dz['TSNR2_BGS'] > 1000
+    else:
+        z_tot &= dz['TSNR2_ELG'] > 80
+    # TSNR cuts
+    print('L148',np.unique(dz[z_tot]['COADD_FIBERSTATUS']))
+    
 
 
     if tp == 'LRG':
@@ -124,34 +166,49 @@ def ash_code(tp):  # Make changes for Y1/daily will run
         z_suc &= dz['DELTACHI2']>15
         z_suc &= dz['Z']<1.5
        
-
     if (tp == 'ELG_LOPnotqso') or (tp == 'ELG_VLOnotqso'):
-        print("dz before join:",len(dz))
-        print('type dz', type(dz))
-        print("dz after o2c:",len(dz))
-        print('dz columns', dz.columns)
+        #else:
         z_suc = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])> 0.9
 
     
     if tp == 'QSO':
-            #qsozf = pars.qsozf
-            #if specver == 'guadalupe':
-            #    #qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
-            #arz = Table(fitsio.read(qsozf))
-            #arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
-            #arz['TILEID'] = arz['TILEID'].astype(int)
+        #print(5/0)
+        #qsozf = pars.qsozf
+        #if specver == 'guadalupe':
+        #    #qsozf = '/global/cfs/cdirs/desi/users/edmondc/QSO_catalog/guadalupe/QSO_cat_guadalupe_cumulative.fits'
+        #arz = Table(fitsio.read(qsozf))
+        #arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
+        #arz['TILEID'] = arz['TILEID'].astype(int)
 
 
-            #dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
-            #dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
-            #dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
-
+        #dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        #dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
+        #dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+        if (specver == 'jura-v1') or (specver == 'kibo-v1'):
+            z_suc = (dz['Z'] != 999999.0) | (dz['Z'].mask == False)
+        else:
             z_suc = dz['Z'] != 999999.0
-
+    print('L191',np.unique(dz[z_tot]['COADD_FIBERSTATUS']))
+            
+    ind = np.where(dz['TARGETID'] == 39627380788040729)[0]
+    print('dz ind 192',dz[ind])
+    #print('z_suc ind',z_suc[ind])
+    #print('z_tot ind',z_tot[ind])
+    print('zwarn == 0 ind',(dz['ZWARN'] == 0)[ind])
+    print('deltachi2 > 40',(dz['DELTACHI2'] > 40)[ind])
+    print('deltachi2',dz['DELTACHI2'][ind])
 
     if tp == 'BGS_BRIGHT':
         z_suc = dz['ZWARN']==0
         z_suc &= dz['DELTACHI2']>40
+
+    ind = np.where(dz['TARGETID'] == 39627380788040729)[0]
+    print('dz ind 195',dz[ind])
+    print('z_suc ind',z_suc[ind])
+    print('z_tot ind',z_tot[ind])
+    print('zwarn == 0 ind',(dz['ZWARN'] == 0)[ind])
+    print('deltachi2 > 40',(dz['DELTACHI2'] > 40)[ind])
+
         
     if tp == 'BGS_FAINT':
         z_suc = dz['ZWARN']==0
@@ -165,64 +222,77 @@ def ash_code(tp):  # Make changes for Y1/daily will run
 
     # BGS 0.1 < z < 0.5
     
-    '''cat = Table(dz)
-    cat['Z_not4clus'] = cat['Z']
+    if (specver == 'jura-v1') or (specver == 'kibo-v1'):
+        cat = Table(dz)
+        #cat['Z_not4clus'] = cat['Z']
     
-    selobs = cat['ZWARN']*0 == 0
-    selobs &= cat['ZWARN'] != 999999
-    if tp[:3] != 'BGS':
-        selobs &= cat['TSNR2_ELG'] > 80
-    else:
-        selobs &= cat['TSNR2_BGS'] > 1000
+        selobs = cat['ZWARN']*0 == 0
+        selobs &= cat['ZWARN'] != 999999
+        if tp[:3] != 'BGS':
+            selobs &= cat['TSNR2_ELG'] > 80
+        else:
+            selobs &= cat['TSNR2_BGS'] > 1000
     
-    if tp[:3] == 'LRG':
-        band = 'Z'
-    elif tp[:3] == 'QSO':
-        band = 'R'
-    elif tp[:3] == 'BGS':
-        band = 'R'
-    elif tp[:3] == 'ELG':
-        band = 'G'
+        if tp[:3] == 'LRG':
+            band = 'Z'
+            mintsnr=500/12.15
+            #maxtsnr =2000/12.15
+            maxtsnr =1700/12.15
+        elif tp[:3] == 'QSO':
+            band = 'R'
+            mintsnr=450/(8.60/0.255)
+            maxtsnr=1800/(8.60/0.255)
+        elif tp[:3] == 'BGS':
+            band = 'R'
+            mintsnr=120/(12.15/89.8)
+            maxtsnr =300/(12.15/89.8)
+        elif tp[:3] == 'ELG':
+            band = 'G'
+            mintsnr = 80
+            maxtsnr = 200
+        if tp[:3] != 'ELG':
+            modelN = model_ssr(cat[selobs],tracer=tp[:3],reg='N',band=band,tsnr_min=mintsnr,tsnr_max=maxtsnr,readpars=True,outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/%s/' % ver,outfn_root=tp,overwrite_pars_ssrmaxflux=False)
+            modelS = model_ssr(cat[selobs],tracer=tp[:3],reg='S',band=band,tsnr_min=mintsnr,tsnr_max=maxtsnr,readpars=True,outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/%s/' % ver,outfn_root=tp,overwrite_pars_ssrmaxflux=False)
+        else:
+            cat.add_column(np.log10(cat['OII_FLUX'] * np.sqrt(cat['OII_FLUX_IVAR']))+0.2*np.log10(cat['DELTACHI2']), name='o2c')
+            modelN = model_ssr_zfac(cat[selobs],reg='N',outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/',outfn_root=tp[:3])
+            modelS = model_ssr_zfac(cat[selobs],reg='S',outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/',outfn_root=tp[:3])
     
-    #if tp[:3] == 'LRG':
-    #    mintsnr=500/12.15
-    #    #maxtsnr =2000/12.15
-    #    maxtsnr =1700/12.15
+        if tp[:3] == 'LRG':
+            modelN.fluxfittype='piecewise'
+            modelN.flux_break = 3
+            modelS.fluxfittype = 'piecewise'
+            modelS.flux_break = 3
+        elif tp[:3] != 'ELG':
+            modelN.fluxfittype='linear'
+            modelS.fluxfittype='linear'
     
-    if tp[:3] != 'ELG':
-        modelN = model_ssr(cat[selobs],tracer=tp,reg='N',band=band,readpars=True,outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/%s/' % ver,outfn_root=tp,overwrite_pars_ssrmaxflux=False)
-        modelS = model_ssr(cat[selobs],tracer=tp,reg='S',band=band,readpars=True,outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/%s/' % ver,outfn_root=tp,overwrite_pars_ssrmaxflux=False)
-    else:
-        modelN = model_ssr_zfac(cat[selobs],reg='N',outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/',outfn_root=tp[:3])
-        modelS = model_ssr_zfac(cat[selobs],reg='S',outdir=basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/',outfn_root=tp[:3])
+        if tp[:3] != 'ELG':
+            parsmaxflux = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/%sNpars_ssrmaxflux.txt' % tp)
+            modelN.pars_ferf = parsmaxflux
     
-    if tp[:3] == 'LRG':
-        modelN.fluxfittype='piecewise'
-        modelN.flux_break = 3
-        modelS.fluxfittype = 'piecewise'
-        modelS.flux_break = 3
-    
-    if tp[:3] != 'ELG':
-        parsmaxflux = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/%sNpars_ssrmaxflux.txt' % tp[:3])
-        modelN.pars_ferf = parsmaxflux
-    
-        parsmaxflux = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/%sSpars_ssrmaxflux.txt' % tp[:3])
-        modelS.pars_ferf = parsmaxflux
+            parsmaxflux = np.loadtxt(basedir+'/'+survey+'/LSS/'+specver+'/LSScats/test/%sSpars_ssrmaxflux.txt' % tp)
+            modelS.pars_ferf = parsmaxflux
 
     
-    wtfN, modN = modelN.add_modpre(cat)
-    wtfS, modS = modelS.add_modpre(cat)
+        wtfN, modN = modelN.add_modpre(cat)
+        wtfS, modS = modelS.add_modpre(cat)
     
-    mod = np.zeros(len(cat))
-    mod[cat['PHOTSYS'] == 'S'] = modS[cat['PHOTSYS'] == 'S']
-    mod[cat['PHOTSYS'] == 'N'] = modN[cat['PHOTSYS'] == 'N']
+        mod = np.zeros(len(cat))
+        mod[cat['PHOTSYS'] == 'S'] = modS[cat['PHOTSYS'] == 'S']
+        mod[cat['PHOTSYS'] == 'N'] = modN[cat['PHOTSYS'] == 'N']
     
-    wtf = np.zeros(len(cat))
-    wtf[cat['PHOTSYS'] == 'S'] = wtfS[cat['PHOTSYS'] == 'S']
-    wtf[cat['PHOTSYS'] == 'N'] = wtfN[cat['PHOTSYS'] == 'N']'''
-
+        wtf = np.zeros(len(cat))
+        wtf[cat['PHOTSYS'] == 'S'] = wtfS[cat['PHOTSYS'] == 'S']
+        wtf[cat['PHOTSYS'] == 'N'] = wtfN[cat['PHOTSYS'] == 'N']
         
-    return(dz,z_suc,z_tot,lb)
+    ind = np.where(dz['TARGETID'] == 39627380788040729)[0]
+    print('dz ind 277',dz[ind])
+    print('z_suc ind',z_suc[ind])
+    print('z_tot ind',z_tot[ind])
+
+    print('L294',np.unique(dz[z_tot]['COADD_FIBERSTATUS']))
+    return(dz,z_suc,z_tot,lb,mod)
 
 #fiber cut function
 def fiber_cut(cut,tp,dz,z_tot,z_suc): 
@@ -336,7 +406,7 @@ def write_in_file(tp,dz,z_tot,z_suc,cut,tag):
 #function to create p_values for each fiber
 
 def weighted_pvalues(dz,z_tot,z_suc):
-    #dz['p_value'] = np.zeros(len(dz))
+    dz['p_value'] = np.zeros(len(dz))
     #dz['p_suc']= np.zeros(len(dz))
     #dz['mod_suc']=np.zeros(len(dz))
     #dz['p_suc_w']=np.zeros(len(dz))
@@ -345,9 +415,7 @@ def weighted_pvalues(dz,z_tot,z_suc):
     #norm =  len(dz['WEIGHT_ZFAIL'])/np.sum(1/dz['WEIGHT_ZFAIL'])
     fibl,n_tot = np.unique(dz[z_tot]['FIBER'],return_counts=True)
     fiblg,n_g = np.unique(dz[z_suc&z_tot]['FIBER'],return_counts=True)
-    lownt = fiblg
-    #fiblist = np.loadtxt('summaryscale/ELG_LOPnotqsofibersim.txt.1')
-    #lownt = np.array(list(set(fibl) - set(fiblist[:,0])))
+    lownt = fibl
     #lownt = np.loadtxt('/global/homes/a/akrolew/foldtest/Y1/himalayas/concat/fibermissing.txt')
     #lownt = np.loadtxt('/global/cfs/cdirs/desi/users/akrolew/QSOmissing.txt')
     p_valuefib = np.zeros(len(lownt))
@@ -358,7 +426,6 @@ def weighted_pvalues(dz,z_tot,z_suc):
     #ff2['obs_fail_p'] = np.zeros(len(ff2))
     #lownt = fibl[np.where(n_tot <100)]
     #print("number of low n tot:", len(lownt))
-    #fibs_done = np.loadtxt('/global/cfs/cdirs/desi/users/akrolew/summaryscale/ELG_LOPnotqsofibersim.txt')[:,0]
     start_time = time.time()
     n = np.zeros(len(lownt))
     s = np.zeros(len(lownt))
@@ -384,13 +451,11 @@ def weighted_pvalues(dz,z_tot,z_suc):
     dz['mod_success_rate'] = dz['mod_success_rate']*scale
     dz['mod_success_rate'][dz['mod_success_rate'] > 1] = 1
     dz['mod_success_rate'][dz['mod_success_rate'] < 0] = 0
-    #mean_mod_suc = mean_mod_suc*scale
+    mean_mod_suc = mean_mod_suc*scale
     #tot_mod_suc_rate = np.sum(dz['mod_success_rate'][z_tot]) / len(dz['mod_success_rate'][z_tot])
     #print(np.where(lownt == 3986)[0])
-    cnt = 0
     for ii in range(len(lownt)):
-        #if lownt[ii] == 573:
-        if (cnt-int(sys.argv[5]))//fibers_per_task  == rank: #change number from 0 to 7 for each batch run
+        if (ii-int(sys.argv[5]))//fibers_per_task  == rank: #change number from 0 to 7 for each batch run
             #if ii == 661:
             
             fmask=dz['FIBER']==lownt[ii]
@@ -431,7 +496,7 @@ def weighted_pvalues(dz,z_tot,z_suc):
             var = (n[ii]*np.mean(mod_suc)*(1-np.mean(mod_suc))-n[ii]*ss**2)/n[ii]**2 #confirm with alex
             nsig = (frac_succ[ii]-np.mean(mod_suc))/np.sqrt(var)
             p_value = np.searchsorted(np.sort(p_succ), 1e-10+frac_succ[ii])/sim_n #changed it to frac_suc from 1-frac_suc
-            #dz['p_value'][fmask] = p_value
+            dz['p_value'][fmask] = p_value
             p_valuefib[ii] = p_value
             Varr[ii] = var
             Nsig[ii] = nsig
@@ -451,12 +516,11 @@ def weighted_pvalues(dz,z_tot,z_suc):
 
             #dz['testobs'][ii] = np.mean(testobs)
             #print("loop no:",ii)
-            f.write('%i  %.5f %.5e %.5f %i %i %.5f %.5f %.2f %.2f\n' % (lownt[ii],p_value, var, nsig, n[ii], s[ii], mean_mod_suc[ii],frac_succ[ii], mean_x[ii], mean_y[ii]))
-            print('%i  %.5f %.5e %.5f %i %i %.5f %.5f %.2f %.2f\n' % (lownt[ii],p_value, var, nsig, n[ii], s[ii], mean_mod_suc[ii],frac_succ[ii], mean_x[ii], mean_y[ii]))
+            f.write('%i  %.5f %.5e %.5f %i %i %.5f %.5f %.2f %.2f\n' % (fibl[ii],p_value, var, nsig, n[ii], s[ii], mean_mod_suc[ii],frac_succ[ii], mean_x[ii], mean_y[ii]))
+            print('%i  %.5f %.5e %.5f %i %i %.5f %.5f %.2f %.2f\n' % (fibl[ii],p_value, var, nsig, n[ii], s[ii], mean_mod_suc[ii],frac_succ[ii], mean_x[ii], mean_y[ii]))
 
             f.flush()
             print("--- Total time is %s seconds ---" % (time.time() - start_time)) 
-        cnt += 1
      
     f.close()
     return(dz,var,Varr,Nsig,p_valuefib,lownt,ss,n,mod_suc,s,Nlownt,Slownt)
@@ -477,21 +541,21 @@ start_time = time.time()
 
 
 for tp in tracers:
-    #dz, z_suc, z_tot, lb= ash_code(tp) #Selects catalogs and cuts them down to Z_suc using criteria for tracers.
-    #tag, dz, z_tot, z_suc = fiber_cut(cut, tp, dz, z_tot, z_suc)# Makes a bad fiber cut and updates z_suc/z_tot
-    #bins, binno, dz,z_tot, z_suc = write_in_file(tp, dz, z_tot, z_suc, cut, tag)# creates bins and binnos
-    #dz.write('pfailsimulations/%s_cat.fits' % tp)
-    #np.savetxt('pfailsimulations/%s_ztot.txt' % tp,z_tot)
-    #np.savetxt('pfailsimulations/%s_zsuc.txt' % tp,z_suc)
-    t0 = time.time()
-    dz = Table(fitsio.read('pfailsimulations_%s/%s_cat_trunc.fits' % (specver,tp)))#,columns=('FIBER','FIBERASSIGN_X','FIBERASSIGN_Y','mod_success_rate')))
-    print(np.max(np.max(dz['mod_success_rate'])))
-    print(time.time()-t0)
-    z_tot = np.loadtxt('pfailsimulations_%s/%s_ztot.txt' % (specver,tp))
-    z_suc = np.loadtxt('pfailsimulations_%s/%s_zsuc.txt' % (specver,tp))
-    z_suc = z_suc.astype('int').astype('bool')
-    z_tot = z_tot.astype('int').astype('bool')
-    weighted_pvalues(dz,z_tot,z_suc)
+    dz, z_suc, z_tot, lb,mod= ash_code(tp) #Selects catalogs and cuts them down to Z_suc using criteria for tracers.
+    tag, dz, z_tot, z_suc = fiber_cut(cut, tp, dz, z_tot, z_suc)# Makes a bad fiber cut and updates z_suc/z_tot
+    bins, binno, dz,z_tot, z_suc = write_in_file(tp, dz, z_tot, z_suc, cut, tag)# creates bins and binnos
+    t = Table(np.array([dz['FIBER'],dz['FIBERASSIGN_X'],dz['FIBERASSIGN_Y'],mod]).T,names=('FIBER','FIBERASSIGN_X','FIBERASSIGN_Y','mod_success_rate'))
+    t.write('pfailsimulations_%s/%s_cat_trunc.fits' % (specver,tp),overwrite=True)
+    np.savetxt('pfailsimulations_%s/%s_ztot.txt' % (specver,tp),z_tot)
+    if tp == 'QSO':
+        fucker = np.zeros(len(z_suc))
+        fucker[z_suc.mask==True] = 0
+        fucker[z_suc.mask==False] = 1
+        np.savetxt('pfailsimulations_%s/QSO_zsuc.txt' % specver,fucker)
+
+    else:
+        np.savetxt('pfailsimulations_%s/%s_zsuc.txt' % (specver,tp),z_suc)
+    #weighted_pvalues(dz,z_tot,z_suc)
     #print(dz['p_value'])
     #print('time',time.time()-start_time)
     
