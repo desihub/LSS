@@ -406,7 +406,7 @@ if args.apply_veto == 'y':
     print('data veto done, now doing randoms')
     def _parfun(rn):
         #fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
-        fin = dirout.replace('global','dvs_ro')+pdir+'_'+str(rn)+'_full_noveto.ran.fits'
+        fin = dirout.replace('global','dvs_ro')+progl+'_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
         print('random veto '+str(rn)+' done')
