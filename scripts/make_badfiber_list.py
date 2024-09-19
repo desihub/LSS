@@ -28,5 +28,8 @@ np.savetxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/ELG_LOPnotqso
 
 badfib_all = np.array(list(set(np.concatenate((badfib_LRG,badfib_QSO,badfib_ELG,badfib_BGS)))))
 
+# Add 7 fibers failing the n(z) KS test
+badfib_nz = np.array([916, 917, 1261, 1269, 1295, 2246, 3359])
+badfib_all = np.concatenate((badfib_all, badfib_nz))
 
 np.savetxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/unique_badfibers.txt',badfib_all[np.argsort(badfib_all)].astype('int'),fmt='%i')
