@@ -412,7 +412,7 @@ if args.fulld == 'y':
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
-    ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
+    ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
     print('*** END WITH FULLD ***')
     gc.collect()
 
@@ -613,7 +613,13 @@ if args.apply_veto_ran == 'y':
         fin = os.path.join(dirout, pdir + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
         fout = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full'+args.use_map_veto + '.ran.fits')
         if args.tracer == 'LRG':
-            common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann)
+            test = fitsio.read(fin,rows=1)
+            testcols = list(test.dtype.names)
+            if 'lrg_mask' in list:
+                common.printlog('not adding lrg mask column again for '+str(rann),logger)
+            else:
+                common.printlog('adding lrg mask column for '+str(rann),logger)
+                common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann)
         ranf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,logger=logger)
         ranf = common.apply_map_veto_arrays(ranf,mapn,maps,mapcuts,logger=logger)
         common.write_LSS_scratchcp(ranf,fout,logger=logger)

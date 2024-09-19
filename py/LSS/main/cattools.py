@@ -2702,7 +2702,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     #    dz['GOODTSNR'][sel] = 1
     
     if ftiles is None:
-        dtl = count_tiles_input(dz[wg])
+        dtl = count_tiles_input(dz[wg],logger=logger)
     else:
         dtl = Table.read(ftiles)
 
