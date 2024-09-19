@@ -610,7 +610,7 @@ if args.apply_veto_ran == 'y':
         #print('applying vetos to random ' + str(rann))
         common.printlog('applying vetos to random ' + str(rann), logger)
         #fin = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
-        fin = os.path.join(dirout, pdir + notqso + '_' + str(rann) + '_full_noveto.ran.fits')
+        fin = os.path.join(dirout, pdir  + '_' + str(rann) + '_full_noveto.ran.fits')
         fout = os.path.join(dirout, args.tracer + notqso + '_' + str(rann) + '_full'+args.use_map_veto + '.ran.fits')
         if args.tracer == 'LRG':
             test = fitsio.read(fin,rows=1)
