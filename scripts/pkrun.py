@@ -229,11 +229,11 @@ if __name__ == '__main__':
     setup_logging()
     args = parser.parse_args()
     if args.nmesh != None:
-        args.nmesh = int(nmesh)
+        args.nmesh = int(args.nmesh)
     if args.cellsize == 'None':
         args.cellsize = None    
     if args.cellsize != None:
-        args.cellsize = float(cellsize)
+        args.cellsize = float(args.cellsize)
     if args.calc_win == 'n':
         args.calc_win = False
     if args.calc_win == 'y':
