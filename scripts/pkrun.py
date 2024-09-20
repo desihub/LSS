@@ -53,7 +53,7 @@ def barrier_idle(mpicomm, tag=0, sleep=0.01):
         mask <<= 1
 
 
-def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., nmesh=1024, dowin=False, mpicomm=None, mpiroot=0, thetacut=None, **kwargs):
+def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, ells=(0, 2, 4), boxsize=5000., cellsize=6.,nmesh=None, dowin=False, mpicomm=None, mpiroot=0, thetacut=None, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -112,7 +112,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
                              randoms_positions2=randoms_positions2, randoms_weights2=randoms_weights2,
                              shifted_positions1=shifted_positions1, shifted_weights1=shifted_weights1,
                              shifted_positions2=shifted_positions2, shifted_weights2=shifted_weights2,
-                             edges=edges, ells=ells, boxsize=boxsize, nmesh=nmesh, resampler='tsc', interlacing=3,
+                             edges=edges, ells=ells, boxsize=boxsize, cellsize=cellsize,nmesh=nmesh, resampler='tsc', interlacing=3,
                              position_type='rdd', dtype=dtype, direct_selection_attrs=direct_selection_attrs, direct_edges=direct_edges,
                              direct_attrs={"nthreads": 64}, **kwargs, mpicomm=mpicomm, mpiroot=mpiroot).poles
     window = wmatrix = None
@@ -214,7 +214,8 @@ if __name__ == '__main__':
     parser.add_argument('--option', help='place to put extra options for cutting catalogs', default=None)
     parser.add_argument('--weight_type', help='types of weights to use; use "default_angular_bitwise" for PIP with angular upweighting; "default" just uses WEIGHT column', type=str, default='default')
     parser.add_argument('--boxsize', help='box size', type=float, default=8000.)
-    parser.add_argument('--nmesh', help='mesh size', type=int, default=1024)
+    parser.add_argument('--nmesh', help='mesh size', default=None)
+    parser.add_argument('--cellsize', help='cell size', default=6.)
     parser.add_argument('--nran', help='number of random files to combine together (1-18 available)', type=int, default=4)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
     parser.add_argument('--calc_win', help='also calculate window?; use "y" for yes', default='n')
@@ -227,6 +228,12 @@ if __name__ == '__main__':
 
     setup_logging()
     args = parser.parse_args()
+    if args.nmesh != None:
+        args.nmesh = int(nmesh)
+    if args.cellsize == 'None':
+        args.cellsize = None    
+    if args.cellsize != None:
+        args.cellsize = float(cellsize)
     if args.calc_win == 'n':
         args.calc_win = False
     if args.calc_win == 'y':
@@ -298,7 +305,7 @@ if __name__ == '__main__':
                 logger.info('Computing power spectrum in region {} in redshift range {}.'.format(region, (zmin, zmax)))
             edges = get_edges()
             wang = None
-            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, nmesh=args.nmesh, wang=wang, dowin=args.calc_win, thetacut=args.thetacut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
+            result, wang, window, wmatrix = compute_power_spectrum(edges=edges, distance=distance, nrandoms=args.nran, region=region, zlim=(zmin, zmax), weight_type=args.weight_type, boxsize=args.boxsize, cellsize=args.cellsize,nmesh=args.nmesh, wang=wang, dowin=args.calc_win, thetacut=args.thetacut, mpicomm=mpicomm, mpiroot=mpiroot, **catalog_kwargs)
             if mpicomm.rank == mpiroot:
                 fn = power_fn(file_type='npy', region=region, **base_file_kwargs)
                 result.save(fn)
