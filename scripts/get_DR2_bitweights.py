@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--amtl_version",default='Y3Run1')
-parser.add_argument("--amtl_dir",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/altmtl/')
+parser.add_argument("--amtl_dir",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/altmtl/')
 parser.add_argument("--specrel",default='kibo-v1')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--nreal",default=128,type=int)
@@ -41,7 +41,7 @@ logger.addHandler(ch)
 logger.info('script is starting')
 #just start with the mock 1 v3_1 altmtl as an example
 
-lssdir = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/LSScats/'+args.cat_version+'/'
+lssdir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/LSScats/'+args.cat_version+'/'
 
 if args.prog == 'BRIGHT':
     alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
@@ -114,7 +114,7 @@ wd &= mt['FAPRGRM'] == pdir
 wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
 
 mtld = mt[wd]
-ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
+ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
@@ -173,7 +173,7 @@ for real in inds:
     probl += assign_real_dic[real]*1.
 probl = probl/Nreal   
 
-outf = lssdir+args.prog+'_bitweights.fits'
+outf = lssdir.replace('dvs_ro','global')+args.prog+'_bitweights.fits'
 out_tab = Table()
 out_tab['TARGETID'] = alltids
 out_tab['BITWEIGHTS'] = bitweights
