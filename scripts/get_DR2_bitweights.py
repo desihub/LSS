@@ -77,6 +77,8 @@ def removeLeadingZeros(num):
 
 def get_all_asgn(indir):
     fls = glob.glob(indir+'/*/fba*.fits')
+    if len(fls) == 0:
+        logger.info('no files found in '+indir)
     assign_list = []
     for fl in fls:
         asgn = Table(fitsio.read(fl,columns=['FIBER', 'TARGETID', 'LOCATION']))
@@ -179,7 +181,7 @@ out_tab['TARGETID'] = alltids
 out_tab['BITWEIGHTS'] = bitweights
 out_tab['PROB_OBS'] = probl
 
-common.write_LSS(out_tab,outf)
+common.write_LSS_scratchcp(out_tab,outf,logger=logger)
 
 #h = np.histogram(probl)
 #print(h) 
