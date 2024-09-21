@@ -43,7 +43,7 @@ for tp in tpl:
     fll = fl
     for ft in fll:
         inflnm = lssdir+tp+'_'+ft+'.dat.fits'
-        infl = Table(fitsio.read(lssdir+tp+'_'+ft+'.dat.fits'))
+        infl = Table(fitsio.read(inflnm.replace('global','dvs_ro')))
         cols = list(infl.dtype.names)
         dojoin = 'y'
         if 'PROB_OBS' in cols:
