@@ -8,6 +8,22 @@ from LSS.globals import main
 from LSS.bitweights import pack_bitweights
 
 import logging
+logname = 'add_bitweights'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -15,7 +31,7 @@ parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--tracers",default='all')
 parser.add_argument("--survey",default='DA2')
-parser.add_argument("--specrel",default='jura-v1')
+parser.add_argument("--specrel",default='kibo-v1')
 parser.add_argument("--replace",default='y')
 args = parser.parse_args()
 
@@ -48,18 +64,18 @@ for tp in tpl:
         dojoin = 'y'
         if 'PROB_OBS' in cols:
             if args.replace == 'y':
-                print('removing columns before adding info back')
+                common.printlog('removing columns before adding info back',logger)
                 infl.remove_columns(['PROB_OBS','BITWEIGHTS'])
             else:
                 dojoin = 'n'
-                print('PROB_OBS is in original and replace is set to n, so just moving to next file')
+                common.printlog('PROB_OBS is in original and replace is set to n, so just moving to next file',logger)
         if dojoin == 'y':
             li = len(infl)
             infl = join(infl,bitf,keys=['TARGETID'],join_type='left')
             lij = len(infl)
             if li == lij:
-                common.write_LSS_scratchcp(infl,inflnm)
+                common.write_LSS_scratchcp(infl,inflnm,logger=logger)
             else:
-                print('mismatch after join!')
+                common.printlog('mismatch after join! '+tp,logger)
                 print(tp,li,lij)    
 
