@@ -1287,7 +1287,7 @@ if args.addNtileweight2full == 'y':
     if args.survey == 'Y1':
         nproc = 9
     if args.survey == 'DA2':
-        nproc = 6
+        nproc = 9
     common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type,nproc=nproc)
     
 
