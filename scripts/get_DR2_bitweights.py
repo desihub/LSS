@@ -94,10 +94,10 @@ def get_all_asgn(indir):
 #get the list of good tilelocid
 
 if args.prog == 'DARK':
-    mainp = main('LRG','iron')
+    mainp = main('LRG',args.specrel)
     pdir = 'dark'
 else:
-    mainp = main('BGS','iron')
+    mainp = main('BGS',args.specrel)
     pdir = 'bright'
 
 mt = mainp.mtld
@@ -125,7 +125,7 @@ specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
 logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
 gtl = np.unique(specfc['TILELOCID'])
 
 assign_real_dic = {}
