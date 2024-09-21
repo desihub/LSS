@@ -573,7 +573,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--tracer', help='tracer(s) to be selected - 2 for cross-correlation', type=str, nargs='+', default=['LRG'])
     # Set basedir to the actual location of catalogs when starting with full (not clustering) catalogs for mocks. No need to set survey, verspec, version then.
-    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/global/cfs/cdirs/desi/survey/catalogs/')
+    parser.add_argument('--basedir', help='where to find catalogs', type=str, default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
     parser.add_argument('--survey', help='e.g., SV3, DA02, etc.', type=str, default='Y1')
     parser.add_argument('--verspec', help='version for redshifts', type=str, default='iron')
     parser.add_argument('--version', help='catalog version', type=str, default='test')
