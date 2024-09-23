@@ -66,16 +66,21 @@ os.system('cp %s %s' % (os.path.join(path,'*'), path_to_altmtl))
 
 print('Creating tileTracker file and tilestatus file')
 
+
 startDateShort = 19990101
 endDate='20240418' #2024-04-18T00:00:00+00:00'
 #20240418
 
+os.system('cp /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/aux/small_mainsurvey-DARKobscon-TileTracker.ecsv %s' % os.path.join(altmtl_path, 'mainsurvey-DARKobscon-TileTracker.ecsv'))
+
+'''
 if ('T' in endDate) & ('-' in endDate):
     endDateShort = int(endDate.split('T')[0].replace('-', ''))
 else:
     endDateShort = int(endDate)
 
 amtl.makeTileTracker(altmtl_path, survey = 'main', obscon = 'DARK', startDate = startDateShort, endDate = endDateShort, overwrite = True)
+'''
 
 ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
 
