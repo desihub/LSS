@@ -78,8 +78,8 @@ parser.add_argument("--FKPfull", help="add FKP weights to full catalogs",default
 parser.add_argument("--splitGC",help='whether to combine N/S and then split NGC/SGC',default='n')
 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
-parser.add_argument("--minr", help="minimum number for random files",default=1,type=int)
-parser.add_argument("--maxr", help="maximum for random files, default is 1, but 40 are available (use parallel script for all)",default=2,type=int) 
+parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
+parser.add_argument("--maxr", help="maximum for random files, any number up to 18 work)",default=18,type=int) 
 parser.add_argument("--par", help="run different random number in parallel?",default='n')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
