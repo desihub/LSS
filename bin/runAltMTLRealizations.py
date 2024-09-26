@@ -31,6 +31,7 @@ parser.add_argument('-a', '--altMTLBaseDir', dest='altMTLBaseDir', required=True
 parser.add_argument('-obscon', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
 parser.add_argument('-mockmin', '--mockmin', dest='mockmin', default=0, help = 'Minimum mock number', required = False, type = int)
 parser.add_argument('-mockmax', '--mockmax', dest='mockmax', default=6, help = 'Maximum mock number', required = False, type = int)
+parser.add_argument('-mocklist', '--mocklist', dest='mocklist', default="", help = 'List of mock numbers. If not empty, it will ignore mockmin and mockmax', required = False, type = str)
 parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
 parser.add_argument('-sec', '--secondary', dest = 'secondary', default=False, action='store_true', help = 'set flag to incorporate secondary targets.')
 parser.add_argument('-mock', '--mock', dest = 'mock', default=True, action='store_true', help = 'set flag if running pipeline on mocks.')
@@ -145,17 +146,28 @@ log.info('NodeID = {0:d}'.format(NodeID))
 log.info('StartProc = {0:d}'.format(args.mockmin))
 log.info('EndProc = {0:d}'.format(args.mockmax))
 
-
-for i in range(args.mockmin, args.mockmax):
-    log.info('Process i = {0}'.format(i))
-    files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
+if len(args.mocklist) > 0:
+    int_list = list(map(int, str_list.split(',')))
+    for i in int_list:
+        log.info('Process i = {0}'.format(i))
+        files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
+        if len(files):
+            pass
+        else:
+            log.info('no files in dir number {0}, not processing that directory.'.format(i))
+            continue
+        inds.append(i)
+else:
+    for i in range(args.mockmin, args.mockmax):
+        log.info('Process i = {0}'.format(i))
+        files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
     #files = glob.glob(args.altMTLBaseDir + "Univ{0:03d}/*".format(i))
-    if len(files):
-        pass
-    else:
-        log.info('no files in dir number {0}, not processing that directory.'.format(i))
-        continue
-    inds.append(i)
+        if len(files):
+            pass
+        else:
+            log.info('no files in dir number {0}, not processing that directory.'.format(i))
+            continue
+        inds.append(i)
 
 ###assert(len(inds))
 ##p = Pool(1)

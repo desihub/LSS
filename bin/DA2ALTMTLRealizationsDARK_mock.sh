@@ -86,9 +86,18 @@ seed=14126579
 #Number of realizations to generate. Ideally a multiple of 64 for bitweights
 #However, you can choose smaller numbers for debugging
 #Mock realization
-mockinit=3
+mockinit=10
 mockend=11
+
 let ndir=$mockend-$mockinit 
+
+mocklist="10,15,18"
+size=$(echo "$mocklist" | tr ',' ' ' | wc -w)
+
+if [ "$size" -ne 0 ]; then
+    ndir=$size
+fi
+
 
 
 #Uncomment second option if you want to clobber already existing files for Alt MTL generation
@@ -293,7 +302,7 @@ fi
 printf -v OFDL "%s/dateLoop%sAltMTLOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
 
 runtimeInit=$( echo "$endInit - $start" | bc -l )
-argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend"
+argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist"
 echo 'argstring for dateloop'
 echo $argstring
 nohup bash $path2LSS/dateLoopAltMTLBugFix_mock_batch.sh $NObsDates $NNodes $path2LSS $CVal $QVal $qR $argstring  >& $OFDL
