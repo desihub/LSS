@@ -1091,11 +1091,11 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
     printlog('length of input '+str(len(ff)),logger)
     seld = ff['GOODHARDLOC'] == 1
     printlog('length after cutting to good locations '+str(len(ff[seld])),logger)
-    if '.dat' in fin:
+    if '.dat' in fout:
         #seld &= ff['PRIORITY_INIT'] <= maxp
         seld &= ff['PRIORITY_ASSIGNED'] <= maxp
-        printlog('length after cutting locations with priority_init > '+str(maxp)+': '+str(len(ff[seld])),logger)
-    if '.ran' in fin:
+        printlog('length after cutting locations with priority_assigned > '+str(maxp)+': '+str(len(ff[seld])),logger)
+    if '.ran' in fout:
         #seld &= ff['ZPOSSLOC'] == 1
         #print('length after cutting locations where target type could not be observed: '+str(len(ff[seld])))
         #selp9 = ff['PRIORITY'] == 999999
