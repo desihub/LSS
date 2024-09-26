@@ -976,7 +976,9 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
             df = Table(df)
             df.remove_columns([tracer_mask+'_mask'])
             print('will replace '+tracer_mask)
-        else:
+        elif return_array:
+            return df
+        else:    
             return True
     else:
         printlog('adding '+tracer_mask,logger)
