@@ -196,7 +196,7 @@ if args.add_gtl == 'y':
 #    print('*** DONE WITH ADD_GTL ***')
 
 
-lssdir = os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum)
+lssdir = os.path.join(maindir,args.specdata, 'mock'+str(mocknum))#.format(MOCKNUM=mocknum)
 test_dir(lssdir)
 #if not os.path.exists(lssdir):
 #    os.mkdir(lssdir)
