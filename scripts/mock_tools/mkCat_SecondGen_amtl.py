@@ -619,8 +619,10 @@ if args.apply_veto_ran == 'y':
             #    common.printlog('not adding lrg mask column again for '+str(rann),logger)
             #else:
             common.printlog('adding lrg mask column for '+str(rann),logger)
-            common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann,logger=logger)
-        ranf = common.apply_veto(fin, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,logger=logger)
+            ranf = common.add_veto_col(fin, ran = True, tracer_mask = args.tracer[:3].lower(), rann = rann,logger=logger,return_array=True)
+        else:
+            ranf = Table(fitsio.read(fin.replace('global','dvs_ro')))
+        ranf = common.apply_veto(ranf, ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,logger=logger)
         ranf = common.apply_map_veto_arrays(ranf,mapn,maps,mapcuts,logger=logger)
         common.write_LSS_scratchcp(ranf,fout,logger=logger)
         common.printlog('finish applying vetos to random '+str(rann),logger)

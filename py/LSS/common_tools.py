@@ -964,7 +964,7 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
     printlog('wrote to '+fn,logger)
     return
 
-def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False,logger=None):
+def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False,logger=None,return_array=False):
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
@@ -995,6 +995,8 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     #df = join(df,maskf,keys=['TARGETID'])
     #print(len(df),'should match above')
     #comments = ['Adding imaging mask column']
+    if return_array:
+        return df
     write_LSS_scratchcp(df,fn,logger=logger)#,comments)
     del df
 
@@ -1079,7 +1081,11 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
     zmask is whether or not to apply any zmask
     maxp is the maximum priority to keep in the data files
     '''
-    ff = Table(fitsio.read(fin.replace('global','dvs_ro')))#+'full_noveto.'+dr+'.fits')
+    if isinstance(fin, str):
+        ff = Table(fitsio.read(fin.replace('global','dvs_ro')))#+'full_noveto.'+dr+'.fits')
+    else:
+        ff = fin
+        del fin
     printlog('length of input '+str(len(ff)),logger)
     seld = ff['GOODHARDLOC'] == 1
     printlog('length after cutting to good locations '+str(len(ff[seld])),logger)
