@@ -169,6 +169,7 @@ class main:
         if specver == 'kibo-v1':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+specver+'/emlin_catalog.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/kibo/QSO_cat_kibo_cumulative_v1.fits'
+            self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/unique_badfibers.txt')
             self.badfib_status  = [13,14]
 
 
