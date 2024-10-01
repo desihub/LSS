@@ -175,11 +175,13 @@ if args.survey == 'SV3' and args.tracers == 'all':
         tps = ['QSO','LRG','ELG']
 for tp in tps:
     tpr = tp
+    prog = 'dark'
     if tp == 'BGS_BRIGHT-21.5':
         tpr = 'BGS_BRIGHT'
+        prog = 'bright'
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
-        rffh = fitsio.read_header(indir+tpr+zdw+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
+        rffh = fitsio.read_header(indir+prog+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
         print(tpr+' full no veto number density '+str(dtfh['NAXIS2']/rffh['NAXIS2']*2500)+' per deg2, using random '+str(nr))
 
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full.dat.fits',ext=1)
