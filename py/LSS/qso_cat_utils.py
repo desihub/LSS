@@ -410,10 +410,10 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # selection for WISE_VAR_QSO targets (secondary target) --> same as QSO
-    is_ok_for_VAR_WISE_QSO = (QSO_cat['SPECTYPE'] == 'QSO') | QSO_cat['IS_QSO_MGII'] | QSO_cat['IS_QSO_QN_099']
-    QSO_cat.loc[is_VAR_WISE_QSO & is_ok_for_VAR_WISE_QSO, 'QSO_MASKBITS'] += 2**7
-    QSO_cat.loc[is_VAR_WISE_QSO & is_ok_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_VAR_WISE_QSO & is_ok_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
-    QSO_cat.loc[is_VAR_WISE_QSO & is_ok_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_VAR_WISE_QSO & is_ok_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+    is_OK_for_VAR_WISE_QSO = (QSO_cat['SPECTYPE'] == 'QSO') | QSO_cat['IS_QSO_MGII'] | QSO_cat['IS_QSO_QN_099']
+    QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO, 'QSO_MASKBITS'] += 2**7
+    QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+    QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # Add quality cuts: cut on zwarn, objtype and cut on fiberstatus
     bad_qso = QSO_cat['OBJTYPE'] != 'TGT'  # creating the excess (due to sky fiber) around z~3.7 and lower redshit.
