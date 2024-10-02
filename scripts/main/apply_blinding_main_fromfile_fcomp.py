@@ -107,7 +107,7 @@ parser.add_argument("--baoblind", help="if y, do the bao blinding shift", defaul
 parser.add_argument("--compmd", help="whether the extra completeness gets added to data or random", choices=['dat','ran'],default='ran')
 
 parser.add_argument("--mkclusdat", help="if y, make the clustering data files after the BAO blinding (needed for RSD blinding)", default='n')
-parser.add_argument("--wsyscol", help="column name to use for WEIGHT_SYS", default='WEIGHT_SN')
+parser.add_argument("--wsyscol", help="column name to use for WEIGHT_SYS", default=None)
 parser.add_argument("--mkclusran", help="if y, make the clustering random files after the BAO blinding (needed for RSD blinding)", default='n')
 parser.add_argument("--splitGC", help="if y, split the clustering data and random by Galactic cap", default='y')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)# use 1 for abacus mocks
