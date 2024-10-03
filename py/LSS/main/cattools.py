@@ -2948,7 +2948,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz='RSDZ',mask_coll=False,logger=None):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -2988,6 +2988,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         pd = 'dark'
         tscol = 'TSNR2_ELG'
         collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
+
+    
+    if mockz and mask_coll:
+        collf = mask_coll
 
     dz = Table(fitsio.read(zf))
     wtype = ((dz[desitarg] & bit) > 0)
@@ -3036,6 +3040,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
+
+    if mockz:
+        assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup.fits').format(PROG=prog)
+        fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
+        fs = Table(fs)
+        fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+
     #print(len(gtl))
     fs.keep_columns(['TILELOCID','PRIORITY'])
     ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
@@ -3236,8 +3247,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     
     #needs to change because mocks actually need real spec info as well
-    if specver == 'mock':
+    if mockz: #specver == 'mock':
         dz[mockz].name = 'Z' 
+
+    #if specver == 'mock':
+    #    dz[mockz].name = 'Z' 
         
     if tp == 'QSO' and azf != '':
         common.printlog('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)),logger)
@@ -3344,7 +3358,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     common.printlog('number of unique tileid: '+str(np.unique(dz['NTILE'])),logger)
     
     #needs to change, because specver should still point to real data
-    if specver == 'mock':
+    if mockz:
         dz['PHOTSYS'] = 'N'
         sel = dz['DEC'] < 32.375
         wra = (dz['RA'] > 100-dz['DEC'])
