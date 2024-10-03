@@ -2352,7 +2352,8 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
     zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     logger.info('about to load '+zf)
     dz = Table.read(zf)
-    logger.info(dz.dtype.names)
+    logger.info('loaded '+zf+ ' with columns '+str(dz.dtype.names))
+    #logger.info(dz.dtype.names)
 
 
     
