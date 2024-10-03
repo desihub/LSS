@@ -289,7 +289,7 @@ tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/res
 tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
 mktar = True
-if os.path.isfile(tarf) and redotar == False or type == 'BGS_BRIGHT-21.5':
+if os.path.isfile(tarf) and redotar == False or len(type.split('-'))>1:
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
@@ -600,7 +600,7 @@ if 'BGS_BRIGHT' in type and len(type.split('-')) > 0:
     common.printlog('using ab mag cut '+str(abmagcut))
     ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False or args.redoBGS215 == 'y':
-        logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
+        logf.write('making BGS_BRIGHT'+str(abmagcut)+' full data catalog for '+str(datetime.now()))
         fin = fitsio.read(dirout+'BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
         if args.absmagmd == 'phot':
             sel = fin['ABSMAG_RP1'] < abmagcut
