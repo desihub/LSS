@@ -597,7 +597,7 @@ if args.add_ke == 'y':
 if 'BGS_BRIGHT' in type and len(type.split('-')) > 0:
 #type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
     abmagcut = -float(type.split('-')[1])
-    common.printlog('using ab mag cut '+str(abmagcut))
+    common.printlog('using ab mag cut '+str(abmagcut),logger)
     ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False or args.redoBGS215 == 'y':
         logf.write('making BGS_BRIGHT'+str(abmagcut)+' full data catalog for '+str(datetime.now()))
