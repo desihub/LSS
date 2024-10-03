@@ -412,7 +412,7 @@ if args.fulld == 'y':
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
-    ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
+    ct.mkfulldat_mock(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = fcoll,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
     print('*** END WITH FULLD ***')
     gc.collect()
 
@@ -487,7 +487,7 @@ if args.fullr == 'y':
     specf = specf[sel]
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut, tsnr_col=mainp.tsnrcol)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut, tsnr_col=mainp.tsnrcol,fibstatusbits=mainp.badfib_status)
     gtl = np.unique(specfc['TILELOCID'])
     del specfc
 
@@ -513,7 +513,7 @@ if args.fullr == 'y':
         #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
         outf = dirout+'/'+pdir+'_'+str(rann)+'_full_noveto.ran.fits'
         logger.info('about to make full ran '+outf)
-        ct.mkfullran_prog(gtl,os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
+        ct.mkfullran_prog(gtl,os.path.join(maindir,args.specdata, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
 
         gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
