@@ -594,15 +594,18 @@ if args.add_ke == 'y':
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
 
-if type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
+if 'BGS_BRIGHT' in type and len(type.split('-')) > 0:
+#type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
+    abmagcut = -float(type.split('-')[1])
+    common.printlog('using ab mag cut '+str(abmagcut))
     ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False or args.redoBGS215 == 'y':
         logf.write('making BGS_BRIGHT-21.5 full data catalog for '+str(datetime.now()))
         fin = fitsio.read(dirout+'BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
         if args.absmagmd == 'phot':
-            sel = fin['ABSMAG_RP1'] < -21.5
+            sel = fin['ABSMAG_RP1'] < abmagcut
         if args.absmagmd == 'spec':
-            sel = (fin['ABSMAG01_SDSS_R'] +0.97*fin['Z_not4clus']-.095) < -21.5
+            sel = (fin['ABSMAG01_SDSS_R'] +0.97*fin['Z_not4clus']-.095) <abmagcut
             #sys.exit('need to code up using fastspecfit for abs mag selection!')
         if args.absmagmd == 'nok':
             #don't use any k-correction at all, yields ~constant density
@@ -617,7 +620,10 @@ if type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
             cfluxr = fin['FLUX_R']/fin['MW_TRANSMISSION_R']
             r_dered = 22.5 - 2.5*np.log10(cfluxr)
             abr = r_dered -dm
-            sel = abr < -21.6 +0.15*z2use
+            if abmagcut == -21.5:
+                sel = abr < -21.6 +0.15*z2use
+            else:
+                sel = abr < abmagcut
             sel &= z2use < 2
         common.write_LSS(fin[sel],ffull)
 
@@ -735,7 +741,7 @@ zl = (zmin,zmax)
 
 
 tpstr = tracer_clus
-if tracer_clus == 'BGS_BRIGHT-21.5':
+if 'BGS_BRIGHT' in tracer_clus:
     tpstr = 'BGS_BRIGHT'
 nside = 256
 
@@ -1181,7 +1187,7 @@ if mkclusran:
 #         dchi2 = 40
 #         tsnrcut = 1000
     ranin = dirin + args.type + notqso + '_'
-    if args.type == 'BGS_BRIGHT-21.5':
+    if 'BGS_BRIGHT' in args.type:
         ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
 
     clus_arrays = [fitsio.read(dirout +args.extra_clus_dir+ type + notqso+'_clustering.dat.fits')]
