@@ -382,7 +382,7 @@ if root:
         #    tsnrcol = 'TSNR2_BGS'
         #for rannum in range(args.minr, args.maxr):
         ranin = dirin + args.type + notqso + '_'
-        if if 'BGS_BRIGHT' in type:
+        if 'BGS_BRIGHT' in type:
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
         clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
         #for reg in ['N','S']:
