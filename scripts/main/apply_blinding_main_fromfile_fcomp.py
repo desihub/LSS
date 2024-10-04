@@ -272,7 +272,7 @@ if root:
 
     fb_in = dirin + type + notqso
     fbr_in = fb_in
-    if type == 'BGS_BRIGHT-21.5':
+    if 'BGS_BRIGHT' in type:
         fbr_in = dirin +'BGS_BRIGHT'
     fcr_in = fbr_in + '_1_full'+args.use_map_veto+'.ran.fits'
     fcd_in = fb_in + '_full'+args.use_map_veto+'.dat.fits'
@@ -382,7 +382,7 @@ if root:
         #    tsnrcol = 'TSNR2_BGS'
         #for rannum in range(args.minr, args.maxr):
         ranin = dirin + args.type + notqso + '_'
-        if args.type == 'BGS_BRIGHT-21.5':
+        if if 'BGS_BRIGHT' in type:
             ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
         clus_arrays = [fitsio.read(dirout + type + notqso+'_clustering.dat.fits')]
         #for reg in ['N','S']:
