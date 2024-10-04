@@ -547,8 +547,10 @@ tracer_clus = args.tracer + notqso
 nside = 256
 if survey == 'Y1' and args.specdata == 'iron':
     vermap = 'v0.6'
-elif survey == 'DA2' and args.specdata == 'jura-v1':
+elif survey == 'DA2' and args.specdata == 'jura-v1': 
     vermap = 'v0.1'
+elif survey == 'DA2' and args.specdata == 'kibo-v1':   
+    vermap = 'v1'  
 else:
     raise Exception('survey and specdata not compatible')
 
