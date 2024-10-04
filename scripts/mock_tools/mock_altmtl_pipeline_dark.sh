@@ -12,7 +12,7 @@ specrel=kibo-v1
 #--par added to all steps to make sure parallel processing is used
 
 #combine information from the assignment files (--combd y) and real data spec files (--joindspec y)
-srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl$mocknum --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata $specrel --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --outmd notscratch
+#srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl$mocknum --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata $specrel --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --outmd notscratch
 
 #get the dark_*full_noveto.ran.fits files
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl$mocknum --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata $specrel --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --fullr y --par y --outmd notscratch
