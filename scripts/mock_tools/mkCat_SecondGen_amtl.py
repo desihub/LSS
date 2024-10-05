@@ -428,22 +428,30 @@ subfrac = 1
 if tracer == 'QSO':
     zmin = 0.8
     zmax = 2.1
-    subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
-
+    if args.survey == 'Y1':
+        subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
+    if args.survey == 'DA2':
+        subfrac = 0.675
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
 #        maxp = 3200
     P0 = 10000
     dz_step = 0.01
     zmin = 0.4
     zmax = 1.1
-    subfrac = 0.976
+    if args.survey == 'Y1':
+        subfrac = 0.976
+    if args.survey == 'DA2':
+        subfrac = 0.966
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
 #        maxp = 3000
     zmin = 0.8
     zmax = 1.6
-    subfrac = [0.69,0.54]#0.676
+    if args.survey == 'Y1':
+        subfrac = [0.69,0.54]#0.676
+    if args.survey == 'DA2':
+        subfrac = [0.7,0.545]
     zsplit=1.5
 if args.tracer[:3] == 'BGS':
     P0 = 7000
