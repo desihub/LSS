@@ -1352,7 +1352,7 @@ if args.imsys_clus == 'y':
             else:
                 fitmapsbin = fit_maps
             use_maps = fitmapsbin
-            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus',wt_orig=args.imsys_colname)
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
     common.write_LSS(dat,foutname)
