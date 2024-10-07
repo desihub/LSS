@@ -296,7 +296,7 @@ for tp in tps:
     
             for ii in range(0,len(dpix)):
                 pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT']/dt_reg[ii]['WEIGHT_SYS']
-                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT']
+                pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT']*dt_reg[ii][weight_col]/dt_reg[ii]['WEIGHT_SYS']
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
                 pixlr[rpix[ii]] += rt_reg[ii]['WEIGHT_FKP']*rt_reg[ii]['WEIGHT']
