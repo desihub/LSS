@@ -107,6 +107,8 @@ parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systemat
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
 parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
+parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
+
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
