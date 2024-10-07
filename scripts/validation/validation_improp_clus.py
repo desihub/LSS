@@ -221,7 +221,7 @@ for tp in tps:
     fcd_sgc = indir+args.extra_dir+tp+zdw+'_SGC_clustering.dat.fits'
     dn = fitsio.read(fcd_ngc)
     ds = fitsio.read(fcd_sgc)
-    dtot = np.concatenate([dn,ds])
+    dt = np.concatenate([dn,ds])
     del dn
     del ds
     
@@ -237,7 +237,7 @@ for tp in tps:
         del rn
         del rs
 
-    rtot = np.concatenate(ranl)
+    rt = np.concatenate(ranl)
 
 
     zcol = 'Z'
@@ -259,6 +259,9 @@ for tp in tps:
         zmax = zb[1]
         selz = dt[zcol] > zmin
         selz &= dt[zcol] < zmax
+        selzr = rt[zcol] > zmin
+        selzr &= rt[zcol] < zmax
+
         zr = str(zmin)+'<z<'+str(zmax)       
 
         for reg,cl in zip(regl,clrs):
@@ -267,7 +270,7 @@ for tp in tps:
             sel_reg_d = dt['PHOTSYS'] == reg
             sel_reg_r = rt['PHOTSYS'] == reg
             dt_reg = dt[sel_reg_d&selz]
-            rt_reg = rt[sel_reg_r&selz]
+            rt_reg = rt[sel_reg_r&selzr]
             
             #reset for every loop through the maps        
             nside,nest = 256,True
