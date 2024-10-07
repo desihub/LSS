@@ -232,7 +232,7 @@ for tp in tps:
         fcr_sgc = indir+args.extra_dir+tp+zdw+'_SGC_'+str(ii)+'_clustering.ran.fits'
         rn = fitsio.read(fcr_ngc)
         ranl.append(rn)
-        rs = fitsio.read(fcrs_sgc)
+        rs = fitsio.read(fcr_sgc)
         ranl.append(rs)
         del rn
         del rs
