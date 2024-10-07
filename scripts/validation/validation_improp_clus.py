@@ -106,7 +106,7 @@ for i in range(0,len(f)):
 
 
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
-
+do_lrgmask = 'n'
 if args.mapmd == 'all':
     maps = all_maps
     dmaps = all_dmaps
