@@ -295,7 +295,7 @@ for tp in tps:
             pixlgw = np.zeros(nside*nside*12)
     
             for ii in range(0,len(dpix)):
-                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT']/dt_reg[ii][args.weight_col]
+                pixlg[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT']/dt_reg[ii]['WEIGHT_SYS']
                 pixlgw[dpix[ii]] += dt_reg[ii]['WEIGHT_FKP']*dt_reg[ii]['WEIGHT']
             pixlr = np.zeros(nside*nside*12)
             for ii in range(0,len(rpix)):
