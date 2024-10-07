@@ -26,7 +26,7 @@ parser.add_argument("--verspec",help="version for redshifts",default='kibo-v1')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
-parser.add_argument("--nran",help="number of random files to use",default=1)
+parser.add_argument("--nran",help="number of random files to use",default=1,type=int)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
 args = parser.parse_args()
 
