@@ -333,12 +333,18 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     return data_syst, rand_syst
 
 
-def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
+def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png',wt_orig=''):
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
     sel &= dd['PHOTSYS'] == reg
  
     dds = dd[sel]
+    if wtmd == 'clus':
+        selr = rd[zcol] > zmin
+        selr &= rd[zcol] < zmax
+        selr &= rd['PHOTSYS'] == reg
+        rd = rd[selr]
+
     #-- Dictionaries containing all different systematic values
     data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
     #print(data_syst.keys)
@@ -357,10 +363,16 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
         wts = dds['WEIGHT']*dds['WEIGHT_FKP']
         weights_ran = rd['WEIGHT']*rd['WEIGHT_FKP']
 
+    if wtmd == 'clus':
+        wts = dds['WEIGHT']*dds['WEIGHT_FKP']
+        weights_ran = rd['WEIGHT']*rd['WEIGHT_FKP']
+        if wt_orig != '':
+            wts /= dds[wt_orig]
+            weights_ran /= rd[wt_orig]
     if wtmd == 'wt_comp':
         wts = dds['WEIGHT_COMP']
 
-    if 'WEIGHT_ZFAIL' in cols:
+    if 'WEIGHT_ZFAIL' in cols and wtmd != 'clus':
         wts *= dds['WEIGHT_ZFAIL']
 
     data_we = wts
