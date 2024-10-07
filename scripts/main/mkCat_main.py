@@ -1308,7 +1308,7 @@ if args.imsys_clus == 'y':
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname))
     dat = np.concatenate([dat_sgc,dat_ngc])
-    
+    foutname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_clustering.dat.fits')
     ranl = []
     for i in range(0,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_'+str(i)+'_clustering.ran.fits')) 
@@ -1355,7 +1355,7 @@ if args.imsys_clus == 'y':
             wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus',wt_orig=args.imsys_colname)
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
-    common.write_LSS(dat,fname)
+    common.write_LSS(dat,foutname)
 
     
 
