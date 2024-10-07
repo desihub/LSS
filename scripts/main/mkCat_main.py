@@ -1308,7 +1308,7 @@ if args.imsys_clus == 'y':
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname))
     dat = np.concatenate([dat_sgc,dat_ngc])
-    dat = dat[selgood&selobs]
+    
     ranl = []
     for i in range(0,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_NGC_'+str(i)+'_clustering.ran.fits')) 
