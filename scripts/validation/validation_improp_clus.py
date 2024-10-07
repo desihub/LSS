@@ -216,13 +216,17 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-    fcd_ngc = indir+args.extra_dir+tp+zdw+'_NGC_clustering.dat.fits'
-    fcd_sgc = indir+args.extra_dir+tp+zdw+'_SGC_clustering.dat.fits'
-    dn = fitsio.read(fcd_ngc)
-    ds = fitsio.read(fcd_sgc)
-    dt = np.concatenate([dn,ds])
-    del dn
-    del ds
+    if 'CLUS' in args.weight_col:
+        fn = indir+args.extra_dir+tp+zdw+'_clustering.dat.fits'
+        dt = fitsio.read(fn)
+    else:
+        fcd_ngc = indir+args.extra_dir+tp+zdw+'_NGC_clustering.dat.fits'
+        fcd_sgc = indir+args.extra_dir+tp+zdw+'_SGC_clustering.dat.fits'
+        dn = fitsio.read(fcd_ngc)
+        ds = fitsio.read(fcd_sgc)
+        dt = np.concatenate([dn,ds])
+        del dn
+        del ds
     
     ranl = []
     for ii in range(0,args.nran):
