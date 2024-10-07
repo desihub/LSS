@@ -228,8 +228,8 @@ for tp in tps:
     ranl = []
     for ii in range(0,args.nran):
     
-        fcr_ngc = indir+args.extra_dir+tp+zdw+'_'+str(ii)+'_NGC_clustering.ran.fits'
-        fcr_sgc = indir+args.extra_dir+tp+zdw+'_'+str(ii)+'_SGC_clustering.ran.fits'
+        fcr_ngc = indir+args.extra_dir+tp+zdw+'_NGC_'+str(ii)+'_clustering.ran.fits'
+        fcr_sgc = indir+args.extra_dir+tp+zdw+'_SGC_'+str(ii)+'_clustering.ran.fits'
         rn = fitsio.read(fcr_ngc)
         ranl.append(rn)
         rs = fitsio.read(fcrs_sgc)
