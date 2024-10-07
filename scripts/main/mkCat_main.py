@@ -763,7 +763,7 @@ if type[:3] == 'LRG':
         zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
     else:
         zrl = [(0.4,1.1)]  
-if type == 'BGS_BRIGHT-21.5':
+if 'BGS_BRIGHT-' in type:
     zrl = [(0.1,0.4)]
 elif type[:3] == 'BGS':
     zrl = [(0.01,0.5)]
