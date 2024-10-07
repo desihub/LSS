@@ -241,6 +241,9 @@ for tp in tps:
 
 
     zcol = 'Z'
+    tpr = tp
+    if 'BGS_BRIGHT' in tp:
+        tpr = 'BGS_BRIGHT'
     
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
