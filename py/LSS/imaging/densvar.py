@@ -333,7 +333,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     return data_syst, rand_syst
 
 
-def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png',wt_orig=''):
+def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
     sel &= dd['PHOTSYS'] == reg
@@ -364,11 +364,8 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
         weights_ran = rd['WEIGHT']*rd['WEIGHT_FKP']
 
     if wtmd == 'clus':
-        wts = dds['WEIGHT']*dds['WEIGHT_FKP']
-        weights_ran = rd['WEIGHT']*rd['WEIGHT_FKP']
-        if wt_orig != '':
-            wts /= dds[wt_orig]
-            weights_ran /= rd[wt_orig]
+        wts = dds['WEIGHT']*dds['WEIGHT_FKP']/dds['WEIGHT_SYS']
+        weights_ran = rd['WEIGHT']*rd['WEIGHT_FKP']/rd['WEIGHT_SYS']
     if wtmd == 'wt_comp':
         wts = dds['WEIGHT_COMP']
 
