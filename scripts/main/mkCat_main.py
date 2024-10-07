@@ -770,7 +770,7 @@ elif type[:3] == 'BGS':
 
 
 
-if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y':
+if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.imsys_clus == 'y':
     
     debv = common.get_debv()
     #ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
@@ -1295,6 +1295,66 @@ if args.addNtileweight2full == 'y':
     if args.survey == 'DA2':
         nproc = 9
     common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type,nproc=nproc)
+
+if args.imsys_clus == 'y':
+    from LSS.imaging import densvar
+    
+       
+    #rcols.append('WEIGHT_SYSEB')   
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
+    dat_ngc = Table(fitsio.read(fname))
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
+    dat_sgc = Table(fitsio.read(fname))
+    dat = np.concatenate([dat_sgc,dat_ngc])
+    dat = dat[selgood&selobs]
+    ranl = []
+    for i in range(0,args.nran4imsys):#int(args.maxr)):
+        ran = fitsio.read(os.path.join(dirout, tpstr+'_NGC_'+str(i)+'_clustering.ran.fits')) 
+        ranl.append(ran)
+        ran = fitsio.read(os.path.join(dirout, tpstr+'_SGC_'+str(i)+'_clustering.ran.fits')) 
+        ranl.append(ran)
+
+    rands = np.concatenate(ranl)
+    syscol = 'WEIGHT_IMLIN_CLUS'
+    regl = ['S','N']
+    dat[syscol] = np.ones(len(dat))
+    for reg in regl:
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        #seld = dat['PHOTSYS'] == reg
+        selr = rands['PHOTSYS'] == reg
+
+        for zr in zrl:
+            zmin = zr[0]
+            zmax = zr[1]
+            
+            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            if type == 'LRG':
+                if reg == 'N':
+                    fitmapsbin = fit_maps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fit_maps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fit_maps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fit_maps81s
+            else:
+                fitmapsbin = fit_maps
+            use_maps = fitmapsbin
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus',wt_orig=args.imsys_colname)
+            sel = wsysl != 1
+            dat[syscol][sel] = wsysl[sel]
+    common.write_LSS(dat,fname)
+
     
 
 #if args.nz == 'y':
