@@ -248,8 +248,12 @@ for tp in tps:
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
+    yl = (0.8,1.1)    
+        
+
     if tp[:3] == 'ELG':
         zbins = [(0.8,1.1),(1.1,1.6)]
+        yl = (0.7,1.1)
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
     if tp[:3] == 'BGS':
