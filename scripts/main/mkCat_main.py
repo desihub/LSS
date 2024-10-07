@@ -1313,7 +1313,7 @@ if args.imsys_clus == 'y':
     for i in range(0,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tracer_clus+'_'+str(i)+'_NGC_clustering.ran.fits')) 
         ranl.append(ran)
-        ran = fitsio.read(os.path.join(dirout, tracer_clus+'_'+str(i)'_SGC_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_clus+'_'+str(i)+'_SGC_clustering.ran.fits')) 
         ranl.append(ran)
 
     rands = np.concatenate(ranl)
