@@ -83,20 +83,6 @@ all_maps = ['CALIB_G',
  
 all_dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
 
-lrg_mask_frac = np.zeros(256*256*12)
-ranmap = np.zeros(256*256*12)
-ranmap_lmask = np.zeros(256*256*12)
-randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-ran = fitsio.read(randir+'randoms-1-0.fits',columns=['RA','DEC'])
-ran_lrgmask = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0lrgimask.fits')
-th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
-ranpix = hp.ang2pix(256,th,phi,nest=True)
-for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
-    ranmap[pix] += 1
-    if mvalue > 1:
-        ranmap_lmask[pix] += 1
-sel = ranmap > 0
-lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
 sky_g = np.zeros(256*256*12)
 sky_r = np.zeros(256*256*12)
@@ -132,6 +118,23 @@ if args.mapmd == 'all':
     do_lrgmask = 'y'
     do_ebvnocib_diff = 'y'
     
+
+if do_lrgmask == 'y':
+    lrg_mask_frac = np.zeros(256*256*12)
+    ranmap = np.zeros(256*256*12)
+    ranmap_lmask = np.zeros(256*256*12)
+    randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+    ran = fitsio.read(randir+'randoms-1-0.fits',columns=['RA','DEC'])
+    ran_lrgmask = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0lrgimask.fits')
+    th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
+    ranpix = hp.ang2pix(256,th,phi,nest=True)
+    for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
+        ranmap[pix] += 1
+        if mvalue > 1:
+            ranmap_lmask[pix] += 1
+    sel = ranmap > 0
+    lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
+
 
 if args.test == 'y':
     maps = [maps[0]] 
@@ -217,7 +220,7 @@ for tp in tps:
     fcd_ngc = indir+args.extra_dir+tp+zdw+'_NGC_clustering.dat.fits'
     fcd_sgc = indir+args.extra_dir+tp+zdw+'_SGC_clustering.dat.fits'
     dn = fitsio.read(fcd_ngc)
-    ds = fitsio.read(fcs_sgc)
+    ds = fitsio.read(fcd_sgc)
     dtot = np.concatenate([dn,ds])
     del dn
     del ds
