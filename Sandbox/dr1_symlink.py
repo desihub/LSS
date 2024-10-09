@@ -46,7 +46,7 @@ for rann in ranl:
     for prog in progl:
         fname = 'LSS/random'+str(rann)+'/pota-'+prog+'.fits'
         os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-        fname = 'LSS/random'+str(rann)+'/'+args.specrel+'/rancomb_'+str(rann)+prog.lower()+'wdupspec_zdone.fits'
+        fname = 'LSS/'+args.specrel+'/rancomb_'+str(rann)+prog.lower()+'wdupspec_zdone.fits'
         os.system('ln -s '+indir+fname+' ' +pubdir+fname)
 
 fname = 'LSS/'+args.specrel+'/unique_badfibers.txt'
