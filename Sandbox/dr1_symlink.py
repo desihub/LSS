@@ -15,7 +15,7 @@ if args.outroot is None:
     args.outroot = os.getenv('SCRATCH')
 
 indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'
-pubdir = args.outroot+'desi/survey/catalogs/'+args.pubrelease+'/'
+pubdir = args.outroot+'/desi/survey/catalogs/'+args.pubrelease+'/'
 
 print('root directory is '+pubdir)
 versions = ['v1.2','v1.5','v1.5pip']
