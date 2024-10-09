@@ -24,6 +24,10 @@ for ver in versions:
     if not os.path.exists(verdir):
         os.makedirs(verdir)
 
+amtldir = pubdir+'/LSS/altmtl
+if not os.path.exists(amtldir):
+    os.makedirs(amtldir)
+
 fnames = ['LSS/collisions-BRIGHT.fits','LSS/collisions-DARK.fits','tiles-BRIGHT.fits','tiles-DARK.fits']
 for fname in fnames:
     os.system('ln -s '+indir+fname+' ' +pubdir+fname)
@@ -35,6 +39,10 @@ progl = ['DARK','BRIGHT']
 ranl = np.arange(0,18)
 
 for rann in ranl:
+    randir = pubdir+'/LSS/random'+str(rann)
+    if not os.path.exists(randir):
+        os.makedirs(randir)
+    
     for prog in progl:
         fname = 'LSS/random'+str(rann)+'/pota-'+prog+'.fits'
         os.system('ln -s '+indir+fname+' ' +pubdir+fname)
@@ -59,7 +67,7 @@ fname = 'LSS/'+args.specrel+'/emlin_catalog.fits'
 os.system('ln -s '+indir+fname+' ' +pubdir+fname)
 
 
-for ver in version:
+for ver in versions:
 	fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*.fits')
 	for fname in fnames:
 		os.system('ln -s '+fname +' ' +pubdir+fname.replace(indir,''))
