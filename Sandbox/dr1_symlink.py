@@ -24,7 +24,7 @@ for ver in versions:
     if not os.path.exists(verdir):
         os.makedirs(verdir)
 
-amtldir = pubdir+'/LSS/altmtl
+amtldir = pubdir+'/LSS/altmtl'
 if not os.path.exists(amtldir):
     os.makedirs(amtldir)
 
