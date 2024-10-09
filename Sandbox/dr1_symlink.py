@@ -58,10 +58,10 @@ os.sys('ln -s '+indir+fname+' ' +pubdir+fname)
 
 
 for ver in version:
-	fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*.fits)
+	fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*.fits')
 	for fname in fnames:
 		os.sys('ln -s '+fname +' ' +pubdir+fname.replace(indir,''))
-	fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*nz.txt)
+	fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*nz.txt')
 	for fname in fnames:
 		os.sys('ln -s '+fname +' ' +pubdir+fname.replace(indir,''))
 	dirname = '/LSS/'+args.specrel+'/LSScats/'+ver+'/hpmaps'
