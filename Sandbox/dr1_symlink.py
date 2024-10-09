@@ -20,7 +20,9 @@ pubdir = args.outroot+'/desi/survey/catalogs/'+args.pubrelease+'/'
 print('root directory is '+pubdir)
 versions = ['v1.2','v1.5','v1.5pip']
 for ver in versions:
-    os.makedirs(pubdir+'/LSS/'+args.specrel+'/LSScats/'+ver)
+    verdir = pubdir+'/LSS/'+args.specrel+'/LSScats/'+ver
+    if not os.path.exists(verdir):
+        os.makedirs(verdir)
 
 fnames = ['LSS/collisions-BRIGHT.fits','LSS/collisions-DARK.fits','tiles-BRIGHT.fits','tiles-DARK.fits']
 for fname in fnames:
