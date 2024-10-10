@@ -4098,15 +4098,16 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
     in_fname = flin+str(rann)+'_full'+use_map_veto+'.ran.fits'
     
     ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS']#,tsnrcol]
-    if add_tlobs == 'n':
-        try:
-            fitsio.read(in_fname.replace('global','dvs_ro'),columns=['FRAC_TLOBS_TILES'],rows=1)
-            ran_cols.append('FRAC_TLOBS_TILES')
-        except:
-            common.printlog('failed to find FRAC_TLOBS_TILES, will need to add it',logger)
-            add_tlobs = 'y'
-            ran_cols.append('TILES')    
-    else:
+    #if add_tlobs == 'n':
+    #    try:
+    #        with fitsio.read(in_fname,columns=['FRAC_TLOBS_TILES'],rows=1) as test_f:
+    #            ran_cols.append('FRAC_TLOBS_TILES')
+    #    except:
+    #        common.printlog('failed to find FRAC_TLOBS_TILES, will need to add it',logger)
+    #        add_tlobs = 'y'
+    #        ran_cols.append('TILES')    
+    #else:
+    if add_tlobs == 'y':
         ran_cols.append('TILES')
     ffc = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
     common.printlog('loaded '+in_fname,logger)
