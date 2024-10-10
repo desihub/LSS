@@ -147,7 +147,7 @@ log.info('StartProc = {0:d}'.format(args.mockmin))
 log.info('EndProc = {0:d}'.format(args.mockmax))
 
 if len(args.mocklist) > 0:
-    int_list = list(map(int, str_list.split(',')))
+    int_list = list(map(int, args.mocklist.split(',')))
     for i in int_list:
         log.info('Process i = {0}'.format(i))
         files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
