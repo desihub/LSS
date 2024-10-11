@@ -4109,7 +4109,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
     #else:
     if add_tlobs == 'y':
         ran_cols.append('TILES')
-    ffc = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
+    #ffc = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
+    ffc = Table(fitsio.read(in_fname,columns=ran_cols))
     common.printlog('loaded '+in_fname,logger)
     #wz = ffr[tsnrcol] > tsnrcut
     #ffc = ffr#[wz]
