@@ -4080,7 +4080,7 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     tlarray = np.array(tlarray)
     sel = tlarray == 0
     common.printlog('number of tiles not found in the data '+str(nnf),logger)
-    common.printlog(str(len(tlarray[sel]))+' number with 0 frac')
+    common.printlog(str(len(tlarray[sel]))+' number with 0 frac',logger)
     ranf['FRAC_TLOBS_TILES'] = tlarray
     return ranf
   
