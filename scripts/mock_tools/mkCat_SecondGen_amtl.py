@@ -590,6 +590,7 @@ if args.apply_veto == 'y':
         #sys.exit()
     if 'PHOTSYS' not in colnames:
         addcols = 1
+    dataf = None
     if addcols == 1:
         dataf = Table(fitsio.read(fin))
         if addlrg == 1:
@@ -600,11 +601,15 @@ if args.apply_veto == 'y':
             dataf = join(dataf, targf, keys=['TARGETID'])
         if 'PHOTSYS' not in colnames:
             dataf = common.addNS(dataf)
-        common.write_LSS(dataf, fin)
+        #common.write_LSS(dataf, fin)
 
-
+    if dataf is not None:
+        in_use = dataf
+        del dataf
+    else:
+        in_use = fin
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
-    dataf = common.apply_veto(fin, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
+    dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
     common.write_LSS_scratchcp(dataf,fout)
     print('data veto done, now doing randoms')
