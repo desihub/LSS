@@ -68,7 +68,8 @@ class get_nobsandmask:
         #cat should be an astropy table
         #returns table with same ordering and NOBS_{G,R,Z} and MASKBITS columns
         for col in cat.colnames:
-            cat.rename_column(col, col.upper())
+            if not col.isupper(): 
+                cat.rename_column(col, col.upper())
 
         if 'TARGETID' not in cat.colnames:
             cat['TARGETID'] = np.arange(len(cat))

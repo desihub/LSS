@@ -75,7 +75,7 @@ if ('T' in endDate) & ('-' in endDate):
 else:
     endDateShort = int(endDate)
 
-amtl.makeTileTracker(altmtl_path, survey = 'main', obscon = 'DARK', startDate = startDateShort, endDate = endDateShort, overwrite = True)
+amtl.makeTileTracker(altmtl_path, survey = 'main', obscon = obscon.upper(), startDate = startDateShort, endDate = endDateShort, overwrite = True)
 
 ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
 
