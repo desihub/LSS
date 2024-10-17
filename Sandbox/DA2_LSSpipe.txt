@@ -185,14 +185,72 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mai
 #QSO, tiles only
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkQSO.py --version 1 --verspec kibo --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/ --mkqso n
 
-NEED TO DO QSO ONCE HEALPIX Z AVAILABLE
-
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec kibo-v1 --type bright --combwspec y --survey DA2 --maxr 18
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec kibo-v1 --type dark --combwspec y 
 --survey DA2 --maxr 18
 
-#get bitweights from alt MTL
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog DARK --amtl_version Y3Run1 --amtl_dir /pscratch/sd/l/lucasnap/ --cat_version v0.1
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec kibo-v1 --survey DA2
+
+#full pipeline for standard catalogs was run with
+$LSSCODE/LSS/scripts/dark_LSS_pipe.sh v0.1
+
+#get bitweights from alt MTL
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog DARK --amtl_version Y3Run1  --cat_version v0.1 --specrel kibo-v1
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog BRIGHT --amtl_version Y3Run1  --cat_version v0.1 --specrel kibo-v1
+
+python scripts/add_bitweights_2full.py --specrel kibo-v1 --cat_version v0.1
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel kibo-v1 --cat_version v0.1 --tracers ELG_LOPnotqso
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel kibo-v1 --cat_version v0.1 --prog BRIGHT
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec kibo-v1 --version v0.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey DA2 --verspec kibo-v1 --version v0.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_RF --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --fulld n --survey DA2 --verspec kibo-v1 --version v0.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+#projected clustering
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/xirunpc.py --tracer BGS_BRIGHT --survey DA2 --verspec kibo-v1 --version v0.1/PIP --region NGC SGC --corr_type rppi --njack 0 --weight_type pip_angular_bitwise_FKP --bin_type log
+
+#version 2 of QSO catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkQSO.py --version 2 --verspec kibo --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+#full pipeline for standard catalogs was run for v1 with
+$LSSCODE/LSS/scripts/dark_LSS_pipe.sh v1
+
+$LSSCODE/LSS/scripts/bright_LSS_pipe.sh v1
+
+#version 3 of QSO catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkQSO.py --version 3 --verspec kibo --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+#clustering catalogs for M_r cuts
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --fulld n --survey DA2 --verspec kibo-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v1
+#forgot --imsys_colname WEIGHT_IMLIN --extra_clus_dir 'nonKP/'
+
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-20.2 --fulld n --survey DA2 --verspec kibo-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v1
+
+mv /global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/kibo-v1/LSScats/v1/*clustering* /global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/kibo-v1/LSScats/v1/nonKP/
+
+#validation
+
+
+
+#make Mr < -20.2 sample
+python scripts/main/mkCat_main.py --type BGS_BRIGHT-20.2 --verspec kibo-v1 --absmagmd 'nok' --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --survey DA2 --version v1 --imsys y --imsys_zbin y --use_map_veto _HPmapcut
+
+#forgot -imsys_colname WEIGHT_IMLIN
+
+#version 2 of QSO catalogs; Oct 3rd 2024
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkQSO.py --version 2 --verspec kibo --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+# re-ran BGS_BRIGHTabm samples to get weights in properly
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --fulld n --survey DA2 --verspec kibo-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v1 --imsys_colname WEIGHT_IMLIN 
+--extra_clus_dir 'nonKP/'
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-20.2 --fulld n --survey DA2 --verspec kibo-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v1 --imsys_colname WEIGHT_IMLIN 
+--extra_clus_dir 'nonKP/'
