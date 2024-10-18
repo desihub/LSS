@@ -1,0 +1,31 @@
+#steps for DA2 LSS AltMTL mock. 25 realizations of Abacus type 
+
+source /global/common/software/desi/desi_environment.sh main
+export LSSCODE=$HOME
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+
+#prepare dark mock input catalogs.
+
+#prepare bright mock input catalogs.
+
+
+#Apply photometric mask to dark
+
+#Apply photometric mask to bright 
+
+#Calculate lrgmask
+
+#potential assigments for dark
+
+#potential assigments for bright
+
+#Initialize AltMTL for dark
+
+#Initialize AltMTL for bright
+
+#Run ALTMTL for dark
+
+#Run AltMTL for bright
+
+
+# LSS pipeline
