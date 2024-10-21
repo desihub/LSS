@@ -5,10 +5,6 @@
 #SBATCH -q debug
 #SBATCH -t 00:10:00
 #SBATCH -J kibo_comb
-#SBATCH -o ./stdout/%x.o%j
-#SBATCH -e ./stdout/%x.e%j
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=ns226017@ohio.edu
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
