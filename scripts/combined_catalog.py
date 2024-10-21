@@ -96,7 +96,7 @@ if not os.path.exists(save_dir):
 nrands = 18  #Number of random catalogs
 P0 = 6000
 dz = 0.01
-bias_list = [1.5, 2.0, 1.2, 2.1] #BGS, LRG, ELG, QSO
+bias_list = [2.0, 1.2] #LRG, ELG
 
 #get comp_ntl
 if mpicomm.rank == 0:
