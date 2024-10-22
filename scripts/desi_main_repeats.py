@@ -162,7 +162,7 @@ def read_sv3(zcatdir, prog, keys):
     return d
 
 
-def get_validredshifts(rrfn):
+def get_validredshifts_zmtl(rrfn):
 
     extra_columns = [
         "TARGETID",
@@ -182,14 +182,21 @@ def get_validredshifts(rrfn):
 
     d["RRFN"] = rrfn
 
+    # AR add zmtl columns
+    zmtlfn = rrfn.replace("redrock-", "zmtl-")
+    d2 = fitsio.read(zmtlfn, "ZMTL")
+    assert np.all(d["TARGETID"] == d2["TARGETID"])
+    for key in ["ZWARN", "Z_QN", "Z_QN_CONF", "IS_QSO_QN"]:
+        d["ZMTL_{}".format(key)] = d2[key]
+
     return d
 
 
-def get_valid(rrfns, numproc):
+def get_valid_zmtl(rrfns, numproc):
 
     pool = multiprocessing.Pool(numproc)
     with pool:
-        ds = pool.map(get_validredshifts, rrfns)
+        ds = pool.map(get_validredshifts_zmtl, rrfns)
 
     d = vstack(ds)
 
@@ -262,10 +269,10 @@ def create_parent(prod, prog, numproc):
         for tileid, lastnight, petal in zip(d["TILEID"], d["LASTNIGHT"], d["PETAL_LOC"])
     ]
 
-    # AR valid redshifts
+    # AR valid redshifts + zmtl_zwarn
     rrfns = np.unique(d["RRFN"])
     print(len(rrfns))
-    valid_d = get_valid(rrfns, numproc)
+    valid_d = get_valid_zmtl(rrfns, numproc)
     print(len(valid_d))
 
     # AR speed up
@@ -288,6 +295,7 @@ def create_parent(prod, prog, numproc):
     for key in valid_d.colnames:
         if key not in d.colnames:
             d[key] = valid_d[key][ii]
+
 
     # AR header infos
     d.meta["PRODDIR"], d.meta["ZCATDIR"] = prod_dir, zcatdir
@@ -343,6 +351,10 @@ def create_pairs(parent_d, numproc):
         "Z_NEW",
         "ZERR_NEW",
         "IS_QSO_QN_NEW_RR",
+        "ZMTL_ZWARN",
+        "ZMTL_Z_QN",
+        "ZMTL_Z_QN_CONF",
+        "ZMTL_IS_QSO_QN",
         "GOOD_BGS",
         "GOOD_LRG",
         "GOOD_ELG",
