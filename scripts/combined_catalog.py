@@ -2,6 +2,7 @@ import LSS.combined_tracer_utils as comb
 import LSS.common_tools as common
 from astropy.table import Table, vstack
 import argparse
+import os
 import logging
 logname = 'mkCat'
 logger = logging.getLogger(logname)
