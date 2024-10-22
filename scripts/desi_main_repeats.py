@@ -65,11 +65,16 @@ def parse():
     return args
 
 
-def get_zcatdir(prod_dir):
+def get_prod_dirs(prod):
+
+    prod_dir = os.path.join(os.getenv("DESI_ROOT"), "spectro", "redux", prod)
+    prod_dir = prod_dir.replace("/global/", "/dvs_ro/")
 
     if prod in ["iron", "jura", "kibo"]:
 
-        return os.path.join(prod_dir, "zcatalog", "v1")
+        zcat_dir = os.path.join(prod_dir, "zcatalog", "v1")
+
+    return prod_dir, zcat_dir
 
 
 def get_snr2time(tracer):
@@ -104,14 +109,14 @@ def get_prog_props(prog):
 
 # AR main: restrict to:
 # AR - tracers
-def read_main(zcatdir, prog, keys):
+def read_main(zcat_dir, prog, keys):
 
     prog_props = get_prog_props(prog)
     tracers = prog_props["tracers"]
     mask = prog_props["mainmask"]
     mask_key = prog_props["mainkey"]
 
-    fn = os.path.join(zcatdir, "ztile-main-{}-cumulative.fits".format(prog))
+    fn = os.path.join(zcat_dir, "ztile-main-{}-cumulative.fits".format(prog))
     main_keys = ["DESI_TARGET", "BGS_TARGET"]
     d = Table(fitsio.read(fn, "ZCATALOG", columns=keys + main_keys))
     print(len(d))
@@ -131,14 +136,14 @@ def read_main(zcatdir, prog, keys):
 # AR - tracers
 # AR - first-time observations
 # AR - keep a unique TARGETID (<0.02% repeats remaining...), with the highest TSNR2_LRG
-def read_sv3(zcatdir, prog, keys):
+def read_sv3(zcat_dir, prog, keys):
 
     prog_props = get_prog_props(prog)
     tracers = prog_props["tracers"]
     mask = prog_props["sv3mask"]
     mask_key = prog_props["sv3key"]
 
-    fn = os.path.join(zcatdir, "ztile-sv3-{}-cumulative.fits".format(prog))
+    fn = os.path.join(zcat_dir, "ztile-sv3-{}-cumulative.fits".format(prog))
     sv3_keys = ["SV3_DESI_TARGET", "SV3_BGS_TARGET", "PRIORITY_INIT", "PRIORITY"]
     d = Table(fitsio.read(fn, "ZCATALOG", columns=keys + sv3_keys))
     d = d[keys + sv3_keys]  # AR re-ordering columns
@@ -205,9 +210,7 @@ def get_valid_zmtl(rrfns, numproc):
 
 def create_parent(prod, prog, numproc):
 
-    prod_dir = os.path.join(os.getenv("DESI_ROOT"), "spectro", "redux", prod)
-    prod_dir = prod_dir.replace("/global/", "/dvs_ro/")
-    zcatdir = get_zcatdir(prod_dir)
+    prod_dir, zcat_dir = get_prod_dirs(prod)
     keys = [
         "TARGETID",
         "TARGET_RA",
@@ -230,8 +233,8 @@ def create_parent(prod, prog, numproc):
     ]
 
     # AR read
-    main_d = read_main(zcatdir, prog, keys)
-    sv3_d = read_sv3(zcatdir, prog, keys)
+    main_d = read_main(zcat_dir, prog, keys)
+    sv3_d = read_sv3(zcat_dir, prog, keys)
 
     # AR now, add sv3 repeats of main, then merge
     sel = np.in1d(sv3_d["TARGETID"], main_d["TARGETID"])
@@ -298,7 +301,7 @@ def create_parent(prod, prog, numproc):
 
 
     # AR header infos
-    d.meta["PRODDIR"], d.meta["ZCATDIR"] = prod_dir, zcatdir
+    d.meta["PRODDIR"], d.meta["ZCATDIR"] = prod_dir, zcat_dir
     d.meta["PROG"] = prog
     for tracer in ["BGS", "LRG", "ELG", "QSO", "LYA"]:
         d.meta["{}SNR2T".format(tracer)] = get_snr2time(tracer)
