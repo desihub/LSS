@@ -11,6 +11,7 @@ from astropy.table import Table, vstack, hstack
 from desitarget.targetmask import desi_mask, bgs_mask
 from desitarget.sv3.sv3_targetmask import desi_mask as sv3_desi_mask
 from desitarget.sv3.sv3_targetmask import bgs_mask as sv3_bgs_mask
+from desitarget.targetmask import zwarn_mask as zmtl_zwarn_mask
 from desitarget.geomask import match_to
 from desispec.validredshifts import validate
 from matplotlib import pyplot as plt
@@ -472,10 +473,17 @@ def make_plot(outroot, d):
         # AR for both elements of a pair, cut on:
         # AR - tracer
         # AR - coadd_fiberstatus
+        # AR - zmtl_zwarn_mask nodata + bad
         # AR - efftime_spec
         # AR cut on redshift range with a OR
         sel = (d[mask_key] & mask[tracer]) > 0
         sel &= (d["COADD_FIBERSTATUS_0"] == 0) & (d["COADD_FIBERSTATUS_1"] == 0)
+        nodata0 = (d["ZMTL_ZWARN_0"] & zmtl_zwarn_mask["NODATA"]) > 0
+        nodata1 = (d["ZMTL_ZWARN_1"] & zmtl_zwarn_mask["NODATA"]) > 0
+        badqa0 = (d["ZMTL_ZWARN_0"] & zmtl_zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA")) > 0
+        badqa1 = (d["ZMTL_ZWARN_1"] & zmtl_zwarn_mask.mask("BAD_SPECQA|BAD_PETALQA")) > 0
+        sel &= (~nodata0) & (~nodata1)
+        sel &= (~badqa0) & (~badqa1)
         sel &= (efftime0s > effmin) & (efftime1s > effmin)
         sel &= (efftime0s < effmax) & (efftime1s < effmax)
         sel &= (d["{}_0".format(goodkey)]) & (d["{}_1".format(goodkey)])
