@@ -298,17 +298,6 @@ def create_parent(prod, prog, numproc):
     return d
 
 
-def get_valid(rrfns, numproc):
-
-    pool = multiprocessing.Pool(numproc)
-    with pool:
-        ds = pool.map(get_validredshifts, rrfns)
-
-    d = vstack(ds)
-
-    return d
-
-
 def get_combinations(ii):
 
     jjs = itertools.combinations(ii, 2)
