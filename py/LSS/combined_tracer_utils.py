@@ -4,10 +4,10 @@ import argparse
 from astropy.table import Table, vstack
 import fitsio
 from pycorr import utils
-import mpytools as mpy
-mpicomm = mpy.COMM_WORLD
-mpiroot = None
-from multiprocessing import Pool
+#import mpytools as mpy
+#mpicomm = mpy.COMM_WORLD
+#mpiroot = None
+#from multiprocessing import Pool
 
 def read_rand(fn, comp_ntl, verbose=False):
     '''
