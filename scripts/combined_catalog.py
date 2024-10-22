@@ -5,6 +5,9 @@ import numpy as np
 import argparse
 import os
 import logging
+
+from multiprocessing import Pool
+
 logname = 'mkCat'
 logger = logging.getLogger(logname)
 logger.setLevel(logging.INFO)
