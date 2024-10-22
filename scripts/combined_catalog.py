@@ -1,6 +1,7 @@
 import LSS.combined_tracer_utils as comb
 import LSS.common_tools as common
 from astropy.table import Table, vstack
+import numpy as np
 import argparse
 import os
 import logging
