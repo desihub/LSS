@@ -254,3 +254,7 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LS
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-20.2 --fulld n --survey DA2 --verspec kibo-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v1 --imsys_colname WEIGHT_IMLIN 
 --extra_clus_dir 'nonKP/'
+
+combined LRG+ELG catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/combined_catalog.py --base_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --save_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --cap NGC
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/combined_catalog.py --base_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --save_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --cap SGC
