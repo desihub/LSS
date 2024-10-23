@@ -9,6 +9,7 @@ import sys
 import json
 from desitarget.targetmask import obsconditions
 from desimodel.footprint import is_point_in_desi
+from multiprocessing import Pool
 
 import LSS.common_tools as common
 from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
@@ -65,7 +66,7 @@ print('getting nobs and mask bits')
 if 'BRICKID' not in targets.colnames:
 	from desiutil import brick
 	tmp = brick.Bricks(bricksize=0.25)
-	targets['BRICKID'] = tmp.brickid(targets['RA'], target['DEC'])
+	targets['BRICKID'] = tmp.brickid(targets['RA'], targets['DEC'])
 
 def wrapper(bid_index):
 
@@ -74,7 +75,7 @@ def wrapper(bid_index):
 
     ra, dec = targets['RA'][idx], targets['DEC'][idx]
     tid = targets['TARGETID'][idx]
-    bitmask,nobsg,nobsr,nobsz = bitmask_radec(brickid, ra, dec)
+    bitmask,nobsg,nobsr,nobsz = bitmask.bitmask_radec(brickid, ra, dec)
 
     data = Table()
     data['idx'] = idx
@@ -87,13 +88,13 @@ def wrapper(bid_index):
     return data
 
 # Just some tricks to speed up things up
-bid_unique, bidcnts = np.unique(cat['BRICKID'], return_counts=True)
+bid_unique, bidcnts = np.unique(targets['BRICKID'], return_counts=True)
 bidcnts = np.insert(bidcnts, 0, 0)
 bidcnts = np.cumsum(bidcnts)
-bidorder = np.argsort(cat['BRICKID'])
+bidorder = np.argsort(targets['BRICKID'])
 
 # start multiple worker processes
-with Pool(processes=nproc) as pool:
+with Pool(processes=args.nproc) as pool:
     res = pool.map(wrapper, np.arange(len(bid_unique)))
 
 res = vstack(res)
