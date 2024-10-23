@@ -65,22 +65,26 @@ def get_maskbit_nobs(cat, nproc = int(ncpus), path_to_bricks='/global/cfs/cdirs/
     return cat
 
 
-file_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum) 
+#file_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum) 
+file_ = '/pscratch/sd/e/efdez/Uchuu/LSS/scripts/mock_tools/DA2/LRG_NGC_12_clustering.ran.fits'
 
 #/pscratch/sd/z/zxzhai/DESI/PreMocks/SecondGenMocks/AbacusSummit_v4_1/forFA'+str(mocknum)+'_nomasking.fits'
 
 cat = Table.read(file_)
 
+print('size before cutting photmask is', len(cat))
 cat = get_maskbit_nobs(cat)
 
-mainp = main(tp = 'BGS', specver = 'kibo-v1')
+mainp = main(tp = 'LRG', specver = 'kibo-v1')
+#mainp = main(tp = 'BGS', specver = 'kibo-v1')
 cat = ct.cutphotmask(cat, bits=mainp.imbits)
 
 st=time.time()
-
-out_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{MOCK}.fits'.format(MOCK=mocknum)
-ct.write_LSS_scratchcp(cat, out_file_name), extname='TARGETS')
+print('size after cutting photmask is', len(cat))
+out_file_name='testa.fits'
+#out_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{MOCK}.fits'.format(MOCK=mocknum)
+ct.write_LSS_scratchcp(cat, out_file_name, extname='TARGETS')
 print('Done writing in {} sec'.format(time.time()-st), flush=True)
 
-fits.setval(out_file_name, 'OBSCON', value='BRIGHT', ext=1)
+fits.setval(out_file_name, 'OBSCON', value='DARK', ext=1)
 
