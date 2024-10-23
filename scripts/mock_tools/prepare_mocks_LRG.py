@@ -22,7 +22,7 @@ parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
 parser.add_argument("--input_mockpath", help="full directory path to input mocks",default='')
 parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
-parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
+parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128,type=int)
 
 args = parser.parse_args()
 #DARK tiles from Y3
@@ -56,7 +56,7 @@ data['NUMOBS_MORE'] = numobs[type_]
 data['NUMOBS_INIT'] = numobs[type_]
 targets = data
 del data
-targets['TARGETID'] = np.random.permutation(np.arange(1,n+1))
+targets['TARGETID'] = np.random.permutation(np.arange(1,len(targets)+1))
 print(len(targets),' in Y5 area')
 selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
 targets = targets[selY3]
@@ -94,7 +94,7 @@ bidcnts = np.cumsum(bidcnts)
 bidorder = np.argsort(targets['BRICKID'])
 
 # start multiple worker processes
-with Pool(processes=args.nproc) as pool:
+with Pool(processes=int(args.nproc)) as pool:
     res = pool.map(wrapper, np.arange(len(bid_unique)))
 
 res = vstack(res)
