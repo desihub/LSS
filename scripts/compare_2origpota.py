@@ -146,10 +146,13 @@ if __name__ == '__main__':
     with Pool(processes=128) as pool:
         res = pool.map(getcoll, tls)
     tiles_notm = []
+    nfail = 0
     for i in range(0,len(res)):
         if res[i][2] != res[i][1]:
             print(res[i])
             tiles_notm.append(res[i][0])
+            nfail += 1
+    print('the number of mismatches is '+str(nfail))
     
     #colltot = np.concatenate(res)
     #common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/collisions-'+args.prog+'.fits')
