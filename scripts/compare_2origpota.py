@@ -57,7 +57,7 @@ def getcoll(tile):
         select=[tile])
 
     tids = tiles.id
-    print('Tile ids:', tids)
+    #print('Tile ids:', tids)
     I = np.flatnonzero(np.array(tids) == tile)
     assert(len(I) == 1)
     i = I[0]
@@ -123,7 +123,7 @@ def getcoll(tile):
     selo = np.isin(forig['TARGETID'],ttids)
     forig = forig[selo]
     check = np.isin(forig['TARGETID'],fdata['TARGETID'])
-    return (tile,len(check),np.sum(check))
+    return (tile,len(check),np.sum(check),dt)
     #locidsin = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
     #colltab = Table(forig[locidsin])
     #colltab['TILEID'] = tile
@@ -145,9 +145,12 @@ if __name__ == '__main__':
     tls = list(t['TILEID'])#[:10])
     with Pool(processes=128) as pool:
         res = pool.map(getcoll, tls)
+    tiles_notm = []
     for i in range(0,len(res)):
         if res[i][2] != res[i][1]:
             print(res[i])
+            tiles_notm.append(res[i][0])
+    
     #colltot = np.concatenate(res)
     #common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/collisions-'+args.prog+'.fits')
 
