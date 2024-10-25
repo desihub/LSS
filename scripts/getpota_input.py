@@ -40,16 +40,16 @@ log = Logger.get()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
-parser.add_argument("--survey", help="e.g.," default='DA2')
+parser.add_argument("--survey", help="e.g.,Y1 or DA2", default='DA2')
 parser.add_argument("--getcoll",default='y')
-parser.add_argument("input",help='full path to input file, assumed to be fits')
-parser.add_argument("output",help='full path to output file, will be saved as fits')
+parser.add_argument("--input",help='full path to input file, assumed to be fits')
+parser.add_argument("--output",help='full path to output file, will be saved as fits')
 parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
                     default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
 parser.add_argument("--counttiles", default = 'n')
 parser.add_argument("--nprocs", help="Number of multiprocessing processes to use, default %(default)i",
                     default=multiprocessing.cpu_count()//2, type=int)
-
+parser.add_argument("--realization",help='needed, at least, to set different output directories for the temporary tiles, e.g., if many mocks are being processed at once',default='1')
 # On Perlmutter, this read-only access point can be *much* faster thanks to aggressive caching.
 #   If you didn't want this for some reason, you could revert '/dvs_ro/cfs/cdirs/desi' to '/global/cfs/cdirs/desi' in the following.
 desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi')
@@ -61,7 +61,7 @@ print(args)
 infn = args.input
 tars = fitsio.read(infn)
 tarcols = list(tars.dtype.names)
-tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), 'SecondGenMocks', 'Generic', 'tartiles'+args.realization)
+tileoutdir = os.path.join( os.getenv('SCRATCH'), 'temp_tilefiles', 'tartiles'+args.realization)
 
 # Ensure that the targets file is sorted by Dec.
 t0 = time.time()
