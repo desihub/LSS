@@ -127,7 +127,7 @@ if __name__ == '__main__':
         res = pool.map(getcoll, tls)
     colltot = np.concatenate(res)
     if args.outmode == 'prod':
-        outroot = '/global/cfs/cdirs/desi/survey/catalogs/
+        outroot = '/global/cfs/cdirs/desi/survey/catalogs/'
     if args.outmode == 'test':
         outroot = os.getenv('SCRATCH')+'/'
     if not os.path.exists(outroot+args.survey+'/LSS'):
