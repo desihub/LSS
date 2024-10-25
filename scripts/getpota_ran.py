@@ -154,7 +154,7 @@ if __name__ == '__main__':
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
         print(len(colltot),np.sum(colltot['COLLISION']))
-        outdir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/random'+str(rann)
+        outdir = outroot+args.survey+'/LSS/random'+str(rann)
         if not os.path.exists(outdir):        
             os.makedirs(outdir)
         common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
