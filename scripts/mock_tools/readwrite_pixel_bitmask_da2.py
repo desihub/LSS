@@ -20,7 +20,6 @@ import argparse
 
 time_start = time.time()
 
-n_processes = 128
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--tracer', required=True)
@@ -31,9 +30,11 @@ parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=Fals
 parser.add_argument( '--cat_type', default='targets')#, choices=['targets','ran','obielg','Ab2ndgen'],required=False)
 parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
 parser.add_argument( '--secgen_ver', default=None, required=False)
+parser.add_argument( '--nproc', default=128, required=False)
 
 args = parser.parse_args()
 
+n_processes = int(args.nproc)
 
 input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'.fits'
 output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'_'+args.tracer+'imask.fits'
@@ -45,7 +46,7 @@ if args.cat_type == 'obielg':
     output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_'+args.tracer+'_imask.fits'
 if args.cat_type == 'Ab2ndgen':
     if args.secgen_ver is None:
-        mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/'
+        mockdir = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit/'
     else:
         mockdir = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/%s/' %  args.secgen_ver
     input_path = mockdir+'forFA'+args.input+'.fits'
