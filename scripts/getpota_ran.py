@@ -22,6 +22,7 @@ parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--survey", choices=['Y1','DA2'],default='DA2')
 parser.add_argument("--minr", default=0,type=int)
 parser.add_argument("--maxr", default=18,type=int)
+parser.add_argument("--outmode", choices=['test','prod'],default='test')
 
 args = parser.parse_args()
 
@@ -141,6 +142,13 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     tls = list(tiletab['TILEID'])#[:10])
     inds = np.arange(len(tls))
+    if args.outmode == 'prod':
+        outroot = '/global/cfs/cdirs/desi/survey/catalogs/'
+    if args.outmode == 'test':
+        outroot = os.getenv('SCRATCH')+'/'
+    if not os.path.exists(outroot+args.survey+'/LSS'):
+        os.makedirs(outroot+args.survey+'/LSS')
+
     for rann in range(int(args.minr),int(args.maxr)):
         with Pool(processes=128) as pool:
             res = pool.map(getcoll, inds)
