@@ -157,5 +157,5 @@ if __name__ == '__main__':
         outdir = outroot+args.survey+'/LSS/random'+str(rann)
         if not os.path.exists(outdir):        
             os.makedirs(outdir)
-        common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
+        common.write_LSS_scratchcp(colltot,outdir+'/pota-'+args.prog+'.fits')
 
