@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=00:30:00
+#SBATCH --time=00:50:00
 #SBATCH --qos=shared
 #SBATCH --cpus-per-task=128
 #SBATCH --constraint=cpu
-#SBATCH --array=0-24
+#SBATCH --array=6
 #SBATCH --account=desi
 #SBATCH --mem=40G
 
