@@ -46,6 +46,7 @@ parser.add_argument("--blind", help="string to make output directory blinded or 
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
+arser.add_argument("--inmode",help="string that denotes type of input file; '_clustering' would read from unsplit clustering catalog",default='_full_HPmapcut')
 parser.add_argument("--par",help="process randoms in parallel?",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18) 
@@ -67,7 +68,7 @@ dirout = ldirspec+'LSScats/'+version+'/'
 dirin = dirout
 dirout += args.blind
 
-indata = Table(fitsio.read(dirin+args.tracer+'_full_HPmapcut.dat.fits',columns=['TARGETID',args.col_name]))
+indata = Table(fitsio.read(dirin+args.tracer+args.inmode+'.dat.fits',columns=['TARGETID',args.col_name]))
 
 regl = ['NGC','SGC']
 
