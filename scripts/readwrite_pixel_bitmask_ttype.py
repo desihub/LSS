@@ -110,7 +110,7 @@ bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/random
 
 
 cat1row = fitsio.read(input_path,rows=1)
-cols = [args.ra_col,args_dec_col,'TARGETID','BRICKID']
+cols = [args.ra_col,args.dec_col,'TARGETID','BRICKID']
 cols2read = []
 cols_in_f = list(cat1row.dtype.names)
 for col in cols:
