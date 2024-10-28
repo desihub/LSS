@@ -7,11 +7,11 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 #prepare dark mock input catalogs (run on shared memory, 1 cpu per realization. Do not apply photometric mask). 
 #It is sbatch script calling to run1_prepmock_LSS_DA2.sh as array parallelization, calling finally to: prepare_mocks_Y3_dark.py or prepare_mocks_Y3_bright.py
 
->> sbatch $LSSCODE/scripts/mock_tools/abamtl_prepmock_sbatch_da2.sh DARK
+>> ./run1_prepmock_LSS_DA2.sh DARK
 
 #prepare bright mock input catalogs.
 
->> sbatch $LSSCODE/scripts/mock_tools/abamtl_prepmock_sbatch_da2.sh BRIGHT
+>> ./run1_prepmock_LSS_DA2.sh BRIGHT
 
 #Apply photometric mask to dark
 
