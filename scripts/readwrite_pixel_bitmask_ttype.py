@@ -1,6 +1,6 @@
 # Get bitmask values from pixel-level per-brick masks defined for a particular tracer type (lrg and elg available)
 # Examples:
-# srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python read_pixel_bitmask_ttype.py --tracer lrg --input_fn catalog.fits 
+# srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python readwrite_pixel_bitmask_ttype.py --tracer lrg --input_fn catalog.fits 
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
