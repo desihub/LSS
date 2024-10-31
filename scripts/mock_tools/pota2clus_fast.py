@@ -257,7 +257,7 @@ lmockdat_noveto = len(mock_data)
 if args.prog == 'DARK':
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
-	mainp = main('LRG',args.specrel,args.survey) #needed for bad fiber list
+    mainp = main('LRG',args.specrel,args.survey) #needed for bad fiber list
 
 tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
