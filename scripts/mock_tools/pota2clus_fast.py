@@ -56,11 +56,15 @@ parser = argparse.ArgumentParser()
 #parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--realization",type=int)
 parser.add_argument("--prog", default="DARK")
+parser.add_argument("pota_fn",help="if not None, full path to potential assignment files", default=None)
 #parser.add_argument("--veto",default='_imaging')
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/')
 parser.add_argument("--data_dir",help="where to find the data randoms",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v0.6/')
-parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
+parser.add_argument("--in_tarf",help="full path of input target file used to get the pota file (if it is not to be automatically found)",default=None)
+#parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
+parser.add_argument("--specrel",help='version of redshift catalog',default='kibo-v1')
+parser.add_argument("--survey",help='the set of tiles to point to',default='DA2')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is all 18)",default=18,type=int) 
 parser.add_argument("--mockver", default='AbacusSummit_v4_1fixran', help = "which mocks to use")
@@ -73,6 +77,8 @@ parser.add_argument("--mkdat", default = 'y')
 parser.add_argument("--mkran", default = 'y')
 parser.add_argument("--nz", default = 'y')
 parser.add_argument("--splitGC", default = 'y')
+
+parser.add_argument("--mk_inputran", help="this should only need to be done once and not be over-written; this script will not allow over-writes",default = 'n')
 #parser.add_argument("--remove_unassigned", default = 'y', help = 'set to n if dont want to include unassigned targets in catalog')
 
 
@@ -203,12 +209,16 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
 
 nproc = 18
 
-mockdir = args.base_dir+args.mockver+'/mock'+str(args.realization)+'/'
+mockdir = args.base_dir+args.mockver
+if args.realization is not None:
+    mockdir += '/mock'+str(args.realization)+'/'
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
-
-if args.outloc == 'prod':
+elif args.outloc == 'prod':
     outdir = mockdir
+else:
+    outdir = args.outloc
+
 
 if args.mockcatver is not None:
     outdir += args.mockcatver + '/'
@@ -237,27 +247,30 @@ cols = ['LOCATION',
 'TILEID']
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
+    mainp = main('BGS_BRIGHT',args.specrel,args.survey)
 mock_data = fitsio.read(in_data_fn,columns=cols)
 selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
+ndattot = len(mock_data)
+lmockdat_noveto = len(mock_data)
 
 if args.prog == 'DARK':
     bittest = targetmask.desi_mask
     desitarg='DESI_TARGET'
+	mainp = main('LRG',args.specrel,args.survey) #needed for bad fiber list
 
-ndattot = len(mock_data)
-
-lmockdat_noveto = len(mock_data)
-mainp = main('LRG','iron','Y1') #needed for bad fiber list
+tsnrcut = mainp.tsnrcut
+tnsrcol = mainp.tsnrcol        
 
 tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+specfo =  '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
 logger.info(len(np.unique(specf['TILEID'])))
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib)
+
+specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
 gtl = np.unique(specfc['TILELOCID'])
 goodtl = np.isin(tilelocid,gtl)
 mock_data = mock_data[goodtl]
@@ -270,7 +283,7 @@ mock_data.rename_column('RSDZ', 'Z')
 
     
 for tracer in tracers:
-    mainp = main(tracer,'iron','Y1')
+    mainp = main(tracer,args.specrel,args.survey)
     if args.prog == 'DARK':
         
         bit = bittest[tracer]#targetmask.desi_mask[tracer]
@@ -304,7 +317,7 @@ for tracer in tracers:
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
-
+    ebits = mainp.ebits
     if args.mkdat == 'y':
     
         if tracer == 'BGS_BRIGHT-21.5':
@@ -317,10 +330,13 @@ for tracer in tracers:
         
         #apply imaging vetos
         if tracer == 'LRG':
-            lrgmask = fitsio.read(args.base_dir.replace('global','dvs_ro')+args.mockver+'/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
+            if args.in_tarf is None:
+                lrgmask = fitsio.read(args.base_dir.replace('global','dvs_ro')+args.mockver+'/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
+            else:
+                lrgmask = fitsio.read(args.in_tarf.replace('.fits','_matched_input_full_lrg_imask.fits').replace('global','dvs_ro'))
             mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
             logger.info(len(mock_data_tr))
-        ebits = mainp.ebits
+        
         reccircmasks = mainp.reccircmasks
         mock_data_tr = apply_imaging_veto(mock_data_tr,reccircmasks,ebits)
         
@@ -351,6 +367,17 @@ for tracer in tracers:
         tracerr = 'BGS_BRIGHT'
     ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
 
+    if args.mk_inputran == 'y':
+        def _mk_inputran(rann):
+            outfn = ran_fname_base+str(rann)+'_full.ran.fits'
+            if args.survey == 'Y1':
+                infn = args.data_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits'
+            else:
+                infn = args.data_dir+args.prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
+            maxp = 10000 #we don't want to apply any priority cut
+        
+            common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks)
+            
     if args.mkran == 'y':
         if args.mkdat == 'n':
             mock_data_tr = Table(fitsio.read(out_data_fn))
