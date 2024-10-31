@@ -248,7 +248,9 @@ cols = ['LOCATION',
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
     mainp = main('BGS_BRIGHT',args.specrel,args.survey)
-mock_data = fitsio.read(in_data_fn,columns=cols)
+logger.info('reading '+in_data_fn)
+mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
+logger.info('read '+in_data_fn)
 selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
 ndattot = len(mock_data)
@@ -377,6 +379,16 @@ for tracer in tracers:
             maxp = 10000 #we don't want to apply any priority cut
         
             common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks)
+        inds = np.arange(nran)
+        if args.par == 'y':
+            from multiprocessing import Pool
+            with Pool(processes=nproc) as pool:
+                res = pool.map(_mk_inputran, inds)
+        else:
+            for rn in inds:#range(rm,rx):
+                 _mk_inputran(rn)
+ 
+
             
     if args.mkran == 'y':
         if args.mkdat == 'n':
