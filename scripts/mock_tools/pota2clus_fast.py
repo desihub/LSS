@@ -382,7 +382,7 @@ for tracer in tracers:
         inds = np.arange(nran)
         if args.par == 'y':
             from multiprocessing import Pool
-            with Pool(processes=nproc) as pool:
+            with Pool(processes=9) as pool:
                 res = pool.map(_mk_inputran, inds)
         else:
             for rn in inds:#range(rm,rx):
