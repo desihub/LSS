@@ -378,7 +378,7 @@ for tracer in tracers:
                 infn = args.data_dir+args.prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
             maxp = 10000 #we don't want to apply any priority cut
         
-            masked_dat = common.apply_veto(infn,None,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks)
+            masked_dat = common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks,wo='n')
             masked_dat = common.apply_map_veto_arrays(masked_dat,mapn,maps,mapcuts)
             common.write_LSS_scratchcp(masked_dat,outfn,logger=logger)
         inds = np.arange(nran)

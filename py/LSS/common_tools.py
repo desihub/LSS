@@ -1133,6 +1133,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         wm = zma == 0
         ff = ff[wm]
 
+    
     if '.dat' in fout:
         ff['Z'].name = 'Z_not4clus'
         printlog('updating completeness',logger)
@@ -1201,20 +1202,20 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         #if comp_only:
         #    return True
-    if fout is not None:
-        if '.ran' in fout:
-            printlog('area is ' + str(len(ff) / 2500),logger)
+    
+    if '.ran' in fout:
+        printlog('area is ' + str(len(ff) / 2500),logger)
     #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
-        if wo == 'y':
-            write_LSS_scratchcp(ff, fout,logger=logger)#, comments)
-        if '.dat' in fout:
-            wz = ff['ZWARN'] != 999999
-            wz &= ff['ZWARN'] * 0 == 0
-            wz &= ff['ZWARN'] != 1.e20
-            comp = len(ff[wz])/len(ff)
-            printlog('assignment completeness is '+str(comp),logger)
-            printlog('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match',logger)
-            printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])))+','+ str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str( len(ff)),logger)
+    if wo == 'y':
+        write_LSS_scratchcp(ff, fout,logger=logger)#, comments)
+    if '.dat' in fout:
+        wz = ff['ZWARN'] != 999999
+        wz &= ff['ZWARN'] * 0 == 0
+        wz &= ff['ZWARN'] != 1.e20
+        comp = len(ff[wz])/len(ff)
+        printlog('assignment completeness is '+str(comp),logger)
+        printlog('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match',logger)
+        printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES'])))+','+ str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str( len(ff)),logger)
     if fout is None or wo == 'n':
         return ff
     del ff
