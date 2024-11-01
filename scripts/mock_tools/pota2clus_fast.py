@@ -194,7 +194,7 @@ def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
 def apply_imaging_veto(ff,reccircmasks,ebits):
     if reccircmasks is not None:
         for maskfn in reccircmasks:
-            mask = common.maskcircandrec(ff,maskfn)
+            mask = common.maskcircandrec(ff,maskfn,logger=logger)
             ff = ff[~mask]
 
     if ebits is not None:
@@ -203,7 +203,7 @@ def apply_imaging_veto(ff,reccircmasks,ebits):
             sel = ff['lrg_mask'] == 0
             ff = ff[sel]
         else:
-            ff = common.cutphotmask(ff,ebits)
+            ff = common.cutphotmask(ff,ebits,logger=logger)
         logger.info('number after imaging mask '+str(len(ff)))
     return ff
 
@@ -371,7 +371,7 @@ for tracer in tracers:
 
     if args.mk_inputran == 'y':
         def _mk_inputran(rann):
-            outfn = ran_fname_base+str(rann)+'_full.ran.fits'
+            outfn = ran_fname_base.replace('dvs_ro','global')+str(rann)+'_full.ran.fits'
             if args.survey == 'Y1':
                 infn = args.data_dir+tracerr+'_'+str(rann)+'_full_noveto.ran.fits'
             else:
