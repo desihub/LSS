@@ -99,8 +99,8 @@ if args.tracer[:3] == 'BGS':
 else:
     mapn = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
     maps = fitsio.read(lssmapdirout.replace('global','dvs_ro') +'QSO_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
-mainp = main('LRG','iron','Y1')
-mapcuts = mainp.mapcuts
+#mainp = main('LRG','iron','Y1')
+
 
 
 if args.tracer == 'all':
@@ -261,6 +261,7 @@ if args.prog == 'DARK':
     desitarg='DESI_TARGET'
     mainp = main('LRG',args.specrel,args.survey) #needed for bad fiber list
 
+mapcuts = mainp.mapcuts
 tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
 
