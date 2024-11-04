@@ -61,7 +61,7 @@ parser.add_argument("--pota_fn",help="if not None, full path to potential assign
 #parser.add_argument("--mockdir", help="directory when pota mock data is",default='/global/cfs/cdirs/desi/users/acarnero/y1mock/SecondGen/clustering/')
 parser.add_argument("--base_dir", help="base directory for input/output",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/')
 parser.add_argument("--data_dir",help="where to find the data randoms",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/v1/')
-parser.add_argument("--in_tarf",help="full path of input target file used to get the pota file (if it is not to be automatically found)",default=None)
+parser.add_argument("--in_tarf",help="full path of input target file with LRG mask info added (if it is not to be automatically found)",default=None)
 #parser.add_argument("--specdata_dir",help="where to find the spec data ",default='/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/')
 parser.add_argument("--specrel",help='version of redshift catalog',default='kibo-v1')
 parser.add_argument("--survey",help='the set of tiles to point to',default='DA2')
@@ -339,7 +339,7 @@ for tracer in tracers:
             if args.in_tarf is None:
                 lrgmask = fitsio.read(args.base_dir.replace('global','dvs_ro')+args.mockver+'/forFA'+str(args.realization)+'_matched_input_full_lrg_imask.fits')
             else:
-                lrgmask = fitsio.read(args.in_tarf.replace('.fits','_matched_input_full_lrg_imask.fits').replace('global','dvs_ro'))
+                lrgmask = fitsio.read(args.in_tarf.replace('global','dvs_ro'))
             mock_data_tr = join(mock_data_tr,lrgmask,keys=['TARGETID'])
             logger.info(len(mock_data_tr))
         
