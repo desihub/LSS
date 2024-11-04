@@ -54,7 +54,7 @@ else:
 
 parser = argparse.ArgumentParser()
 #parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--realization",type=int)
+parser.add_argument("--realization",default=None)
 parser.add_argument("--prog", default="DARK")
 parser.add_argument("--pota_fn",help="if not None, full path to potential assignment files", default=None)
 #parser.add_argument("--veto",default='_imaging')
@@ -230,8 +230,11 @@ if not os.path.exists(outdir):
 logger.info('input directory is '+mockdir)
 logger.info('output directory is '+outdir)    
 
-in_data_fn = mockdir+'pota-'+args.prog+'.fits'
-logger.info(in_data_fn)
+if args.pota_fn is not None:
+    in_data_fn = args.pota_fn
+else:
+    in_data_fn = mockdir+'pota-'+args.prog+'.fits'
+logger.info('using '+in_data_fn)
 cols = ['LOCATION',
 'FIBER',
 'TARGETID',
