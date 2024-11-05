@@ -166,7 +166,7 @@ class main:
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/QSO/jura/QSO_cat_jura_cumulative_v1.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/unique_badfibers.txt')
 
-        if specver == 'kibo-v1':
+        if specver == 'kibo-v1' or specver == 'loa-v1':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+specver+'/emlin_catalog.fits'
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/kibo/QSO_cat_kibo_cumulative_v1.fits'
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/unique_badfibers.txt')
