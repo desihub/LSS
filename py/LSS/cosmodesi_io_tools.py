@@ -97,6 +97,7 @@ def get_regions(survey, rec=False):
 def select_region(ra, dec, region):
     mask_ra = (ra > 100 - dec)
     mask_ra &= (ra < 280 + dec)
+    #mask = None
     if region == 'DN':
         mask = dec < 32.375
         mask &= mask_ra
@@ -112,10 +113,9 @@ def select_region(ra, dec, region):
         if region == 'NGC':
             mask = sel_ngc
         if region == 'SGC':
-            mask = ~sel_ngc
-        
-    #else:
-    #    raise ValueError('Input region must be one of ["DN", "DS"].')
+            mask = ~sel_ngc        
+    else:
+        raise ValueError('Input region must be one of ["DN", "DS","NGC","SGC"].')
     return mask
 
 
