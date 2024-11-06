@@ -596,7 +596,7 @@ if args.add_ke == 'y':
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
 
-if 'BGS_BRIGHT' in type and len(type.split('-')) > 0:
+if 'BGS_BRIGHT-' in type:
 #type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
     abmagcut = -float(type.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
