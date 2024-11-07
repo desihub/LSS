@@ -1355,9 +1355,30 @@ if args.imsys_clus == 'y':
             wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
-    common.write_LSS(dat,foutname)
+    #attach data to NGC/SGC catalogs, write those out
+    dat.keep_columns(['TARGETID',syscol])
+    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
+    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
+    #do randoms
+    dat.rename_column('TARGETID','TARGETID_DATA')
+    regl = ['NGC','SGC']
+    def _add2ran(rann):
+        for reg in regl:
+            ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(i)+'_clustering.ran.fits')
+            ran = fitsio.read(ran_fn)
+            ran = join(ran,dat,keys=['TARGETID_DATA'])
+            common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
-    
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_add2ran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _add2ran(rn)
+            
 
 #if args.nz == 'y':
     
