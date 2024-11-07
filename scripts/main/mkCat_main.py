@@ -1357,8 +1357,13 @@ if args.imsys_clus == 'y':
             dat[syscol][sel] = wsysl[sel]
     #attach data to NGC/SGC catalogs, write those out
     dat.keep_columns(['TARGETID',syscol])
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
     common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
+
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
     #do randoms
@@ -1367,7 +1372,9 @@ if args.imsys_clus == 'y':
     def _add2ran(rann):
         for reg in regl:
             ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(i)+'_clustering.ran.fits')
-            ran = fitsio.read(ran_fn)
+            ran = Table(fitsio.read(ran_fn))
+            if syscol in ran.colnames:
+                ran.remove_column(syscol)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
