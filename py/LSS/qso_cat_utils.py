@@ -450,7 +450,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
         return QSO_cat
 
 
-def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program, keep_all=False):
+def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program, keep_all=False, update_qn_zwarn=True):
     """
     Build the QSO catalog for the tile using the last_night. It is relevant for cumulative directory.
     This function is usefull to be called in pool.starmap under multiprocessing.
@@ -461,7 +461,8 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program, keep
         last_night (str): corresponding last night to tile
         survey (str): sv3/main ... only to add information to the catalog
         program (str): dark/bright/backup only to add information to the catalog
-
+        keep_all (bool):  if True return all the targets. if False return only targets which are selected as QSO.
+        update_qn_zwarn (bool): if True, zwarn is updated from RR rerun of QN; must be set to False for QN output files generated prior to 07/11/2024
     Return:
         QSO_cat (DataFrame): pandas DataFrame containing the concatenation of run_catalog_maker in each available petal
     """
@@ -474,7 +475,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program, keep
 
         if os.path.isfile(redrock):
             if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
-                qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner, keep_all=keep_all)
+                qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner, keep_all=keep_all, update_qn_zwarn=update_qn_zwarn)
                 qso_cat['TILEID'] = int(tile)
                 qso_cat['LASTNIGHT'] = int(night)
                 qso_cat['PETAL_LOC'] = int(petal)
@@ -492,7 +493,7 @@ def qso_catalog_for_a_tile(path_to_tile, tile, last_night, survey, program, keep
     return pd.concat([run_catalog_maker(path_to_tile, tile, last_night, petal, survey, program) for petal in range(10)], ignore_index=True)
 
 
-def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test', survey_sel=None, program_sel=None, addTSprob=True, keep_all=False):
+def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', dir_output='', npool=20, tiles_to_use=None, qsoversion='test', survey_sel=None, program_sel=None, addTSprob=True, keep_all=False, update_qn_zwarn=True):
     """
     Build the QSO catalog from the healpix directory.
 
@@ -504,6 +505,11 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
         * dir_output (str): directory where the QSO catalog will be saved.
         * npool (int): nbr of workers used for the parallelisation.
         * tiles_to_use (list of str): Build the catalog only on this list of tiles. Default=None, use all the tiles collected from tiles-{release}.fits file.
+        * survey_sel (str): which TS do you want to use (sv1/sv3/main)
+        * program_sel (str): either dark / bright / backup
+        * addTSprob (bool): compute the probabilty to be selected with the Random Forest of the Target Selection algorithm.
+        * keep_all (bool): if True return all the targets. if False return only targets which are selected as QSO.
+        * update_qn_zwarn (bool): if True, zwarn is updated from RR rerun of QN; must be set to False for QN output files generated prior to 07/11/2024
     """
     import multiprocessing
     from itertools import repeat
@@ -533,7 +539,7 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     log.info(f'There are {tiles.size} tiles to treat with npool={npool}')
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
     with multiprocessing.Pool(npool) as pool:
-        arguments = zip(repeat(DIR), tiles, last_night, survey, program, repeat(keep_all))
+        arguments = zip(repeat(DIR), tiles, last_night, survey, program, repeat(keep_all), repeat(update_qn_zwarn))
         QSO_cat = pd.concat(pool.starmap(qso_catalog_for_a_tile, arguments), ignore_index=True)
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
 
