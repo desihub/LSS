@@ -305,7 +305,7 @@ def is_target_in_survey(QSO_cat, DESI_TARGET, target_name):
     return QSO_cat[DESI_TARGET].values & mask_bit != 0
 
 
-def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_old_extname_for_fitsio=False, keep_all=False):
+def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_old_extname_for_fitsio=False, keep_all=False, update_qn_zwarn=True):
     """
     Compile the different QSO identifications to build the QSO catalog from a RR, mgII, Qn file.
     Args:
@@ -317,6 +317,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
                                            To use desi_qso_qn_afterburner for everest and older files please activate this flag and use ONLY fitsio = 1.1.2.
                                            For daily production, this modification was done in: 18/01/2022.
         keep_all (bool): if True return all the targets. if False return only targets which are selected as QSO.
+        update_qn_zwarn (bool) : update ZWARN value for QN objects with new RR redshifts; must be set to False for QN output files generated prior to 07/11/2024
     Returns:
         QSO_cat (pandas dataframe): Dataframe containing all the information
     """
@@ -340,8 +341,10 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
 
     columns_mgii = ['TARGETID', 'IS_QSO_MGII', 'DELTA_CHI2', 'A', 'SIGMA', 'B', 'VAR_A', 'VAR_SIGMA', 'VAR_B']
     columns_mgii_rename = {"DELTA_CHI2": "DELTA_CHI2_MGII", "A": "A_MGII", "SIGMA": "SIGMA_MGII", "B": "B_MGII", "VAR_A": "VAR_A_MGII", "VAR_SIGMA": "VAR_SIGMA_MGII", "VAR_B": "VAR_B_MGII"}
-
-    columns_qn = ['TARGETID', 'Z_NEW', 'ZERR_NEW', 'Z_RR', 'Z_QN', 'IS_QSO_QN_NEW_RR',
+    columns_qn = ['TARGETID', 'Z_NEW', 'ZERR_NEW', 'ZWARN_NEW', 'Z_RR', 'Z_QN', 'IS_QSO_QN_NEW_RR',
+                  'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha',
+                  'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha']
+    columns_qn_nozwarn = ['TARGETID', 'Z_NEW', 'ZERR_NEW', 'Z_RR', 'Z_QN', 'IS_QSO_QN_NEW_RR',
                   'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha',
                   'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha']
 
@@ -350,7 +353,10 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     fibermap = read_fits_to_pandas(redrock, ext='FIBERMAP', columns=[name for name in columns_fibermap if name in fitsio.read(redrock, ext='FIBERMAP', rows=[0]).dtype.names])
     tsnr2 = read_fits_to_pandas(redrock, ext='TSNR2', columns=columns_tsnr2)
     mgii = read_fits_to_pandas(mgii, ext='MGII', columns=columns_mgii).rename(columns=columns_mgii_rename)
-    qn = read_fits_to_pandas(qn, ext='QN+RR' if use_old_extname_for_fitsio else 'QN_RR', columns=columns_qn)
+    if update_qn_zwarn:
+        qn = read_fits_to_pandas(qn, ext='QN_RR', columns=columns_qn)
+    else:
+        qn = read_fits_to_pandas(qn, ext='QN+RR' if use_old_extname_for_fitsio else 'QN_RR', columns=columns_qn_nozwarn)
 
     # Find which selection is used (SV1/ SV2 / SV3 / MAIN / ...)
     DESI_TARGET = main_cmx_or_sv(fitsio.read(redrock, ext='FIBERMAP', rows=[0]))[0][0]
@@ -387,6 +393,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # do not forget to update redshift for QN object !
     QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'Z'] = QSO_cat['Z_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS].values
     QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'ZERR'] = QSO_cat['ZERR_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS].values
+    if update_qn_zwarn:
+        QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS, 'ZWARN'] = QSO_cat['ZWARN_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS].values
 
     # selection for ELG targets:
     is_OK_for_ELG = (QSO_cat['SPECTYPE'] == 'QSO') & QSO_cat['IS_QSO_QN_06']
@@ -394,26 +402,31 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # do not forget to update redshift for QN object !
     QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG, 'Z'] = QSO_cat['Z_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG].values
     QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG, 'ZERR'] = QSO_cat['ZERR_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG].values
+    if update_qn_zwarn:
+        QSO_cat.loc[QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG, 'ZWARN'] = QSO_cat['ZWARN_NEW'][QSO_cat['IS_QSO_QN_NEW_RR'] & is_ELG & (~is_QSO) & is_OK_for_ELG].values
 
     # selection for QSO targets
     # &= since IS_QSO_QN_NEW_RR contains only QSO for QN which are not QSO for RR AND which are RR but with correct new redshift .
     # I do this here to match the same behavior than previously !
     QSO_cat['IS_QSO_QN_NEW_RR'] &= QSO_cat['IS_QSO_QN_099']
     log.info('Selection with SPECTYPE.')
-    QSO_cat.loc[is_QSO & (QSO_cat['SPECTYPE'] == 'QSO'), 'QSO_MASKBITS'] += 2**1
-    log.info('Selection with MgII.')
+
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_MGII'], 'QSO_MASKBITS'] += 2**2
     log.info('Selection with QN (add new z from Redrock with QN prior where it is relevant).')
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_099'], 'QSO_MASKBITS'] += 2**3
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'QSO_MASKBITS'] += 2**4
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+    if update_qn_zwarn:
+        QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZWARN'] = QSO_cat['ZWARN_NEW'][is_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # selection for WISE_VAR_QSO targets (secondary target) --> same as QSO
     is_OK_for_VAR_WISE_QSO = (QSO_cat['SPECTYPE'] == 'QSO') | QSO_cat['IS_QSO_MGII'] | QSO_cat['IS_QSO_QN_099']
     QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO, 'QSO_MASKBITS'] += 2**7
     QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'Z'] = QSO_cat['Z_NEW'][is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
     QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZERR'] = QSO_cat['ZERR_NEW'][is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
+    if update_qn_zwarn:
+        QSO_cat.loc[is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR'], 'ZWARN'] = QSO_cat['ZWARN_NEW'][is_VAR_WISE_QSO & is_OK_for_VAR_WISE_QSO & QSO_cat['IS_QSO_QN_NEW_RR']].values
 
     # Add quality cuts: cut on zwarn, objtype and cut on fiberstatus
     bad_qso = QSO_cat['OBJTYPE'] != 'TGT'  # creating the excess (due to sky fiber) around z~3.7 and lower redshit.
@@ -422,6 +435,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
 
     # remove useless columns:
     QSO_cat.drop(columns=['IS_QSO_MGII', 'IS_QSO_QN_06', 'IS_QSO_QN_099', 'IS_QSO_QN_NEW_RR', 'Z_NEW', 'ZERR_NEW'], inplace=True)
+    if update_qn_zwarn:
+        QSO_cat.drop(columns=['ZWARN_NEW'], inplace=True)
 
     if keep_all:
         log.info('Return all the targets without any cut on QSO selection.')
@@ -530,7 +545,7 @@ def build_qso_catalog_from_tiles(redux='/global/cfs/cdirs/desi/spectro/redux/', 
     common.write_LSS_scratchcp(QSO_cat.to_records(index=False),os.path.join(dir_output, f'QSO_cat_{release}_cumulative_v{qsoversion}.fits'),extname="QSO_CAT",logger=log)
 
 
-def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_all=False):
+def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_all=False, update_qn_zwarn=True):
     """
     Build the QSO catalog for the tile using the last_night. It is relevant for cumulative directory.
     This function is usefull to be called in pool.starmap under multiprocessing.
@@ -542,6 +557,7 @@ def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_a
         * survey (str): which TS do you want to use (sv1/sv3/main)
         * program (str): either dark / bright / backup
         * keep_all (bool): if True return all the targets. if False return only targets which are selected as QSO.
+        * update_qn_zwarn (bool): if True, zwarn is updated from RR rerun of QN; must be set to False for QN output files generated prior to 07/11/2024
 
     Return:
         QSO_cat (DataFrame): pandas DataFrame containing the QSO_catalog for the considered pixel.
@@ -552,7 +568,7 @@ def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_a
 
     if os.path.isfile(redrock):
         if os.path.isfile(mgii_afterburner) & os.path.isfile(qn_afterburner):
-            qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner, keep_all=keep_all)
+            qso_cat = qso_catalog_maker(redrock, mgii_afterburner, qn_afterburner, keep_all=keep_all, update_qn_zwarn=update_qn_zwarn)
             qso_cat['HPXPIXEL'] = int(pixel)
             qso_cat['SURVEY'] = survey
             qso_cat['PROGRAM'] = program
@@ -566,7 +582,7 @@ def qso_catalog_for_a_pixel(path_to_pix, pre_pix, pixel, survey, program, keep_a
     return qso_cat
 
 
-def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', survey='sv3', program='dark', dir_output='', npool=20, keep_qso_targets=True, keep_all=False, qsoversion='test'):
+def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/', release='fuji', survey='sv3', program='dark', dir_output='', npool=20, keep_qso_targets=True, keep_all=False, update_qn_zwarn=True, qsoversion='test'):
     """
     Build the QSO catalog from the healpix directory.
 
@@ -580,7 +596,8 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
         * dir_output (str): directory where the QSO catalog will be saved.
         * npool (int): nbr of workers used for the parallelisation.
         * keep_qso_targets (bool): if True save only QSO targets. default=True
-        * keep_all (bool): if True return all the targets. if False return only targets which are selected as QSO. default=False
+        * keep_all (bool): if True return all the targets. if False return only targets which are selected as QSO. default=Falsei
+        * update_qn_zwarn (bool): if True, zwarn is updated from RR rerun of QN; must be set to False for QN output files generated prior to 07/11/2024
     """
     import multiprocessing
     from itertools import repeat
@@ -602,7 +619,7 @@ def build_qso_catalog_from_healpix(redux='/global/cfs/cdirs/desi/spectro/redux/'
     log.info(f'There are {len(pixel_list)} pixels to treat with npool={npool}')
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.ERROR)
     with multiprocessing.Pool(npool) as pool:
-        arguments = zip(repeat(DIR), pre_pix_list_long, pixel_list, repeat(survey), repeat(program), repeat(keep_all))
+        arguments = zip(repeat(DIR), pre_pix_list_long, pixel_list, repeat(survey), repeat(program), repeat(keep_all), repeat(update_qn_zwarn))
         QSO_cat = pd.concat(pool.starmap(qso_catalog_for_a_pixel, arguments), ignore_index=True)
     logging.getLogger("QSO_CAT_UTILS").setLevel(logging.INFO)
 
