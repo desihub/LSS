@@ -410,7 +410,8 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
     # I do this here to match the same behavior than previously !
     QSO_cat['IS_QSO_QN_NEW_RR'] &= QSO_cat['IS_QSO_QN_099']
     log.info('Selection with SPECTYPE.')
-
+    QSO_cat.loc[is_QSO & (QSO_cat['SPECTYPE'] == 'QSO'), 'QSO_MASKBITS'] += 2**1
+    log.info('Selection with MgII.')
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_MGII'], 'QSO_MASKBITS'] += 2**2
     log.info('Selection with QN (add new z from Redrock with QN prior where it is relevant).')
     QSO_cat.loc[is_QSO & QSO_cat['IS_QSO_QN_099'], 'QSO_MASKBITS'] += 2**3
