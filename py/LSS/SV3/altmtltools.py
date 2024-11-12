@@ -750,39 +750,42 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         
 
         # add main priority values
-
-
+        
         if  (obscon.lower() == 'bright') and (shuffleBrightPriorities):
             if (survey.lower() == 'sv3'):
                 BGSHIPBit = 2**3
                 BGSBit = 2**0
                 BGSPriorityInit = 102000
                 BGSHIPPriority = 102100
-
-                BGSBits = initialentries['SV3_BGS_TARGET']
+                BGSTargKey = 'SV3_BGS_TARGET'
+                
             elif (survey.lower() == 'main'):
                 BGSHIPBit = 2**3
                 BGSBit = 2**0
                 BGSPriorityInit = 2000
                 BGSHIPPriority = 2100
-                BGSBits = initialentries['BGS_TARGET']
+                #BGSBits = initialentries['BGS_TARGET']
+                BGSTargKey = 'BGS_TARGET'
             else:
                 raise ValueError('Survey.lower should be `sv3` or `main` but is instead {0:s}'.format(survey.lower()))
+            BGSBits = initialentries[BGSTargKey]
             BGSFaintHIP = ((BGSBits & BGSHIPBit) == BGSHIPBit)
             BGSFaintAll = ((BGSBits & BGSBit) == BGSBit) | BGSFaintHIP
 
             #Set all BGS_FAINT_HIP to BGS_FAINT
-
-            initialentries['SV3_BGS_TARGET'][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~BGSHIPBit)
+            
+            initialentries[BGSTargKey][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~BGSHIPBit)
             initialentries['PRIORITY'][BGSFaintHIP] = BGSPriorityInit*np.ones(np.sum(BGSFaintHIP))
-            initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), BGSFaintHIP.shape)
+            #initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), BGSFaintHIP.shape)
+            initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), np.sum(BGSFaintHIP))
 
             #Select 20% of BGS_FAINT to promote using function from desitarget
             BGSFaintNewHIP = random_fraction_of_trues(PromoteFracBGSFaint, BGSFaintAll)
             #Promote them
 
-            initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | BGSHIPBit)
-            initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), BGSFaintNewHIP.shape)
+            initialentries[BGSTargKey][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | BGSHIPBit)
+            #initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), BGSFaintNewHIP.shape)
+            initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), np.sum(BGSFaintNewHIP))
             initialentries['PRIORITY'][BGSFaintNewHIP] = BGSHIPPriority*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
             initialentries['PRIORITY_INIT'][BGSFaintNewHIP] = BGSHIPPriority*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
 
