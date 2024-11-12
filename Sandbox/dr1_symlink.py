@@ -28,7 +28,7 @@ amtldir = pubdir+'/LSS/altmtl'
 if not os.path.exists(amtldir):
     os.makedirs(amtldir)
 
-fnames = ['LSS/collisions-BRIGHT.fits','LSS/collisions-DARK.fits','tiles-BRIGHT.fits','tiles-DARK.fits']
+fnames = ['LSS/collisions-BRIGHT.fits','LSS/collisions-DARK.fits','LSS/tiles-BRIGHT.fits','LSS/tiles-DARK.fits']
 for fname in fnames:
     os.system('ln -s '+indir+fname+' ' +pubdir+fname)
 
