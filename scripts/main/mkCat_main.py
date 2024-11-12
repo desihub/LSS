@@ -1371,7 +1371,7 @@ if args.imsys_clus == 'y':
     regl = ['NGC','SGC']
     def _add2ran(rann):
         for reg in regl:
-            ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(i)+'_clustering.ran.fits')
+            ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
             ran = Table(fitsio.read(ran_fn))
             if syscol in ran.colnames:
                 ran.remove_column(syscol)
