@@ -430,11 +430,14 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 fo.write("module swap fiberassign/2.3.0\n") #inspection of results revealed tiles that used 2.2.dev* after 20210413 are reproduced using 2.3.0 and those before using 2.2.0
             else:
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
-        elif faver > 2.4 and faver < 5.0:
+        elif faver > 2.4 and faver < 4.0:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
         else:
-            assert faver >= 5.0
-            fo.write("module swap fiberassign/5.0.0\n")
+            assert faver >= 4.0
+            #fo.write("module swap fiberassign/5.0.0\n")
+            fo.write("export PATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/bin:$PATH\n")
+            fo.write("export PYTHONPATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/py:$PYTHONPATH\n")
+            fo.write("export SKYHEALPIXS_DIR=$DESI_ROOT/target/skyhealpixs/v1\n")
     else:
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
