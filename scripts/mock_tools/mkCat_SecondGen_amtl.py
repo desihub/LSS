@@ -719,7 +719,7 @@ if args.add_nt_misspw == 'y':
     readdir = dirout
 
 if 'BGS_ANY-' in args.tracer:
-    abmagcut = -float(type.split('-')[1])
+    abmagcut = -float(args.tracer.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
     ffull = dirout+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False:
