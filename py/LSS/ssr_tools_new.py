@@ -177,7 +177,7 @@ class model_ssr_zfac:
             fo = open(outdir+outfn_root+'slp_wzfac.txt','w')
             fo.write(str(self.res_mod_slp))
             fo.close()
-        if not os.path.exists(outdir+outfn_root+'slp_vszfac.txt')
+        if not os.path.exists(outdir+outfn_root+'slp_vszfac.txt'):
             fo = open(outdir+outfn_root+'slp_vszfac.txt','w')
             for i in range(0,len(self.slpl)):
                 fo.write(str(self.zfacl[i])+' '+str(self.slpl[i])+'\n')
