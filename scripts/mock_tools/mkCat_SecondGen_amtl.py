@@ -797,9 +797,9 @@ if args.mkclusran == 'y':
     print('adding tlobs to randoms with ', fl)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     ranin = os.path.join(readdir, finaltracer) + '_'
-    if 'BGS_BRIGHT' in args.type:
+    if 'BGS_BRIGHT' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
-    if 'BGS_ANY' in args.type:
+    if 'BGS_ANY' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_ANY') + '_'
 
     global _parfun4
