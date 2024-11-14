@@ -49,6 +49,7 @@ parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
 parser.add_argument("--ccut", help="extra-cut",default=None)
+parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cut",default='simp')
 parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
@@ -717,6 +718,16 @@ if args.add_nt_misspw == 'y':
     bo = mocktools.do_weight_nt_misspw(fb, ranmin=rm, ranmax=rx, par=args.par, dirout=dirout)
     readdir = dirout
 
+if 'BGS_ANY-' in type:
+    abmagcut = -float(type.split('-')[1])
+    common.printlog('using ab mag cut '+str(abmagcut),logger)
+    ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    if os.path.isfile(ffull) == False:
+        logf.write('making BGS_ANY'+str(abmagcut)+' full data catalog for '+str(datetime.now()))
+        fin = fitsio.read(dirout+'BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+        if args.absmagmd == 'simp':
+            sel = fin['R_MAG_ABS'] < abmagcut
+        common.write_LSS(fin[sel],ffull)
 
 
 
@@ -785,12 +796,18 @@ if args.mkclusran == 'y':
     fl = os.path.join(readdir, finaltracer) + '_'
     print('adding tlobs to randoms with ', fl)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
+    ranin = os.path.join(readdir, finaltracer) + '_'
+    if 'BGS_BRIGHT' in args.type:
+        ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
+    if 'BGS_ANY' in args.type:
+        ranin = os.path.join(readdir, 'BGS_ANY') + '_'
+
     global _parfun4
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
 
-        ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
+        ct.mkclusran(ranin, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
 
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
