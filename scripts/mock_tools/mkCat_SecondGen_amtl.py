@@ -724,7 +724,7 @@ if 'BGS_ANY-' in args.tracer:
     ffull = dirout+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False:
         
-        fin = fitsio.read(dirout+'BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+        fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
         common.write_LSS(fin[sel],ffull)
