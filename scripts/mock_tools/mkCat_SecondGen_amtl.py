@@ -727,7 +727,7 @@ if 'BGS_ANY-' in args.tracer:
         fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
-        common.write_LSS(fin[sel],ffull)
+        common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
 
 
 
