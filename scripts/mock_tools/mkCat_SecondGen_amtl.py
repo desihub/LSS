@@ -723,7 +723,7 @@ if 'BGS_ANY-' in args.tracer:
     common.printlog('using ab mag cut '+str(abmagcut),logger)
     ffull = dirout+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False:
-        logf.write('making BGS_ANY'+str(abmagcut)+' full data catalog for '+str(datetime.now()))
+        
         fin = fitsio.read(dirout+'BGS_ANY_full'+args.use_map_veto+'.dat.fits')
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
