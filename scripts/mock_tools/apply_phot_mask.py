@@ -14,6 +14,7 @@ from astropy.io import fits
 
 ncpus = sys.argv[1]
 mocknum = sys.argv[2]
+prog = sys.argv[3]
 
 def _run_mask(args):
     fn, nob_fn, idx = args[0], args[1], args[2]
@@ -64,23 +65,31 @@ def get_maskbit_nobs(cat, nproc = int(ncpus), path_to_bricks='/global/cfs/cdirs/
     print('Done in {} sec'.format(time.time()-st), flush=True)
     return cat
 
+if prog=='DARK':
+    tag = 'AbacusSummit_v4_1'
+    global_type = 'LRG'
+elif prog=='BRIGHT':
+    tag = 'AbacusSummitBGS_v2'
+    global_type = 'BGS'
 
-file_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum) 
+file_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum, TAG=tag) 
 
+#file_ = '/pscratch/sd/e/efdez/Uchuu/LSS/scripts/mock_tools/DA2/LRG_NGC_12_clustering.ran.fits'
 #/pscratch/sd/z/zxzhai/DESI/PreMocks/SecondGenMocks/AbacusSummit_v4_1/forFA'+str(mocknum)+'_nomasking.fits'
 
 cat = Table.read(file_)
 
+print('size before cutting photmask is', len(cat))
 cat = get_maskbit_nobs(cat)
 
-mainp = main(tp = 'BGS', specver = 'kibo-v1')
+mainp = main(tp = global_type, specver = 'kibo-v1')
 cat = ct.cutphotmask(cat, bits=mainp.imbits)
 
 st=time.time()
-
-out_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/forFA{MOCK}.fits'.format(MOCK=mocknum)
-ct.write_LSS_scratchcp(cat, out_file_name), extname='TARGETS')
+print('size after cutting photmask is', len(cat))
+out_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}.fits'.format(MOCK=mocknum, TAG=tag)
+ct.write_LSS_scratchcp(cat, out_file_name, extname='TARGETS')
 print('Done writing in {} sec'.format(time.time()-st), flush=True)
 
-fits.setval(out_file_name, 'OBSCON', value='BRIGHT', ext=1)
+fits.setval(out_file_name, 'OBSCON', value=prog, ext=1)
 

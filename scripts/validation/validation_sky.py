@@ -176,7 +176,7 @@ if args.survey == 'SV3' and args.tracers == 'all':
 for tp in tps:
     tpr = tp
     prog = 'dark'
-    if tp == 'BGS_BRIGHT-21.5':
+    if 'BGS_BRIGHT-' in tp:
         tpr = 'BGS_BRIGHT'
         prog = 'bright'
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)

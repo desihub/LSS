@@ -1,11 +1,11 @@
 '''
-Find all potential assignments (and collisions) for DA2 randoms
+This is a little demo script for the Assignment.check_avail_collisions() function.
 '''
 
 import numpy as np
-import os
-from astropy.table import Table, join
 import argparse
+from astropy.table import Table
+
 from fiberassign.hardware import load_hardware
 from fiberassign.tiles import load_tiles
 from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, create_tagalong, load_target_file, targets_in_tiles
@@ -17,60 +17,47 @@ import fitsio
 
 import LSS.common_tools as common
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--survey", choices=['Y1','DA2'],default='DA2')
-parser.add_argument("--minr", default=0,type=int)
-parser.add_argument("--maxr", default=18,type=int)
-parser.add_argument("--outmode", choices=['test','prod'],default='test')
 
 args = parser.parse_args()
 
 
-tiletab = Table.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/tiles-'+args.prog+'.fits')
+t = Table.read('/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/tiles-'+args.prog+'.fits')
+#print('tiles:', t)
 
 margins = dict(pos=0.05,
                    petal=0.4,
                    gfa=0.4)
 
 
-#def main():
-
-    # from LSS.mkCat_singletile.fa4lsscat import getfatiles
-    # getfatiles()
-    # return
 log = Logger.get()
-rann = 0
+
 n = 0
+colls = []
+
 #for tile in t['TILEID']:    
-def getcoll(ind):
+#for tile in tls:
 
     #tile = 1230
-    tile = tiletab[ind]['TILEID']
+def getcoll(tile):
     ts = '%06i' % tile
 
     fbah = fitsio.read_header('/dvs_ro/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    #if fbah['FA_VER'][0] == '5':
     dt = fbah['RUNDATE']#[:19]
-    pr = args.prog
-    t = Table(tiletab[ind])
-    t['OBSCONDITIONS'] = 516
-    t['IN_DESI'] = 1
-    t['MTLTIME'] = fbah['MTLTIME']
-    t['FA_RUN'] = fbah['FA_RUN']
-    t['PROGRAM'] = pr
+    hw = load_hardware(rundate=dt, add_margins=margins)
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
-    hw = load_hardware(rundate=dt, add_margins=margins)
-
-    t.write(os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits', overwrite=True)
-
     tiles = load_tiles(
-        tiles_file=os.environ['SCRATCH']+'/rantiles/'+str(tile)+'-'+str(rann)+'-tiles.fits',obsha=obsha,obstheta=obstheta,
+        tiles_file='/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-tiles.fits',obsha=obsha,obstheta=obstheta,
         select=[tile])
 
     tids = tiles.id
-    print('Tile ids:', tids)
+    #print('Tile ids:', tids)
     I = np.flatnonzero(np.array(tids) == tile)
     assert(len(I) == 1)
     i = I[0]
@@ -84,9 +71,12 @@ def getcoll(ind):
     tagalong = create_tagalong(plate_radec=plate_radec)
 
     # Load target files...
-    load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile)
-    #loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
-    tar_tab = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/tilenofa-%i.fits' % tile,columns =['TARGETID','RA','DEC'])
+    load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits',rundate=dt)
+    load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-scnd.fits',rundate=dt)
+    load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-sky.fits',rundate=dt)
+
+    ttids = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')['TARGETID']
+
 
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
@@ -120,42 +110,50 @@ def getcoll(ind):
         fdata['FIBER']   [off:off+len(tg)] = fibers[lid]
         fdata['TARGETID'][off:off+len(tg)] = sorted(tg)
         off += len(tg)
-    fdata = join(fdata,tar_tab,keys=['TARGETID'],join_type='left')
+
     coll = asgn.check_avail_collisions(tile)
     kl = np.array(list(coll.keys())).transpose()
     locs = kl[0]
     ids = kl[1]
     locids = ids*10000+locs
-    #print('collisions:', coll)
-    print('N collisions:', len(coll))
+    #print('N collisions:', len(coll))
     # coll: dict (loc, targetid) -> bitmask
-    #forig = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/fba-'+ts+'.fits',ext='FAVAIL')
+    forig = fitsio.read('/dvs_ro/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz',ext='POTENTIAL_ASSIGNMENTS')
     #print(coll)
-    locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-    print('N collisions original:',np.sum(locidsin),len(fdata))
+    selo = np.isin(forig['TARGETID'],ttids)
+    forig = forig[selo]
+    check = np.isin(forig['TARGETID'],fdata['TARGETID'])
+    return (tile,len(check),np.sum(check),dt)
+    #locidsin = np.isin(forig['LOCATION']+10000*forig['TARGETID'],locids)
     #colltab = Table(forig[locidsin])
-    fdata['TILEID'] = tile
-    fdata['COLLISION'] = locidsin
-    return fdata
-    
+    #colltab['TILEID'] = tile
+    #return colltab
+    #colls.append(colltab)
+        
+
+    #n += 1
+    #else:
+    #    print(ts,fbah['FA_VER'])
+    #print(n,len(t))
+    #if n >= 100:
+    #    break
+
+#colltot = np.concatenate(colls)
+
 if __name__ == '__main__':
     from multiprocessing import Pool
-    tls = list(tiletab['TILEID'])#[:10])
-    inds = np.arange(len(tls))
-    if args.outmode == 'prod':
-        outroot = '/global/cfs/cdirs/desi/survey/catalogs/'
-    if args.outmode == 'test':
-        outroot = os.getenv('SCRATCH')+'/'
-    if not os.path.exists(outroot+args.survey+'/LSS'):
-        os.makedirs(outroot+args.survey+'/LSS')
-
-    for rann in range(int(args.minr),int(args.maxr)):
-        with Pool(processes=128) as pool:
-            res = pool.map(getcoll, inds)
-        colltot = np.concatenate(res)
-        print(len(colltot),np.sum(colltot['COLLISION']))
-        outdir = outroot+args.survey+'/LSS/random'+str(rann)
-        if not os.path.exists(outdir):        
-            os.makedirs(outdir)
-        common.write_LSS_scratchcp(colltot,outdir+'/pota-'+args.prog+'.fits')
+    tls = list(t['TILEID'])#[:10])
+    with Pool(processes=128) as pool:
+        res = pool.map(getcoll, tls)
+    tiles_notm = []
+    nfail = 0
+    for i in range(0,len(res)):
+        if res[i][2] != res[i][1]:
+            print(res[i])
+            tiles_notm.append(res[i][0])
+            nfail += 1
+    print('the number of mismatches is '+str(nfail))
+    
+    #colltot = np.concatenate(res)
+    #common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/collisions-'+args.prog+'.fits')
 

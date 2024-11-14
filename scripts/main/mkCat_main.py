@@ -596,7 +596,7 @@ if args.add_ke == 'y':
             #if args.test == 'n':
         common.write_LSS(res,fn,comments=['added k+e corrections'])
 
-if 'BGS_BRIGHT' in type and len(type.split('-')) > 0:
+if 'BGS_BRIGHT-' in type:
 #type == 'BGS_BRIGHT-21.5':# and args.survey == 'Y1': #and args.clusd == 'y':
     abmagcut = -float(type.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
@@ -1355,9 +1355,37 @@ if args.imsys_clus == 'y':
             wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
-    common.write_LSS(dat,foutname)
+    #attach data to NGC/SGC catalogs, write those out
+    dat.keep_columns(['TARGETID',syscol])
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
+    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
 
-    
+    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
+    #do randoms
+    dat.rename_column('TARGETID','TARGETID_DATA')
+    regl = ['NGC','SGC']
+    def _add2ran(rann):
+        for reg in regl:
+            ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
+            ran = Table(fitsio.read(ran_fn))
+            if syscol in ran.colnames:
+                ran.remove_column(syscol)
+            ran = join(ran,dat,keys=['TARGETID_DATA'])
+            common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
+
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_add2ran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _add2ran(rn)
+            
 
 #if args.nz == 'y':
     

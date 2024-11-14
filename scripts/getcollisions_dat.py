@@ -1,7 +1,7 @@
 '''
-This is a little demo script for the Assignment.check_avail_collisions() function.
+find and record potential assignments that would never have actually been assigned, due to collisions
 '''
-
+import os
 import numpy as np
 import argparse
 from astropy.table import Table
@@ -21,6 +21,7 @@ import LSS.common_tools as common
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--survey", choices=['Y1','DA2'],default='DA2')
+parser.add_argument("--outmode", choices=['test','prod'],default='test')
 
 args = parser.parse_args()
 
@@ -125,5 +126,12 @@ if __name__ == '__main__':
     with Pool(processes=128) as pool:
         res = pool.map(getcoll, tls)
     colltot = np.concatenate(res)
-    common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/collisions-'+args.prog+'.fits')
+    if args.outmode == 'prod':
+        outroot = '/global/cfs/cdirs/desi/survey/catalogs/'
+    if args.outmode == 'test':
+        outroot = os.getenv('SCRATCH')+'/'
+    if not os.path.exists(outroot+args.survey+'/LSS'):
+        os.makedirs(outroot+args.survey+'/LSS')
+
+    common.write_LSS(colltot,outroot+args.survey+'/LSS/collisions-'+args.prog+'.fits')
 

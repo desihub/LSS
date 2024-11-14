@@ -1,6 +1,7 @@
 #!/bin/bash
 
 
+export OMP_NUM_THREADS=1
 ### THIS IS WHAT COMES FROM dataLoopAltMTLBugFix_mock -------------------------------
 #argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --initpath=$initpath"
 #echo 'argstring for dateloop'
@@ -45,8 +46,8 @@ then
 fi
 if [ $QVal = 'regular' ]; 
 then
-	echo "srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:28192113 $path2LSS/runAltMTLRealizations.py $argstring"
-    srun -c 5 -C $CVal --qos=shared -A desi -t 24:00:00 --mem=64G --dependency=afterany:28559409 python $path2LSS/runAltMTLRealizations.py $argstring
+    echo "srun -c 25 -n 1 -C $CVal --qos=shared -A desi -t 48:00:00 --mem=128G python $path2LSS/runAltMTLRealizations.py $argstring"
+    srun -c 25 -n 1 -C $CVal --qos=shared -A desi -t 48:00:00 --mem=128G python $path2LSS/runAltMTLRealizations.py $argstring
     ##srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:22562205 $path2LSS/runAltMTLRealizations.py $argstring
     #srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
 fi

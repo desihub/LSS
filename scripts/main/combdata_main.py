@@ -148,7 +148,10 @@ logger.info('found '+str(len(mtd))+' '+prog+' time '+args.survey+' survey tiles 
 tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
-tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
+if args.verspec == 'daily':
+    tiles4comb['THRUDATE'] = mtd['ZDATE']#mtd['LASTNIGHT']
+else:
+    tiles4comb['THRUDATE'] = mtd['LASTNIGHT']#mtd['LASTNIGHT']
 
 
 logger.info('The last night of data that will be processed is for '+args.prog+' is '+str(np.max(tiles4comb['THRUDATE'] )))

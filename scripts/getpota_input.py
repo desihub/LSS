@@ -1,5 +1,5 @@
 '''
-Find all potential assignment and counts tiles for DA2 mocks
+Find all potential assignment and counts tiles for some input (must have data model needed for fiberassign) and some set of tiles
 Use the following environment
 source /global/common/software/desi/desi_environment.sh main
 '''
@@ -40,20 +40,16 @@ log = Logger.get()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
-parser.add_argument("--mock", default='ab2ndgen')
-parser.add_argument("--mock_version",default='')
-parser.add_argument("--realization")
+parser.add_argument("--survey", help="e.g.,Y1 or DA2", default='DA2')
 parser.add_argument("--getcoll",default='y')
-parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/')
-parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
-parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
+parser.add_argument("--input",help='full path to input file, assumed to be fits')
+parser.add_argument("--output",help='full path to output file, will be saved as fits')
 parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
                     default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
 parser.add_argument("--counttiles", default = 'n')
-parser.add_argument("--secgen_ver", default = None)
 parser.add_argument("--nprocs", help="Number of multiprocessing processes to use, default %(default)i",
                     default=multiprocessing.cpu_count()//2, type=int)
-
+parser.add_argument("--realization",help='needed, at least, to set different output directories for the temporary tiles, e.g., if many mocks are being processed at once',default='1')
 # On Perlmutter, this read-only access point can be *much* faster thanks to aggressive caching.
 #   If you didn't want this for some reason, you could revert '/dvs_ro/cfs/cdirs/desi' to '/global/cfs/cdirs/desi' in the following.
 desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi')
@@ -61,55 +57,11 @@ desi_input_dir = os.getenv('DESI_ROOT_READONLY', default='/dvs_ro/cfs/cdirs/desi
 args = parser.parse_args()
 print(args)
 
-if args.mock == 'ab2ndgen':
-    #infn = args.base_output+'FirstGenMocks/AbacusSummit/forFA'+args.realization+'_matched_input_full_masknobs.fits'
-    #infn = args.base_output+'SecondGenMocks/AbacusSummit/forFA'+args.realization+'.fits'
-    infn = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'forFA'+args.realization+'.fits')
-    log.info('Reading %s' % infn)
-    tars = fitsio.read(infn)
-    tarcols = list(tars.dtype.names)
-    #tileoutdir = args.base_output+'SecondGenMocks/AbacusSummit/tartiles'+args.realization+'/'
-    tileoutdir = os.path.join(os.getenv('SCRATCH'), 'SecondGenMocks', 'AbacusSummit',args.prog , 'tartiles'+args.realization)
-    paoutdir = os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'mock'+args.realization)
-elif args.mock == 'ezmocks6':
-    # #tr = args.tracer
-    # rz = args.realization
-    # print("Doing %s"%tr)
-    #
-    # if  tr == "LRG":
-    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_NGC.fits"%rz
-    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed%s_SGC.fits"%rz
-    # elif tr == "ELG":
-    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_NGC.fits"%rz
-    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/ELG/z1.100/cutsky_ELG_z1.100_EZmock_B6000G1536Z1.1N648012690_b0.345d1.45r40c0.05_seed%s_SGC.fits"%rz
-    # elif tr == "QSO":
-    #     infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_NGC.fits"%rz
-    #     infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/QSO/z1.400/cutsky_QSO_z1.400_EZmock_B6000G1536Z1.4N27395172_b0.053d1.13r0c0.6_seed%s_SGC.fits"%rz
-    ## infn1 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_NGC.fits"
-    ## infn2 = "/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/EZmock/CutSky_6Gpc/LRG/z0.800/cutsky_LRG_z0.800_EZmock_B6000G1536Z0.8N216424548_b0.385d4r169c0.3_seed1_SGC.fits"
-    # tars1 = Table.read(infn1)#fitsio.read(infn1)
-    # tars2 = Table.read(infn2)#fitsio.read(infn2)
-    # tars1["GALCAP"] = "N"
-    # tars2["GALCAP"] = "S"
-    # tars = vstack([tars1, tars2])
-    # tars['TARGETID'] = np.arange(len(tars))
 
-    infn = os.path.join(args.base_input + 'EZMocks_6Gpc', 'EZMocks_6Gpc_' + args.realization + '.fits')
-    tars = fitsio.read(infn)
-    tarcols = list(tars.dtype.names)#['TARGETID','RA','DEC', 'Z','Z_COSMO','GALCAP', 'NZ', 'RAW_NZ']
-
-    tileoutdir = os.path.join(args.base_output+'EZMocks_6Gpc', 'tartiles'+args.realization)
-    paoutdir = os.path.join(args.base_output+'EZMocks_6Gpc', 'EzMocks', 'mock'+args.realization)
-    if args.tracer is not None:
-        tileoutdir = os.path.join(tileoutdir, args.tracer)
-        paoutdir = os.path.join(paoutdir, args.tracer)
-
-elif args.mock == 'Generic':
-    infn = args.base_input
-    tars = fitsio.read(infn)
-    tarcols = list(tars.dtype.names)
-    tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), 'SecondGenMocks', 'Generic', 'tartiles'+args.realization)
-    paoutdir = args.base_output #os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'mock'+args.realization)
+infn = args.input
+tars = fitsio.read(infn)
+tarcols = list(tars.dtype.names)
+tileoutdir = os.path.join( os.getenv('SCRATCH'), 'temp_tilefiles', 'tartiles'+args.realization)
 
 # Ensure that the targets file is sorted by Dec.
 t0 = time.time()
@@ -123,11 +75,8 @@ log.info('Sorting/verifying mocks: %.1f' % (t1-t0))
 if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
     #print('made '+tileoutdir)
-if not os.path.exists(paoutdir):
-    os.makedirs(paoutdir)
-    #print('made '+paoutdir)
 
-tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', 'DA2', 'LSS', 'tiles-'+args.prog+'.fits'))
+tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', args.survey, 'LSS', 'tiles-'+args.prog+'.fits'))
 log.info('Reading startup globals: %.3f' % (time.time() - t_start))
 
 def get_tile_targ(tile):
@@ -362,7 +311,7 @@ def main():
     # log.info('Merging results and writing: %.3f sec (%.3f + %.3f)' % (t4-t3, t3b-t3, t4-t3b))
 
     # Write output *while* retrieving results in parallel
-    outfn = os.path.join(paoutdir, 'pota-'+args.prog+'.fits')
+    outfn = args.output#os.path.join(paoutdir, 'pota-'+args.prog+'.fits')
     tempout = outfn + '.tmp'
     fits = fitsio.FITS(tempout, 'rw', clobber=True)
     first = True

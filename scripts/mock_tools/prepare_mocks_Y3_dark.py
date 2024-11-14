@@ -58,7 +58,7 @@ parser.add_argument("--realmin", help="number for the realization",default=0,typ
 parser.add_argument("--realmax", help="number for the realization",default=1,type=int)
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/')
-parser.add_argument("--apply_mask", help="apply the same mask as applied to desi targets?",default='y')
+parser.add_argument("--apply_mask", help="apply the same mask as applied to desi targets?",default='n')
 parser.add_argument("--downsampling", help="downsample to Y1 target density in SecondGen Abacus mocks?",default='n')
 parser.add_argument("--isProduction", help="Say yes if you want to save in main production directory",default='n')
 parser.add_argument("--overwrite", help="Overwrite. if it is in production, this always will be no. You must delete by hand first", default=0, type=bool)

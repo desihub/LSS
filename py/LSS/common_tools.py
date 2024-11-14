@@ -1133,6 +1133,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         wm = zma == 0
         ff = ff[wm]
 
+    
     if '.dat' in fout:
         ff['Z'].name = 'Z_not4clus'
         printlog('updating completeness',logger)
@@ -1201,10 +1202,11 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         #print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         #if comp_only:
         #    return True
+    
     if '.ran' in fout:
         printlog('area is ' + str(len(ff) / 2500),logger)
     #comments = ["'full' LSS catalog without after vetos for priority, good hardware and imaging quality","entries are for targetid that showed up in POTENTIAL_ASSIGNMENTS"]
-    if fout is not None and wo == 'y':
+    if wo == 'y':
         write_LSS_scratchcp(ff, fout,logger=logger)#, comments)
     if '.dat' in fout:
         wz = ff['ZWARN'] != 999999

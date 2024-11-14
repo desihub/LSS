@@ -3735,8 +3735,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
-        if not ismock:
-            wz &= ff['TSNR2_ELG'] > tsnrcut
+        #if not ismock:
+        #    wz &= ff['TSNR2_ELG'] > tsnrcut
 
     if tp[:3] == 'ELG':
         #ff = get_ELG_SSR_tile(ff,dchi2,tsnrcut=tsnrcut)
@@ -3748,9 +3748,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             common.printlog('length after oII cut '+str(len(ff[wz])),logger)
         wz &= ff['LOCATION_ASSIGNED'] == 1
         common.printlog('length after also making sure location assigned '+str(len(ff[wz])),logger)
-        if not ismock:
-            wz &= ff['TSNR2_ELG'] > tsnrcut
-            common.printlog('length after tsnrcut '+str(len(ff[wz])),logger)
+        #if not ismock:
+        #    wz &= ff['TSNR2_ELG'] > tsnrcut
+        #    common.printlog('length after tsnrcut '+str(len(ff[wz])),logger)
 
     if tp == 'LRG':
         print('applying extra cut for LRGs')
@@ -3768,9 +3768,9 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
         #wz &= ff['DELTACHI2'] > dchi2
         common.printlog('length after Rongpu cut '+str(len(ff[wz])),logger)
         
-        if not ismock:
-            wz &= ff['TSNR2_ELG'] > tsnrcut
-            print('length after tsnrcut '+str(len(ff[wz])))
+        #if not ismock:
+        #    wz &= ff['TSNR2_ELG'] > tsnrcut
+        #    print('length after tsnrcut '+str(len(ff[wz])))
 
     if tp[:3] == 'BGS':
         wz = ff['ZWARN'] == 0
@@ -3781,8 +3781,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,tp='',dchi2=9,tsnrcut=80,rcut=No
             print('applying extra cut for BGS')
             wz &= ff['DELTACHI2'] > dchi2
             common.printlog('length after dchi2 cut '+str(len(ff[wz])),logger)
-        wz &= ff['TSNR2_BGS'] > tsnrcut
-        print('length after tsnrcut '+str(len(ff[wz])))
+        #wz &= ff['TSNR2_BGS'] > tsnrcut
+        #print('length after tsnrcut '+str(len(ff[wz])))
 
     if subfrac != 1:
         subfracl = np.ones(len(ff))

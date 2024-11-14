@@ -1,8 +1,6 @@
-# Get bitmask values from pixel-level per-brick masks for a catalog
+# Get bitmask values from pixel-level per-brick masks defined for a particular tracer type (lrg and elg available)
 # Examples:
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input catalog.fits --output catalog_lrgmask_v1.1.npy
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits --output $CSCRATCH/temp/randoms-1-0-lrgmask_v1.1.fits
-# srun -N 1 -C haswell -c 64 -t 04:00:00 -q interactive python read_pixel_bitmask.py --tracer lrg --input /global/cfs/cdirs/desi/users/rongpu/targets/dr9.0/1.0.0/resolve/dr9_lrg_south_1.0.0_basic.fits --output $CSCRATCH/temp/dr9_lrg_south_1.0.0_lrgmask_v1.1.fits
+# srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python readwrite_pixel_bitmask_ttype.py --tracer lrg --input_fn catalog.fits 
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
@@ -20,45 +18,27 @@ import argparse
 
 time_start = time.time()
 
+n_processes = 128
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--tracer', required=True)
-parser.add_argument('-i', '--input', required=True)
-parser.add_argument('-o', '--output', required=False)
+parser.add_argument('-t', '--tracer',help='the tracer type for the mask', required=True)
+parser.add_argument('-i', '--input_fn',help='the input file name, without .fits', required=True)
+parser.add_argument('-id', '--input_dir',help='the input directory',default='')
+parser.add_argument('--output_fn',help='the output file name, by default will match input with {tracer}imask.fits at the end', default=None)
+parser.add_argument('--output_dir',help='the output directory',default='')
 parser.add_argument('-v', '--version', default='none', required=False)
-parser.add_argument('-rv', '--tarver', default='targetsDR9v1.1.1', required=False)
-parser.add_argument( '--cat_type', default='targets')#, choices=['targets','ran','obielg','Ab2ndgen'],required=False)
-parser.add_argument( '--reg', default='north', choices=['north','south'],required=False)
-parser.add_argument( '--secgen_ver', default=None, required=False)
-parser.add_argument( '--nproc', default=128, required=False)
-
+parser.add_argument('--ra_col',default='RA')
+parser.add_argument('--dec_col',default='DEC')
 args = parser.parse_args()
 
-n_processes = int(args.nproc)
 
-input_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'.fits'
-output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+args.input+args.tarver+'_'+args.tracer+'imask.fits'
-if args.cat_type == 'ran':
-    input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-'+str(args.input)+'.fits'
-    output_path = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(args.input)+args.tracer+'imask.fits'
-if args.cat_type == 'obielg':
-    input_path = '/global/cfs/cdirs/desi/survey/catalogs/image_simulations/ELG/dr9/Y1/'+args.reg+'/file0_rs0_skip0/merged/matched_input_full.fits'
-    output_path = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/elg_obiwan_'+args.reg+'_matched_input_full_'+args.tracer+'_imask.fits'
-if args.cat_type == 'Ab2ndgen':
-    if args.secgen_ver is None:
-        mockdir = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit/'
-    else:
-        mockdir = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/%s/' %  args.secgen_ver
-    input_path = mockdir+'forFA'+args.input+'.fits'
-    output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
-if args.cat_type == 'Y1EZmock':
-    mockdir = '/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/EZmock/FFA/forFA/'
-    input_path = mockdir+'forFA'+args.input+'.fits'
-    output_path = mockdir+'forFA'+args.input+'_matched_input_full_'+args.tracer+'_imask.fits'
-
-if args.cat_type == 'Generic':
-    input_path = args.input
-    output_path = args.output 
+input_path = args.input_dir+'/'+args.input_fn+'.fits'
+if args.output_fn is None:
+    out_fn = args.input_fn +'_'+args.tracer+'imask.fits'
+else:
+    out_fn = args.output_fn
+output_path = args.output_dir+'/'+out_fn
+   
 
 
 tracer = args.tracer.lower()
@@ -128,16 +108,20 @@ def wrapper(bid_index):
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
 bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
-#try:
-#    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID', 'TARGETID']))
-#except ValueError:
-#    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
 
-if args.cat_type == 'obielg':
-    cat = Table(fitsio.read(input_path,columns=['input_ra','input_dec']))
-    cat.rename_columns(['input_ra', 'input_dec'], ['RA', 'DEC'])
-else:
-    cat = Table(fitsio.read(input_path))
+cat1row = fitsio.read(input_path,rows=1)
+cols = [args.ra_col,args.dec_col,'TARGETID','BRICKID']
+cols2read = []
+cols_in_f = list(cat1row.dtype.names)
+for col in cols:
+    if col in cols_in_f:
+        cols2read.append(col)
+    if col.lower() in cols_in_f:
+        cols2read.append(col)
+
+del cat1row
+
+cat = Table(fitsio.read(input_path,columns=cols2read))
 
 print(len(cat))
 
@@ -147,8 +131,8 @@ for col in cat.colnames:
 if 'TARGETID' not in cat.colnames:
     cat['TARGETID'] = np.arange(len(cat))
 
-if 'TARGET_RA' in cat.colnames:
-    cat.rename_columns(['TARGET_RA', 'TARGET_DEC'], ['RA', 'DEC'])
+
+cat.rename_columns([args.ra_col, args.dec_col], ['RA', 'DEC'])
 
 if 'BRICKID' not in cat.colnames:
     from desiutil import brick
