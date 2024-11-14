@@ -718,10 +718,10 @@ if args.add_nt_misspw == 'y':
     bo = mocktools.do_weight_nt_misspw(fb, ranmin=rm, ranmax=rx, par=args.par, dirout=dirout)
     readdir = dirout
 
-if 'BGS_ANY-' in type:
+if 'BGS_ANY-' in args.tracer:
     abmagcut = -float(type.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
-    ffull = dirout+type+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    ffull = dirout+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False:
         logf.write('making BGS_ANY'+str(abmagcut)+' full data catalog for '+str(datetime.now()))
         fin = fitsio.read(dirout+'BGS_ANY_full'+args.use_map_veto+'.dat.fits')
