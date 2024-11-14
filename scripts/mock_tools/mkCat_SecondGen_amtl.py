@@ -232,15 +232,15 @@ test_dir(dirout)
 #    os.makedirs(dirout)
 #    print('made '+dirout)
 
-
-if args.tracer != 'dark' and args.tracer != 'bright':
-    if args.tracer == 'BGS_BRIGHT':
-        bit = targetmask.bgs_mask[args.tracer]
-        #desitarg='DESI_TARGET'
-        desitarg='BGS_TARGET'
-    else:
-        bit = targetmask.desi_mask[args.tracer]
-        desitarg='DESI_TARGET'
+if '-' not in args.tracer:
+    if args.tracer != 'dark' and args.tracer != 'bright':
+        if args.tracer == 'BGS_BRIGHT':
+            bit = targetmask.bgs_mask[args.tracer]
+            #desitarg='DESI_TARGET'
+            desitarg='BGS_TARGET'
+        else:
+            bit = targetmask.desi_mask[args.tracer]
+            desitarg='DESI_TARGET'
 
 
 
