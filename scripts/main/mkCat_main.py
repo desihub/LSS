@@ -108,6 +108,7 @@ parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressio
 
 parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
 parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
+parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
 
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
 
@@ -1371,7 +1372,15 @@ if args.imsys_clus == 'y':
 
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
+
+if args.imsys_clus_ran == 'y':
     #do randoms
+    syscol = 'WEIGHT_IMLIN_CLUS'
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
+    dat_ngc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
+    dat_sgc = Table(fitsio.read(fname),columns=['TARGETID',syscol]))
+    dat = vstack([dat_sgc,dat_ngc])
     dat.rename_column('TARGETID','TARGETID_DATA')
     regl = ['NGC','SGC']
     def _add2ran(rann):
