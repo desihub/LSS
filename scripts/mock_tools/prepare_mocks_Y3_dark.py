@@ -13,7 +13,8 @@ import LSS.common_tools as common
 from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
-
+import multiprocessing
+import gc
 
 def create_dir(value):
     if not os.path.exists(value):
@@ -101,8 +102,7 @@ else:
         print('Saving to path', args.base_output)
 
 
-
-for real in range(args.realmin, args.realmax):
+def process(real):
     if not (args.mockver is None):
         if args.mockver == 'ab_firstgen':
             mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
@@ -310,7 +310,8 @@ for real in range(args.realmin, args.realmax):
             targets[col] = maskv[col]
         del maskv
         targets = common.cutphotmask(targets, bits=mainp.imbits)
-        
+    else:
+        out_file_name = out_file_name.split('.fits')[0] + '_nomask.fits'
 
 
     n=len(targets)
@@ -324,14 +325,20 @@ for real in range(args.realmin, args.realmax):
     targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
     targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
     targets['TARGETID'] = np.random.permutation(np.arange(1,n+1))
+    if args.overwrite:
+        common.write_LSS_scratchcp(targets, out_file_name, extname='TARGETS')
+    else:
+        targets.write(out_file_name, overwrite = args.overwrite)
 
-    targets.write(out_file_name, overwrite = args.overwrite)
-
-    fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
+    #fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
     fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
+    del targets
+    gc.collect()
 
-
-
-
-sys.exit()
+cpus_per_task = int(os.getenv('SLURM_CPUS_PER_TASK', 6))  # Default to 6 if not set
+if cpus_per_task > 10:
+    cpus_per_task = cpus_per_task//2
+with multiprocessing.Pool(processes=cpus_per_task) as pool:
+    # Map the process function to the range of numbers
+    results = pool.map(process, range(args.realmin,args.realmax))
 
