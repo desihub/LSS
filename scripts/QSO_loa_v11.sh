@@ -15,7 +15,12 @@ srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkC
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec $verspec --survey $survey --maxr 0 --version $1
 
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --maxr 0 --verspec $verspec --survey $survey --version $1
+python $LSSCODE/LSS/scripts/main/mkCat_main.py --type $TRACER  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_map_veto y --maxr 0 --verspec $verspec --survey $survey --version $1
+
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+export LSSCODE=$HOME
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+
 
 #12 minutes
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey $survey --verspec $verspec --imsys_zbin y --use_map_veto _HPmapcut --version $1
