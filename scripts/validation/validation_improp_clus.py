@@ -283,7 +283,7 @@ for tp in tps:
                 sel_reg_r = rt['PHOTSYS'] == reg
             else: 
                 inDESd = common.select_regressis_DES(dt)
-                inDESr = common.select_regressis_DES(dr)
+                inDESr = common.select_regressis_DES(rt)
                 if reg == 'DES':
                     sel_reg_d = inDESd
                     sel_reg_r = inDESr
