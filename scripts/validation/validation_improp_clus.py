@@ -159,7 +159,7 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     normw = sum(rh)/sum(dhw)
     svw = dhw/rh*normw
 
-    ep = np.sqrt(dh)/rh*norm #put in mean completeness factor to account for completeness weighting
+    ep = np.sqrt(dh)/rh*norm 
     
     chi2 = np.sum((svw-1)**2./ep**2.)
     chi2nw = np.sum((sv-1)**2./ep**2.)
@@ -189,7 +189,6 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     print('wrote to '+fname)
     return chi2,chi2nw
         
-
     
 
 for tp in tps:
@@ -216,17 +215,17 @@ for tp in tps:
         if 'PSFDEPTH_W2' in maps:
             maps.remove('PSFDEPTH_W2')
 
-    if 'CLUS' in args.weight_col:
-        fn = indir+args.extra_dir+tp+zdw+'_clustering.dat.fits'
-        dt = fitsio.read(fn)
-    else:
-        fcd_ngc = indir+args.extra_dir+tp+zdw+'_NGC_clustering.dat.fits'
-        fcd_sgc = indir+args.extra_dir+tp+zdw+'_SGC_clustering.dat.fits'
-        dn = fitsio.read(fcd_ngc)
-        ds = fitsio.read(fcd_sgc)
-        dt = np.concatenate([dn,ds])
-        del dn
-        del ds
+    #if 'CLUS' in args.weight_col:
+    #    fn = indir+args.extra_dir+tp+zdw+'_clustering.dat.fits'
+    #    dt = fitsio.read(fn)
+    #else:
+    fcd_ngc = indir+args.extra_dir+tp+zdw+'_NGC_clustering.dat.fits'
+    fcd_sgc = indir+args.extra_dir+tp+zdw+'_SGC_clustering.dat.fits'
+    dn = fitsio.read(fcd_ngc)
+    ds = fitsio.read(fcd_sgc)
+    dt = np.concatenate([dn,ds])
+    del dn
+    del ds
     
     ranl = []
     for ii in range(0,args.nran):
