@@ -349,8 +349,8 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
         if reg == 'SnotDES':
             sel &= dd['PHOTSYS'] == 'S'
             sel &= ~inDES
-			selr = rd['PHOTSYS'] == 'S'
-			selr &= ~inDESr
+            selr = rd['PHOTSYS'] == 'S'
+            selr &= ~inDESr
 
     else:
         print('other regions not currently supported')
