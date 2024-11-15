@@ -334,6 +334,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
 
 
 def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
+    import LSS.common_tools as common
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
     if reg == 'N' or reg == 'S':
