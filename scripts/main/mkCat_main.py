@@ -1326,7 +1326,7 @@ if args.imsys_clus == 'y':
         regu = reg
         if reg == 'DES' or reg == 'SnotDES':
             regu = 'S'
-        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
         for col in cols:
