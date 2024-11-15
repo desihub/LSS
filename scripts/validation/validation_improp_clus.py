@@ -24,6 +24,7 @@ parser.add_argument("--weight_col", help="column name for weight",default='WEIGH
 parser.add_argument("--mapmd", help="set of maps to use",default='validate')
 parser.add_argument("--verspec",help="version for redshifts",default='kibo-v1')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
+parser.add_argument("--splitDES",help="whether to split S into DES and notDES",default='n')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
 parser.add_argument("--nran",help="number of random files to use",default=1,type=int)
