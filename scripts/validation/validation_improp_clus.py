@@ -54,6 +54,10 @@ zdw = ''#'zdone'
 
 regl = ['S','N']
 clrs = ['r','b']
+if args.splitDES == 'y':
+	regl = ['DES','SnotDES','N']
+	clrs = ['orange','purple','b']
+    
 
 all_maps = ['CALIB_G',
  'CALIB_R',
@@ -273,8 +277,21 @@ for tp in tps:
         for reg,cl in zip(regl,clrs):
             if args.mapmd == 'validate':
                 fo = open(outdir+tp+zr+'_densclusvsall'+'_'+reg+'_'+args.mapmd+args.weight_col+'_chi2.txt','w')
-            sel_reg_d = dt['PHOTSYS'] == reg
-            sel_reg_r = rt['PHOTSYS'] == reg
+            if 'DES' not in reg:
+                sel_reg_d = dt['PHOTSYS'] == reg
+                sel_reg_r = rt['PHOTSYS'] == reg
+            else: 
+                inDESd = common.select_regressis_DES(dt)
+                inDESr = common.select_regressis_DES(dr)
+                if reg == 'DES':
+                    sel_reg_d = inDESd
+                    sel_reg_r = inDESr
+                if reg == 'SnotDES':
+                    sel_reg_d = dt['PHOTSYS'] == 'S'
+                    sel_reg_d &= ~inDESd
+                    sel_reg_r = rt['PHOTSYS'] == 'S'
+                    sel_reg_r &= ~inDESr
+            
             dt_reg = dt[sel_reg_d&selz]
             rt_reg = rt[sel_reg_r&selzr]
             
