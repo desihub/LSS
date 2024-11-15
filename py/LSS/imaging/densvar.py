@@ -339,32 +339,30 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     sel &= dd[zcol] < zmax
     if reg == 'N' or reg == 'S':
         sel &= dd['PHOTSYS'] == reg
+        selr = rd['PHOTSYS'] == reg
     elif 'DES' in reg:
         inDES = common.select_regressis_DES(dd)
+        inDESr = common.select_regressis_DES(rd)
         if reg == 'DES':
             sel &= inDES
+            selr = inDESr
         if reg == 'SnotDES':
             sel &= dd['PHOTSYS'] == 'S'
             sel &= ~inDES
+			selr = rd['PHOTSYS'] == 'S'
+			selr &= ~inDESr
+
     else:
         print('other regions not currently supported')
         return 'Exiting due to critical error with region'
  
     dds = dd[sel]
-    if wtmd == 'clus':
-        selr = rd[zcol] > zmin
-        selr &= rd[zcol] < zmax
-        if reg == 'N' or reg == 'S':
-            selr &= rd['PHOTSYS'] == reg
-        elif 'DES' in reg:
-            inDES = common.select_regressis_DES(rd)
-            if reg == 'DES':
-                selr &= inDES
-            if reg == 'SnotDES':
-                selr &= rd['PHOTSYS'] == 'S'
-                selr &= ~inDES
 
-        rd = rd[selr]
+    if wtmd == 'clus':
+        selr &= rd[zcol] > zmin
+        selr &= rd[zcol] < zmax
+
+    rd = rd[selr]
 
     #-- Dictionaries containing all different systematic values
     data_syst, rand_syst = read_systematic_maps(dds['RA'],dds['DEC'],rd['RA'],rd['DEC'],sys_tab=sys_tab)
