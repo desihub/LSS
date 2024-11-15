@@ -387,10 +387,12 @@ for tp in tps:
                 figs.append(fig)
 
 
-        
+            regu = reg
+            if 'DES' in reg:
+                regu = 'S'
             for mp in maps:
                 fig = plt.figure()
-                parv = mf[reg][mp]
+                parv = mf[regu][mp]
                 #print(mp)
                 #if mp == 'STARDENS':
                 #    parv = np.log(parv)
@@ -429,7 +431,7 @@ for tp in tps:
                 nside = 256#64
                 nest = False
                 eclrs = ['gr','rz']
-                ebvnocib = hp.reorder(mf[reg]['EBV_CHIANG_SFDcorr'],n2r=True)
+                ebvnocib = hp.reorder(mf[regu]['EBV_CHIANG_SFDcorr'],n2r=True)
                 for ec in eclrs:
                     #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
                     ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
