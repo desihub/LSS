@@ -338,14 +338,13 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     sel &= dd[zcol] < zmax
     if reg == 'N' or reg == 'S':
         sel &= dd['PHOTSYS'] == reg
-    elif:
-        if 'DES' in reg:
-            inDES = common.select_regressis_DES(dd)
-            if reg == 'DES':
-                sel &= inDES
-            if reg == 'SnotDES':
-                sel &= dd['PHOTSYS'] == 'S'
-                sel &= ~inDES
+    elif 'DES' in reg:
+        inDES = common.select_regressis_DES(dd)
+        if reg == 'DES':
+            sel &= inDES
+        if reg == 'SnotDES':
+            sel &= dd['PHOTSYS'] == 'S'
+            sel &= ~inDES
     else:
         print('other regions not currently supported')
         return 'Exiting due to critical error with region'
@@ -356,14 +355,13 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
         selr &= rd[zcol] < zmax
         if reg == 'N' or reg == 'S':
             selr &= rd['PHOTSYS'] == reg
-        elif:
-            if 'DES' in reg:
-                inDES = common.select_regressis_DES(rd)
-                if reg == 'DES':
-                    selr &= inDES
-                if reg == 'SnotDES':
-                    selr &= rd['PHOTSYS'] == 'S'
-                    selr &= ~inDES
+        elif 'DES' in reg:
+            inDES = common.select_regressis_DES(rd)
+            if reg == 'DES':
+                selr &= inDES
+            if reg == 'SnotDES':
+                selr &= rd['PHOTSYS'] == 'S'
+                selr &= ~inDES
 
         rd = rd[selr]
 
