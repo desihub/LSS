@@ -336,13 +336,35 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
 def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
-    sel &= dd['PHOTSYS'] == reg
+    if reg == 'N' or reg == 'S':
+        sel &= dd['PHOTSYS'] == reg
+    elif:
+        if 'DES' in reg:
+            inDES = common.select_regressis_DES(dd)
+            if reg == 'DES':
+                sel &= inDES
+            if reg == 'SnotDES':
+                sel &= dd['PHOTSYS'] == 'S'
+                sel &= ~inDES
+    else:
+        print('other regions not currently supported')
+        return 'Exiting due to critical error with region'
  
     dds = dd[sel]
     if wtmd == 'clus':
         selr = rd[zcol] > zmin
         selr &= rd[zcol] < zmax
-        selr &= rd['PHOTSYS'] == reg
+        if reg == 'N' or reg == 'S':
+            selr &= rd['PHOTSYS'] == reg
+        elif:
+            if 'DES' in reg:
+                inDES = common.select_regressis_DES(rd)
+                if reg == 'DES':
+                    selr &= inDES
+                if reg == 'SnotDES':
+                    selr &= rd['PHOTSYS'] == 'S'
+                    selr &= ~inDES
+
         rd = rd[selr]
 
     #-- Dictionaries containing all different systematic values

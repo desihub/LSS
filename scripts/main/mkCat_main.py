@@ -1319,6 +1319,8 @@ if args.imsys_clus == 'y':
     rands = np.concatenate(ranl)
     syscol = 'WEIGHT_IMLIN_CLUS'
     regl = ['S','N']
+    if args.type == 'QSO':
+        regl = ['N','DES','SnotDES']
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
         pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
