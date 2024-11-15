@@ -102,8 +102,7 @@ else:
         print('Saving to path', args.base_output)
 
 
-
-for real in range(args.realmin, args.realmax):
+def process(real):
     if not (args.mockver is None):
         if args.mockver == 'ab_firstgen':
             mockpath = '/global/cfs/cdirs/desi/cosmosim/FirstGenMocks/AbacusSummit/CutSky/'
@@ -419,6 +418,9 @@ for real in range(args.realmin, args.realmax):
     fits.setval(out_file_name, 'OBSCON', value=args.prog.upper(), ext=1)
 
 
-print(datetime.now() - startTime)
+cpus_per_task = int(os.getenv('SLURM_CPUS_PER_TASK', 6))  # Default to 6 if not set
+with multiprocessing.Pool(processes=cpus_per_task) as pool:
+    # Map the process function to the range of numbers
+    results = pool.map(process, range(args.realmin,args.realmax))
 
-sys.exit()
+print(datetime.now() - startTime)
