@@ -1320,9 +1320,12 @@ if args.imsys_clus == 'y':
     syscol = 'WEIGHT_IMLIN_CLUS'
     regl = ['S','N']
     if args.type == 'QSO':
-        regl = ['N','DES','SnotDES']
+        regl = ['DES','SnotDES','N']
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
+        regu = reg
+        if reg == 'DES' or reg == 'SnotDES':
+            regu = 'S'
         pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
