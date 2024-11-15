@@ -805,9 +805,15 @@ if args.imsys == 'y':
     rands = np.concatenate(ranl)
     syscol = 'WEIGHT_IMLIN'
     regl = ['S','N']
+    if args.type == 'QSO':
+        regl = ['DES','SnotDES','N']
+
     dat[syscol] = np.ones(len(dat))
     for reg in regl:
-        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+        regu = reg
+        if 'DES' in reg:
+            regu = 'S'
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
         for col in cols:
@@ -848,7 +854,7 @@ if args.imsys == 'y':
             dat[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
             #dd.write(fcd,overwrite=True,format='fits')
-    common.write_LSS(dat,fname)
+    common.write_LSS_scratchcp(dat,fname,logger=logger)
 
 if args.prepsysnet == 'y':
     logf.write('preparing data to run sysnet regression for '+tp+' '+str(datetime.now())+'\n')
