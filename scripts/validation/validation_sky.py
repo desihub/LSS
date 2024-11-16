@@ -46,7 +46,7 @@ nran = 18
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso','LRG','QSO','BGS_BRIGHT-21.5']
+    tps = ['ELG_LOPnotqso','LRG','QSO','BGS_BRIGHT-21.35']
 
 zdw = ''#'zdone'
 
