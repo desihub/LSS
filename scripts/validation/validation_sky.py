@@ -242,6 +242,18 @@ for tp in tps:
         titl  = tp+' COMP_TILE'
         outf = outdir+tp+'_comptile.png'
         plot_map_sindec(rada,sindd,dt['COMP_TILE'],vm,vx,titl,outf)
+
+        vm = 0
+        vx = 1
+        titl  = tp+' FRAC_TLOBS_TILES data'
+        outf = outdir+tp+'_datafractlobs.png'
+        plot_map_sindec(rada,sindd,dt['FRAC_TLOBS_TILES'],vm,vx,titl,outf)
+
+        titl  = tp+' FRAC_TLOBS_TILES random'
+        outf = outdir+tp+'_randfractlobs.png'
+        plot_map_sindec(rara,sindr,rta['FRAC_TLOBS_TILES'],vm,vx,titl,outf)
+
+
         #vm = np.min(dt['WEIGHT_SYS'])
         #vx = np.max(dt['WEIGHT_SYS'])
         vm = 0.75
