@@ -4043,7 +4043,7 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
             fr = tldic[tls]
         except:
             #print(tls +' not found')
-            fr = 0
+            fr = 1
         tlarray.append(fr)
         if nt%100000 == 0:
            common.printlog(str(nt)+','+str(len(ranf)),logger)  
