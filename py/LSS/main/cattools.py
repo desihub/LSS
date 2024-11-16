@@ -4051,7 +4051,7 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
     #        tlarray[i] = fr
     tlarray = np.array(tlarray)
     sel = tlarray == 0
-    common.printlog(str(len(tlarray[sel]))+', number with 0 frac',logger)
+    common.printlog(str(len(tlarray[sel]))+', number with 0 frac; fraction '+str(len(tlarray[sel])/len(tlarray)),logger)
     ranf['FRAC_TLOBS_TILES'] = tlarray
     outf = rf_name#fl+str(rann)+'_full.ran.fits'
     
