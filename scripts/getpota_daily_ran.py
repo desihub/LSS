@@ -177,5 +177,5 @@ if __name__ == '__main__':
         colltot = np.concatenate(res)
         if args.getcoll == 'y':
             print(len(colltot),np.sum(colltot['COLLISION']))
-        common.write_LSS(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
+        common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
 
