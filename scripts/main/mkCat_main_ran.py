@@ -349,7 +349,7 @@ def doran(ii):
     if args.counttiles == 'y':    
         logger.info('counting tiles')
         tc = ct.count_tiles_better('ran',type,ii,specrel=specrel,survey=args.survey,gtl=gtl)
-        common.write_LSS(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
+        common.write_LSS_scratchcp(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
         #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
         
