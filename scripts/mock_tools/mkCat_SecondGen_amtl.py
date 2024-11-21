@@ -720,7 +720,6 @@ if args.add_nt_misspw == 'y':
 
 if 'BGS_ANY-' in args.tracer:
     abmagcut = -float(args.tracer.split('-')[1])
-    common.printlog('making Mr<'+str(abmagcut)+' sample')
     common.printlog('using ab mag cut '+str(abmagcut),logger)
     ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
     if os.path.isfile(ffull) == False:
