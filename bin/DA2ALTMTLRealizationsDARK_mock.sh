@@ -45,7 +45,6 @@ mock='--mock'
 
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
-#ALTMTLHOME=/pscratch/sd/a/acarnero/test_main/
 ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
@@ -83,8 +82,9 @@ fi
 #seed is also saved in output directory
 seed=14126579
 #seed=3593589
-#Number of realizations to generate. Ideally a multiple of 64 for bitweights
-#However, you can choose smaller numbers for debugging
+
+
+#If mocklist is not equals to "", then it will supercede ndir=$mockend-$mockinit
 #Mock realization
 mockinit=10
 mockend=11
@@ -139,18 +139,6 @@ fi
 printf -v outputMTLDirBase "$outputMTLDirBaseBase/$simName/" $datestring $ndir $survey
 printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/" $datestring $ndir $survey
 
-#List of healpixels to create Alt MTLs for
-#hpListFile="$path2LSS/MainSurveyHPList_mock.txt"
-##TEMPhpListFile="/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3/altmtl$realization/initled/hpxlist_dark.txt"
-#hpListFile="$path2LSS/MainSurveyHPList.txt"
-#hpListFile="$path2LSS/DebugMainHPList.txt"
-#hpListFile="$path2LSS/SV3HPList.txt"
-
-#These two options only are considered if the obscon is BRIGHT
-#First option indicates whether to shuffle the top level priorities
-#of BGS_FAINT/BGS_FAINT_HIP. Uncomment section option to turn off shuffling of bright time priorities
-#Second option indicates what fraction/percent
-#of BGS_FAINT to promote to BGS_FAINT_HIP. Default is 20%, same as SV3
 
 #shuffleBrightPriorities='--shuffleBrightPriorities'
 shuffleBrightPriorities=''
@@ -164,15 +152,6 @@ PromoteFracBGSFaint=0.0
 #PromoteFracELG=0.1
 PromoteFracELG=0.
 
-# location of original MTLs to shuffle.
-# Default directory is a read only mount of the CFS filesystem
-# You can only access that directory from compute nodes. 
-# Do NOT use the commented out directory (the normal mount of CFS)
-# unless the read only mount is broken
-##TEMPexampleLedgerBase=/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v3/altmtl$realization/initled
-#exampleLedgerBase=/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/
-#exampleLedgerBase=/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
-#exampleLedgerBase=$SCRATCH/MockAMTLY1/FirstGenMocks/AbacusSummit/mtls/
 #Options for DateLoopAltMTL and runAltMTLParallel
 
 #Quick Restart (i.e. reset the MTLs by copying the saved original shuffled files). 
