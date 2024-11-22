@@ -4,44 +4,67 @@ source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=/pscratch/sd/a/acarnero/codes/LSS
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
-#prepare dark mock input catalogs (run on shared memory, 1 cpu per realization. Do not apply photometric mask). 
+#prepare dark mock input catalogs (run on interactive queue with one cpus per realization. Do not apply photometric mask). 
 #It is sbatch script calling to run1_prepmock_LSS_DA2.sh as array parallelization, calling finally to: prepare_mocks_Y3_dark.py or prepare_mocks_Y3_bright.py
 
->> ./run1_prepmock_LSS_DA2.sh DARK
+>> $LSSCODE/scripts/mock_tools/run1_prepmock_LSS_DA2.sh DARK
 
 #prepare bright mock input catalogs.
 
->> ./run1_prepmock_LSS_DA2.sh BRIGHT
+>> $LSSCODE/scripts/mock_tools/run1_prepmock_LSS_DA2.sh BRIGHT
 
-#Apply photometric mask to dark
+#Apply imaging mask to dark (change manually the range of realizations to run on ARRAY mode in slurm). Run on shared queue with 128 cpus
 
 >> sbatch $LSSCODE/scripts/mock_tools/abamtl_applyphotmask_sbatch_da2.sh DARK
 
-#Apply photometric mask to bright 
+#Apply imaging mask to bright (change manually the range of realizations to run on ARRAY mode in slurm). Run on shared queue with 128 cpus
 
 >> sbatch $LSSCODE/scripts/mock_tools/abamtl_applyphotmask_sbatch_da2.sh BRIGHT
 
-#Calculate lrgmask (Only DARK)
+#Calculate lrgmask (Only DARK). Run on regular queue with 256 cpus
 
 >> sbatch $LSSCODE/scripts/mock_tools/abamtl_lrgmask_sbatch_da2.sh
 
-#potential assigments for dark
+#potential assigments for dark. Run on regular queue with 256 cpus
 
 >> sbatch $LSSCODE/scripts/mock_tools/abamtl_getpota_sbatch_da2.sh DARK
 
-#potential assigments for bright
+#potential assigments for bright. Run on regular queue with 256 cpus
 
 >> sbatch $LSSCODE/scripts/mock_tools/abamtl_getpota_sbatch_da2.sh BRIGHT
 
-#Initialize AltMTL for dark
 
-#Initialize AltMTL for bright
+--- Up to here, all products needed to create complete or FFA samples are created ---
 
-#Run ALTMTL for dark
 
-#Run AltMTL for bright
+# NEXT: Steps toward the most realistic mock [ALTMTL] (It will take a few days to complete the following steps)
+
+#Initialize AltMTL for dark [Run on shared queue with 32 cpus]. Run on ARRAY mode
+
+>> sbatch $LSSCODE/scripts/mock_tools/script_initialize_da2_dark.sh
+
+#Initialize AltMTL for bright [Run on shared queue with 32 cpus]. Run on ARRAY mode
+
+>> sbatch $LSSCODE/scripts/mock_tools/script_initialize_da2_bright.sh
+
+#Run ALTMTL for dark. This will initiate the whole fba cicle in parallel in mock realizations. Some variables need to be changed: path2LSS, [mockinit, mockend, mocklist]
+
+>> nohup $LSSCODE/bin/DA2ALTMTLRealizationsDARK_mock.sh &
+
+You probably need to run it at least twice to complete all the fba tasks. Be carefull, the DA2ALTMTLRealizationsDARK_mock.sh will be copied to the target directory (ALTMTLHOME) under altmtl{mock_number}. Ideally you should execute it from there the second time.
+
+#Run AltMTL for bright. This will initiate the whole fba cicle in parallel in mock realizations. Some variables need to be changed: path2LSS, [mockinit, mockend, mocklist]
+
+>> nohup $LSSCODE/bin/DA2ALTMTLRealizationsBRIGHT_mock.sh &
+
+You probably need to run it at least twice to complete all the fba tasks. Be carefull, the DA2ALTMTLRealizationsDARK_mock.sh will be copied to the target directory (ALTMTLHOME) under altmtl{mock_number}. Ideally you should execute it from there the second time.
+
 
 
 # LSS pipeline dark
 
+See ...
+
 # LSS pipeline bright
+
+See ...
