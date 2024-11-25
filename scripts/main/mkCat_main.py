@@ -65,7 +65,7 @@ parser.add_argument("--basedir", help="base directory for output, default is SCR
 parser.add_argument("--basedir_blind", help="base directory for output for blinded catalogs, default is SCRATCH",default=os.environ[scratch])
 parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='main')
-parser.add_argument("--verspec",help="version for redshifts",default='iron')
+parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
@@ -109,6 +109,9 @@ parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressio
 parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
 parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
 parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
+parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
+
+
 
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
 
@@ -1364,7 +1367,7 @@ if args.imsys_clus == 'y':
             else:
                 fitmapsbin = fit_maps
             use_maps = fitmapsbin
-            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
     #attach data to NGC/SGC catalogs, write those out
@@ -1406,6 +1409,83 @@ if args.imsys_clus_ran == 'y':
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
             
+if args.imsys_clus_fb == 'y':
+    from LSS.imaging import densvar
+    
+       
+    #rcols.append('WEIGHT_SYSEB')   
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
+    dat_ngc = Table(fitsio.read(fname))
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
+    dat_sgc = Table(fitsio.read(fname))
+    dat = vstack([dat_sgc,dat_ngc])
+    foutname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_clustering.dat.fits')
+    ranl = []
+    for i in range(0,args.nran4imsys):#int(args.maxr)):
+        ran = fitsio.read(os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_'+str(i)+'_clustering.ran.fits')) 
+        ranl.append(ran)
+        ran = fitsio.read(os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_'+str(i)+'_clustering.ran.fits')) 
+        ranl.append(ran)
+
+    rands = np.concatenate(ranl)
+    syscol = 'WEIGHT_IMLIN_CLUS'
+    regl = ['S','N']
+    if args.type == 'QSO':
+        regl = ['DES','SnotDES','N']
+    dat[syscol] = np.ones(len(dat))
+    for reg in regl:
+        regu = reg
+        if reg == 'DES' or reg == 'SnotDES':
+            regu = 'S'
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        #seld = dat['PHOTSYS'] == reg
+        selr = rands['PHOTSYS'] == reg
+        dz = 0.1
+        zm = zmin
+        zx = zm + dz
+        fitmapsbin = fit_maps
+        while zm < zmax:
+            zx = zm + dz
+            print('getting weights for region '+reg+' and '+str(zm)+'<z<'+str(zx))
+            #if type == 'LRG':
+            #    if reg == 'N':
+            #        fitmapsbin = fit_maps
+            #    else:
+            #        if zmax == 0.6:
+            #            fitmapsbin = mainp.fit_maps46s
+            #        if zmax == 0.8:
+            #            fitmapsbin = mainp.fit_maps68s
+            #        if zmax == 1.1:
+            #            fitmapsbin = mainp.fit_maps81s
+            #else:
+            #    fitmapsbin = fit_maps
+            use_maps = fitmapsbin
+            wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
+            sel = wsysl != 1
+            dat[syscol][sel] = wsysl[sel]
+            zm += dz
+    #attach data to NGC/SGC catalogs, write those out
+    dat.keep_columns(['TARGETID',syscol])
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
+    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
+
+    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
+
+
 
 #if args.nz == 'y':
     
