@@ -413,7 +413,7 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     print(s.best_pars)
     print(list(s.best_pars))
     pars_dict = {}
-    fo = open(modoutname)
+    fo = open(modoutname,'w')
     for par_name, p in zip(s.par_names, list(s.best_pars)):
         pars_dict[par_name] = p
         fo.write(str(s.par_name)+' '+str(p)+'\n')
