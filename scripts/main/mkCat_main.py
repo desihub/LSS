@@ -1455,6 +1455,7 @@ if args.imsys_clus_fb == 'y':
         fitmapsbin = fit_maps
         while zm < zmax:
             zx = zm + dz
+            zx = round(zx,1)
             print('getting weights for region '+reg+' and '+str(zm)+'<z<'+str(zx))
             #if type == 'LRG':
             #    if reg == 'N':
@@ -1470,7 +1471,9 @@ if args.imsys_clus_fb == 'y':
             #    fitmapsbin = fit_maps
             use_maps = fitmapsbin
             wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
-            zm += dz
+            zm = zx
+            #zm += dz
+            #zm = round(zm,1)
 
 
 
