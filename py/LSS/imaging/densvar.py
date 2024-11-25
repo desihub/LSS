@@ -333,7 +333,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     return data_syst, rand_syst
 
 
-def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png'):
+def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png',modoutname='temp.txt'):
     import LSS.common_tools as common
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
@@ -413,9 +413,11 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     print(s.best_pars)
     print(list(s.best_pars))
     pars_dict = {}
+    fo = open(modoutname)
     for par_name, p in zip(s.par_names, list(s.best_pars)):
         pars_dict[par_name] = p
-    
+        fo.write(str(s.par_name)+' '+str(p)+'\n')
+    fo.close()
     if plotr:
         #s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
         s.plot_overdensity(pars=[None, pars_dict], ylim=[0.7, 1.3])
