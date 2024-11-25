@@ -66,7 +66,8 @@ nz_file1 = np.loadtxt(base_dir + f'LRG_{cap}_nz.txt')
 nz_file2 = np.loadtxt(base_dir + f'ELG_LOPnotqso_{cap}_nz.txt')
 nz_list = [nz_file1, nz_file2]
 
-zmin, zmax = comb.setup_binning(nz_list, verbose)
+#zmin, zmax = comb.setup_binning(nz_list, verbose) #setup_binning currently not working as intended
+zmin, zmax = 0.8, 1.1
 
 #get neff
 neff, nz_comb_all = comb.calc_neff(nz_list, bias_list, zmin, zmax, dz, verbose)
