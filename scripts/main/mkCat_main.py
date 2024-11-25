@@ -1457,7 +1457,8 @@ if args.imsys_clus_fb == 'y':
             zx = zm + dz
             zx = round(zx,1)
             print('getting weights for region '+reg+' and '+str(zm)+'<z<'+str(zx))
-            #if type == 'LRG':
+            if type == 'LRG':
+                fitmapsbin = mainp.fit_maps46s
             #    if reg == 'N':
             #        fitmapsbin = fit_maps
             #    else:
