@@ -25,6 +25,7 @@ parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
 parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
+parser.add_argument("--zcol", help="name of column with redshift, including RSD",default='Z')
 
 
 args = parser.parse_args()
@@ -57,9 +58,8 @@ data = vstack([tarsN, tarsS])
 data = Table(data)
 
 desitar = {'LRG':1, 'QSO': 4, 'ELG':34}
-priority = {'LRG':3200, 'QSO':3200, 'ELG':3200}
-numobs = {'LRG':2, 'ELG':2, 'QSO':2}
-
+priority = {'LRG':3200, 'QSO':3400, 'ELG':3100}
+numobs = {'LRG':1, 'ELG':1, 'QSO':1}
 type_ = args.tracer
                 
 data['DESI_TARGET'] = desitar[type_]
@@ -67,11 +67,16 @@ data['PRIORITY_INIT'] = priority[type_]
 data['PRIORITY'] = priority[type_]
 data['NUMOBS_MORE'] = numobs[type_]
 data['NUMOBS_INIT'] = numobs[type_]
+if type_ == 'QSO':
+    sel_highz = tars[args.zcol] > 2.1
+    data['NUMOBS_MORE'][sel_highz] = 4
+    data['NUMOBS_INIT'][sel_highz] = 4
+    print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
 targets = data
 n=len(targets)  ##A Ashley le falta estoo!
 
 del data
-targets['TARGETID'] = np.random.permutation(np.arange(1,n+1))
+targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]).astype(int) #different tracer types need to have different targetids
 print(len(targets),' in Y5 area')
 selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
 targets = targets[selY3]
@@ -122,14 +127,15 @@ if np.array_equal(res['TARGETID'],targets['TARGETID']):
     for col in maskcols:
         targets[col] = res[col]
     del res
-mainp = main(tp = 'LRG', specver = 'kibo')
+
+mainp = main(tp = type_, specver = 'kibo')
 targets = common.cutphotmask(targets, bits=mainp.imbits)
 
 
 print('cut targets based on photometric mask')
 n=len(targets)
 #targets.rename_column('Z_COSMO', 'TRUEZ') 
-targets.rename_column('Z', 'RSDZ') 
+targets.rename_column(args.zcol, 'RSDZ') 
 targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
