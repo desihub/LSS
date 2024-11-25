@@ -43,8 +43,8 @@ tars = Table.read(args.input_mockpath+args.input_mockfile+".fits")
 tars['WEIGHT'] = np.ones(tars['RA'].shape[0])
 
 # Conditions for NGC and SGC
-condN = (tars['RA'] > 85) & (tars['RA'] < 302)
-condS = (tars['RA'] < 85) | (tars['RA'] > 302)
+condN = common.splitGC(tars)#(tars['RA'] > 85) & (tars['RA'] < 302)
+condS = ~condN#(tars['RA'] < 85) | (tars['RA'] > 302)
 
 # Splitting the DataFrame
 tarsN = tars[condN]
