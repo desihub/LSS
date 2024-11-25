@@ -25,6 +25,7 @@ parser.add_argument("--mapmd", help="set of maps to use",default='validate')
 parser.add_argument("--verspec",help="version for redshifts",default='kibo-v1')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--splitDES",help="whether to split S into DES and notDES",default='n')
+parser.add_argument("--zsplit",help="how to split in redshift",default='fid')
 parser.add_argument("--ps",help="point size for density map",default=1,type=float)
 parser.add_argument("--test",help="if yes, just use one map from the list",default='n')
 parser.add_argument("--nran",help="number of random files to use",default=1,type=int)
@@ -254,7 +255,10 @@ for tp in tps:
     
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
+    
     zbins = [(0.4,0.6),(0.6,0.8),(0.8,1.1)]
+    if args.zsplit == 'fine':
+        zbins = [(0.4,0.5),(0.5,0.6),(0.6,0.7),(0.7,0.8),(0.8,0.9),(0.9,1.0),(1.0,1.1)]
     yl = (0.8,1.1)    
         
 
@@ -263,6 +267,9 @@ for tp in tps:
         yl = (0.7,1.1)
     if tp == 'QSO':
         zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
+        if args.zsplit == 'fine':
+            zbins = [(0.8,1.),(1,1.3),(1.3,1.6),(1.6,1.8),(1.8,2.1),(2.1,2.7),(2.7,3.5)]
+
     if tp[:3] == 'BGS':
         zbins = [(0.1,0.4)]
     for zb in zbins:
