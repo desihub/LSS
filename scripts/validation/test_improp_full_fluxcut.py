@@ -273,9 +273,9 @@ for tp in tps:
     selfpars = args.fluxcut.split('-')
     dflux = np.log(dtf['FLUX_'+selfpars[0]]/dtf['MW_TRANSMISSION_'+selfpars[0]])
     if selfpars[1] == 'g':
-        seld &= dflux > selfpars[2]
+        seld &= dflux > float(selfpars[2])
     if selfpars[1] == 'l':
-        seld &= dflux < selfpars[2]
+        seld &= dflux < float(selfpars[2])
 
     cols = list(dtf.dtype.names)
     if 'Z' in cols:
