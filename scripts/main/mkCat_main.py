@@ -1470,20 +1470,6 @@ if args.imsys_clus_fb == 'y':
             #    fitmapsbin = fit_maps
             use_maps = fitmapsbin
             wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
-            sel = wsysl != 1
-            dat[syscol][sel] = wsysl[sel]
-            zm += dz
-    #attach data to NGC/SGC catalogs, write those out
-    dat.keep_columns(['TARGETID',syscol])
-    if syscol in dat_ngc.colnames:
-        dat_ngc.remove_column(syscol)
-    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
-    common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
-    if syscol in dat_sgc.colnames:
-        dat_sgc.remove_column(syscol)
-
-    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
-    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
 
 
 
