@@ -26,9 +26,14 @@ parser.add_argument("--output_fullpathfn", help="output mock file and full path"
 parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
 parser.add_argument("--zcol", help="name of column with redshift, including RSD",default='Z')
+parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 'n', assuming all LOP",default='y')
+parser.add_argument("--ELGtpcol", help="column distinguishing the ELG type; assumed boolean with True being LOP",default='LOP')
+parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
 
 
 args = parser.parse_args()
+
+rng = np.random.default_rng(seed=int(args.ran_seed))
 
 if tracer in ['LRG', 'QSO', 'ELG']:
     tile = 'DARK'
@@ -47,7 +52,7 @@ tars['WEIGHT'] = np.ones(tars['RA'].shape[0])
 condN = common.splitGC(tars)#(tars['RA'] > 85) & (tars['RA'] < 302)
 condS = ~condN#(tars['RA'] < 85) | (tars['RA'] > 302)
 
-# Splitting the DataFrame
+# Splitting the DataFrame; AJR: is there a reason for this here? 
 tarsN = tars[condN]
 tarsS = tars[condS]
 
@@ -58,13 +63,25 @@ data = vstack([tarsN, tarsS])
 data = Table(data)
 
 desitar = {'LRG':1, 'QSO': 4, 'ELG':34}
-priority = {'LRG':3200, 'QSO':3400, 'ELG':3100}
+priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200}
 numobs = {'LRG':1, 'ELG':1, 'QSO':1}
 type_ = args.tracer
                 
 data['DESI_TARGET'] = desitar[type_]
 data['PRIORITY_INIT'] = priority[type_]
 data['PRIORITY'] = priority[type_]
+if type_ == 'ELG' and args.ELGsplit == 'y':
+    sel_LOP = data[args.ELGtpcol] == 1
+    data['DESI_TARGET'][~sel_LOP] = 2+2**7
+    data['PRIORITY_INIT'][~sel_LOP] = 3000
+    data['PRIORITY'][~sel_LOP] = 3000
+    rans = rng.random(len(data))
+    sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
+    data['DESI_TARGET'][sel_HIP] += 2**6
+    data['PRIORITY_INIT'][sel_HIP] = 3200
+    data['PRIORITY'][sel_HIP] = 3200
+    print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
+	
 data['NUMOBS_MORE'] = numobs[type_]
 data['NUMOBS_INIT'] = numobs[type_]
 if type_ == 'QSO':
