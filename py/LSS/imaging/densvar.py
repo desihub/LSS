@@ -416,7 +416,7 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     fo = open(modoutname,'w')
     for par_name, p in zip(s.par_names, list(s.best_pars)):
         pars_dict[par_name] = p
-        fo.write(str(s.par_name)+' '+str(p)+'\n')
+        fo.write(str(par_name)+' '+str(p)+'\n')
     fo.close()
     if plotr:
         #s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
