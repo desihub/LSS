@@ -76,8 +76,8 @@ neff, nz_comb_all = comb.calc_neff(nz_list, bias_list, zmin, zmax, dz, verbose)
 d1_fn = base_dir + f'LRG_{cap}_clustering.dat.fits'
 d2_fn = base_dir + f'ELG_LOPnotqso_{cap}_clustering.dat.fits'
 
-dcat1, nxfacd1 = comb.read_data(d1_fn, comp_ntl1, verbose)
-dcat2, nxfacd2 = comb.read_data(d2_fn, comp_ntl2, verbose)
+dcat1, nxfacd1 = comb.read_data(d1_fn, comp_ntl1, zmin, zmax, verbose)
+dcat2, nxfacd2 = comb.read_data(d2_fn, comp_ntl2, zmin, zmax, verbose)
 
 #Calculate data fkp weights
 fkp_d1 = comb.calc_fkp(nxfacd1, dcat1['Z'], neff, P0, zmin, zmax, dz)
@@ -113,8 +113,8 @@ def _make_rancat(rdmnb):
     r1_fn = base_dir + f'LRG_{cap}_{rdmnb}_clustering.ran.fits'
     r2_fn = base_dir + f'ELG_LOPnotqso_{cap}_{rdmnb}_clustering.ran.fits'
     
-    rcat1, nxfacr1 = comb.read_rand(r1_fn.replace('global','dvs_ro'), comp_ntl1, verbose)
-    rcat2, nxfacr2 = comb.read_rand(r2_fn.replace('global','dvs_ro'), comp_ntl2, verbose)
+    rcat1, nxfacr1 = comb.read_rand(r1_fn.replace('global','dvs_ro'), comp_ntl1, zmin, zmax, verbose)
+    rcat2, nxfacr2 = comb.read_rand(r2_fn.replace('global','dvs_ro'), comp_ntl2, zmin, zmax, verbose)
     
     
     #Calculate random fkp weights

@@ -9,20 +9,24 @@ from pycorr import utils
 #mpiroot = None
 #from multiprocessing import Pool
 
-def read_rand(fn, comp_ntl, verbose=False):
+def read_rand(fn, comp_ntl, zmin, zmax, verbose=False):
     '''
     Reads random catalog
     '''
     rcat = Table.read(fn)
+    mask = (rcat['Z'] > zmin) & (rcat['Z'] < zmax)
+    rcat = rcat[mask]
     nxfacr = comp_ntl[rcat['NTILE']-1]
     if verbose: print('Loaded random file at ' + fn)
     return rcat, nxfacr
 
-def read_data(fn, comp_ntl, verbose=False):
+def read_data(fn, comp_ntl, zmin, zmax, verbose=False):
     '''
     Reads data catalog
     '''
     dcat = Table.read(fn)
+    mask = (dcat['Z'] > zmin) & (dcat['Z'] < zmax)
+    dcat = dcat[mask]
     nxfacd = comp_ntl[dcat['NTILE']-1]
     if verbose: print('Loaded data file at ' + fn)
     return dcat, nxfacd
