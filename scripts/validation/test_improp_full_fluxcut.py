@@ -271,7 +271,7 @@ for tp in tps:
     seld &= dtf['ZWARN']*0 == 0
     
     selfpars = args.fluxcut.split('-')
-    dflux = np.log(dtf['FLUX_'+selfpars[0]]/ff['MW_TRANSMISSION_'+selfpars[0]])
+    dflux = np.log(dtf['FLUX_'+selfpars[0]]/dtf['MW_TRANSMISSION_'+selfpars[0]])
     if selfpars[1] == 'g':
         seld &= dflux > selfpars[2]
     if selfpars[1] == 'l':
