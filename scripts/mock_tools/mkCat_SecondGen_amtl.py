@@ -718,15 +718,40 @@ if args.add_nt_misspw == 'y':
     bo = mocktools.do_weight_nt_misspw(fb, ranmin=rm, ranmax=rx, par=args.par, dirout=dirout)
     readdir = dirout
 
-if 'BGS_ANY-' in args.tracer:
+if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
     abmagcut = -float(args.tracer.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
     ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    common.printlog("path "+ffull, logger)
     if os.path.isfile(ffull) == False:
-        
-        fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+
+        if 'BGS_ANY-' in args.tracer:
+            fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+        elif 'BGS_BRIGHT-' in args.tracer:
+            fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
+            
+        common.printlog("cut method "+args.absmagmd, logger)
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
+        elif args.absmagmd == 'redshiftdep':
+            common.printlog("using z dependent cut", logger)
+            fit2_a = np.loadtxt("/global/u2/z/zxzhai/project/DESI/LSS_Y3_analysis/BGS_ANY_zmagcut_a.dat")
+            fit2_b = np.loadtxt("/global/u2/z/zxzhai/project/DESI/LSS_Y3_analysis/BGS_ANY_zmagcut_b.dat")
+            fit3_a = np.poly1d(fit2_a)
+            fit3_b = np.poly1d(fit2_b)
+            FIT_zcut = 0.3
+            def fit3_new(z):
+                z = np.array(z)
+                ff = np.empty(len(z))
+                mm1 = np.where(z<FIT_zcut)
+                mm2 = np.where(z>=FIT_zcut)
+                ff[mm1] = fit3_a(z[mm1])
+                ff[mm2] = fit3_b(z[mm2])
+                return ff+0.078
+
+            mock_z_cut = fit3_new(fin['Z_not4clus'])
+            sel = fin['R_MAG_ABS'] < mock_z_cut
+
         common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
 
 
