@@ -946,7 +946,7 @@ if args.prepsysnet == 'y':
             #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
-            common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",loger)
+            common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd='fracz',tp=args.type[:3])
