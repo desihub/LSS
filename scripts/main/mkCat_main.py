@@ -467,6 +467,8 @@ if args.apply_map_veto == 'y':
     #BGS_ANY and BGS_BRIGHT should essentially have same footprint
     if tracer_clus == 'BGS_ANY':
         tracer_clushp = 'BGS_BRIGHT'
+    if 'ELG' in tracer_clus:
+        tracer_clushp = 'ELG_LOPnotqso'
     mapn = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
     maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
     mapcuts = mainp.mapcuts
