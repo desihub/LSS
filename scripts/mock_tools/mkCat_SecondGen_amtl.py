@@ -735,8 +735,8 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             sel = fin['R_MAG_ABS'] < abmagcut
         elif args.absmagmd == 'redshiftdep':
             common.printlog("using z dependent cut", logger)
-            fit2_a = np.loadtxt("/global/u2/z/zxzhai/project/DESI/LSS_Y3_analysis/BGS_ANY_zmagcut_a.dat")
-            fit2_b = np.loadtxt("/global/u2/z/zxzhai/project/DESI/LSS_Y3_analysis/BGS_ANY_zmagcut_b.dat")
+            fit2_a = np.loadtxt("/pscratch/sd/z/zxzhai/DESI_LSS/BGS_ANY_zmagcut_a.dat")
+            fit2_b = np.loadtxt("/pscratch/sd/z/zxzhai/DESI_LSS/BGS_ANY_zmagcut_b.dat")
             fit3_a = np.poly1d(fit2_a)
             fit3_b = np.poly1d(fit2_b)
             FIT_zcut = 0.3
