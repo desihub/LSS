@@ -922,7 +922,10 @@ if args.prepsysnet == 'y':
                         fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
-            pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            tpmap = tpstr
+            if 'ELG' in tpstr:
+                tpmap = 'ELG_LOPnotqso'
+            pwf = lssmapdirout+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -943,7 +946,7 @@ if args.prepsysnet == 'y':
             #    allrands = allsky_rands[selr_all]
             else:
                 allrands = None
-            print(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}")
+            common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",loger)
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd='fracz',tp=args.type[:3])
