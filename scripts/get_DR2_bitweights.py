@@ -105,7 +105,7 @@ tiles = mainp.tiles
 
 
 tsnrcut = mainp.tsnrcut
-dchi2 = mainp.dchi2
+#dchi2 = mainp.dchi2
 tnsrcol = mainp.tsnrcol        
 badfib = mainp.badfib
 
@@ -144,9 +144,17 @@ def get_good_real(dic,real_num):
 
 from multiprocessing import Pool
 Nreal = args.nreal
-inds = np.arange(0,Nreal)
+allposinds = np.arange(0,Nreal)
+inds = []
+for ind in allpossinds:
+    indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
+    if os.path.exists(indir):
+        inds.append(ind)
+    else:
+        logger.info('directory '+indir+' not found, will not be used for bitweight')
+#inds = np.arange(0,Nreal)
 #pool = sharedmem.MapReduce()
-logger.info('about to get '+str(Nreal)+' realizations in parallel')
+logger.info('about to get '+str(len(inds))+' realizations in parallel')
 #with Pool() as pool:
 #    #pool.map(get_good_real,inds)
 #    pool.map(test,inds)
