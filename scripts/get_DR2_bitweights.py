@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import fitsio
 import glob
 from astropy.table import Table
@@ -146,7 +147,7 @@ from multiprocessing import Pool
 Nreal = args.nreal
 allposinds = np.arange(0,Nreal)
 inds = []
-for ind in allpossinds:
+for ind in allposinds:
     indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
     if os.path.exists(indir):
         inds.append(ind)
