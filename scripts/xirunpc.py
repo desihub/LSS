@@ -359,7 +359,7 @@ logger = logging.getLogger('xirunpc')
 #     return [(positions[name], weights[name]) for name in ['data', 'randoms']] 
 
 
-def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tracer2=None, mpicomm=None, mpiroot=None, **kwargs):
+def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tracer2=None, mpicomm=None, mpiroot=None,nreal=128, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs
@@ -387,7 +387,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
                                             randoms_positions1=parent_data_positions1, randoms_weights1=parent_data_weights1,
                                             randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
                                             estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
-                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter'})
+                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter','nrealizations':nreal})
 
     # First D1R2_parent/D1R2_IIP angular weight
     # Input bitwise weights are automatically turned into IIP
@@ -398,7 +398,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
                                             randoms_positions1=parent_data_positions1, randoms_weights1=parent_data_weights1,
                                             randoms_positions2=parent_randoms_positions2, randoms_weights2=parent_randoms_weights2,
                                             estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
-                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter'})
+                                            dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter','nrealizations':nreal})
     wangR1D2 = None
     if not autocorr:
         wangR1D2 = TwoPointCorrelationFunction('theta', tedges, data_positions1=parent_randoms_positions1, data_weights1=parent_randoms_weights1,
@@ -406,7 +406,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
                                                randoms_positions1=parent_randoms_positions1, randoms_weights1=parent_randoms_weights1,
                                                randoms_positions2=parent_data_positions2, randoms_weights2=parent_data_weights2,
                                                estimator='weight', engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu,
-                                               dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter'})
+                                               dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot,weight_attrs={'normalization': 'counter','nrealizations':nreal})
 
     wang = {}
     wang['D1D2_twopoint_weights'] = wangD1D2
@@ -416,7 +416,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, thetacut=None, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, thetacut=None,nreal=128, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -425,7 +425,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
     with_shifted = rec_type is not None or recon_dir != "n"
 
     if 'angular' in weight_type and wang is None:
-        wang = compute_angular_weights(nthreads=nthreads, gpu=gpu, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot, **kwargs)
+        wang = compute_angular_weights(nthreads=nthreads, gpu=gpu, dtype=dtype, weight_type=weight_type, tracer=tracer, tracer2=tracer2, mpicomm=mpicomm, mpiroot=mpiroot,nreal=nreal, **kwargs)
 
     data_positions1, data_weights1, data_samples1, data_positions2, data_weights2, data_samples2 = None, None, None, None, None, None
     randoms_positions1, randoms_weights1, randoms_samples1, randoms_positions2, randoms_weights2, randoms_samples2 = None, None, None, None, None, None
@@ -519,7 +519,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
                                               engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
-                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs,weight_attrs={'normalization': 'counter'})
+                                              D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs,weight_attrs={'normalization': 'counter','nrealizations':nreal})
             D1D2 = tmp.D1D2
             result += tmp
         results.append(result)
@@ -605,7 +605,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--rpcut', help='apply the rp-cut', type=float, default=None)
     parser.add_argument('--thetacut', help='apply the theta-cut (more up-to-date fibre collision correction), standard: 0.05', type=float, default=None)
-
+    parser.add_argument('--nreal', help='number of realizations for bitweights', type=int, default=128)
     setup_logging()
     args = parser.parse_args()
 
@@ -729,7 +729,7 @@ if __name__ == '__main__':
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, thetacut=args.thetacut, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, thetacut=args.thetacut,nreal=args.nreal, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
