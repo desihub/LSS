@@ -445,7 +445,7 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
         jack_positions = data_positions1
 
         if not autocorr:
-            data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer2, option=option, **catalog_kwargs)
+            data, randoms = io.read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir, rec_type=rec_type, tracer=tracer2, option=option, **catalog_kwargs)
             if with_shifted:
                 shifted = randoms
                 randoms = io.read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer2, option=option, **catalog_kwargs)
