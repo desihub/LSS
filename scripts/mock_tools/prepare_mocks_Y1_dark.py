@@ -99,6 +99,8 @@ else:
         print('This is not production, run on user scratch', os.environ[scratch])
     else:
         print('Saving to path', args.base_output)
+    if args.new_version is not None:
+        Abacus_dir = args.new_version
 
 
 
