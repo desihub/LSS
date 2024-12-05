@@ -25,19 +25,13 @@ parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
 parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
-parser.add_argument("--zcol", help="name of column with redshift, including RSD",default='Z')
-parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 'n', assuming all LOP",default='y')
-parser.add_argument("--ELGtpcol", help="column distinguishing the ELG type; assumed boolean with True being LOP",default='LOP')
-parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
 
 
 args = parser.parse_args()
 
-rng = np.random.default_rng(seed=int(args.ran_seed))
-
-if tracer in ['LRG', 'QSO', 'ELG']:
+if args.tracer in ['LRG', 'QSO', 'ELG']:
     tile = 'DARK'
-elif tracer == 'BGS':
+elif args.tracer == 'BGS':
     tile = 'BRIGHT'
 
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
@@ -49,10 +43,10 @@ tars = Table.read(args.input_mockpath+args.input_mockfile+".fits")
 tars['WEIGHT'] = np.ones(tars['RA'].shape[0])
 
 # Conditions for NGC and SGC
-condN = common.splitGC(tars)#(tars['RA'] > 85) & (tars['RA'] < 302)
-condS = ~condN#(tars['RA'] < 85) | (tars['RA'] > 302)
+condN = (tars['RA'] > 85) & (tars['RA'] < 302)
+condS = (tars['RA'] < 85) | (tars['RA'] > 302)
 
-# Splitting the DataFrame; AJR: is there a reason for this here? 
+# Splitting the DataFrame
 tarsN = tars[condN]
 tarsS = tars[condS]
 
@@ -62,38 +56,22 @@ tarsS["GALCAP"] = "S"
 data = vstack([tarsN, tarsS])
 data = Table(data)
 
-desitar = {'LRG':1, 'QSO': 4, 'ELG':34}
-priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200}
-numobs = {'LRG':1, 'ELG':1, 'QSO':1}
+desitar = {'LRG':1, 'QSO': 4, 'ELG':34, 'BGS':2**60}
+priority = {'LRG':3200, 'QSO':3200, 'ELG':3200, 'BGS':2100}
+numobs = {'LRG':2, 'ELG':2, 'QSO':2, 'BGS':2}
+
 type_ = args.tracer
                 
 data['DESI_TARGET'] = desitar[type_]
 data['PRIORITY_INIT'] = priority[type_]
 data['PRIORITY'] = priority[type_]
-if type_ == 'ELG' and args.ELGsplit == 'y':
-    sel_LOP = data[args.ELGtpcol] == 1
-    data['DESI_TARGET'][~sel_LOP] = 2+2**7
-    data['PRIORITY_INIT'][~sel_LOP] = 3000
-    data['PRIORITY'][~sel_LOP] = 3000
-    rans = rng.random(len(data))
-    sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
-    data['DESI_TARGET'][sel_HIP] += 2**6
-    data['PRIORITY_INIT'][sel_HIP] = 3200
-    data['PRIORITY'][sel_HIP] = 3200
-    print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
-	
 data['NUMOBS_MORE'] = numobs[type_]
 data['NUMOBS_INIT'] = numobs[type_]
-if type_ == 'QSO':
-    sel_highz = tars[args.zcol] > 2.1
-    data['NUMOBS_MORE'][sel_highz] = 4
-    data['NUMOBS_INIT'][sel_highz] = 4
-    print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
 targets = data
 n=len(targets)  ##A Ashley le falta estoo!
 
 del data
-targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]).astype(int) #different tracer types need to have different targetids
+targets['TARGETID'] = np.random.permutation(np.arange(1,n+1))
 print(len(targets),' in Y5 area')
 selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
 targets = targets[selY3]
@@ -144,15 +122,14 @@ if np.array_equal(res['TARGETID'],targets['TARGETID']):
     for col in maskcols:
         targets[col] = res[col]
     del res
-
-mainp = main(tp = type_, specver = 'kibo')
+mainp = main(tp = 'LRG', specver = 'kibo')
 targets = common.cutphotmask(targets, bits=mainp.imbits)
 
 
 print('cut targets based on photometric mask')
 n=len(targets)
 #targets.rename_column('Z_COSMO', 'TRUEZ') 
-targets.rename_column(args.zcol, 'RSDZ') 
+targets.rename_column('Z', 'RSDZ') 
 targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
