@@ -5,10 +5,9 @@ import numpy as np
 import os
 import argparse
 import sys
-
 from desitarget.targetmask import obsconditions
 from desimodel.footprint import is_point_in_desi
-
+import multiprocessing
 import LSS.common_tools as common
 from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
 from LSS.main.cattools import count_tiles_better
@@ -148,7 +147,7 @@ def process(real):
         mockdir = args.base_output
         out_file_name = os.path.join(mockdir, 'forFA{0}.fits'.format(real))
         print('generic mock, it needs a mock generation to continue, it will select mockver = ab_secondgen')
-        args.mockver = 'ab_secondgen'
+        args.mockver = None
 
     
     print('testing and creating output directory', mockdir)
@@ -167,7 +166,7 @@ def process(real):
             print(thepath)
             data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'STATUS']))
 
-        if args.mockver == 'ab_secondgen_cosmosim':
+        elif args.mockver == 'ab_secondgen_cosmosim':
             thepath = os.path.join(mockpath, type_, 'v0.1', zs[type_], file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
             print('thepath')
             print(thepath)
@@ -199,6 +198,10 @@ def process(real):
             tars2["GALCAP"] = "S"
             data = vstack([tars1, tars2])
 
+        else:
+            thepath = os.path.join(mockpath, file_name.format(TYPE = type_, Z = zs[type_], PH = "%03d" % real))
+            data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'R_MAG_APP', 'R_MAG_ABS', 'G_R_REST']))
+            #TEMP AURE data = Table(fitsio.read(thepath, columns=['RA', 'DEC', 'Z', 'Z_COSMO', 'R_MAG_APP', 'R_MAG_ABS', 'IN_Y5', 'G_R_OBS', 'G_R_REST']))
 
         print(data.dtype.names)
         print(type_, len(data))
@@ -207,15 +210,17 @@ def process(real):
             idx = np.arange(len(status))
         elif args.prog == 'bright':
             idx = np.arange(len(data))
-
+        print(idx)
+        args.mockver == 'ab_secondgen_cosmosim'
         if args.mockver == 'ab_secondgen' or args.mockver == 'ab_secondgen_cosmosim':
 
             mask_main = mask_secondgen(nz=1, foot='Y1')
             if args.prog == 'dark':
                 idx_main = idx[(status & (mask_main))==mask_main]
             elif args.prog == 'bright':
-                in_y5 = data['IN_Y5']
-                idx_main = idx[(in_y5 == 1)]
+                #TEMP AURE in_y5 = data['IN_Y5']
+                #TEMP AURE idx_main = idx[(in_y5 == 1)]
+                idx_main = idx
 
 
             print('SIZE FROM FILE ORIGINAL', len(data))
