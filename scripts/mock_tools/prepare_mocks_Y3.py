@@ -62,7 +62,7 @@ tarsS["GALCAP"] = "S"
 data = vstack([tarsN, tarsS])
 data = Table(data)
 
-desitar = {'LRG':1, 'QSO': 4, 'ELG':34'BGS': 2**60}
+desitar = {'LRG':1, 'QSO': 4, 'ELG':34,'BGS': 2**60}
 priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
 numobs = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':1}
 type_ = args.tracer
