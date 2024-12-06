@@ -62,9 +62,9 @@ tarsS["GALCAP"] = "S"
 data = vstack([tarsN, tarsS])
 data = Table(data)
 
-desitar = {'LRG':1, 'QSO': 4, 'ELG':34}
-priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200}
-numobs = {'LRG':1, 'ELG':1, 'QSO':1}
+desitar = {'LRG':1, 'QSO': 4, 'ELG':34'BGS': 2**60}
+priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
+numobs = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':1}
 type_ = args.tracer
                 
 data['DESI_TARGET'] = desitar[type_]
@@ -153,11 +153,14 @@ print('cut targets based on photometric mask')
 n=len(targets)
 #targets.rename_column('Z_COSMO', 'TRUEZ') 
 targets.rename_column(args.zcol, 'RSDZ') 
-targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
+if tracer == 'BGS':
+    targets['BGS_TARGET'] = 2
+else:	
+    targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
 targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
-targets['OBSCONDITIONS'] = obsconditions.mask('DARK') #np.zeros(n, dtype='i8')+int(3) 
+targets['OBSCONDITIONS'] = obsconditions.mask('tile) #np.zeros(n, dtype='i8')+int(3) 
 targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
 targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
 
