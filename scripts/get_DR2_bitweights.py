@@ -50,7 +50,7 @@ if args.prog == 'BRIGHT':
 
 
 if args.prog == 'DARK':
-    tpl = ['LRG','QSO','ELG_LOPnotqso']
+    tpl = ['LRG','QSO','ELGnotqso']
     tidl = []
     for tp in tpl:
         f = fitsio.read(lssdir+tp+'_full_noveto.dat.fits',columns=['TARGETID'])
