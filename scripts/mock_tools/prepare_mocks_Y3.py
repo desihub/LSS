@@ -153,7 +153,7 @@ print('cut targets based on photometric mask')
 n=len(targets)
 #targets.rename_column('Z_COSMO', 'TRUEZ') 
 targets.rename_column(args.zcol, 'RSDZ') 
-if tracer == 'BGS':
+if args.tracer == 'BGS':
     targets['BGS_TARGET'] = 2
 else:	
     targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
