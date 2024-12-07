@@ -160,7 +160,7 @@ else:
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
 targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
-targets['OBSCONDITIONS'] = obsconditions.mask('tile') #np.zeros(n, dtype='i8')+int(3) 
+targets['OBSCONDITIONS'] = obsconditions.mask(tile) #np.zeros(n, dtype='i8')+int(3) 
 targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
 targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
 
