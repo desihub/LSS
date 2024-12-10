@@ -169,6 +169,6 @@ targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
 out_file_name = args.output_fullpathfn
 common.write_LSS_scratchcp(targets,out_file_name,extname='TARGETS')
 fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-fits.setval(out_file_name, 'OBSCON', value='DARK', ext=1)
+fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
 
 
