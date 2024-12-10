@@ -93,7 +93,11 @@ targets = data
 n=len(targets)  ##A Ashley le falta estoo!
 
 del data
-targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]).astype(int) #different tracer types need to have different targetids
+type_u = type_
+if type_ == 'BGS':
+    type_u = 'BGS_ANY'
+
+targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_u]).astype(int) #different tracer types need to have different targetids
 print(len(targets),' in Y5 area')
 selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
 targets = targets[selY3]
