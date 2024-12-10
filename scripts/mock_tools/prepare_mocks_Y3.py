@@ -65,6 +65,8 @@ data = Table(data)
 desitar = {'LRG':1, 'QSO': 4, 'ELG':34,'BGS': int(2**60)}
 priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
 numobs = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':1}
+norm = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':2**60}
+
 type_ = args.tracer
                 
 data['DESI_TARGET'] = desitar[type_]
@@ -94,7 +96,7 @@ n=len(targets)  ##A Ashley le falta estoo!
 
 del data
 
-targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type]).astype(int) #different tracer types need to have different targetids
+targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type]/norm[type_]).astype(int) #different tracer types need to have different targetids
 print(len(targets),' in Y5 area')
 selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
 targets = targets[selY3]
