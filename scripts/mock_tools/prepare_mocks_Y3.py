@@ -62,7 +62,7 @@ tarsS["GALCAP"] = "S"
 data = vstack([tarsN, tarsS])
 data = Table(data)
 
-desitar = {'LRG':1, 'QSO': 4, 'ELG':34,'BGS': 2**60}
+desitar = {'LRG':1, 'QSO': 4, 'ELG':34,'BGS': int(2**60)}
 priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
 numobs = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':1}
 type_ = args.tracer
@@ -93,11 +93,8 @@ targets = data
 n=len(targets)  ##A Ashley le falta estoo!
 
 del data
-type_u = type_
-if type_ == 'BGS':
-    type_u = 'BGS_ANY'
 
-targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_u]).astype(int) #different tracer types need to have different targetids
+targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type]).astype(int) #different tracer types need to have different targetids
 print(len(targets),' in Y5 area')
 selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
 targets = targets[selY3]
