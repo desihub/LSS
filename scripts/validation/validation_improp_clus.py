@@ -414,7 +414,8 @@ for tp in tps:
             for mp in mws_maps:
                 fig = plt.figure()
                 parv = mwsf[mp]
-                sel_zero = parv == 0
+                sel_zero = (parv == 0)
+                sel_zero &= (parv*0 != 0)
                 pixlr[sel_zero] = 0
                 chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
                 chi2tot += chi2
