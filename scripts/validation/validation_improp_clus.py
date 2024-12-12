@@ -223,7 +223,7 @@ for tp in tps:
         do_ebvnew_diff = 'n'
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'n'
-        mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','Halpha_6563']
+        mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','NeIII_3869']
         mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
         
         
