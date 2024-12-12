@@ -213,6 +213,19 @@ for tp in tps:
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'n'
         print('doing validation for '+tp)
+    if args.mapmd == 'mws':
+        maps = []
+        dmaps = []
+        dosag = 'n'
+        dosky_g = 'n'
+        dosky_r = 'n'
+        dosky_z = 'n'
+        do_ebvnew_diff = 'n'
+        do_lrgmask = 'n'
+        do_ebvnocib_diff = 'n'
+        mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','Halpha_6563']
+        mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
+        
         
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
         if 'PSFDEPTH_W1' in maps:
@@ -397,6 +410,18 @@ for tp in tps:
             regu = reg
             if 'DES' in reg:
                 regu = 'S'
+            
+            for mp in mws_maps:
+                fig = plt.figure()
+                parv = mwsf[mp]
+                sel_zero = parv == 0
+                pixlr[sel_zero] = 0
+                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                chi2tot += chi2
+                nmaptot += 1
+                figs.append(fig)
+
+                mwsf
             for mp in maps:
                 fig = plt.figure()
                 parv = mf[regu][mp]
