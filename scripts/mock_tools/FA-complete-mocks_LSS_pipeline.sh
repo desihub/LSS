@@ -16,12 +16,14 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python prepare_moc
     --survey DA2 --tracer "$TRACER" --input_mockpath "$VARIABLE" --input_mockfile "$VARIABLE2" \
     --output_fullpathfn output1.fits --nproc 128
 
+
+
 export PATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/bin:$PATH
 export PYTHONPATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/py:$PYTHONPATH
 export SKYHEALPIXS_DIR=$DESI_ROOT/target/skyhealpixs/v1
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python getpota_input_Y3.py \
-    --input output1.fits --output output2.fits --realization 1 -prog 'DARK'
+    --input output1.fits --output output2.fits --realization 1 --prog 'DARK'
 
 if [[ "$TRACER" == "LRG" ]]; then
     source /global/common/software/desi/desi_environment.sh main
@@ -33,7 +35,7 @@ if [[ "$TRACER" == "LRG" ]]; then
 elif [[ "$TRACER" == "QSO" ]]; then
     source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
     srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python pota2clus_fast_Y3.py \
-        --pota_fn output2.fits --tracer QSO --mockver 'Uchuu' --mk_inputran y
+        --pota_fn output2.fits --tracer QSO --mockver 'Uchuu' -mk_inputran y
 
 elif [[ "$TRACER" == "ELG" ]]; then
     srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python pota2clus_fast_Y3.py \
