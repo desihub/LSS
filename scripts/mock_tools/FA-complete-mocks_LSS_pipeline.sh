@@ -9,8 +9,8 @@ if [[ "$TRACER" != "LRG" && "$TRACER" != "QSO" && "$TRACER" != "ELG" ]]; then
 fi
 
 source /global/common/software/desi/desi_environment.sh main
-VARIABLE="/global/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v1.0/0000/"
-VARIABLE2="Uchuu-SHAM_${TRACER}_Y3-v1_0000_clustering.dat"
+VARIABLE="/global/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v1.5/0000/"
+VARIABLE2="Uchuu-SHAM_${TRACER}_Y3-v1.5_0000_clustering.dat"
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python prepare_mocks_Y3.py \
     --survey DA2 --tracer "$TRACER" --input_mockpath "$VARIABLE" --input_mockfile "$VARIABLE2" \
@@ -33,7 +33,7 @@ if [[ "$TRACER" == "LRG" ]]; then
 elif [[ "$TRACER" == "QSO" ]]; then
     source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
     srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python pota2clus_fast_Y3.py \
-        --pota_fn output2.fits --tracer QSO --mockver 'Uchuu' -mk_inputran y
+        --pota_fn output2.fits --tracer QSO --mockver 'Uchuu' --mk_inputran y
 
 elif [[ "$TRACER" == "ELG" ]]; then
     srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python pota2clus_fast_Y3.py \
