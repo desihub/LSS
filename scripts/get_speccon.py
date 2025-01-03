@@ -28,6 +28,7 @@ mayall.elevation = config.location.elevation().to(u.m).value
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ['SCRATCH'])
 parser.add_argument("--survey", help="main or sv3",default='main')
+parser.add_argument("--release", help="e.g., Y1 or DA2",default='main')
 parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--verspec",help="version for redshift pipeline",default='daily')
 parser.add_argument("--test",help="if yes, test a small fraction of the exposures",default='n')
