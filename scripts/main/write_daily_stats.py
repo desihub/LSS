@@ -29,7 +29,10 @@ tps = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 zcol = 'Z_not4clus'
 for tp in tps:
     print(tp+':')
-    rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_0_full_noveto.ran.fits',ext=1)
+    prog='dark'
+    if 'BGS' in tp:
+        prog = 'bright'
+    rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+prog+'_0_full_noveto.ran.fits',ext=1)
     areanv = rtnv['NAXIS2']/2500
     dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full_noveto.dat.fits',ext=1)
     ngnv = dtnv['NAXIS2']
