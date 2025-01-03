@@ -29,8 +29,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="base directory for output, default is CSCRATCH",default=os.environ['CSCRATCH'])
 parser.add_argument("--survey", help="main or sv3",default='main')
 parser.add_argument("--prog", help="dark or bright",default='dark')
-parser.add_argument("--verspec",help="version for redshifts",default='daily')
+parser.add_argument("--verspec",help="version for redshift pipeline",default='daily')
 parser.add_argument("--test",help="if yes, test a small fraction of the exposures",default='n')
+parser.add_argument("--zcatver",help="version for redshift catalogs (starts with verspec jura)",default='')
 
 args = parser.parse_args()
 
@@ -93,7 +94,7 @@ exposures = exposures[tcol]
 if args.verspec == 'daily':
     dcat = fitsio.read(args.basedir +'/'+sw+'/LSS/'+args.verspec+'/datcomb_'+args.prog+'_spec_zdone.fits')
 else:
-    dcat = fitsio.read(datadir+'/zcatalog/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
+    dcat = fitsio.read(datadir+'/zcatalog/'+args.zcatver+'/ztile-'+args.survey+'-'+args.prog+'-'+'cumulative.fits')
 tids = np.unique(dcat['TILEID'])
 
 mt = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
