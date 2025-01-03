@@ -28,7 +28,7 @@ mayall.elevation = config.location.elevation().to(u.m).value
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ['SCRATCH'])
+parser.add_argument("--outdir", help="base directory for output, default is SCRATCH",default=os.environ['SCRATCH'])
 parser.add_argument("--survey", help="main or sv3",default='main')
 parser.add_argument("--release", help="e.g., Y1 or DA2",default='main')
 parser.add_argument("--prog", help="dark or bright",default='dark')
@@ -65,7 +65,7 @@ sw = args.survey
 if args.survey == 'sv3':
     sw = 'SV3'
 
-outf = args.basedir +'/'+sw+'/LSS/'+args.verspec+'/specobscon_'+args.prog+'.fits'
+outf = args.outdir+'/specobscon_'+args.prog+'.fits'
 
 datadir   = '/global/cfs/cdirs/desi/spectro/redux/'+args.verspec+'/'
 exposures = fitsio.read(datadir + '/exposures-'+args.verspec+'.fits')
