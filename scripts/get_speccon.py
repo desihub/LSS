@@ -206,7 +206,7 @@ if args.par == 'y':
            condition_cat.append(con_cat)
 else:
     condition_cat = [process_coadd(x) for x in to_process]
-condition_cat = vstack(condition_cat)
+condition_cat = vstack(condition_cat,metadata_conflicts='silent')
 
 unique_in_expids = np.unique(condition_cat['IN_EXPIDS'].data).tolist()
                 
@@ -220,25 +220,27 @@ for col in update_cols:
     condition_cat[col] = -99.
     
 for in_expids in unique_in_expids:    
-    expids        = np.array(in_expids.split('-')).astype(np.int)
+    expids        = np.array(in_expids.split('-')).astype(int)
 
     # Get the exposure conditions for this set of expids.   
     in_exposures  = exposures[np.isin(exposures['EXPID'].data, expids)]
     
     # print(expids)
     # print(in_exposures)
-        
+       
     mean_function = lambda x: np.average(x, weights=in_exposures['EFFTIME_SPEC'])
 
     # Weighted mean of the condition table for this exp. set (weights are efftime_spec)
-    in_exposures               = in_exposures.groups.aggregate(mean_function)
+    if np.max(in_exposures['EFFTIME_SPEC']) > 0: 
+        in_exposures               = in_exposures.groups.aggregate(mean_function)
 
-    #  To be extra sure, we could include matches to TILEID and thru night.     
-    to_update                  = condition_cat['IN_EXPIDS'] == in_expids
+        #  To be extra sure, we could include matches to TILEID and thru night.     
+        to_update                  = condition_cat['IN_EXPIDS'] == in_expids
                 
-    for col in update_cols:
-        condition_cat[col].data[to_update] = in_exposures[col].data[0]
-        
+        for col in update_cols:
+            condition_cat[col].data[to_update] = in_exposures[col].data[0]
+    else:
+         common.printlog('EFFTIME_SPEC all 0: {}'.format(in_expids),logger)   
     common.printlog('Processed: {}'.format(in_expids),logger)
 
 
