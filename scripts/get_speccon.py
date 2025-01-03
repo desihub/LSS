@@ -33,6 +33,7 @@ parser.add_argument("--prog", help="dark or bright",default='dark')
 parser.add_argument("--verspec",help="version for redshift pipeline",default='daily')
 parser.add_argument("--test",help="if yes, test a small fraction of the exposures",default='n')
 parser.add_argument("--zcatver",help="version for redshift catalogs (starts with verspec jura)",default='')
+parser.add_argument("--par",help="whether to process in parallel",default='n')
 
 args = parser.parse_args()
 
@@ -173,7 +174,14 @@ def process_coadd(coadd_fpath):
     return condition_cat
 
 to_process = coadd_fpaths
-condition_cat = [process_coadd(x) for x in to_process]
+if args.par == 'y':
+    condition_cat = []
+    from concurrent.futures import ProcessPoolExecutor            
+    with ProcessPoolExecutor() as executor:
+        for con_cat in executor.map(process_coadd, to_process):
+            tl.append(con_cat)
+else:
+    condition_cat = [process_coadd(x) for x in to_process]
 condition_cat = vstack(condition_cat)
 
 unique_in_expids = np.unique(condition_cat['IN_EXPIDS'].data).tolist()
