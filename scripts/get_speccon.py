@@ -15,6 +15,8 @@ from   desisurvey.config import Configuration
 from   astropy.time import Time
 from   astropy.table import Table
 
+import LSS.common_tools as common
+
 config = Configuration()
 
 mayall = ephem.Observer()
@@ -36,6 +38,28 @@ parser.add_argument("--zcatver",help="version for redshift catalogs (starts with
 parser.add_argument("--par",help="whether to process in parallel",default='n')
 
 args = parser.parse_args()
+
+import logging
+# create logger
+logname = 'get_speccon'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+logger.info('script is starting')
+
 
 sw = args.survey
 if args.survey == 'sv3':
@@ -62,7 +86,7 @@ for ii in range(0,nexp):
     moon_illum = moon.moon_phase
     exposures[ii]['MOON_ILLUM'] = moon_illum
     
-print('added moon illumination, median is:'+str(np.median(exposures['MOON_ILLUM'])))
+common.printlog('added moon illumination, median is:'+str(np.median(exposures['MOON_ILLUM'])),logger)
 
 
 
@@ -77,7 +101,7 @@ for ii in range(0,nexp):
     efn = '/global/cfs/cdirs/desi/spectro/data/'+str(exposures[ii]['NIGHT'])+'/'+es+'/desi-'+es+'.fits.fz'
     hh = fitsio.read_header(efn,ext=1)
     if ii//100 == ii/100:
-        print('at exposure '+str(ii)+ ' out of '+str(nexp))
+        common.printlog('at exposure '+str(ii)+ ' out of '+str(nexp),logger)
     for col in addcols:
         try:
             exposures[ii][col] = hh[col]
@@ -86,8 +110,8 @@ for ii in range(0,nexp):
 
 for col in addcols:
     selnull = exposures[col] == -99
-    print('fraction null:')
-    print(col,str(len(exposures[selnull])/len(exposures)))               
+    common.printlog('fraction null:',logger)
+    common.printlog(col+' '+str(len(exposures[selnull])/len(exposures)),logger)               
 
 ocol = ['MOON_ILLUM','EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
 tcol = addcols + ocol
@@ -109,8 +133,8 @@ tiles4comb = Table()
 tiles4comb['TILEID'] = mtd['TILEID'].astype(int)
 tiles4comb['ZDATE'] = mtd['LASTNIGHT']
 
-print('numbers of tiles, should match:')
-print(len(tids),len(tiles4comb))
+common.printlog('numbers of tiles, should match:',logger)
+common.printlog(str(len(tids))+','+str(len(tiles4comb)),logger)
 
 coadd_fpaths = []
 
@@ -170,7 +194,7 @@ def process_coadd(coadd_fpath):
         condition_cat['IN_EXPIDS'][i] = loc_expids
           
         # print(i, loc_expids)
-    print('done with '+coadd_fpath)        
+    common.printlog('done with '+coadd_fpath,logger)        
     return condition_cat
 
 to_process = coadd_fpaths
@@ -179,7 +203,7 @@ if args.par == 'y':
     from concurrent.futures import ProcessPoolExecutor            
     with ProcessPoolExecutor() as executor:
         for con_cat in executor.map(process_coadd, to_process):
-            tl.append(con_cat)
+           condition_cat.append(con_cat)
 else:
     condition_cat = [process_coadd(x) for x in to_process]
 condition_cat = vstack(condition_cat)
@@ -215,7 +239,7 @@ for in_expids in unique_in_expids:
     for col in update_cols:
         condition_cat[col].data[to_update] = in_exposures[col].data[0]
         
-    print('Processed: {}'.format(in_expids))
+    common.printlog('Processed: {}'.format(in_expids),logger)
 
 
 condition_cat.write(outf, format='fits', overwrite=True)
