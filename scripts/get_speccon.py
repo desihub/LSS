@@ -169,7 +169,7 @@ def process_coadd(coadd_fpath):
         condition_cat['IN_EXPIDS'][i] = loc_expids
           
         # print(i, loc_expids)
-            
+    print('done with '+coadd_fpath)        
     return condition_cat
 
 to_process = coadd_fpaths
