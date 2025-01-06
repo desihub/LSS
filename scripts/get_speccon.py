@@ -90,7 +90,7 @@ common.printlog('added moon illumination, median is:'+str(np.median(exposures['M
 
 
 
-addcols = ['ZD','ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP', 'TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
+addcols = ['HUMIDITY','ZD','ETCTRANS', 'ETCTHRUB', 'ETCSKY', 'ACQFWHM','SLEWANGL','MOONSEP','PMIRTEMP', 'TAIRTEMP','PARALLAC','ROTOFFST','TURBRMS','WINDSPD','WINDDIR']
 
 for col in addcols:
     exposures[col] = np.ones(nexp)*-99
