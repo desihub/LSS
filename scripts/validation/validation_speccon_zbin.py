@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 
 indir = 'dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
-specdir = indir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/'
+specdir =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/'
 outdir = indir+'plots/tsnr/'
 
 if args.data == 'LSS':
