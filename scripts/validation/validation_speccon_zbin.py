@@ -111,9 +111,9 @@ for tp in tps:
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
-    fl = ['HUMIDITY','ACQFWHM','PMIRTEMP','TAIRTEMP','PARALLAC','ROTOFFST','WINDDIR','SEEING_ETC','EBV','SEEING_GFA','SKY_MAG_AB_GFA',\
+    fl = ['WINDDIR','SEEING_ETC','EBV','SEEING_GFA','SKY_MAG_AB_GFA',\
     'SKY_MAG_G_SPEC','SKY_MAG_R_SPEC','SKY_MAG_Z_SPEC','ETCTRANS','ETCSKY','ETCTHRUB','ZD','TURBRMS','SLEWANGL','AIRMASS','MOON_ILLUM',\
-    'TRANSPARENCY_GFA','WINDSPD']
+    'TRANSPARENCY_GFA','WINDSPD','HUMIDITY','ACQFWHM','PMIRTEMP','TAIRTEMP','PARALLAC','ROTOFFST']
     for feat in fl:
         df[feat] = df[feat].filled(-99)
         print('doing '+feat)
