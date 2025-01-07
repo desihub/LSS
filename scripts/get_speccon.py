@@ -221,6 +221,10 @@ for col in sum_cols:
 
 for col in update_cols:
     condition_cat[col] = -99.
+ 
+ for col in sum_cols:
+    condition_cat[col] = -99.
+
     
 for in_expids in unique_in_expids:    
     expids        = np.array(in_expids.split('-')).astype(int)
