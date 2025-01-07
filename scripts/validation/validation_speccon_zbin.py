@@ -147,7 +147,7 @@ for tp in tps:
             #plt.savefig(outdir+tp+'_'+str(round(zm,3))+'ltzlt'+str(round(zm+dz,3))+'_relsuccess_tnsr.png')
             #plt.clf()
             figs.append(fig)
-            zm += dz
+            zm += round(dz,1)
             print(zm)
         with PdfPages(outdir+tp+'_relsuccess_'+feat+'_zbins.pdf') as pdf:
             for fig in figs:
