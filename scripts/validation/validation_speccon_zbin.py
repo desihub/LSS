@@ -114,6 +114,7 @@ for tp in tps:
     'TRANSPARENCY_GFA','WINDSPD']
     for feat in fl:
         df[feat] = df[feat].filled(-99)
+        print('doing '+feat)
         zm = zmin
         figs = []
         selz = df['Z_not4clus'] > zm
@@ -128,7 +129,7 @@ for tp in tps:
         plt.xlabel(feat)
         plt.title(str(round(zm,3))+'<z<'+str(round(zmax,3)))
         figs.append(fig)
-
+        print(zm)
         while zm < zmax:
             selz = df['Z_not4clus'] > zm
             selz &= df['Z_not4clus'] < zm+dz
@@ -145,6 +146,7 @@ for tp in tps:
             #plt.clf()
             figs.append(fig)
             zm += dz
+            print(zm)
         with PdfPages(outdir+tp+'_relsuccess_'+feat+'_zbins.pdf') as pdf:
             for fig in figs:
                 pdf.savefig(fig)
