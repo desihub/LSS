@@ -98,7 +98,7 @@ for col in addcols:
 
 for ii in range(0,nexp):
     es = str(exposures[ii]['EXPID']).zfill(8)
-    efn = '/global/cfs/cdirs/desi/spectro/data/'+str(exposures[ii]['NIGHT'])+'/'+es+'/desi-'+es+'.fits.fz'
+    efn = '/dvs_ro/cfs/cdirs/desi/spectro/data/'+str(exposures[ii]['NIGHT'])+'/'+es+'/desi-'+es+'.fits.fz'
     hh = fitsio.read_header(efn,ext=1)
     if ii//100 == ii/100:
         common.printlog('at exposure '+str(ii)+ ' out of '+str(nexp),logger)
@@ -150,7 +150,7 @@ for ii in range(0,len(tiles4comb)):
     fpaths = sorted(glob.glob(fpath + '/' + 'coadd-?-{:d}-thru{}.fits'.format(tiles4comb['TILEID'][ii], tiles4comb['ZDATE'][ii])))
     
     
-    coadd_fpaths += [x for x in fpaths]
+    coadd_fpaths += [x.replace('global','dvs_ro') for x in fpaths]
 
 print(coadd_fpaths[:12])
 
