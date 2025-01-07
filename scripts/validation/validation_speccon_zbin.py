@@ -50,7 +50,8 @@ if args.survey == 'SV3' and args.tracers == 'all':
 
 
 def normed_plot(data,seltot,sel,per_range=(.5,99.5),col='TSNR2_ELG',wcol='WEIGHT_ZFAIL',cl='k',ps='o',lab=''):
-    range = (np.percentile(data[seltot][col],per_range[0]),np.percentile(data[seltot][col],per_range[1]))
+    selnz = data[col] > 0 #all quantities have true values > 0
+    range = (np.percentile(data[seltot&selnz][col],per_range[0]),np.percentile(data[seltot&selnz][col],per_range[1]))
     a,bins = np.histogram(data[seltot][col],range=range)
     b,_ = np.histogram(data[sel][col],bins=bins)
     c,_ = np.histogram(data[sel][col],bins=bins,weights=data[sel][wcol])
@@ -71,7 +72,7 @@ for tp in tps:
         zmin = 0.8
         zmax = 3.5
         dz = 0.3
-        cols = columns=['TARGETID','TILEID','LOCATION','Z_not4clus','WEIGHT_ZFAIL','PHOTSYS','PRIORITY']
+        cols = columns=['TARGETID','TILEID','LOCATION','Z_not4clus','WEIGHT_ZFAIL','PHOTSYS','PRIORITY','ZWARN']
     if tp[:3] == 'ELG':
         zmin = 0.6
         zmax = 1.6
