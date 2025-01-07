@@ -115,6 +115,19 @@ for tp in tps:
     for feat in fl:
         zm = zmin
         figs = []
+		selz = df['Z_not4clus'] > zm
+		selz &= df['Z_not4clus'] < zmax
+		seln = df['PHOTSYS'] == 'N'
+		fig = plt.figure()
+		normed_plot(df,selo&seln,selo&selgz&selz&seln,cl='r',ps='d',lab='N',col=feat)
+		normed_plot(df,selo&~seln,selo&selgz&selz&~seln,cl='b',ps='o',lab='S',col=feat)
+		plt.legend()
+		plt.grid()
+		plt.ylabel(tp+' relative z success')
+		plt.xlabel(feat)
+		plt.title(str(round(zm,3))+'<z<'+str(round(zmax,3)))
+		figs.append(fig)
+
         while zm < zmax:
             selz = df['Z_not4clus'] > zm
             selz &= df['Z_not4clus'] < zm+dz
