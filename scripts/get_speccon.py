@@ -113,7 +113,7 @@ for col in addcols:
     common.printlog('fraction null:',logger)
     common.printlog(col+' '+str(len(exposures[selnull])/len(exposures)),logger)               
 
-ocol = ['MOON_ILLUM','EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC']
+ocol = ['MOON_ILLUM','EXPID', 'SEEING_ETC', 'AIRMASS', 'EBV', 'TRANSPARENCY_GFA', 'SEEING_GFA', 'SKY_MAG_AB_GFA', 'SKY_MAG_G_SPEC', 'SKY_MAG_R_SPEC', 'SKY_MAG_Z_SPEC', 'EFFTIME_SPEC','EXPTIME','EFFTIME_ETC','EFFTIME_DARK_GFA', 'EFFTIME_BRIGHT_GFA']
 tcol = addcols + ocol
 exposures = exposures[tcol]
 
@@ -214,7 +214,10 @@ unique_in_expids.remove('')
 
 update_cols   = list(exposures.dtype.names)
 update_cols.remove('EXPID')
-update_cols.remove('EFFTIME_SPEC')
+sum_cols = ['EFFTIME_SPEC','EXPTIME','EFFTIME_ETC','EFFTIME_DARK_GFA', 'EFFTIME_BRIGHT_GFA']
+for col in sum_cols:
+    update_cols.remove(col)
+
 
 for col in update_cols:
     condition_cat[col] = -99.
@@ -230,15 +233,19 @@ for in_expids in unique_in_expids:
        
     mean_function = lambda x: np.average(x, weights=in_exposures['EFFTIME_SPEC'])
 
+    sum_function = lambda x: np.sum(x)
+    
     # Weighted mean of the condition table for this exp. set (weights are efftime_spec)
     if np.max(in_exposures['EFFTIME_SPEC']) > 0: 
         in_exposures               = in_exposures.groups.aggregate(mean_function)
-
+        in_exposures_sum           = in_exposures.groups.aggregate(sum_function)
         #  To be extra sure, we could include matches to TILEID and thru night.     
         to_update                  = condition_cat['IN_EXPIDS'] == in_expids
                 
         for col in update_cols:
             condition_cat[col].data[to_update] = in_exposures[col].data[0]
+        for col in sum_cols:
+            condition_cat[col].data[to_update] = in_exposures_sum[col].data[0]
     else:
          common.printlog('EFFTIME_SPEC all 0: {}'.format(in_expids),logger)   
     common.printlog('Processed: {}'.format(in_expids),logger)
