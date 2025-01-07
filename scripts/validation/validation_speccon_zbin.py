@@ -21,7 +21,7 @@ parser.add_argument("--hpmapcut",help="string to add for hpmapcut or not",defaul
 args = parser.parse_args()
 
 
-indir = 'dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
+indir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 specdir =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/'
 outdir = indir.replace('dvs_ro','global')+'plots/speccon/'
 
