@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 indir = 'dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/LSScats/'+args.version+'/'
 specdir =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/'+args.data+'/'+args.verspec+'/'
-outdir = indir+'plots/tsnr/'
+outdir = indir.replace('dvs_ro','global')+'plots/speccon/'
 
 if args.data == 'LSS':
     if not os.path.exists(outdir):
