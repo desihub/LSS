@@ -90,6 +90,7 @@ for tp in tps:
         cols = columns=['TARGETID','TILEID','LOCATION','Z_not4clus','WEIGHT_ZFAIL','PHOTSYS','ZWARN','DELTACHI2']
     df = fitsio.read(indir+tp+zdw+'_full'+args.hpmapcut+'.dat.fits',columns=cols)
     speccon = Table(fitsio.read(specdir+'specobscon_'+prog+'.fits'))
+    speccon['TILEID'] = speccon['TILEID'].astype(int)
     df = join(df,speccon,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
 
     #dcl = []
