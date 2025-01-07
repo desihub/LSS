@@ -113,6 +113,7 @@ for tp in tps:
     'SKY_MAG_G_SPEC','SKY_MAG_R_SPEC','SKY_MAG_Z_SPEC','ETCTRANS','ETCSKY','ETCTHRUB','ZD','TURBRMS','SLEWANGL','AIRMASS','MOON_ILLUM',\
     'TRANSPARENCY_GFA','WINDSPD']
     for feat in fl:
+        df[feat] = df[feat].filled(-99)
         zm = zmin
         figs = []
 		selz = df['Z_not4clus'] > zm
