@@ -140,6 +140,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         cat_dir = cat_dir.replace('/blinded','')
         if 'BGS_BRIGHT' in tracer:
             tracer = 'BGS_BRIGHT'
+            logger.info('reset tracer name to BGS_BRIGHT for reading full file')
         if 'LRG' in tracer:
             tracer = 'LRG'
             logger.info('reset tracer name to LRG for reading full file')
