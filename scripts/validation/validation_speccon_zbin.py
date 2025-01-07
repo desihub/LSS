@@ -51,10 +51,12 @@ if args.survey == 'SV3' and args.tracers == 'all':
 
 def normed_plot(data,seltot,sel,per_range=(.5,99.5),col='TSNR2_ELG',wcol='WEIGHT_ZFAIL',cl='k',ps='o',lab=''):
     selnz = data[col] > 0 #all quantities have true values > 0
-    range = (np.percentile(data[seltot&selnz][col],per_range[0]),np.percentile(data[seltot&selnz][col],per_range[1]))
+    datastnz = data[seltot&selnz]
+    range = (np.percentile(datanz[col],per_range[0]),np.percentile(datastnz[col],per_range[1]))
     a,bins = np.histogram(data[seltot][col],range=range)
-    b,_ = np.histogram(data[sel][col],bins=bins)
-    c,_ = np.histogram(data[sel][col],bins=bins,weights=data[sel][wcol])
+    datas = data[sel]
+    b,_ = np.histogram(datas[col],bins=bins)
+    c,_ = np.histogram(datas[col],bins=bins,weights=datas[wcol])
     sp = bins[1]-bins[0]
     err = np.sqrt(b*(1-b/a))/a  # binomial error
     normc = np.sum(c)/np.sum(a)
