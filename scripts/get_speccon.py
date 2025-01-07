@@ -222,7 +222,7 @@ for col in sum_cols:
 for col in update_cols:
     condition_cat[col] = -99.
  
- for col in sum_cols:
+for col in sum_cols:
     condition_cat[col] = -99.
 
     
