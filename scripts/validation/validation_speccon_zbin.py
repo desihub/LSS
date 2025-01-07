@@ -125,7 +125,7 @@ for tp in tps:
             plt.legend()
             plt.grid()
             plt.ylabel(tp+' relative z success')
-            plt.xlabel(tsnrcol)
+            plt.xlabel(feat)
             plt.title(str(round(zm,3))+'<z<'+str(round(zm+dz,3)))
             #plt.savefig(outdir+tp+'_'+str(round(zm,3))+'ltzlt'+str(round(zm+dz,3))+'_relsuccess_tnsr.png')
             #plt.clf()
