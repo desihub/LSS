@@ -96,8 +96,8 @@ for tp in tps:
     df = fitsio.read(indir+tp+zdw+'_full'+args.hpmapcut+'.dat.fits',columns=cols)
     speccon = Table(fitsio.read(specdir+'specobscon_'+prog+'.fits'))
     speccon['TILEID'] = speccon['TILEID'].astype(int)
-    speccon['TEMPAIRmPMIRROR'] = -99
-    speccon['SPEED'] = -99
+    speccon['TEMPAIRmPMIRROR'] = -99.
+    speccon['SPEED'] = -99.
     sel = speccon['PMIRTEMP'] > 0
     sel &= speccon['TAIRTEMP'] > 0
     speccon['TEMPAIRmPMIRROR'][sel] = speccon['TAIRTEMP'][sel] - speccon['PMIRTEMP'][sel]
