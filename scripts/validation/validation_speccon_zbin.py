@@ -51,6 +51,8 @@ if args.survey == 'SV3' and args.tracers == 'all':
 
 def normed_plot(data,seltot,sel,per_range=(.5,99.5),col='TSNR2_ELG',wcol='WEIGHT_ZFAIL',cl='k',ps='o',lab=''):
     selnz = data[col] > 0 #all quantities have true values > 0
+    if col == 'TEMPAIRmPMIRROR':
+        selnz = data[col] != -99
     datastnz = data[seltot&selnz]
     range = (np.percentile(datastnz[col],per_range[0]),np.percentile(datastnz[col],per_range[1]))
     a,bins = np.histogram(data[seltot][col],range=range)
