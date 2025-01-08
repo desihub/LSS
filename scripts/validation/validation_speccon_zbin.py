@@ -97,9 +97,14 @@ for tp in tps:
     speccon = Table(fitsio.read(specdir+'specobscon_'+prog+'.fits'))
     speccon['TILEID'] = speccon['TILEID'].astype(int)
     speccon['TEMPAIRmPMIRROR'] = -99
+    speccon['SPEED'] = -99
     sel = speccon['PMIRTEMP'] > 0
     sel &= speccon['TAIRTEMP'] > 0
     speccon['TEMPAIRmPMIRROR'][sel] = speccon['TAIRTEMP'][sel] - speccon['PMIRTEMP'][sel]
+    sel = speccon['EXPTIME'] > 0
+    sel &= speccon['EFFTIME_SPEC'] > 0
+    speccon['SPEED'] = speccon['EFFTIME_SPEC'][sel]/speccon['EXPTIME'][sel]
+
     df = join(df,speccon,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
 
     #dcl = []
@@ -117,7 +122,7 @@ for tp in tps:
     mean_gz = sum(df[selgz]['WEIGHT_ZFAIL'])/len(df[selo])
     print('number with good z, sum of weight_zfail,  number with good obs')
     print(len(df[selgz]),sum(df[selgz]['WEIGHT_ZFAIL']),len(df[selo]))
-    fl = ['TEMPAIRmPMIRROR','WINDDIR','SEEING_ETC','EBV','SEEING_GFA','SKY_MAG_AB_GFA',\
+    fl = ['SPEED','TEMPAIRmPMIRROR','WINDDIR','SEEING_ETC','EBV','SEEING_GFA','SKY_MAG_AB_GFA',\
     'SKY_MAG_G_SPEC','SKY_MAG_R_SPEC','SKY_MAG_Z_SPEC','ETCTRANS','ETCSKY','ETCTHRUB','ZD','TURBRMS','SLEWANGL','AIRMASS','MOON_ILLUM',\
     'TRANSPARENCY_GFA','WINDSPD','HUMIDITY','ACQFWHM','PMIRTEMP','TAIRTEMP','PARALLAC','ROTOFFST']
     for feat in fl:
