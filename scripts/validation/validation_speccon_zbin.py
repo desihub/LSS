@@ -103,7 +103,7 @@ for tp in tps:
     speccon['TEMPAIRmPMIRROR'][sel] = speccon['TAIRTEMP'][sel] - speccon['PMIRTEMP'][sel]
     sel = speccon['EXPTIME'] > 0
     sel &= speccon['EFFTIME_SPEC'] > 0
-    speccon['SPEED'] = speccon['EFFTIME_SPEC'][sel]/speccon['EXPTIME'][sel]
+    speccon['SPEED'][sel] = speccon['EFFTIME_SPEC'][sel]/speccon['EXPTIME'][sel]
 
     df = join(df,speccon,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
 
