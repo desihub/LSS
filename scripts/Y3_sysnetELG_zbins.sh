@@ -9,7 +9,7 @@ PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
 verspec=loa-v1
 survey=DA2
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $1
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $1
 
 $LSSDIR/LSS/scripts/run_sysnet_cd.sh N ELG_LOPnotqso0.8_1.1 true false 1024 0.003 dnnp pnll $1 $LSSBASE/$survey/LSS/$verspec/LSScats/
 $LSSDIR/LSS/scripts/run_sysnet_cd.sh S ELG_LOPnotqso0.8_1.1 true false 1024 0.003 dnnp pnll $1 $LSSBASE/$survey/LSS/$verspec/LSScats/
