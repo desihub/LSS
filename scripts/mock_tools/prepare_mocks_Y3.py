@@ -48,19 +48,20 @@ tars = Table.read(args.input_mockpath+args.input_mockfile+".fits")
 # Adding the WEIGHT column
 tars['WEIGHT'] = np.ones(tars['RA'].shape[0])
 
-# Conditions for NGC and SGC
-condN = common.splitGC(tars)#(tars['RA'] > 85) & (tars['RA'] < 302)
-condS = ~condN#(tars['RA'] < 85) | (tars['RA'] > 302)
+# Conditions for NGC and SGC; AJR does not think this is necessary
+#condN = common.splitGC(tars)#(tars['RA'] > 85) & (tars['RA'] < 302)
+#condS = ~condN#(tars['RA'] < 85) | (tars['RA'] > 302)
 
 # Splitting the DataFrame; AJR: is there a reason for this here? 
-tarsN = tars[condN]
-tarsS = tars[condS]
+#tarsN = tars[condN]
+#tarsS = tars[condS]
 
-tarsN["GALCAP"] = "N"
-tarsS["GALCAP"] = "S"
+#tarsN["GALCAP"] = "N"
+#tarsS["GALCAP"] = "S"
 
-data = vstack([tarsN, tarsS])
-data = Table(data)
+#data = vstack([tarsN, tarsS])
+data = Table(tars)#Table(data)
+del tars
 
 desitar = {'LRG':1, 'QSO': 4, 'ELG':34,'BGS': int(2**60)}
 priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
