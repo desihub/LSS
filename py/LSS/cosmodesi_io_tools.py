@@ -261,7 +261,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         weights *= catalog['WEIGHT_focal'][mask]
         print('multiplying weights by WEIGHT_focal')
     if 'FKP' in weight_type:
-        if P0 is not None:
+        if P0 is None:
             weights *= catalog['WEIGHT_FKP'][mask]
             print('multiplying weights by WEIGHT_FKP')
         else:

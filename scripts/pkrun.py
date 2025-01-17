@@ -255,7 +255,7 @@ if __name__ == '__main__':
     P0 = args.P0
     if P0 is not None:
         P0 = float(P0)
-
+        logger.info('using P0 '+str(P0))
     from pypower import mpi
     mpicomm = mpi.COMM_WORLD
     mpiroot = 0
