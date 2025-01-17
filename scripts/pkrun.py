@@ -78,20 +78,20 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     shifted_positions1, shifted_weights1, shifted_positions2, shifted_weights2 = None, None, None, None
 
     if mpicomm.rank == mpiroot:
-        logger.info('P0 is '+str(P0))
+        logger.info('compute power P0 is '+str(P0))
         data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir, rec_type=rec_type, tracer=tracer, option=option,P0=P0, **catalog_kwargs)
         if with_shifted:
             shifted = randoms  # above returned shifted randoms
-            randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option, **catalog_kwargs)
+            randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer, option=option,P0=P0, **catalog_kwargs)
         (data_positions1, data_weights1), (randoms_positions1, randoms_weights1) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
         if with_shifted:
             shifted_positions1, shifted_weights1 = concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
 
         if not autocorr:
-            data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer2, option=option, **catalog_kwargs)
+            data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], rec_type=rec_type, tracer=tracer2, option=option,P0=P0, **catalog_kwargs)
             if with_shifted:
                 shifted = randoms
-                randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer2, option=option, **catalog_kwargs)
+                randoms = read_clustering_positions_weights(distance, name='randoms', rec_type=False, tracer=tracer2, option=option,P0=P0, **catalog_kwargs)
             (data_positions2, data_weights2), (randoms_positions2, randoms_weights2) = concatenate_data_randoms(data, randoms, **catalog_kwargs)
             if with_shifted:
                 shifted_positions2, shifted_weights2 = concatenate_data_randoms(data, shifted, **catalog_kwargs)[1]
