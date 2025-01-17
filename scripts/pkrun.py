@@ -255,8 +255,6 @@ if __name__ == '__main__':
     P0 = args.P0
     if P0 is not None:
         P0 = float(P0)
-        if mpicomm is None or mpicomm.rank == mpiroot:
-            logger.info('using P0 '+str(P0))
     from pypower import mpi
     mpicomm = mpi.COMM_WORLD
     mpiroot = 0
@@ -277,6 +275,8 @@ if __name__ == '__main__':
         out_dir = args.outdir
     if mpicomm is None or mpicomm.rank == mpiroot:
         logger.info('Output directory is {}.'.format(out_dir))
+    if mpicomm is None or mpicomm.rank == mpiroot:
+        logger.info('using P0 '+str(P0))
 
     tracer, tracer2 = args.tracer[0], None
     if len(args.tracer) > 1:
