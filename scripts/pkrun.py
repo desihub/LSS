@@ -78,7 +78,7 @@ def compute_power_spectrum(edges, distance, dtype='f8', wang=None, weight_type='
     shifted_positions1, shifted_weights1, shifted_positions2, shifted_weights2 = None, None, None, None
 
     if mpicomm.rank == mpiroot:
-
+        logger.info('P0 is '+str(P0))
         data, randoms = read_clustering_positions_weights(distance, name=['data', 'randoms'], recon_dir=recon_dir, rec_type=rec_type, tracer=tracer, option=option,P0=P0, **catalog_kwargs)
         if with_shifted:
             shifted = randoms  # above returned shifted randoms
@@ -255,7 +255,8 @@ if __name__ == '__main__':
     P0 = args.P0
     if P0 is not None:
         P0 = float(P0)
-        logger.info('using P0 '+str(P0))
+        if mpicomm is None or mpicomm.rank == mpiroot:
+            logger.info('using P0 '+str(P0))
     from pypower import mpi
     mpicomm = mpi.COMM_WORLD
     mpiroot = 0
