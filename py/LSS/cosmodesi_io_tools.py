@@ -345,7 +345,7 @@ def _concatenate(arrays):
     return array
 
 
-def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None, weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read=None, dat_cat=None, ran_cat=None, **kwargs):
+def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None, weight_type='default', name='data', concatenate=False, option=None, region=None, cat_read=None, dat_cat=None, ran_cat=None,P0=None, **kwargs):
     #print(kwargs)
     #if 'GC' in region:
     if type(region) is not list:
@@ -380,9 +380,9 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                                     tab.remove_column('Z')
                                 tab.rename_column('RSDZ', 'Z')    
                         return tab
-                    positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                    positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0) for cat_fn in cat_fns]
                 else:
-                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option) for cat_fn in cat_fns]
+                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0) for cat_fn in cat_fns]
                 
                 if isscalar:
                     positions.append(positions_weights[0][0])
@@ -408,7 +408,7 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                     cat_read = ran_cat
                    
                     
-                positions_weights = [get_clustering_positions_weights(cat_read, distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option)]
+                positions_weights = [get_clustering_positions_weights(cat_read, distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0)]
                 if name == 'data':
                     positions.append(positions_weights[0][0])
                     weights.append(positions_weights[0][1])
