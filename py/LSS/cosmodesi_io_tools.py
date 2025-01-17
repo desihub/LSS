@@ -165,7 +165,7 @@ def _format_bitweights(bitweights):
     return [bitweights]
 
 
-def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None):
+def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None,P0=None):
     if maglim is None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
@@ -261,9 +261,13 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
         weights *= catalog['WEIGHT_focal'][mask]
         print('multiplying weights by WEIGHT_focal')
     if 'FKP' in weight_type:
-        weights *= catalog['WEIGHT_FKP'][mask]
-        print('multiplying weights by WEIGHT_FKP')
-        
+        if P0 is not None:
+            weights *= catalog['WEIGHT_FKP'][mask]
+            print('multiplying weights by WEIGHT_FKP')
+        else:
+            P0 = float(P0)
+            weights *= 1/(1+catalog['NX'][mask]*P0)
+            print('multiplied weights wfkp using custom P0 '+str(P0))
     if name == 'data' and 'bitwise' in weight_type:
         if 'default' in weight_type:
             #weights /= catalog['WEIGHT_COMP'][mask]
