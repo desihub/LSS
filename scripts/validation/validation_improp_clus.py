@@ -57,8 +57,8 @@ zdw = ''#'zdone'
 regl = ['S','N']
 clrs = ['r','b']
 if args.splitDES == 'y':
-	regl = ['DES','SnotDES','N']
-	clrs = ['orange','purple','b']
+    regl = ['DES','SnotDES','N']
+    clrs = ['orange','purple','b']
     
 
 all_maps = ['CALIB_G',
@@ -109,6 +109,10 @@ for i in range(0,len(f)):
     sky_g[pix] = f['sky_median_g'][i]
     sky_r[pix] = f['sky_median_r'][i]
     sky_z[pix] = f['sky_median_z'][i]
+
+mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','NeIII_3869']
+mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
+
 
 
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
@@ -223,8 +227,6 @@ for tp in tps:
         do_ebvnew_diff = 'n'
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'n'
-        mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','NeIII_3869']
-        mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
         
         
     if tp[:3] == 'ELG' or tp[:3] == 'BGS':
