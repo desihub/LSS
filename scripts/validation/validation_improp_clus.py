@@ -113,8 +113,13 @@ for i in range(0,len(f)):
 mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','NeIII_3869']
 mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
 
-
-
+stardens = {}
+starmaps = ['0_10','10_14','14_18','18_22']
+mapdir = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/stardens/stellar_density_maps_smoothed/'
+for mp in starmaps:
+    data = np.load(mapdir+'stellar_density_map_data_'+mp+'_smoothed.npy')
+    stardens[mp] = data
+    
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
 do_lrgmask = 'n'
 if args.mapmd == 'all':
@@ -424,7 +429,18 @@ for tp in tps:
                 nmaptot += 1
                 figs.append(fig)
 
-                mwsf
+            for mp in starmaps:
+                fig = plt.figure()
+                parv = stardens[mp]
+                sel_zero = (parv == 0)
+                sel_zero &= (parv*0 != 0)
+                pixlr[sel_zero] = 0
+                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab='Gaia stars '+mp,titl=args.survey+' '+tp+zr+' '+reg)
+                chi2tot += chi2
+                nmaptot += 1
+                figs.append(fig)
+
+                
             for mp in maps:
                 fig = plt.figure()
                 parv = mf[regu][mp]
