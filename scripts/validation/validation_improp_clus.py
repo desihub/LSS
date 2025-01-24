@@ -108,7 +108,7 @@ for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
     sky_g['S'][pix] = f['sky_median_g'][i]
     sky_r['S'][pix] = f['sky_median_r'][i]
-    sky_z['S][pix] = f['sky_median_z'][i]
+    sky_z['S'][pix] = f['sky_median_z'][i]
 
 mws_maps = ['OII_3727','Hbeta_4861','OIII_4959','OIII_5007','NeIII_3869']
 mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
