@@ -835,7 +835,7 @@ if args.imsys == 'y':
             sys_tab['SKY_RES_G'] = sky_g[regu]
         if 'SKY_RES_R' in fit_maps:
             sys_tab['SKY_RES_R'] = sky_r[regu]
-         if 'SKY_RES_Z' in fit_maps:
+        if 'SKY_RES_Z' in fit_maps:
             sys_tab['SKY_RES_Z'] = sky_z[regu]
            
         #seld = dat['PHOTSYS'] == reg
