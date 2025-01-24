@@ -781,6 +781,8 @@ elif type[:3] == 'BGS':
 if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.imsys_clus == 'y':
     
     debv = common.get_debv()
+    
+    sky_g,sky_r,sky_z = common.get_skyres()
     #ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
     #ebvn = fitsio.read(ebvn_fn)
     #debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
@@ -828,6 +830,14 @@ if args.imsys == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        #for bnd in ['G','R','Z']:
+        if 'SKY_RES_G' in fit_maps:
+            sys_tab['SKY_RES_G'] = sky_g[regu]
+        if 'SKY_RES_R' in fit_maps:
+            sys_tab['SKY_RES_R'] = sky_r[regu]
+         if 'SKY_RES_Z' in fit_maps:
+            sys_tab['SKY_RES_Z'] = sky_z[regu]
+           
         #seld = dat['PHOTSYS'] == reg
         #selr = rands['PHOTSYS'] == reg
 
@@ -841,7 +851,7 @@ if args.imsys == 'y':
             #dd = Table.read(fcd)
             
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
-            if type == 'LRG':
+            if type == 'LRG' and args.usemaps is None:
                 if reg == 'N':
                     fitmapsbin = fit_maps
                 else:

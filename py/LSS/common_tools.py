@@ -106,6 +106,28 @@ def get_debv(dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_s
     
     return debv
 
+def get_skyres():
+    import healpy as hp
+    sky_g = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
+    sky_r = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
+    sky_z = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
+    f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
+    pixr = f['HPXPIXEL']
+    pix_nest = hp.ring2nest(256,pixr)
+    for i in range(0,len(f)):
+        pix = pix_nest[i]#f['HPXPIXEL'][i]
+        sky_g['N'][pix] = f['sky_median_g'][i]
+        sky_r['N'][pix] = f['sky_median_r'][i]
+        sky_z['N'][pix] = f['sky_median_z'][i]
+    f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
+    pix = f['HPXPIXEL']
+    pix_nest = hp.ring2nest(256,pix)
+    for i in range(0,len(f)):
+        pix = pix_nest[i]#f['HPXPIXEL'][i]
+        sky_g['S'][pix] = f['sky_median_g'][i]
+        sky_r['S'][pix] = f['sky_median_r'][i]
+        sky_z['S'][pix] = f['sky_median_z'][i]
+    return sky_g,sky_r,sky_z
 
 def cutphotmask(aa,bits,logger=None):
     printlog(str(len(aa)) +' before imaging veto' ,logger=logger)
