@@ -103,25 +103,25 @@ for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
 sel = ranmap > 0
 lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
-sky_g = np.zeros(256*256*12)
-sky_r = np.zeros(256*256*12)
-sky_z = np.zeros(256*256*12)
+sky_g = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
+sky_r = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
+sky_z = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
 f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_north.fits')
 pixr = f['HPXPIXEL']
 pix_nest = hp.ring2nest(256,pixr)
 for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
-    sky_g[pix] = f['sky_median_g'][i]
-    sky_r[pix] = f['sky_median_r'][i]
-    sky_z[pix] = f['sky_median_z'][i]
+    sky_g['N'][pix] = f['sky_median_g'][i]
+    sky_r['N'][pix] = f['sky_median_r'][i]
+    sky_z['N'][pix] = f['sky_median_z'][i]
 f = fitsio.read('/dvs_ro/cfs/cdirs/desi/users/rongpu/imaging_mc/ism_mask/sky_resid_map_256_south.fits')
 pix = f['HPXPIXEL']
 pix_nest = hp.ring2nest(256,pix)
 for i in range(0,len(f)):
     pix = pix_nest[i]#f['HPXPIXEL'][i]
-    sky_g[pix] = f['sky_median_g'][i]
-    sky_r[pix] = f['sky_median_r'][i]
-    sky_z[pix] = f['sky_median_z'][i]
+    sky_g['S'][pix] = f['sky_median_g'][i]
+    sky_r['S'][pix] = f['sky_median_r'][i]
+    sky_z['S'][pix] = f['sky_median_z'][i]
 
 
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
@@ -481,7 +481,7 @@ for tp in tps:
 
             if dosky_g == 'y':
                 fig = plt.figure()
-                parv = sky_g
+                parv = sky_g[reg]
                 mp = 'g_sky_res'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
@@ -491,7 +491,7 @@ for tp in tps:
 
             if dosky_r == 'y':
                 fig = plt.figure()
-                parv = sky_r
+                parv = sky_r[reg]
                 mp = 'r_sky_res'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
@@ -501,7 +501,7 @@ for tp in tps:
 
             if dosky_z == 'y':
                 fig = plt.figure()
-                parv = sky_z
+                parv = sky_z[reg]
                 mp = 'z_sky_res'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl,desnorm=desnorm)
