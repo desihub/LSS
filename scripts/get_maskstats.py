@@ -57,6 +57,7 @@ for tr in list_tracer:
         prog = 'dark'
         if 'BGS' in tr:
             prog = 'bright'
+        data_full = fitsio.read(indir+'{}_0_full_noveto.ran.fits'.format(prog))
     maxp = 3200
     if 'BGS' in tr:
         maxp = 2100
