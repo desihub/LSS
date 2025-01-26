@@ -79,7 +79,7 @@ for tr in list_tracer:
     else:
         data_full = common.cutphotmask(data_full,ebits)
     area_im = area_tot - len(data_full)/2500
-    print(tr,'total area:'+str(area_tot),'area and fraction in hardware mask:'+str(area_bh),str(area_bh/area_tot),'area and fraction in priority mask:'+str(area_bp),str(area_bp/area_tot),'area and fraction in imaging mask:'+str(area_im),str(area_im/area_tot))
+    print(tr,'total area:'+str(area_tot),'\n area and fraction in hardware mask:'+str(area_bh),str(area_bh/area_tot),'\n area and fraction in priority mask:'+str(area_bp),str(area_bp/area_tot),'\n area and fraction in imaging mask:'+str(area_im),str(area_im/area_tot))
 
 
 
