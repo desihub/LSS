@@ -87,7 +87,7 @@ all_maps = ['CALIB_G',
 
 
  
-all_dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14')]
+all_dmaps = [('EBV','EBV_MPF_Mean_FW15'),('EBV','EBV_SGF14'),('PSFDEPTH_G','GALDEPTH_G'),('PSFDEPTH_R','GALDEPTH_R'),('PSFDEPTH_Z','GALDEPTH_Z')]
 
 
 sky_g = {'N':np.zeros(256*256*12),'S':np.zeros(256*256*12)}
