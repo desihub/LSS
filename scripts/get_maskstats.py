@@ -9,6 +9,7 @@ import sys,os
 #set LSSCODE, e.g. via export LSSCODE=$HOME on the command line if that is where you cloned the repo 
 #sys.path.append(os.environ['LSSCODE']+'/LSS/py')
 from LSS import common_tools as common
+from LSS.globals import main
 
 
 import argparse
