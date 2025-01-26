@@ -46,11 +46,9 @@ elif args.tracers is not None:
 
 
 
-#if args.tracers is not None:
-for tracer in list_tracer:
 nran = 0
 
-for tr in tracers:
+for tr in list_tracer:
     mainp = main(tr,args.specver,survey=args.survey)
     data_full = fitsio.read(indir+'{}_0_full_noveto.ran.fits'.format(tr))
     area_tot = len(data_full)/2500
