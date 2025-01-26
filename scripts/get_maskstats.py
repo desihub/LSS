@@ -51,11 +51,21 @@ nran = 0
 
 for tr in list_tracer:
     mainp = main(tr,args.specver,survey=args.survey)
-    data_full = fitsio.read(indir+'{}_0_full_noveto.ran.fits'.format(tr))
+    if args.survey == 'Y1':
+        data_full = fitsio.read(indir+'{}_0_full_noveto.ran.fits'.format(tr))
+    else:
+        prog = 'dark'
+        if 'BGS' in tr:
+            prog = 'bright'
+    maxp = 3200
+    if 'BGS' in tr:
+        maxp = 2100
+    if 'QSO' in tr:
+        maxp = 3400
     area_tot = len(data_full)/2500
     sel_gh = data_full['GOODHARDLOC']
     area_bh = len(data_full[~sel_gh])/2500
-    sel_pri = data_full['GOODPRI']
+    sel_pri = data_full['PRIORITY'] <= maxp#data_full['GOODPRI']
     area_bp = len(data_full[~sel_pri])/2500
     if mainp.reccircmasks is not None:
         for maskfn in mainp.reccircmasks:
