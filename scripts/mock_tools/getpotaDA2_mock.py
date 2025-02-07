@@ -47,7 +47,7 @@ parser.add_argument("--getcoll",default='y')
 parser.add_argument("--base_output", help="base directory for output",default='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/')
 parser.add_argument("--tracer", help="tracer for CutSky EZ mocks", default=None)
 parser.add_argument("--base_input", help="base directory for input for EZ mocks 6Gpc", default = None)
-parser.add_argument("--tile-temp-dir", help="Directory for temp tile files, default %(default)s",
+parser.add_argument("--tile_temp_dir", help="Directory for temp tile files, default %(default)s",
                     default=os.path.join(os.environ['SCRATCH'], 'rantiles'))
 parser.add_argument("--counttiles", default = 'n')
 parser.add_argument("--secgen_ver", default = None)
