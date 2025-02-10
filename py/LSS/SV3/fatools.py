@@ -571,7 +571,7 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-        
+    
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -603,23 +603,17 @@ def altcreate_mtl(
         keep = (d["SV3_MWS_TARGET"] & mws_mask["BACKUP_BRIGHT"]) == 0
         d = d[keep]
 
-    #AJR added this in/Modified by JL
-    if survey == "sv3":
-        columns = [key for key in minimal_target_columns if key not in d.dtype.names]
-    elif survey == "main":
-        columns = [key for key in minimal_target_columns_main if key not in d.dtype.names]
-    else:
-        raise ValueError('survey must be sv3 or main')
-
     #tcol = ['SV3_DESI_TARGET','SV3_BGS_TARGET','SV3_MWS_TARGET','SV3_SCND_TARGET']
     #for col in tcol:
     #    columns.append(col) 
     if not mock:
         log.info('len(d)= {0}'.format(len(d)))
-
-        d = inflate_ledger(
-                d, targdir, columns=columns, header=False, strictcols=False, quick=True
-            )    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
+        
+        #LGN, we now only run inflate_ledger for SV3
+        if survey == "sv3":
+            columns = [key for key in minimal_target_columns if key not in d.dtype.names]
+            d = inflate_ledger(d, targdir, columns=columns, header=False, strictcols=False, quick=True)    # AR adding PLATE_RA, PLATE_DEC, PLATE_REF_EPOCH ?
+        
         log.info('len(d)= {0}'.format(len(d)))
         if add_plate_cols:
             d = Table(d)

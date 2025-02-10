@@ -13,7 +13,7 @@
 #
 
 import collections.abc
-from time import time
+from time import time 
 import astropy
 import astropy.io
 import astropy.io.fits as pf
@@ -1310,7 +1310,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None, testDoubleDate = False, 
                     changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False, reproducing = False):
+                    debug = False, verbose = False, reproducing = False, single_action = False):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -1357,6 +1357,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     nproc : :class:`int`, optional, defaults to None
         If multiproc is ``True`` this must be specified. Integer determines 
         directory of alternate MTLs to update.
+    single_action : :class:`bool`, optional, defaults to False
+        If ``True`` then run a single dateloop iteration. Used in profiling.
 
     Returns
     -------
@@ -1463,15 +1465,21 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
         #for ots,famtlt,reprocFlag in datepairs:
         #while int(today) <= int(endDate):
+
+        #restricting to a single action for profiling use, is this overlapping with some other option? multiproc?
+        if single_action:
+            actionList = actionList[:1]
+        
         for action in actionList:
 
             if action['ACTIONTYPE'] == 'fa':
-
                 OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock, reproducing = reproducing)
                 assert(len(OrigFAs))
                 A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
+                
             elif action['ACTIONTYPE'] == 'update':
                 althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
+                
             elif action['ACTIONTYPE'] == 'reproc':
                 #returns timedict
 
