@@ -292,7 +292,6 @@ BGS_BRIGHT_SGC_8_clustering.ran.fits
 BGS_BRIGHT_SGC_9_clustering.ran.fits
 BGS_BRIGHT_SGC_clustering.dat.fits
 BGS_BRIGHT_SGC_nz.txt
-BRIGHT_bitweights.fits
 ELG_LOPnotqso_0_clustering.ran.fits
 ELG_LOPnotqso_0_full_HPmapcut.ran.fits
 ELG_LOPnotqso_0_full_noveto.ran.fits

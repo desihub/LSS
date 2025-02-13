@@ -1,4 +1,0 @@
-tiles-DARK.fits
-tiles-BRIGHT.fits
-collisions-DARK.fits
-collisions-BRIGHT.fits

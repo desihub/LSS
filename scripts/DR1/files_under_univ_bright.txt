@@ -1,2 +1,0 @@
-mainsurvey-BRIGHTobscon-TileTracker.ecsv  
-tiles-specstatus.ecsv

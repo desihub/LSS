@@ -34,14 +34,14 @@ names_col_official = list(columns_official.Name)
 #8) Remove columns from specific files or directory
 #9) Remove specific header keys from files
 
-check_columns = True
+check_columns = False
 change_names = False
 change_types = False
 remove_columns = False
 define_extname = False
 add_units = False
 add_comment_header = False
-add_desidr_header = False
+add_desidr_header = True
 remove_specific_columns = False
 remove_specific_headers = False
 check_extname = False
@@ -318,58 +318,6 @@ if remove_specific_columns:
     else:
         print(count, ' files have been affected')
 
-
-'''Remove specidif header keys from files'''
-if remove_specific_headers:
-    print('removing headers from files')
-    
-    headers_to_remove = {'datcomb_dark_tarwdup_Alltiles.fits': ['TILEID', 'TILERA', 'TILEDEC', 'FIELDROT','FA_PLAN','FA_HA','FA_RUN',
-                                                                'REQRA','REQDEC','FIELDNUM','FA_VER','FA_SURV','DEPNAM00','DEPVER00',
-                                                                'DEPNAM01','DEPVER01','DEPNAM02','DEPVER02','DEPNAM03','DEPVER03',
-                                                                'DEPNAM04','DEPVER04','DEPNAM05','DEPVER05','DEPNAM06','DEPVER06',
-                                                                'DEPNAM07','DEPVER07','DEPNAM08','DEPVER08'], 
-                         'rancomb_darkwdup_Alltiles.fits': ['TILEID', 'TILERA', 'TILEDEC', 'FIELDROT','FA_PLAN','FA_HA','FA_RUN',
-                                                                'REQRA','REQDEC','FIELDNUM','FA_VER','FA_SURV','DEPNAM00','DEPVER00',
-                                                                'DEPNAM01','DEPVER01','DEPNAM02','DEPVER02','DEPNAM03','DEPVER03',
-                                                                'DEPNAM04','DEPVER04','DEPNAM05','DEPVER05','DEPNAM06','DEPVER06',
-                                                                'DEPNAM07','DEPVER07','DEPNAM08','DEPVER08'],
-                         'rancomb_brightwdup_Alltiles.fits': ['TILEID', 'TILERA', 'TILEDEC', 'FIELDROT','FA_PLAN','FA_HA','FA_RUN',
-                                                                'REQRA','REQDEC','FIELDNUM','FA_VER','FA_SURV','DEPNAM00','DEPVER00',
-                                                                'DEPNAM01','DEPVER01','DEPNAM02','DEPVER02','DEPNAM03','DEPVER03',
-                                                                'DEPNAM04','DEPVER04','DEPNAM05','DEPVER05','DEPNAM06','DEPVER06',
-                                                                'DEPNAM07','DEPVER07','DEPNAM08','DEPVER08']
-                         }
-    input_wspec_list = ['TILEID', 'TILERA', 'TILEDEC', 'FIELDROT','FA_PLAN','FA_HA','FA_RUN',
-                                                                'REQRA','REQDEC','FIELDNUM','FA_VER','FA_SURV','DEPNAM00','DEPVER00',
-                                                                'DEPNAM01','DEPVER01','DEPNAM02','DEPVER02','DEPNAM03','DEPVER03',
-                                                                'DEPNAM04','DEPVER04','DEPNAM05','DEPVER05','DEPNAM06','DEPVER06',
-                                                                'DEPNAM07','DEPVER07','DEPNAM08','DEPVER08','LONGSTRN','RRVER','TEMNAM00',
-                                                                'TEMVER00','TEMNAM01','TEMVER01','TEMNAM02','TEMVER02','TEMNAM03','TEMVER03',
-                                                                'TEMNAM04','TEMVER04','TEMNAM05','TEMVER05','TEMNAM06','TEMVER06','TEMNAM07',
-                                                                'TEMVER07','TEMNAM08','TEMVER08','TEMNAM09','TEMVER09','DEPNAM09','DEPVER09',
-                                                                'DEPNAM10','DEPVER10','DEPNAM11','DEPVER11','DEPNAM12','DEPVER12','DEPNAM13',
-                                                                'DEPVER13','DEPNAM14','DEPVER14','DEPNAM15','DEPVER15','DEPNAM16','DEPVER16',
-                                                                'DEPNAM17','DEPVER17','DEPNAM18','DEPVER18','SPGRP','SURVEY','PROGRAM']
-    name_prep = 'rancomb_{NUMBER}{PROGRAM}wdupspec_Alltiles.fits'
-
-    for i in range(18):
-        for j in ['dark','bright']:
-            headers_to_remove[name_prep.format(NUMBER=i, PROGRAM=j)] = input_wspec_list
-
-    headers_to_remove['datcomb_bright_tarspecwdup_Alltiles.fits'] = input_wspec_list
-    headers_to_remove['datcomb_dark_tarspecwdup_Alltiles.fits'] = input_wspec_list
-
-    for root, dirs, files in os.walk(dir_):
-        for file in files:
-            if file in list(headers_to_remove.keys()):
-                filename = os.path.join(root,file)
-                hdul = fits.open(filename, mode='update')
-
-                for header in headers_to_remove[file]:
-                    if header in list(hdul[1].header.keys()):
-                        del hdul[1].header[header]
-
-                hdul.close()
 
 ''' Add extension name to given files '''
 if define_extname:

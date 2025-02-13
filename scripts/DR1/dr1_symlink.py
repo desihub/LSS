@@ -15,13 +15,15 @@ args = parser.parse_args()
 def my_ln(infile, publink, isdir=False):
     if isdir:
         if os.path.isdir(infile):
-            os.system('ln -s ' + infile + ' ' + publink)
+            os.system("rsync -av --ignore-existing --exclude '*.pickle' --exclude '*.sh' " + infile + ' ' + publink)
+            #os.system('cp -R ' + infile + ' ' + publink)
             return 'ok'
         else:
             raise Exception(infile + ' does not exist, please revise your script')
     else:
         if os.path.isfile(infile):
-            os.system('ln -s ' + infile + ' ' + publink)
+            os.system('rsync -av --ignore-existing ' + infile + ' ' + publink)
+            ##os.system('ln -s ' + infile + ' ' + publink)
             return 'ok'
         else:
             raise Exception(infile + ' does not exist, please revise your script')
@@ -30,6 +32,7 @@ def my_ln(infile, publink, isdir=False):
 if args.outroot is None:
     args.outroot = os.getenv('SCRATCH')
 
+'''
 indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'
 pubdir = args.outroot+'/desi/survey/catalogs/'+args.pubrelease+'/'
 
@@ -121,6 +124,14 @@ for prog in altmtl_keys:
         for dname in dirs_univ:
             my_ln(os.path.join(symindir, 'Univ{UNIV}', dname).format(UNIV=str(nrea).zfill(3)), os.path.join(symoutdir, 'Univ{UNIV}').format(UNIV=str(nrea).zfill(3)), isdir=True)
 
+
+for root, dirs, files in os.walk(os.path.join(pubdir, 'altmtl')):
+    for file in files:
+        if file.endswith(".pickle"):
+            file_path = os.path.join(root, file)
+            print(f"Deleting: {file_path}")
+            os.remove(file_path)
+
 #Symbolic links for iron
 files_in_iron = np.loadtxt('files_under_iron.txt', unpack=True, dtype=str)
 symindir = os.path.join(indir, 'iron')
@@ -130,13 +141,35 @@ for fname in files_in_iron:
 
 #Symbolic links for v1.X
 filename = 'files_under_LSScats_{VER}.txt'
-for ver in versions:
+#v1.2 are all physical files:
+files_in_ver = np.loadtxt(filename.format(VER='v1.2'), unpack=True, dtype=str)
+for fname in files_in_ver:
+        symindir = os.path.join(indir, 'iron', 'LSScats', ver)
+        symoutdir = os.path.join(pubdir, 'iron', 'LSScats', ver)
+        my_ln(os.path.join(symindir, fname), os.path.join(symoutdir, fname))
+
+#v1.5 and v1.5pip are both physical and symbolic links from previous versions
+for ver in ['v1.5','v1.5pip']:
     files_in_ver = np.loadtxt(filename.format(VER=ver), unpack=True, dtype=str)
     #print(files_in_ver)
     for fname in files_in_ver:
         symindir = os.path.join(indir, 'iron', 'LSScats', ver)
         symoutdir = os.path.join(pubdir, 'iron', 'LSScats', ver)
-        my_ln(os.path.join(symindir, fname), os.path.join(symoutdir, fname))
+        if os.path.islink(os.path.join(symindir, fname)):
+            real_path = os.readlink(os.path.join(symindir, fname))
+            real_path_abs = os.path.abspath(os.path.join(os.path.dirname(os.path.join(symindir, fname)), real_path))
+            #print(real_path_abs)
+            if os.path.islink(real_path_abs):
+                real_path = os.readlink(real_path_abs)
+                real_path_abs = os.path.abspath(os.path.join(os.path.dirname(real_path_abs), real_path))
+                if os.path.islink(real_path_abs):
+                    real_path = os.readlink(real_path_abs)
+                    real_path_abs = os.path.abspath(os.path.join(os.path.dirname(real_path_abs), real_path))
+#            
+            my_ln(real_path_abs, os.path.join(symoutdir, fname))
+        else:
+
+            my_ln(os.path.join(symindir, fname), os.path.join(symoutdir, fname))
 
 hpmaps_v12 = ['BGS_BRIGHT_mapprops_healpix_nested_nside256_N.fits', 'ELG_LOPnotqso_mapprops_healpix_nested_nside256_N.fits', 'LRG_mapprops_healpix_nested_nside256_N.fits', 'QSO_mapprops_healpix_nested_nside256_N.fits', 'BGS_BRIGHT_mapprops_healpix_nested_nside256_S.fits', 'ELG_LOPnotqso_mapprops_healpix_nested_nside256_S.fits', 'LRG_mapprops_healpix_nested_nside256_S.fits', 'QSO_mapprops_healpix_nested_nside256_S.fits']
 
@@ -150,74 +183,35 @@ hpmaps_v15 = ['BGS_BRIGHT_mapprops_healpix_nested_nside256_N.fits', 'ELG_LOPnotq
 symindir = os.path.join(indir, 'iron', 'LSScats', 'v1.5', 'hpmaps')
 symoutdir = os.path.join(pubdir, 'iron', 'LSScats', 'v1.5', 'hpmaps')
 for fname in hpmaps_v15:
-    my_ln(os.path.join(symindir, fname), os.path.join(symoutdir, fname))
+    if os.path.islink(os.path.join(symindir, fname)):
+        real_path = os.readlink(os.path.join(symindir, fname))
+        real_path_abs = os.path.abspath(os.path.join(os.path.dirname(os.path.join(symindir, fname)), real_path))
+        my_ln(real_path_abs, os.path.join(symoutdir, fname))
+    else:
+        my_ln(os.path.join(symindir, fname), os.path.join(symoutdir, fname))
 
-
-
+my_ln('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.3pip/DARK_bitweights.fits', os.path.join(pubdir, 'iron', 'LSScats', 'v1.5pip', 'DARK_bitweights.fits'))
+my_ln('/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/v1.3pip/BRIGHT_bitweights.fits', os.path.join(pubdir, 'iron', 'LSScats', 'v1.5pip', 'BRIGHT_bitweights.fits'))
 
 '''
-fnames = ['LSS/collisions-BRIGHT.fits','LSS/collisions-DARK.fits','LSS/tiles-BRIGHT.fits','LSS/tiles-DARK.fits']
-for fname in fnames:
-    my_ln(indir+fname, pubdir+fname)
-#    os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-my_ln(indir+'/LSS/altmtl/JL_Y1Run2DARK', pubdir+'/LSS/altmtl/DARK', isdir=True)
-my_ln(indir+'/LSS/altmtl/JL_Y1Run3BRIGHT', pubdir+'/LSS/altmtl/BRIGHT', isdir=True)
+#QUASAR CATALOG 
 
-#os.system('ln -s '+indir+'/LSS/altmtl/JL_Y1Run2DARK '+pubdir+'/LSS/altmtl/DARK')
-#os.system('ln -s '+indir+'/LSS/altmtl/JL_Y1Run3BRIGHT '+pubdir+'/LSS/altmtl/BRIGHT')
+indir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/QSO/'
+pubdir = args.outroot+'/desi/survey/catalogs/'+args.pubrelease+'/'
 
-progl = ['DARK','BRIGHT']
-ranl = np.arange(0,18)
+#MAKE DIRECTORY TREE
+temp_path = os.path.join(pubdir, 'QSO')
+if not os.path.exists(temp_path):
+    os.makedirs(temp_path)
 
-for rann in ranl:
-    randir = pubdir+'/LSS/random'+str(rann)
-    if not os.path.exists(randir):
-        os.makedirs(randir)
+temp_path = os.path.join(temp_path, 'iron')
+if not os.path.exists(temp_path):
+    os.makedirs(temp_path)
 
-    for prog in progl:
-        fname = 'LSS/random'+str(rann)+'/pota-'+prog+'.fits'
-        my_ln(indir+fname, pubdir+fname)
-        #os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-        fname = 'LSS/'+args.specrel+'/rancomb_'+str(rann)+prog.lower()+'wdupspec_zdone.fits'
-        my_ln(indir+fname, pubdir+fname)
-        #os.system('ln -s '+indir+fname+' ' +pubdir+fname)
+pubdir = temp_path
 
-fname = 'LSS/'+args.specrel+'/unique_badfibers.txt'
-#os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-my_ln(indir+fname, pubdir+fname)
+my_ln(os.path.join(indir, 'iron', 'QSO_cat_iron_cumulative_v0.fits'), os.path.join(pubdir, 'QSO_cat_iron_cumulative_v0.fits'))
 
-tracers = ['BGS_ANY','BGS_BRIGHT','LRG','ELG_LOPnotqso','QSO']
-for tr in tracers:
-    fname = 'LSS/'+args.specrel+'/datcomb_'+tr+'_tarspecwdup_zdone.fits'
-    my_ln(indir+fname, pubdir+fname)
-    #os.system('ln -s '+indir+fname+' ' +pubdir+fname)
+#In v1.2, the actual clustering catalogs are in unblinded directory. You need to copy them as well
+#Also remove from v1.2, v1.5 and v1.5pip any file that is not NGC or SGC
 
-for prog in progl:
-    fname = 'LSS/'+args.specrel+'/datcomb_'+prog.lower()+'_spec_zdone.fits'
-    #os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-    my_ln(indir+fname, pubdir+fname)
-    fname = 'LSS/'+args.specrel+'/datcomb_'+prog.lower()+'_zmtl_zdone.fits'
-    #os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-    my_ln(indir+fname, pubdir+fname)
-
-fname = 'LSS/'+args.specrel+'/emlin_catalog.fits'
-#os.system('ln -s '+indir+fname+' ' +pubdir+fname)
-my_ln(indir+fname, pubdir+fname)
-
-for ver in versions:
-    fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*.fits')
-    for fname in fnames:
-        #os.system('ln -s '+fname +' ' +pubdir+fname.replace(indir,''))
-        tfname = fname.replace(indir,'')
-        my_ln(fname, pubdir+tfname)
-
-    fnames = glob.glob(indir+'/LSS/'+args.specrel+'/LSScats/'+ver+'/*nz.txt')
-    for fname in fnames:
-        tfname = fname.replace(indir,'')
-        #os.system('ln -s '+fname +' ' +pubdir+fname.replace(indir,''))
-        my_ln(fname, pubdir+tfname)
-    if 'pip' not in ver:
-        dirname = '/LSS/'+args.specrel+'/LSScats/'+ver+'/hpmaps'
-        #os.system('ln -s '+indir+dirname+' ' +pubdir+dirname)
-        my_ln(indir+dirname, pubdir+dirname, isdir=True)
-'''

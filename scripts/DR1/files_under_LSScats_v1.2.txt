@@ -87,7 +87,6 @@ BGS_BRIGHT_17_full.ran.fits
 BGS_BRIGHT_1_full_HPmapcut.ran.fits
 BGS_BRIGHT_1_full_noveto.ran.fits
 BGS_BRIGHT_1_full.ran.fits
-BGS_BRIGHT-21.5notqso_full_HPmapcut.dat.fits
 BGS_BRIGHT_2_full_HPmapcut.ran.fits
 BGS_BRIGHT_2_full_noveto.ran.fits
 BGS_BRIGHT_2_full.ran.fits
@@ -267,7 +266,6 @@ QSO_1_full.ran.fits
 QSO_2_full_HPmapcut.ran.fits
 QSO_2_full_noveto.ran.fits
 QSO_2_full.ran.fits
-QSO_2_full.ran.fits.tmp
 QSO_3_full_HPmapcut.ran.fits
 QSO_3_full_noveto.ran.fits
 QSO_3_full.ran.fits

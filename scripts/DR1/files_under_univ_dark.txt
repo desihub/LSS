@@ -1,2 +1,0 @@
-mainsurvey-DARKobscon-TileTracker.ecsv  
-tiles-specstatus.ecsv
