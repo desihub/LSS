@@ -20,7 +20,6 @@ def create_dirs(value):
 #python /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/run_mtl_ledger.py $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/$SeconGenVer/forFA$j.fits $DESI_ROOT/survey/catalogs/Y1/mocks/SecondGenMocks/$SeconGenVer/altmtl$j DARK
 
 par=True
-addextra=False
 
 arg1 = sys.argv[1].replace('global','dvs_ro') #Input mock
 arg2 = sys.argv[2] #Output path
@@ -30,11 +29,14 @@ obscon = sys.argv[3] #DARK or BRIGHT
 initledger_path = os.path.join(arg2, 'initled')
 
 altmtl_path = os.path.join(arg2, 'Univ000')
-print('Running initial ledgers')
-if par:
-    mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper(), numproc=32)
-else:
-    mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper())
+if not os.path.isdir(initledger_path):
+#    pass
+
+    print('Running initial ledgers')
+    if par:
+        mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper(), numproc=32)
+    else:
+        mtl.make_ledger(arg1, initledger_path, obscon=obscon.upper())
 
 print('Creating list of tiles to be processed by AltMTL mock production')
 
@@ -84,6 +86,7 @@ ztilefn = ztilefile.split('/')[-1]
 if not os.path.isfile(os.path.join(altmtl_path, ztilefn)):
     amtl.processTileFile(ztilefile, os.path.join(altmtl_path, ztilefn), None, endDate)
 
+'''
 if addextra:
     extratiles = Table.read('/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/aux_data/extra_{obscon}.ecsv'.format(obscon = obscon.lower()), format='ascii.ecsv')
 
@@ -100,3 +103,4 @@ if addextra:
         newtable.write(input_track, overwrite=True)
     else:
         print('It has already been merged')
+'''        
