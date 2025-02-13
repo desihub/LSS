@@ -21,18 +21,6 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 >> sbatch $LSSCODE/scripts/mock_tools/abamtl_applyphotmask_sbatch_da2.sh BRIGHT
 
-#Calculate lrgmask (Only DARK). Run on regular queue with 256 cpus
-
->> sbatch $LSSCODE/scripts/mock_tools/abamtl_lrgmask_sbatch_da2.sh
-
-#potential assigments for dark. Run on regular queue with 256 cpus
-
->> sbatch $LSSCODE/scripts/mock_tools/abamtl_getpota_sbatch_da2.sh DARK
-
-#potential assigments for bright. Run on regular queue with 256 cpus
-
->> sbatch $LSSCODE/scripts/mock_tools/abamtl_getpota_sbatch_da2.sh BRIGHT
-
 
 --- Up to here, all products needed to create complete or FFA samples are created ---
 
@@ -59,6 +47,17 @@ You probably need to run it at least twice to complete all the fba tasks. Be car
 
 You probably need to run it at least twice to complete all the fba tasks. Be carefull, the DA2ALTMTLRealizationsDARK_mock.sh will be copied to the target directory (ALTMTLHOME) under altmtl{mock_number}. Ideally you should execute it from there the second time.
 
+#Calculate lrgmask (Only DARK). Run on regular queue with 256 cpus
+
+>> sbatch $LSSCODE/scripts/mock_tools/abamtl_lrgmask_sbatch_da2.sh
+
+#potential assigments for dark. Run on regular queue with 256 cpus
+
+>> sbatch $LSSCODE/scripts/mock_tools/abamtl_getpota_sbatch_da2.sh DARK
+
+#potential assigments for bright. Run on regular queue with 256 cpus
+
+>> sbatch $LSSCODE/scripts/mock_tools/abamtl_getpota_sbatch_da2.sh BRIGHT
 
 
 # LSS pipeline dark
