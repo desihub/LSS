@@ -818,9 +818,9 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                     else:
                         #tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
                         tarfn = np.hstack((tarfn,tarf[sel]))
-                    print(len(tarfn),tp+notqso,npx,len(hpxsn))
+                    common.printlog(str(len(tarfn))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
                 else:
-                    print('file '+tarfo+' not found')
+                    common.printlog('file '+tarfo+' not found',logger)
                 npx += 1    
             tarfn = Table(tarfn)           
             remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
