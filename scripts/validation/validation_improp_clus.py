@@ -459,13 +459,15 @@ for tp in tps:
     
             if do_ebvnew_diff == 'y':
                 #dirmap = '/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ebv/v0/kp3_maps/'
-                dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'
+                #dirmap = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars/kp3_maps/'
+                #DR1 'v1_desi_ebv_'+str(nside)+'.fits'
+                mapname = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_stars_y3/v0.1/final_maps/lss/desi_ebv_lss_256.fits'
                 nside = 256#64
                 nest = False
                 eclrs = ['gr','rz']
                 for ec in eclrs:
                     #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+ec+'_'+str(nside)+'.fits')
-                    ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+                    ebvn = fitsio.read(mapname)
                     debv = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
                     parv = debv
                     fig = plt.figure()
