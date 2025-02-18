@@ -829,9 +829,9 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 except:
                     print('column '+col +' was not in stacked tarwdup table')    
 
-            common.write_LSS(tarfn,outf)
+            common.write_LSS_scratchcp(tarfn,outf,logger)
             #tarfn.write(outf,format='fits', overwrite=True)
-            print('wrote out '+outf)
+            common.printlog('wrote out '+outf,logger)
             
             #try:
             #    specf.remove_columns(['PRIORITY'])
@@ -854,21 +854,21 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                     print('column '+col +' was not in stacked spec table') 
             tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-            print('1st join done')
+            common.printlog('1st join done',logger)
             tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-            print('2nd join done')
+            common.printlog('2nd join done',logger)
             del tarfn
             tj = vstack(tjl)
-            print('stacked now writing out')
+            common.printlog('stacked now writing out',logger)
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             #tj.write(outfs,format='fits', overwrite=True)
-            common.write_LSS(tj,outfs)
-            print('joined to spec data and wrote out to '+outfs)
+            common.write_LSS_scratchcp(tj,outfs,logger)
+            common.printlog('joined to spec data and wrote out to '+outfs,logger)
         elif redotarspec or dotarspec:
-            print('joining spec info to target info')
+            common.printlog('joining spec info to target info',logger)
             tarfn = fitsio.read(outf)
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
@@ -877,26 +877,26 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 try:
                     specf.remove_columns([col])
                 except:
-                    print('column '+col +' was not in stacked spec table') 
-            print('added TILELOCID, about to do joins')
+                    common.printlog('column '+col +' was not in stacked spec table',logger) 
+            common.printlog('added TILELOCID, about to do joins',logger)
             #tj = join(tarfn,specf,keys=['TARGETID','TILELOCID'],join_type='left')
             tjl = []
             selreg = tarfn['DEC'] > 0
             tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-            print('1st join done')
+            common.printlog('1st join done',logger)
             tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
             tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-            print('2nd join done')
+            common.printlog('2nd join done',logger)
             tj = vstack(tjl)
             del tarfn
             #tj = np.concatenate(tjl)
-            print('stacked now writing out')
+            common.printlog('stacked now writing out',logger)
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             #print(np.unique(tj['ZWARN'],return_counts=True))
-            common.write_LSS(tj,outfs)
+            common.write_LSS_scratchcp(tj,outfs,logger)
             #tj.write(outfs,format='fits', overwrite=True)
-            print('joined to spec data and wrote out to '+outfs)
+            common.printlog('joined to spec data and wrote out to '+outfs,logger)
 
         if uptileloc:
             print('counting tiles')
