@@ -753,7 +753,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
             nstid = len(tiles4comb['TILEID'])
             notid = len(np.unique(fo['TILEID']))
-            print('there are '+str(nstid-notid)+ ' tiles that need to be added to '+outf)
+            common.printlog('there are '+str(nstid-notid)+ ' tiles that need to be added to '+outf,logger)
             if nstid == notid:
                 update = False
                 print('we will not update '+outf+' because there are no new tiles')
@@ -774,13 +774,13 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
                 if len(ctid) == sum(ctid):
-                    print('all targetids are in '+outtc+' and all tileids are in '+outf+' so '+outtc+' will not be updated')
+                    common.printlog('all targetids are in '+outtc+' and all tileids are in '+outf+' so '+outtc+' will not be updated',logger)
                     uptileloc = False
                 del ftc
                 del fc
             del fo
         if args.counts_only != 'y' and update:
-            print('updating '+outf)
+            common.printlog('updating '+outf,logger)
             if os.path.isfile(outf):
                 tarfn = fitsio.read(outf)
                 cols = tarfn.dtype.names
