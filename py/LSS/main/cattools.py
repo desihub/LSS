@@ -18,6 +18,7 @@ import healpy as hp
 
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
+
 #from LSS.common_tools import find_znotposs
 
 
@@ -146,6 +147,8 @@ def combtile_qso_alt(tiles,outf='',coaddir=''):
 
 
 def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalupe',prog='dark',par='n'):
+    import LSS.common_tools as common
+    logger = logging.getLogger('comb_inputs')
     s = 0
     n = 0
     nfail = 0
@@ -211,7 +214,7 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
                 #specd = specd[kp]
     
                 n += 1
-                print(tile,n,len(tiles[tmask]))#,len(specd))
+                common.printlog(str(tile)+','+str(n)+','+str(len(tiles[tmask])),logger)#,len(specd))
             else:
                 print(str(tile)+' failed')
                 nfail += 1
@@ -221,7 +224,9 @@ def combtile_spec(tiles,outf='',md='',specver='daily',redo='n',specrel='guadalup
     print('total number of failures was '+str(nfail))
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
-        fitsio.write(outf,specd,clobber=True)
+        #fitsio.write(outf,specd,clobber=True)
+        common.write_LSS_scratchcp(specd,outf,logger=logger)
+        
         return True
     else:
         return False
