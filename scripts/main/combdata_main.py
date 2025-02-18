@@ -739,7 +739,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
 
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
-        print('now doing '+tp+notqso)
+        common.printlog('now doing '+tp+notqso,logger)
         print(len(tiles4comb['TILEID']))
         outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
@@ -830,7 +830,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 except:
                     print('column '+col +' was not in stacked tarwdup table')    
 
-            common.write_LSS_scratchcp(tarfn,outf,logger)
+            common.write_LSS_scratchcp(tarfn,outf,logger=logger)
             #tarfn.write(outf,format='fits', overwrite=True)
             common.printlog('wrote out '+outf,logger)
             
@@ -866,7 +866,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #    sel = tarfn['PHOTSYS'] == reg
             #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             #tj.write(outfs,format='fits', overwrite=True)
-            common.write_LSS_scratchcp(tj,outfs,logger)
+            common.write_LSS_scratchcp(tj,outfs,logger=logger)
             common.printlog('joined to spec data and wrote out to '+outfs,logger)
         elif redotarspec or dotarspec:
             common.printlog('joining spec info to target info',logger)
@@ -895,7 +895,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             common.printlog('stacked now writing out',logger)
             #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
             #print(np.unique(tj['ZWARN'],return_counts=True))
-            common.write_LSS_scratchcp(tj,outfs,logger)
+            common.write_LSS_scratchcp(tj,outfs,logger=logger)
             #tj.write(outfs,format='fits', overwrite=True)
             common.printlog('joined to spec data and wrote out to '+outfs,logger)
 
