@@ -103,7 +103,8 @@ def get_debv(mapname = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/desi_
     debv = Table()
     for ec in eclrs:
         #ebvn = fitsio.read(dirmap+'v0_desi_ebv_'+ec+'_'+str(nside)+'.fits')
-        ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+        #ebvn = fitsio.read(dirmap+'v1_desi_ebv_'+str(nside)+'.fits')
+        ebvn = fitsio.read(mapname)
         debv_a = ebvn['EBV_DESI_'+ec.upper()]-ebvn['EBV_SFD_'+ec.upper()]
         debv_a = hp.reorder(debv_a,r2n=True)
         debv['EBV_DIFF_'+ec.upper()] = debv_a
