@@ -700,6 +700,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
         if len(dtn) != len(dt):
             wo = 1
         if wo == 1:
+            common.printlog('rewriting spec file',logger)
             specf.write(specfo,overwrite=True,format='fits')
 
     newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
