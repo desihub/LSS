@@ -134,11 +134,12 @@ def get_skyres():
         sky_z['S'][pix] = f['sky_median_z'][i]
     return sky_g,sky_r,sky_z
 
-def cutphotmask(aa,bits,logger=None):
+def cutphotmask(aa,bits=None,logger=None):
     printlog(str(len(aa)) +' before imaging veto' ,logger=logger)
     keep = (aa['NOBS_G']>0) & (aa['NOBS_R']>0) & (aa['NOBS_Z']>0)
-    for biti in bits:
-        keep &= ((aa['MASKBITS'] & 2**biti)==0)
+    if bits is not None:
+        for biti in bits:
+            keep &= ((aa['MASKBITS'] & 2**biti)==0)
     aa = aa[keep]
     printlog(str(len(aa)) +' after imaging veto',logger=logger )
     return aa
