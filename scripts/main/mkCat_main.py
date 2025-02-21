@@ -835,6 +835,8 @@ if args.imsys == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        if 'EBV_DIFF_MPF' in fit_maps:
+            sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
         #for bnd in ['G','R','Z']:
         if 'SKY_RES_G' in fit_maps:
             sys_tab['SKY_RES_G'] = sky_g[regu]
@@ -950,6 +952,8 @@ if args.prepsysnet == 'y':
             for ec in ['GR','RZ']:
                 if 'EBV_DIFF_'+ec in fit_maps: 
                     sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+            if 'EBV_DIFF_MPF' in fit_maps:
+                sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
 
             seld = dat['PHOTSYS'] == reg
             selr = rands['PHOTSYS'] == reg

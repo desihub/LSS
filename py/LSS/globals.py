@@ -116,7 +116,7 @@ class main:
             self.zmin = 0.4
             self.zmax = 1.1
         if tp[:3] == 'ELG':
-            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
+            self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI','EBV_DIFF_MPF']
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8
