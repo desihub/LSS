@@ -170,15 +170,15 @@ def get_zcmbdipole(ra,dec):
     ra_cmb=167.942
     dec_cmb=-6.944
 
-    sin_ra_cmb = np.sin(np.pi*ra_cmb)
-    cos_ra_cmb = np.cos(np.pi*ra_cmb)
-    sin_dec_cmb = np.sin(np.pi*dec_cmb)
-    cos_dec_cmb = np.cos(np.pi*dec_cmb)
+    sin_ra_cmb = np.sin(np.pi*ra_cmb/180)
+    cos_ra_cmb = np.cos(np.pi*ra_cmb/180)
+    sin_dec_cmb = np.sin(np.pi*dec_cmb/180)
+    cos_dec_cmb = np.cos(np.pi*dec_cmb/180)
 
-    sin_ra = np.sin(np.pi*ra)
-    cos_ra = np.cos(np.pi*ra)
-    sin_dec = np.sin(np.pi*dec)
-    cos_dec = np.cos(np.pi*dec)
+    sin_ra = np.sin(np.pi*ra/180)
+    cos_ra = np.cos(np.pi*ra/180)
+    sin_dec = np.sin(np.pi*dec/180)
+    cos_dec = np.cos(np.pi*dec/180)
     
     cos_angdis2cmb = cos_dec*cos_dec_cmb*(cos_ra*cos_ra_cmb+sin_ra*sin_ra_cmb)+sin_dec+sin_dec_cmb
     
