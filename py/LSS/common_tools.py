@@ -180,7 +180,7 @@ def get_zcmbdipole(ra,dec):
     sin_dec = np.sin(np.pi*dec/180)
     cos_dec = np.cos(np.pi*dec/180)
     
-    cos_angdis2cmb = cos_dec*cos_dec_cmb*(cos_ra*cos_ra_cmb+sin_ra*sin_ra_cmb)+sin_dec+sin_dec_cmb
+    cos_angdis2cmb = cos_dec*cos_dec_cmb*(cos_ra*cos_ra_cmb+sin_ra*sin_ra_cmb)+sin_dec*sin_dec_cmb
     
     return z_cmb*cos_angdis2cmb
 
