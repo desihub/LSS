@@ -348,7 +348,12 @@ if mkfulld:
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
     else:
-        dz = ldirspec+'datcomb_'+type+'_tarspecwdup_zdone.fits'
+        tracer_ts = type
+        if type[:3] == 'ELG':
+            tracer_ts = 'ELG'
+        if type[:3] == 'BGS':
+            tracer_ts = 'BGS_ANY'
+        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
             azf = mainp.elgzf
