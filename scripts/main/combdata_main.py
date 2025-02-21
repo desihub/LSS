@@ -729,15 +729,21 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     
     if prog == 'dark':
         if args.tracer == 'all':
-            tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-            notqsos = ['','','notqso','','']
+            #tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+            #notqsos = ['','','notqso','','']
+            tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
+            notqsos = ['','','']
+
         else:
             tps = [args.tracer]
             notqsos = [args.notqso]    
     if prog == 'bright':
         if args.tracer == 'all':
-            tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-            notqsos = ['',''] 
+            #tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+            #notqsos = ['',''] 
+            tps = ['BGS_ANY']#,'MWS_ANY']  
+            notqsos = [''] 
+
         else:
             tps = [args.tracer]
             notqsos = [args.notqso]    
