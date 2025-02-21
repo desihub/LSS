@@ -3008,7 +3008,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
     if logger is not None:
-        logger.info('length of input cut to type is '+str(len(dz[wtype])))
+        logger.info('length before cut is '+str(len(dz))+', length of input cut after to type is '+str(len(dz[wtype])))
     else:
         print(len(dz[wtype]))
     dz = dz[wtype]
