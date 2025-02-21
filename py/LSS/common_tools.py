@@ -144,6 +144,46 @@ def cutphotmask(aa,bits=None,logger=None):
     printlog(str(len(aa)) +' after imaging veto',logger=logger )
     return aa
 
+def get_zcmbdipole(ra,dec):
+    '''
+    given input arrays for ra/dec in degrees, calculate redshift from CMB dipole
+    '''
+    """
+	In https://arxiv.org/pdf/1807.06205
+	Planck 2018 results. I. Overview and the cosmological legacy of Planck
+	
+	Table 3
+	Sun–CMB :
+	v = 369.82 +- 0.11 km/s
+	long = 264.021 +- 0.011 deg
+	lat  = 48.253 +- 0.005 deg
+	
+	Conversion to RA Dec with python:
+	import astropy.units as u
+	from astropy.coordinates import SkyCoord
+	dipole = SkyCoord(l=264.021*u.degree, b=48.253*u.degree, frame='galactic')
+	print(dipole.fk5)
+	167.94191028, -6.9442636
+	"""
+
+	z_cmb=369.82/2.9979e5
+	ra_cmb=167.942
+	dec_cmb=-6.944
+
+	sin_ra_cmb = np.sin(np.pi*ra_cmb)
+	cos_ra_cmb = np.cos(np.pi*ra_cmb)
+	sin_dec_cmb = np.sin(np.pi*dec_cmb)
+	cos_dec_cmb = np.cos(np.pi*dec_cmb)
+
+	sin_ra = np.sin(np.pi*ra)
+	cos_ra = np.cos(np.pi*ra)
+	sin_dec = np.sin(np.pi*dec)
+	cos_dec = np.cos(np.pi*dec)
+	
+	cos_angdis2cmb = cos_dec*cos_dec_cmb*(cos_ra*cos_ra_cmb+sin_ra*sin_ra_cmb)+sin_dec+sin_dec_cmb
+	
+	return z_cmb*cos_angdis2cmb
+
 def splitGC(input_array):
     import LSS.common_tools as common
     '''
