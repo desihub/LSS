@@ -200,12 +200,12 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
                 opsp = option.split('>')
                 nt = int(opsp[1])
                 mask &= catalog['NTILE'] >= nt
-        if 'zcmb' in option:
-            #fix to do random properly
-            from LSS import common_tools as common
-            zcmb = common.get_zcmbdipole(catalog['RA'],catalog['DEC'])
-            newz = (1+catalog['Z'])*(1+zcmb)-1
-            catalog['Z'] = newz
+        #if 'zcmb' in option:
+        #    #fix to do random properly
+        #    from LSS import common_tools as common
+        #    zcmb = common.get_zcmbdipole(catalog['RA'],catalog['DEC'])
+        #    newz = (1+catalog['Z'])*(1+zcmb)-1
+        #    catalog['Z'] = newz
     logger.info('Using {:d} rows for {}.'.format(mask.sum(), name))
     positions = [catalog['RA'][mask], catalog['DEC'][mask], distance(catalog['Z'][mask])]
     weights = np.ones_like(positions[0])
