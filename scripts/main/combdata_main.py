@@ -756,7 +756,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
         update = True
-        uptileloc = True
+        uptileloc = False
         dotarspec = True
         hpxsn = hpxs
         s = 0

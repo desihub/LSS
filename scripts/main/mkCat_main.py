@@ -359,8 +359,8 @@ if mkfulld:
             azf = mainp.elgzf
         if type[:3] == 'QSO':
             azf = mainp.qsozf
-    if args.survey == 'main':        
-        tlf = ldirspec+type+'_tilelocs.dat.fits'
+    #if args.survey == 'main':        
+    #    tlf = ldirspec+type+'_tilelocs.dat.fits'
 
  
     ftar = fitsio.read(tarf)   
