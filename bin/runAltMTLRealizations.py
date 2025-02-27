@@ -4,7 +4,9 @@
 ##freeze_iers()
 
 from multiprocessing import Pool
-from LSS.main import mockaltmtltools as amt
+from LSS.SV3 import altmtltools as amt
+
+#from LSS.main import mockaltmtltools as amt
 from astropy.table import Table, vstack, join
 #import altmtltools as amt
 from desiutil.log import get_logger
@@ -121,7 +123,7 @@ def procFunc(nproc):
         print(targets['DEC'][0:5])
     else:
         targets = None
-    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing, debugOrig = True)
     gc.collect()
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
