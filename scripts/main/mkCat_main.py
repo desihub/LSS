@@ -1106,9 +1106,9 @@ if args.add_regressis == 'y':
         
         selz = dd['Z_not4clus'] > zl[0]
         selz &= dd['Z_not4clus'] <= zl[1]
-        dd['WEIGHT_RF'][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
+        dd['WEIGHT_'+args.regmode][selz] = rfpw(dd['RA'][selz], dd['DEC'][selz], normalize_map=True)#drfw[selz]
         #norm = 
-        print(np.mean(dd['WEIGHT_RF'][selz]))
+        print(np.mean(dd['WEIGHT_'+args.regmode][selz]))
     #comments = []
     #comments.append("Using regressis for WEIGHT_SYS")
     logf.write('added RF regressis weight for '+tracer_clus+zw+'\n')
