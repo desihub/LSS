@@ -88,7 +88,7 @@ for reg in regl:
         cd = join(cd,indata,keys=['TARGETID'],join_type='left')
         if args.fix_weight == 'y':
             cd['WEIGHT'] *= cd[args.col_name]
-        common.write_LSS(cd,fname)
+        common.write_LSS_scratchcp(cd,fname)
 indata.rename_column('TARGETID', 'TARGETID_DATA')
 
 def _add2ran(rn):
@@ -108,7 +108,7 @@ def _add2ran(rn):
         if args.fix_weight == 'y':
             cd['WEIGHT'] *= cd[args.col_name]
 
-        common.write_LSS(cd,fname)
+        common.write_LSS_scratchcp(cd,fname)
 
 inds = np.arange(rm,rx)
 if args.par == 'n':
