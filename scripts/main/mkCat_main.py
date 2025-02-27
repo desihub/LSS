@@ -116,6 +116,7 @@ parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine r
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
+parser.add_argument("--regmode",help="RF and Linear are choices",default='RF')
 parser.add_argument("--add_regressis",help="add RF weights for imaging systematics?",default='n')
 parser.add_argument("--add_regressis_ext",help="add RF weights for imaging systematics, calculated elsewhere",default='n')
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
@@ -1064,13 +1065,13 @@ if args.regressis == 'y':
         zw = str(zl[0])+'_'+str(zl[1])
         #rt.save_desi_data_full(dirout, 'main', tracer_clus, nside, dirreg, zl,foot=dr9_footprint,nran=18)
     
-        print('computing RF regressis weight for '+tracer_clus+zw)
-        logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
+        common.printlog('computing regressis weight in mode '+args.regmode+'for '+tracer_clus+zw,logger)
+        #logf.write('computing RF regressis weight for '+tracer_clus+zw+'\n')
         
         rt.get_desi_data_full_compute_weight(dirout, 'main', tracer_clus, nside, dirreg, zl, param,foot=dr9_footprint,nran=18,\
         suffix_tracer=suffix_tracer, suffix_regressor=suffix_regressor, cut_fracarea=cut_fracarea, seed=seed,\
          max_plot_cart=max_plot_cart,pixweight_path=pw_out_fn_root,pixmap_external=debv,sgr_stream_path=sgf,\
-         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext,use_map_veto=args.use_map_veto)
+         feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext,use_map_veto=args.use_map_veto,regressor=args.regmode)
         #rt._compute_weight('main', tracer_clus+zw, dr9_footprint, suffix_tracer, suffix_regressor, cut_fracarea, seed, max_plot_cart,pixweight_path=pw_out_fn,pixmap_external=debv,sgr_stream_path=sgf,feature_names=fit_maps,use_sgr=use_sgr,feature_names_ext=feature_names_ext)
 
 if args.add_regressis == 'y':
@@ -1079,13 +1080,13 @@ if args.add_regressis == 'y':
     fb = dirout+tracer_clus
     fcd = fb+'_full'+args.use_map_veto+'.dat.fits'
     dd = Table.read(fcd)
-    dd['WEIGHT_RF'] = np.ones(len(dd))
+    dd['WEIGHT_'+args.regmode] = np.ones(len(dd))
 
     for zl in zrl:    
         print(zl)
         zw = str(zl[0])+'_'+str(zl[1])
 
-        fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/RF/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
+        fnreg = dirout+'/regressis_data/main_'+tracer_clus+zw+'_256/'+args.regmode+'/main_'+tracer_clus+zw+'_imaging_weight_256.npy'
         #fracarea = np.load(dirout+'/regressis_data/main_'+tracer_clus+zw+'_fracarea_256.npy')
         #selarea = fracarea*0 == 0
         #rfw = np.load(fnreg,allow_pickle=True)

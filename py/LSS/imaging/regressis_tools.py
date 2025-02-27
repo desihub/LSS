@@ -358,7 +358,7 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
 def get_desi_data_full_compute_weight(LSS, survey, tracer, nside, dir_out, z_lim,dataframe_params, nran=18,data_type='data',\
 fracthresh=5.,foot=None, suffix_tracer=None, suffix_regressor=None, cut_fracarea=False, seed=42, \
 max_plot_cart=300,pixweight_path=None, sgr_stream_path=None,\
-feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use_map_veto=''):
+feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use_map_veto='',regressor='RF'):
     """
     
     Combine steps above with no in between write-out
@@ -510,6 +510,9 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     dataframe.build(cut_fracarea=cut_fracarea)
     dataframe.output_dataframe_dir = output_dir
     print('about to do regression')
-    regression = Regression(dataframe, regressor='RF', suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=True, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
+    use_kfold = True
+    if regressor == 'Linear':
+        use_kfold = False
+    regression = Regression(dataframe, regressor=regressor, suffix_regressor=suffix_regressor, n_jobs=40, use_kfold=use_kfold, feature_names=feature_names, compute_permutation_importance=True, overwrite=True, seed=seed, save_regressor=False)
     print('about to get weight')
     _ = regression.get_weight(save=True)
