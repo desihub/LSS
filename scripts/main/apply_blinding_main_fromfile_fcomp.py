@@ -182,18 +182,24 @@ if 'mock' not in args.verspec:
     dchi2 = mainp.dchi2
     randens = 2500.
     nzmd = 'data'
-elif 'Y1/mock' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
-    dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
-    LSSdir = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'
+    dirout = args.basedir_out + '/LSScats/' + version + '/BAO/blinded/'
+
+elif 'AbacusSummit_v4_1' in args.verspec: #e.g., use 'mocks/FirstGenMocks/AbacusSummit/Y1/mock1' to get the 1st mock with fiberassign
+                                          # VERSPEC="mocks/SecondGenMocks/AbacusSummit_v4_1/mock<number>"
+    # dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'+version+'/'
+    dirin = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/'
+
+    # LSSdir = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'
     dchi2=None
     tsnrcut=0
     randens = 10460.
     nzmd = 'mock'
+    dirout = args.basedir_out + '/blinded_mock/'
 
 else:
     sys.exit('verspec '+args.verspec+' not supported')
 
-dirout = args.basedir_out + '/LSScats/' + version + '/BAO/blinded/'
+# dirout = args.basedir_out + '/LSScats/' + version + '/BAO/blinded/'
 
 def mkdir(dirname):
     """Try to create ``dirname`` and catch :class:`OSError`."""
