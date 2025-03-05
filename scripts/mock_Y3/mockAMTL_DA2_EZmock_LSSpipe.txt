@@ -11,7 +11,7 @@
       can submit many jobs with varying mockinit, mockend at the same time.
       Our test shows that it is doable to run 50 mocks in a cpu node. The running time is ~41 hours.
       In the job script, we set run time 48 hours. If the queue time is long, you cna set e.g. 12 hours, and submit jobs
-      ~3 times until it is done.
+      ~4 times until it is done.
 
 (4). If one mock failed in step 3, we can redo setp 2 and 3 for that failed single mock.
      For step 3, we can use shared mode, sbatch run_fba_shared.sl 
