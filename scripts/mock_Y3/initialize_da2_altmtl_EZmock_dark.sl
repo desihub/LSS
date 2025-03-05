@@ -11,8 +11,7 @@
 #SBATCH -J prepare_mtl
 #SBATCH -o ./stdout/%x_%a.o%j
 #SBATCH -e ./stdout/%x_%a.e%j
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=zd585612@ohio.edu
+
 
 source /global/common/software/desi/desi_environment.sh main
 PYTHONPATH=$PYTHONPATH:/global/u2/j/jerryou/installed_packages/desihub/LSS/py
