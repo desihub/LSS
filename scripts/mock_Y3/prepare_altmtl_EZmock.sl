@@ -9,8 +9,6 @@
 #SBATCH -J prepare_mock
 #SBATCH -o ./stdout/%x.o%j
 #SBATCH -e ./stdout/%x.e%j
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=zd585612@ohio.edu
 
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
