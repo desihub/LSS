@@ -1,0 +1,18 @@
+# It is based on the process of LSS/Sandbox/mockAMTL_DA2_LSSpipe.txt, and shows steps for DA2 LSS AltMTL EZmocks. 
+
+1. sbatch prepare_altmtl_EZmocks.sl
+   >> run prepare_EZmocks_Y3.py which is modified from LSS/scripts/mock_tools/prepare_mocks_Y3_dark.py
+   >> run concatenate_EZmock_targets.py
+
+2. sbatch initialize_da2_altmtl_EZmock_dark.sl
+  
+3. sbatch run_fba_regular.sl
+   >> this step is same as "nohup $LSSCODE/bin/DA2ALTMTLRealizationsDARK_mock.sh &" but using job script. You 
+      can submit many jobs with varying mockinit, mockend at the same time.
+      Our test shows that it is doable to run 50 mocks in a cpu node. The running time is ~41 hours.
+      In the job script, we set run time 48 hours. If the queue time is long, you cna set e.g. 12 hours, and submit jobs
+      ~3 times until it is done.
+
+(4). If one mock failed in step 3, we can redo setp 2 and 3 for that failed single mock.
+     For step 3, we can use shared mode, sbatch run_fba_shared.sl 
+       
