@@ -64,7 +64,7 @@ wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == args.prog.lower()
 
 dspec = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+args.prog.lower()+'_spec_zdone.fits',columns=['TILEID']) 
-wd &= np.isin(mtld['TILEID'],dspec['TILEID'])
+wd &= np.isin(mt['TILEID'],dspec['TILEID'])
 mtld = mt[wd]
 print('found '+str(len(mtld))+' '+args.prog+' time main survey tiles with zdone true for daily version of reduced spectra')
 
