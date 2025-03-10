@@ -68,7 +68,8 @@ pr = cProfile.Profile()
 
 log = get_logger()
 
-os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
+#os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
+#os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
 
 mtlformatdict = {"PARALLAX": '%16.8f', 'PMRA': '%16.8f', 'PMDEC': '%16.8f'}
 
@@ -427,6 +428,66 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print(NDiff2)
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
+
+def updateTileTracker(altmtldir, endDate):
+    """Update action file which orders all actions to do with AMTL in order 
+    in which real survey did them.
+
+    Parameters
+    ----------
+    altmtldir : :class:`str`
+        Path to the directory for a single realization of alternate MTL
+        ledgers. e.g. /pscratch/u/user/simName/Univ000/
+    endDate : :class:`int`
+        Integer date to which to extend tiletracker entries.
+    
+
+    Returns
+    -------
+    
+    [Nothing]
+
+    Notes
+    -----
+    - Writes an updated tiletracker file to {altmtldir}/{survey.lower()}survey-{obscon.upper()}obscon-TileTracker.ecsv
+    - Survey and obscon are determined from existing file
+    """
+
+    #find current tiletracker file for this altmtldir
+    altmtldir_files = os.listdir(altmtldir)
+    ExistingTileTracker_fn = [s for s in altmtldir_files if 'TileTracker' in s][0]
+
+    #process it to grab the survey and obscon info using string methods
+    ExistingTileTracker_fn_spt = ExistingTileTracker_fn.split('-')
+    survey = ExistingTileTracker_fn_spt[0].strip('survey')
+    obscon = ExistingTileTracker_fn_spt[1].strip('obscon')
+
+    #rename old file to avoid overwriting
+    os.rename(os.path.join(altmtldir,ExistingTileTracker_fn),os.path.join(altmtldir,'oldTT.ecsv'))
+
+    #make new tile tracker file
+    makeTileTracker(altmtldir, survey, obscon, startDate = 20210514, endDate = endDate)
+
+    #read new tile tracker and set done flag = True for all entries in old tile tracker
+    old_TT = np.array(Table.read(os.path.join(altmtldir,'oldTT.ecsv')))
+    new_TT = np.array(Table.read(os.path.join(altmtldir,ExistingTileTracker_fn)))
+
+    #columns to determine if entries are in both tiletrackers.
+    compare_cols = ['TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'ARCHIVEDATE']
+
+    existing_cols = np.isin(new_TT[compare_cols],old_TT[compare_cols])
+
+    #write out update new tiletracker (faster way to do this?)
+    #doneflag column determined by presence in old tiletracker
+    ActionList = [new_TT['TILEID'], new_TT['ACTIONTYPE'], new_TT['ACTIONTIME'], existing_cols, new_TT['ARCHIVEDATE']]
+    t = Table(ActionList,
+           names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
+           meta={'Name': 'AltMTLTileTracker', 'StartDate': 20210514, 'EndDate': endDate, 'amtldir':altmtldir})
+    t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
+    
+    t.write(os.path.join(altmtldir,ExistingTileTracker_fn), format='ascii.ecsv', overwrite = True)
+    
+    
 
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
