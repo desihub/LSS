@@ -106,6 +106,34 @@ def datesInMonthForYear(yyyy):
         monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     return monthLengths
 
+import tempfile
+def safe_pickle_dump(data, filename):
+    # Step 1: Create a temporary file
+    dir_name = os.path.dirname(filename)
+    with tempfile.NamedTemporaryFile(dir=dir_name, delete=False) as tmp_file:
+        tmp_name = tmp_file.name
+        try:
+            # Step 2: Dump pickle data
+            with open(tmp_name, 'wb') as f:
+                pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                f.flush()
+                os.fsync(f.fileno())  # Ensure data is written to disk
+            
+            # Step 3: Sanity check by loading
+            with open(tmp_name, 'rb') as f:
+                test_data = pickle.load(f)
+            
+            # Step 4: Rename only if valid
+            os.replace(tmp_name, filename)
+            return True  # Success
+
+        except Exception as e:
+            os.remove(tmp_name)  # Clean up on failure
+            log.critical(f"Pickle dump failed: {e}")
+#            print(f"Pickle dump failed: {e}")
+            return False  # Failure
+
+
 def nextDate(date):
     # JL  takes NITE in YYYYMMDD form and increments to the next date
     yyyy, mm, dd = int(str(date)[0:4]), int(str(date)[4:6]), int(str(date)[6:])
@@ -1238,8 +1266,9 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
         if redoFA or (not (os.path.isfile(FAMapName))):
             if verbose:
                 log.info('dumping out fiber map to pickle file')
-            with open(FAMapName, 'wb') as handle:
-                pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
+            safe_pickle_dump((A2RMap, R2AMap), FAMapName)
+#            with open(FAMapName, 'wb') as handle:
+#                pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
         #thisUTCDate = get_utc_date(survey=survey)
         if verbose:
             log.info('---')
