@@ -380,14 +380,15 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
             ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
             fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
             del ff
-
+        else:
+            logger.info(name+' '+weight_type)
         def read_positions_weights(name):
             positions, weights = [], []
             for reg in region:
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
                 #if name=='data':
                 logger.info('Loading {}.'.format(cat_fns))
-                logger.info('fac_ntmp is '+str(fac_ntmp))
+                logger.info(name+' fac_ntmp is '+str(fac_ntmp))
                 isscalar = not isinstance(cat_fns, (tuple, list))
    
                 
