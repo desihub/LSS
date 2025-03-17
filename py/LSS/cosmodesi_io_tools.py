@@ -370,19 +370,22 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
         region = [region]
     
     if cat_read == None:
+
+        cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
+#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
+        fac_ntmp =  None
+        if name == 'randoms' and 'NTMP' in weight_type:
+            getntmp = 'getntmp'
+            logger.info('getting NTMP info')
+            ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
+            fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
+            del ff
+
         def read_positions_weights(name):
             positions, weights = [], []
             for reg in region:
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
                 #if name=='data':
-                cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
-#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
-                fac_ntmp =  None
-                if name == 'random' and 'NTMP' in weight_type:
-                    getntmp = 'getntmp'
-                    ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
-                    fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
-                    del ff
                 logger.info('Loading {}.'.format(cat_fns))
                 isscalar = not isinstance(cat_fns, (tuple, list))
    
