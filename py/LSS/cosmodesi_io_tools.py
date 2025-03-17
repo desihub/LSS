@@ -374,14 +374,14 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
         cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
 #                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
         fac_ntmp =  None
-        if name == 'randoms' and 'NTMP' in weight_type:
+        if name != 'data' and 'NTMP' in weight_type:
             getntmp = 'getntmp'
             logger.info('getting NTMP info')
             ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
             fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
             del ff
         else:
-            logger.info(str(name)+' '+str(weight_type)
+            logger.info(str(name)+' '+str(weight_type))
         def read_positions_weights(name):
             positions, weights = [], []
             for reg in region:
