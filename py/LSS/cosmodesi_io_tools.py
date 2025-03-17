@@ -23,6 +23,7 @@ from matplotlib import pyplot as plt
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 
 from LSS.tabulated_cosmo import TabulatedDESI
+import LSS.common_tools as common
 #import LSS.main.cattools as ct
 
 
@@ -165,7 +166,7 @@ def _format_bitweights(bitweights):
     return [bitweights]
 
 
-def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim=None, weight_type='default', name='data', return_mask=False, option=None,P0=None):
+def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_ntmp=None,maglim=None, weight_type='default', name='data', return_mask=False, option=None,P0=None):
     logger.info('get pos P0 is '+str(P0))
     if maglim is None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
@@ -306,6 +307,13 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),maglim
     if name == 'randoms':
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
+        if 'NTMP' in weight_type:
+            if fac_ntmp is not None:
+                wts = common.apply_wntmp(catalog['NTILE'][mask], ffacs[0], ffacs[1])
+                weights *= wts[0]
+                logger.info('multiplied randoms by NTMP weights')
+            else:
+                logger.info('fac_ntmp was None, so nothing happening with it')
         if 'bitwise' in weight_type:# and 'default' in weight_type:
             if 'default' in weight_type:
                 weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
@@ -366,9 +374,15 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
             positions, weights = [], []
             for reg in region:
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
-                if name=='data':
-                    cat_full = catalog_fn(ctype='full_HPmapcut', name=name, **kwargs)
+                #if name=='data':
+                cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
 #                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
+                fac_ntmp =  None
+                if name == 'random' and 'NTMP' in weight_type:
+                    getntmp = 'getntmp'
+                    ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
+                    fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
+                    del ff
                 logger.info('Loading {}.'.format(cat_fns))
                 isscalar = not isinstance(cat_fns, (tuple, list))
    
@@ -392,7 +406,7 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                         return tab
                     positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0) for cat_fn in cat_fns]
                 else:
-                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0) for cat_fn in cat_fns]
+                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0,fac_ntmp=fac_ntmp) for cat_fn in cat_fns]
                 
                 if isscalar:
                     positions.append(positions_weights[0][0])
