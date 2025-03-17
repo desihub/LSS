@@ -180,7 +180,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
             mask &= decmask
             
         if 'noDES' in option:
-            from LSS import common_tools as common
+            #from LSS import common_tools as common
             isDES = common.select_regressis_DES(catalog)
             mask &= ~isDES
         
