@@ -1761,3 +1761,76 @@ def printlog(message,logger):
         logger.info(message)
     else:
         print(message)
+
+
+def compute_wntmp(bw, prob_obs, loc_assgn, ntile, ntile_range=[0,15]):
+    """
+    Takes as an input the "full" sample (bitweights, prob_obs, location_assigned, ntile)
+    and returns the ntile-missing-power (NTMP) factor as function of ntile.
+    The routine also returns a similar factor, obtained by counting the zero-probability objects,
+    which has not been used so far, as NTMP seems to give better performaces.
+    In the current implementation the bitweights are almost redundant (they are only used to obtain
+    the total number of bits). With minimal modification (e.g. comment/uncomment a few lines below)
+    the bitewights can be used directly to compute IIPs, recurrences, etc, thus making prob_obs redundant.
+    """
+
+    nbits = 64 * np.shape(bw)[1]
+    # aboo = unpack_bitweights(bw)
+    # print(np.shape(aboo))
+    # recurr = np.sum(aboo_full, axis=1)    
+    recurr = prob_obs*nbits
+    wiip = (nbits+1)/(recurr+1)
+    zerop_msk = (recurr==0) & (~loc_assgn)
+    
+    #print(np.sum(zerop_msk))
+    
+    idx_nt = [] 
+    idx_nt_zp = []
+    idx_nt_la = []
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        idx_nt.append(np.where(ntile == n))
+        idx_nt_zp.append(np.where((ntile == n) & (zerop_msk)))  
+        idx_nt_la.append(np.where((ntile == n) & (loc_assgn)))
+        
+    f_ntzp = np.ones(ntile_range[1]+1)
+    f_ntmisspw = np.ones(ntile_range[1]+1)
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        n_nt = len(idx_nt[n][0])
+        n_ntzp = len(idx_nt_zp[n][0])
+        n_ntwiip = np.sum(wiip[idx_nt_la[n][0]])
+        n_ntmisspw = n_nt - n_ntwiip    
+        #print(n, n_nt, n_ntzp, n_ntmisspw)
+        if n_nt > 0: f_ntzp[n] = n_ntzp / n_nt
+        if n_nt > 0: f_ntmisspw[n] = n_ntmisspw / n_nt   
+
+    return f_ntmisspw, f_ntzp
+
+
+def apply_wntmp(ntile, f_ntmisspw, f_ntzp, ntile_range=[0,15], randoms=True):
+    """
+    Takes as an input ntile from sample of interest ("full" or "clustering")
+    plus the f_NTMP (and f_NTZP) factors produced by the "compute_wntmp" routine and
+    returns the corresponding w_NTMP weights.
+    In addition the routine returns ntile-zero-probability (NTZP) weights, not used so far,
+    as NTMP seems to give better performaces.
+    The the logical variable "randoms" (set to True by default) determines wheater the weights
+    are for the randoms or the data by putting the factor f either at the numerator or the denominator)
+    """
+
+    idx_nt = [] 
+    for n in range(ntile_range[0], ntile_range[1]+1):
+        idx_nt.append(np.where(ntile == n))
+        
+    w_ntzp = np.ones(len(ntile))
+    w_ntmisspw = np.ones(len(ntile))
+
+    if randoms:
+        for n in range(ntile_range[0], ntile_range[1]+1):
+            w_ntzp[idx_nt[n][0]] = 1-f_ntzp[n]
+            w_ntmisspw[idx_nt[n][0]] = 1-f_ntmisspw[n]
+    else:  
+        for n in range(ntile_range[0], ntile_range[1]+1):
+            if 1-f_ntzp[n] > 0: w_ntzp[idx_nt[n][0]] = 1/(1-f_ntzp[n])
+            if 1-f_ntmisspw[n] > 0: w_ntmisspw[idx_nt[n][0]] = 1/(1-f_ntmisspw[n])
+        
+    return w_ntmisspw, w_ntzp
