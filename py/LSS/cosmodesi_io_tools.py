@@ -387,6 +387,7 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
                 #if name=='data':
                 logger.info('Loading {}.'.format(cat_fns))
+                logger.info('fac_ntmp is '+str(fac_ntmp))
                 isscalar = not isinstance(cat_fns, (tuple, list))
    
                 
