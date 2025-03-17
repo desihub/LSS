@@ -16,7 +16,7 @@ import argparse
 import logging
 
 import numpy as np
-
+import fitsio
 from astropy.table import Table, vstack, join
 from matplotlib import pyplot as plt
 
