@@ -309,7 +309,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
         #    weights *= catalog['WEIGHT'][mask]
         if 'NTMP' in weight_type:
             if fac_ntmp is not None:
-                wts = common.apply_wntmp(catalog['NTILE'][mask], ffacs[0], ffacs[1])
+                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
                 weights *= wts[0]
                 logger.info('multiplied randoms by NTMP weights')
             else:
