@@ -381,7 +381,7 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
             fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
             del ff
         else:
-            logger.info(name+' '+weight_type)
+            logger.info(str(name)+' '+str(weight_type)
         def read_positions_weights(name):
             positions, weights = [], []
             for reg in region:
