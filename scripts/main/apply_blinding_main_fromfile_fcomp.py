@@ -170,6 +170,7 @@ zmin = mainp.zmin
 zmax = mainp.zmax
 tsnrcol = mainp.tsnrcol
 
+randens = 2500.
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 if 'mock' not in args.verspec:
     maindir = args.basedir_in +'/'+args.survey+'/LSS/'
@@ -180,7 +181,7 @@ if 'mock' not in args.verspec:
     LSSdir = ldirspec+'LSScats/'
     tsnrcut = mainp.tsnrcut
     dchi2 = mainp.dchi2
-    randens = 2500.
+    
     nzmd = 'data'
     dirout = args.basedir_out + '/LSScats/' + version + '/BAO/blinded/'
 
@@ -192,7 +193,8 @@ elif 'AbacusSummit_v4_1' in args.verspec: #e.g., use 'mocks/FirstGenMocks/Abacus
     # LSSdir = args.basedir_in +'/'+args.survey+'/'+args.verspec+'/LSScats/'
     dchi2=None
     tsnrcut=0
-    randens = 10460.
+    if "FirstGen" in args.verspec:
+        randens = 10460.
     nzmd = 'mock'
     dirout = args.basedir_out + '/blinded_mock/'
 
