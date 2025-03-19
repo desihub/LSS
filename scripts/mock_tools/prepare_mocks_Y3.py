@@ -26,7 +26,8 @@ parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
 parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
-parser.add_argument("--zcol", help="name of column with redshift, including RSD",default='Z')
+parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog", default='Z_COSMO')
+parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD",default='Z')
 parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 'n', assuming all LOP",default='y')
 parser.add_argument("--ELGtpcol", help="column distinguishing the ELG type; assumed boolean with True being LOP",default='LOP')
 parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
@@ -76,7 +77,7 @@ if type_ == 'ELG':
 data['NUMOBS_MORE'] = numobs[type_]
 data['NUMOBS_INIT'] = numobs[type_]
 if type_ == 'QSO':
-    sel_highz = data[args.zcol] > 2.1
+    sel_highz = data[args.zrsdcol] > 2.1
     data['NUMOBS_MORE'][sel_highz] = 4
     data['NUMOBS_INIT'][sel_highz] = 4
     print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
@@ -141,14 +142,16 @@ if 'MASKBITS' not in targets.colnames:
             targets[col] = res[col]
         del res
 
-mainp = main(tp = type_, specver = 'kibo')
+mainp = main(tp = type_, specver = 'loa-v1')
 targets = common.cutphotmask(targets, bits=mainp.imbits)
 
 
 print('cut targets based on photometric mask')
 n=len(targets)
-#targets.rename_column('Z_COSMO', 'TRUEZ') 
-targets.rename_column(args.zcol, 'RSDZ') 
+if 'TRUEZ' not in targets.colnames:
+    targets.rename_column(args.ztruecol, 'TRUEZ')
+if 'RSDZ' not in targets.colnames:
+    targets.rename_column(args.zrsdcol, 'RSDZ')
 if args.tracer == 'BGS':
     targets['BGS_TARGET'] = 2
 else:	
