@@ -172,8 +172,9 @@ tsnrcol = mainp.tsnrcol
 
 randens = 2500.
 #share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
+maindir = args.basedir_in +'/'+args.survey+'/LSS/'
 if 'mock' not in args.verspec:
-    maindir = args.basedir_in +'/'+args.survey+'/LSS/'
+    
 
     ldirspec = maindir+specrel+'/'
 
