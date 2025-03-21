@@ -27,12 +27,13 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     #give distances assuming different cosmo
     cosmo_d = cosmo_fid.clone(w0_fld=w0,wa_fld=wa)#Cosmology(h=cosmo_fid['h'],Omega_m=cosmo_fid['Omega_m'],w0_fld=w0,wa_fld=wa,engine='class')
     dis_d = cosmo_d.comoving_radial_distance
-    dis_val = dis_d(data[zcol]) 
+    sel = data[zcol]*0 == 0
+    dis_val = dis_d(data[zcol][sel]) 
     
     #put back to z assuming fiducial cosmo
     d2z = DistanceToRedshift(dis_fid)
     z_shift = d2z(dis_val)
-    data['Z'] = z_shift
+    data['Z'][sel] = z_shift
     
     #writeout
     write_LSS(data,out_file,comments=None)
