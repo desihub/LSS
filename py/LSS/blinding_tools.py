@@ -33,7 +33,7 @@ def apply_zshift_DE(data,out_file,w0=-1,wa=0,zcol='Z'):
     #put back to z assuming fiducial cosmo
     d2z = DistanceToRedshift(dis_fid)
     z_shift = d2z(dis_val)
-    data['Z'][sel] = z_shift
+    data[zcol][sel] = z_shift
     
     #writeout
     write_LSS(data,out_file,comments=None)
