@@ -239,7 +239,7 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_Linear'][mask]/catalog['WEIGHT_IMLIN'][mask]
 
-    if 'swapinLINCLUS' in weight_type:
+    if 'swapinLNCLUS' in weight_type:
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_IMLIN_CLUS'][mask]/catalog['WEIGHT_SYS'][mask]
 
