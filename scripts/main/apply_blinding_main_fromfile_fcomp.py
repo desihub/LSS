@@ -401,7 +401,7 @@ if root:
             #ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols, tsnrcut=tsnrcut, tsnrcol=tsnrcol,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)#, ntilecut=ntile, ccut=ccut)
             ct.mkclusran(ranin, dirout + args.type + notqso + '_', rannum, rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,logger=logger)
             #for clustering, make rannum start from 0
-            if 'Y1/mock' in args.verspec:
+            if 'FirstGenMocks' in args.verspec:
                 for reg in regl:
                     ranf = dirout + args.type + notqso + reg + '_' + str(rannum) + '_clustering.ran.fits'
                     ranfm = dirout + args.type + notqso + reg + '_' + str(rannum - 1) + '_clustering.ran.fits'
