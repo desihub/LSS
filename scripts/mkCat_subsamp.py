@@ -167,8 +167,8 @@ if args.mkfulldat == 'y':
         if 'ecorr' in args.ccut:
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
-        if 'SFR' in args.cut:
-            sel_sfr = np.log(fulldat['SFR']) > -sfr_split
+        if 'SFR' in args.cut and 'per' in args.cut: #'per' for percentile
+            sel_sfr = np.log(fulldat['SFR']) > np.percentile(sfr_split)
             if 'g' in sfr_str: #'g' for greater than
                 sel &= sel_sfr
             else:
