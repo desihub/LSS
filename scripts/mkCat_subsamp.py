@@ -231,6 +231,8 @@ def splitGC(flroot,datran='.dat',rann=0):
     common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 
+dirout = args.outdir
+
 if args.splitGC == 'y':
     fb = dirout+'/'+tracer_out+'_'
     splitGC(fb,'.dat')
