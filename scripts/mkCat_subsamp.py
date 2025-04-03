@@ -188,7 +188,7 @@ if mkclusran:
 
     clus_arrays = [fitsio.read(args.outdir+'/'+tracer_out+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,dirout+'/'+tracer_out+'_',ii,rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,tp=args.input_tracer)
+        ct.mkclusran(ranin,args.outdir+'/'+tracer_out+'_',ii,rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,tp=args.input_tracer)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
