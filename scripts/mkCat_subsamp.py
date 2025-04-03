@@ -126,7 +126,7 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/pscratch/sd/i/ioannis/fastspecfit/data
     #works with the data model that is new as of loa
     fsl = []
     for hp in range(0,12):
-        fsi = fitsio.read(fsdir+'fastspec-loa-main-bright-nside1-hp'+str(hp).zfill(2)+'.fits',ext='SPECPHOT',columns = fsf_cols)
+        fsi = fitsio.read(fsf_dir+'fastspec-loa-main-bright-nside1-hp'+str(hp).zfill(2)+'.fits',ext='SPECPHOT',columns = fsf_cols)
         fsl.append(fsi)
     fs = np.concatenate(fsl)
     ol = len(indata)
