@@ -184,7 +184,7 @@ if args.compmd == 'altmtl':
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA'] #columns to make sure are in the randoms
 inds = np.arange(rm,rx)
 if mkclusran:
-    ranin = dirin + args.input_tracer 
+    ranin = dirin + args.input_tracer +'_'
 
     clus_arrays = [fitsio.read(args.outdir+'/'+tracer_out+'_clustering.dat.fits')]
     def _parfun_cr(ii):
