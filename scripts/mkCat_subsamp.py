@@ -197,5 +197,61 @@ if mkclusran:
     else:
         for ii in inds:#range(rm,rx):
             _parfun_cr(ii)
-        #,ntilecut=ntile,ccut=ccut)
+if tracer_out[:3] == 'QSO':
+    dz = 0.02
+    P0 = 6000
+    
+else:    
+    dz = 0.01
+
+if tracer_out[:3] == 'LRG':
+    P0 = 10000
+if tracer_out[:3] == 'ELG':
+    P0 = 4000
+if tracer_out[:3] == 'BGS':
+    P0 = 7000
+
+nran = rx-rm
+regions = ['NGC', 'SGC']
+
+#function to take a file and split it NGC/SGC
+def splitGC(flroot,datran='.dat',rann=0):
+    import LSS.common_tools as common
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    app = 'clustering'+datran+'.fits'
+    if datran == '.ran':
+        app = str(rann)+'_clustering'+datran+'.fits'
+
+    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    sel_ngc = common.splitGC(fn)#gc.b > 0
+    outf_ngc = flroot+'NGC_'+app
+    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    outf_sgc = flroot+'SGC_'+app
+    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+
+
+if args.splitGC == 'y':
+    fb = dirout+'/'+tracer_out+'_'
+    splitGC(fb,'.dat')
+    def _spran(rann):
+        splitGC(fb,'.ran',rann)
+    inds = np.arange(nran)
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_spran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _spran(rn)
+
+
+if args.nz == 'y':
+    for reg in regions:#allreg:
+        fb = dirout+'/'+tracer_out+'_'+reg
+        fcr = fb+'_0_clustering.ran.fits'
+        fcd = fb+'_clustering.dat.fits'
+        fout = fb+'_nz.txt'
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
 
