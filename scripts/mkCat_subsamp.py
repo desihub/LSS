@@ -153,7 +153,7 @@ if 'FSFABSmag' in args.ccut:
     fulldat = get_FSF_loa(fulldat,fsf_cols)
     ecorr = np.zeros(len(fulldat))
     if 'ecorr' in args.ccut:
-        ecorr = -0.8*(dat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
+        ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
     sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
     #add any additional selections here
     common.printlog('length after selection '+str(np.sum(sel)),logger)
