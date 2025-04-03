@@ -53,7 +53,7 @@ parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cu
 parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
-parser.add_argument("--simName", help="base directory of AltMTL mock",default='/pscratch/sd/a/acarnero/SecondGen/altmtl_main_rea{MOCKNUM}')
+parser.add_argument("--simName", help="base directory of AltMTL mock",default=None)
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='iron')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
@@ -254,7 +254,11 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('entering altmtl',logger)
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
-    fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
+    if args.simName is None:
+        fbadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    else:
+        sys.exit('code something to define fba directory based on simName')
+    #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
     common.printlog('entering common.combtiles_wdup_altmtl for FASSIGN',logger)
 
