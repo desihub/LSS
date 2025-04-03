@@ -375,9 +375,10 @@ if args.joindspec == 'y':
 
     common.printlog('about to join assignments and potential assignments',logger)
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
-    
+    common.printlog('finished join',logger)
     
     if not os.path.isfile(fcoll):
+        common.printlog('finding collisions',logger)
         fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
         #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
         fcoll = mocktools.create_collision_from_pota(fin, fcoll)
@@ -385,13 +386,14 @@ if args.joindspec == 'y':
         common.printlog('collision file already exist '+ fcoll,logger)
 
     coll = Table(fitsio.read(fcoll))
-    print('length before masking collisions '+str(len(tj)))
+    common.printlog('length before masking collisions '+str(len(tj)),logger)
     tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
-    print('length after masking collisions '+str(len(tj)))
+    common.printlog('length after masking collisions '+str(len(tj)),logger)
 
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
-    tj.write(outfs, format = 'fits', overwrite = True)
-    print('wrote ' + outfs)
+    common.write_LSS_scratchcp(tj,outfs,logger=logger)
+    #tj.write(outfs, format = 'fits', overwrite = True)
+    #common.print('wrote ' + outfs)
     #don't do this anymore, it gets done within mkfulld
     #tc = ct.count_tiles_better('dat', pdir, specrel = '', survey = args.survey, indir = lssdir, gtl = gtl) 
     #outtc =  os.path.join(lssdir, 'Alltiles_' + pdir + '_tilelocs.dat.fits')
