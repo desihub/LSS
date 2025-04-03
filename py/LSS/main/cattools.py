@@ -3699,7 +3699,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,tsnrcut=80,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir=''):
+def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir=''):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3708,7 +3708,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,t
     zmask determines whether to apply a mask at some given redshift
     tp is the target type
     dchi2 is the threshold for keeping as a good redshift
-    tnsrcut determines where to mask based on the tsnr2 value (defined below per tracer)
+    
 
     '''
     if write_cat == 'n' and return_cat == 'n':
