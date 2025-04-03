@@ -129,8 +129,10 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/pscratch/sd/i/ioannis/fastspecfit/data
         fsi = fitsio.read(fsf_dir+'fastspec-loa-main-bright-nside1-hp'+str(hp).zfill(2)+'.fits',ext='SPECPHOT',columns = fsf_cols)
         fsl.append(fsi)
     fs = np.concatenate(fsl)
+    del fsl
     ol = len(indata)
-    indata = join(indata,fsl,keys=['TARGETID']) #note, anything missing from fastspecfit will now be missing
+    indata = join(indata,fs,keys=['TARGETID']) #note, anything missing from fastspecfit will now be missing
+    del fs
     common.printlog('length before/after fastspecfit join '+str(ol)+' '+str(len(indata)),logger)
     return indata
 
@@ -147,6 +149,7 @@ if 'FSFABSmag' in args.ccut:
     abmag = -float(csplit[2])
     fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
     #add more columns here based on args.ccut
+    common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
     fulldat = get_FSF_loa(fulldat,fsf_cols)
     ecorr = np.zeros(len(fulldat))
     if 'ecorr' in args.ccut:
