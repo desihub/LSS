@@ -53,6 +53,8 @@ parser.add_argument("--use_map_veto", help="string to include in full file name 
 #parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs",default='not_altmtl')
+parser.add_argument("--mkfulldat", help="whether to make the initial cut file that gets used throughout",default='n')
+
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
@@ -136,31 +138,33 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/pscratch/sd/i/ioannis/fastspecfit/data
     common.printlog('length before/after fastspecfit join '+str(ol)+' '+str(len(indata)),logger)
     return indata
 
-common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
-fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
+if mkfulldat == 'y':
 
-tracer_out = args.input_tracer+args.ccut
-
-#for selections based on fastspecfit; other cases can be written similarly
-if 'FSFABSmag' in args.ccut:
-    #this is an example that can make subsamples based on fastspecfit absolute magnitudes
-    #other critera can be added
-    csplit = args.ccut.split('-')
-    bnd = csplit[1]
-    abmag = -float(csplit[2])
-    fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
-    #add more columns here based on args.ccut
-    common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
-    fulldat = get_FSF_loa(fulldat,fsf_cols)
-    ecorr = np.zeros(len(fulldat))
-    if 'ecorr' in args.ccut:
-        ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
-    sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
-    #add any additional selections here
-    common.printlog('length after selection '+str(np.sum(sel)),logger)
-    #write output to new "full" catalog at your defined location
-    fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
-    common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
+    common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
+    fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
+    
+    tracer_out = args.input_tracer+args.ccut
+    
+    #for selections based on fastspecfit; other cases can be written similarly
+    if 'FSFABSmag' in args.ccut:
+        #this is an example that can make subsamples based on fastspecfit absolute magnitudes
+        #other critera can be added
+        csplit = args.ccut.split('-')
+        bnd = csplit[1]
+        abmag = -float(csplit[2])
+        fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
+        #add more columns here based on args.ccut
+        common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
+        fulldat = get_FSF_loa(fulldat,fsf_cols)
+        ecorr = np.zeros(len(fulldat))
+        if 'ecorr' in args.ccut:
+            ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
+        sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
+        #add any additional selections here
+        common.printlog('length after selection '+str(np.sum(sel)),logger)
+        #write output to new "full" catalog at your defined location
+        fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
+        common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
     
     
 #create "clustering" catalogs for data with no NGC/SGC split or FKP weights 
