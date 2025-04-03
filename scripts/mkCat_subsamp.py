@@ -42,7 +42,7 @@ from LSS.globals import main
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--ccut",help="a string that is used define your subsample",default='FSFABSmagwecorr-R-20.5')
+parser.add_argument("--ccut",help="a string that is used define your subsample",default='FSFABSmagwecorr-R-20.5-SFRgper-35')
 parser.add_argument("--input_tracer", help="tracer type that subsample will come from")
 parser.add_argument("--basedir", help="base directory for input, default is SCRATCH",default='/global/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--outdir", help="directory for out, default is SCRATCH",default=os.environ['SCRATCH'])
@@ -156,17 +156,30 @@ if args.mkfulldat == 'y':
         abmag = -float(csplit[2])
         fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
         #add more columns here based on args.ccut
+        if 'SFR' in args.ccut:
+            fsf_cols.append('SFR')
+            sfr_str = csplit[3]
+            sfr_split = -float(csplit[4]) #value to split on, will take negative
+            common.printlog('splitting on ln(SFR) '+str(sfr_split))
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
         ecorr = np.zeros(len(fulldat))
         if 'ecorr' in args.ccut:
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
+        if 'SFR' in args.cut:
+            sel_sfr = np.log(fulldat['SFR']) > -sfr_split
+            if 'g' in sfr_str: #'g' for greater than
+                sel &= sel_sfr
+            else:
+                sel &= ~sel_sfr
         #add any additional selections here
         common.printlog('length after selection '+str(np.sum(sel)),logger)
         #write output to new "full" catalog at your defined location
-        fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
-        common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
+    else:
+        sys.exit('should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
+    fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
+    common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
     
     
 #create "clustering" catalogs for data with no NGC/SGC split or FKP weights 
@@ -255,5 +268,5 @@ if args.nz == 'y':
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
 
