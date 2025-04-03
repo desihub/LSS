@@ -136,6 +136,7 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/pscratch/sd/i/ioannis/fastspecfit/data
     common.printlog('length before/after fastspecfit join '+str(ol)+' '+str(len(indata)),logger)
     return indata
 
+common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
 fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
 
 tracer_out = args.input_tracer+args.ccut
@@ -158,7 +159,7 @@ if 'FSFABSmag' in args.ccut:
     #add any additional selections here
     common.printlog('length after selection '+str(np.sum(sel)),logger)
     #write output to new "full" catalog at your defined location
-    fout = args.outdir+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
+    fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
     common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
     
     
