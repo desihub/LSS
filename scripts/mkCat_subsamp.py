@@ -138,7 +138,7 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/pscratch/sd/i/ioannis/fastspecfit/data
     common.printlog('length before/after fastspecfit join '+str(ol)+' '+str(len(indata)),logger)
     return indata
 
-if mkfulldat == 'y':
+if args.mkfulldat == 'y':
 
     common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
     fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
