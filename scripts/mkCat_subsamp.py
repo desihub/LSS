@@ -160,7 +160,7 @@ if args.mkfulldat == 'y':
             fsf_cols.append('SFR')
             sfr_str = csplit[3]
             sfr_split = -float(csplit[4]) #value to split on, will take negative
-            common.printlog('splitting on ln(SFR) '+str(sfr_split))
+            common.printlog('splitting on ln(SFR) '+str(sfr_split),logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
         ecorr = np.zeros(len(fulldat))
