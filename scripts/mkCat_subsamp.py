@@ -160,7 +160,7 @@ if args.mkfulldat == 'y':
             fsf_cols.append('SFR')
             sfr_str = csplit[3]
             sfr_split = -float(csplit[4]) #value to split on, will take negative
-            common.printlog('splitting on ln(SFR) '+str(sfr_split),logger)
+            common.printlog('splitting on SFR percentile '+str(sfr_split),logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
         ecorr = np.zeros(len(fulldat))
@@ -168,7 +168,7 @@ if args.mkfulldat == 'y':
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
         if 'SFR' in args.ccut and 'per' in args.ccut: #'per' for percentile
-            sel_sfr = np.log(fulldat['SFR']) > np.percentile(sfr_split)
+            sel_sfr = fulldat['SFR'] > np.percentile(fulldat['SFR'],sfr_split)
             if 'g' in sfr_str: #'g' for greater than
                 sel &= sel_sfr
             else:
