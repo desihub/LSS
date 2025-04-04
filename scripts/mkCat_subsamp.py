@@ -45,7 +45,7 @@ from LSS.globals import main
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--ccut",help="a string that is used define your subsample",default='FSFABSmagwecorr-R-20.5-SFRgper-35')
+parser.add_argument("--ccut",help="a string that is used define your subsample",default='FSFABSmagwecorr-R-20.5-umzgper-50')
 #arguments to find input data
 parser.add_argument("--input_tracer", help="tracer type that subsample will come from")
 parser.add_argument("--basedir", help="base directory for input, default is SCRATCH",default='/global/cfs/cdirs/desi/survey/catalogs/')
@@ -163,10 +163,15 @@ if args.mkfulldat == 'y':
         abmag = -float(csplit[2])
         fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
         #add more columns here based on args.ccut
+        if 'umz' in args.ccut:
+            fsf_cols.append('ABSMAG01_SDSS_U','ABSMAG01_SDSS_Z')
+            umz_str = csplit[3]
+            umz_split = float(csplit[4]) #value to split on
+            common.printlog('splitting on U-Z percentile '+str(umz_split),logger)
         if 'SFR' in args.ccut:
             fsf_cols.append('SFR')
             sfr_str = csplit[3]
-            sfr_split = float(csplit[4]) #value to split on, will take negative
+            sfr_split = float(csplit[4]) #value to split on
             common.printlog('splitting on SFR percentile '+str(sfr_split),logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
@@ -175,11 +180,18 @@ if args.mkfulldat == 'y':
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
         if 'SFR' in args.ccut and 'per' in args.ccut: #'per' for percentile
-            sel_sfr = fulldat['SFR'] > np.percentile(fulldat['SFR'],sfr_split)
+            sel_sfr = fulldat['SFR'] > np.percentile(fulldat[sel]['SFR'],sfr_split)
             if 'g' in sfr_str: #'g' for greater than
                 sel &= sel_sfr
             else:
                 sel &= ~sel_sfr
+         if 'umz' in args.ccut and 'per' in args.ccut: #'per' for percentile
+            sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']),umz_split)
+            if 'g' in umz_str: #'g' for greater than
+                sel &= sel_umz
+            else:
+                sel &= ~sel_umz
+
         #add any additional selections here
         common.printlog('length after selection '+str(np.sum(sel)),logger)
         #write output to new "full" catalog at your defined location
