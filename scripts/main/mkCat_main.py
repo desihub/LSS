@@ -74,6 +74,8 @@ parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, a
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
+parser.add_argument("--mask_ran_nopriority", help="apply vetos to randoms except for priority; to be used with mocks",default='n')
+
 parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='_HPmapcut')
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
 
@@ -499,10 +501,44 @@ if args.apply_map_veto == 'y':
     else:
         inds = np.arange(rm,rx)
         from multiprocessing import Pool
-        (rx-rm)*2
+        
         nproc = 9 #try this so doesn't run out of memory
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun, inds)
+
+if args.mask_ran_nopriority == 'y':
+    import healpy as hp
+    tracer_clushp = tracer_clus
+    #BGS_ANY and BGS_BRIGHT should essentially have same footprint
+    if tracer_clus == 'BGS_ANY':
+        tracer_clushp = 'BGS_BRIGHT'
+    if 'ELG' in tracer_clus:
+        tracer_clushp = 'ELG_LOPnotqso'
+    mapn = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+    maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+    mapcuts = mainp.mapcuts
+
+    ran_fname_base = dirout+type+notqso+'_'
+	def _mk_inputran(rann):
+		outfn = ran_fname_base.replace('dvs_ro','global')+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
+		if args.survey == 'Y1':
+			infn = ran_fname_base+str(rann)+'_full_noveto.ran.fits'
+		else:
+			infn = dirout+args.prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
+		maxp = 10000 #we don't want to apply any priority cut
+	
+		masked_dat = common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks,wo='n')
+		masked_dat = common.apply_map_veto_arrays(masked_dat,mapn,maps,mapcuts)
+		common.write_LSS_scratchcp(masked_dat,outfn,logger=logger)
+	inds = np.arange(rm,rx)
+	if args.par == 'y':
+		from multiprocessing import Pool
+		with Pool(processes=9) as pool:
+			res = pool.map(_mk_inputran, inds)
+	else:
+		for rn in inds:#range(rm,rx):
+			 _mk_inputran(rn)
+
 
 if args.add_tlcomp == 'y':
     fl = dirout+tp+notqso+'_'
