@@ -179,21 +179,24 @@ if args.mkfulldat == 'y':
         if 'ecorr' in args.ccut:
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
+        common.printlog('length after Absmag selection '+str(np.sum(sel)),logger)
         if 'SFR' in args.ccut and 'per' in args.ccut: #'per' for percentile
             sel_sfr = fulldat['SFR'] > np.percentile(fulldat[sel]['SFR'],sfr_split)
             if 'g' in sfr_str: #'g' for greater than
                 sel &= sel_sfr
             else:
                 sel &= ~sel_sfr
+            common.printlog('length after SFR selection '+str(np.sum(sel)),logger)
          if 'umz' in args.ccut and 'per' in args.ccut: #'per' for percentile
             sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']),umz_split)
             if 'g' in umz_str: #'g' for greater than
                 sel &= sel_umz
             else:
                 sel &= ~sel_umz
+            common.printlog('length after UMZ selection '+str(np.sum(sel)),logger)
 
         #add any additional selections here
-        common.printlog('length after selection '+str(np.sum(sel)),logger)
+        
         #write output to new "full" catalog at your defined location
     else:
         sys.exit('should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
