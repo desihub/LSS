@@ -397,7 +397,8 @@ if args.imsys_clus == 'y':
     if syscol in dat_ngc.colnames:
         dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
-    #apply weight to final weight columns
+    #apply weight to final weight columns, remove any previous weighting
+    dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
     dat_ngc['WEIGHT_SYS'] = dat_ngc[syscol]
     dat_ngc['WEIGHT'] *= dat_ngc['WEIGHT_SYS']
     #write out NGC
@@ -407,6 +408,7 @@ if args.imsys_clus == 'y':
         dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     #apply weight to final weight columns
+    dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
     dat_sgc['WEIGHT_SYS'] = dat_sgc[syscol]
     dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     #write out SGC
@@ -416,9 +418,9 @@ if args.imsys_clus == 'y':
 if args.imsys_clus_ran == 'y':
     #do randoms
     syscol = 'WEIGHT_IMLIN_CLUS'
-    fname = os.path.join(dirout, tracer_clus+'_NGC_clustering.dat.fits')
+    fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
     dat_ngc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
-    fname = os.path.join(dirout, tracer_clus+'_SGC_clustering.dat.fits')
+    fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
     dat = vstack([dat_sgc,dat_ngc])
     dat.rename_column('TARGETID','TARGETID_DATA') #randoms have their weights modulated based on the data used for the redshift
@@ -430,6 +432,7 @@ if args.imsys_clus_ran == 'y':
             if syscol in ran.colnames:
                 ran.remove_column(syscol)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
+            ran['WEIGHT'] /= ran['WEIGHT_SYS'] #remove effect of any original weighting
             ran['WEIGHT'] *= ran[syscol]
             ran['WEIGHT_SYS'] = ran[syscol]
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
