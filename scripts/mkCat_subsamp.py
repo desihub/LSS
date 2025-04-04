@@ -416,9 +416,9 @@ if args.imsys_clus == 'y':
 if args.imsys_clus_ran == 'y':
     #do randoms
     syscol = 'WEIGHT_IMLIN_CLUS'
-    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
+    fname = os.path.join(dirout, tracer_clus+'_NGC_clustering.dat.fits')
     dat_ngc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
-    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
+    fname = os.path.join(dirout, tracer_clus+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
     dat = vstack([dat_sgc,dat_ngc])
     dat.rename_column('TARGETID','TARGETID_DATA') #randoms have their weights modulated based on the data used for the redshift
