@@ -187,7 +187,7 @@ if args.mkfulldat == 'y':
             else:
                 sel &= ~sel_sfr
             common.printlog('length after SFR selection '+str(np.sum(sel)),logger)
-         if 'umz' in args.ccut and 'per' in args.ccut: #'per' for percentile
+        if 'umz' in args.ccut and 'per' in args.ccut: #'per' for percentile
             sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']),umz_split)
             if 'g' in umz_str: #'g' for greater than
                 sel &= sel_umz
