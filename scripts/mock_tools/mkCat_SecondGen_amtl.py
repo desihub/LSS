@@ -54,8 +54,9 @@ parser.add_argument("--base_output", help="base directory for output",default=os
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="base directory of AltMTL mock",default=None)
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='Y1')
-parser.add_argument("--specdata", help="mountain range for spec prod",default='iron')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
+parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
+parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
@@ -156,7 +157,7 @@ if args.targDir == None:
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
 tiles = fitsio.read(tile_fn)
 
-
+data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=survey, SPECVER=args.specdata,DATAVER=args.dataversion)
 
 gtl = None
 if args.add_gtl == 'y':
@@ -620,7 +621,7 @@ if args.apply_veto == 'y':
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
     dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
-    common.write_LSS_scratchcp(dataf,fout)
+    common.write_LSS_scratchcp(dataf,fout,logger=logger)
     print('data veto done, now doing randoms')
 
     gc.collect()
@@ -839,8 +840,19 @@ if args.mkclusran == 'y':
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
+        mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
+        ranf = finaltracer+'_'+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
+        datain = fitsio.read(data_dir+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
+        common.printlog('length before join for PRIORITY '+str(len(datain)))
+        datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
+        common.printlog('length after join for PRIORITY '+str(len(datain)))
+        selpri &= datain['PRIORITY'] <= maxp
+        datain = datain[selpri]
+        common.printlog('length after PRIORITY mask'+str(len(datain)))
+        tlf = fitsio.read(fl+'frac_tlobs.fits')
+        datain = add_tlobs_ran_array(datain,tlf,logger)
 
-        ct.mkclusran(ranin, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
+        ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
 
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
