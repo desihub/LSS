@@ -33,7 +33,7 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
-
+#LSS code, requires it git clone
 import LSS.main.cattools as ct
 import LSS.common_tools as common
 
@@ -43,6 +43,7 @@ from LSS.globals import main
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ccut",help="a string that is used define your subsample",default='FSFABSmagwecorr-R-20.5-SFRgper-35')
+#arguments to find input data
 parser.add_argument("--input_tracer", help="tracer type that subsample will come from")
 parser.add_argument("--basedir", help="base directory for input, default is SCRATCH",default='/global/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--outdir", help="directory for out, default is SCRATCH",default=os.environ['SCRATCH'])
@@ -53,8 +54,9 @@ parser.add_argument("--use_map_veto", help="string to include in full file name 
 #parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs",default='not_altmtl')
-parser.add_argument("--mkfulldat", help="whether to make the initial cut file that gets used throughout",default='n')
 
+#what steps to run (set all to y to get NGC/SGC clustering catalogs output)
+parser.add_argument("--mkfulldat", help="whether to make the initial cut file that gets used throughout",default='n')
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
@@ -62,11 +64,11 @@ parser.add_argument("--maxr", help="maximum for random files, 18 are available (
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
 
-parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
+#options for linear imaging systematic regressions
 parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
 parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
-parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
+parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
@@ -210,10 +212,11 @@ if mkclusran:
     else:
         for ii in inds:#range(rm,rx):
             _parfun_cr(ii)
+
+#define P0 value used for fiducial FKP weights and dz used for creating n(z)
 if tracer_out[:3] == 'QSO':
     dz = 0.02
-    P0 = 6000
-    
+    P0 = 6000    
 else:    
     dz = 0.01
 
@@ -244,8 +247,9 @@ def splitGC(flroot,datran='.dat',rann=0):
     common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 
-dirout = args.outdir
+dirout = args.outdir #just because original copied code used dirout
 
+#split catalogs NGC/SGC
 if args.splitGC == 'y':
     fb = dirout+'/'+tracer_out+'_'
     splitGC(fb,'.dat')
@@ -260,13 +264,173 @@ if args.splitGC == 'y':
         for rn in inds:#range(rm,rx):
              _spran(rn)
 
-
+#this 1) calculates the n(z) for the sample
+#2) adds the n(z) as a function of completeness to the catalogs (column NX)
+#3) calculates the FKP weights based on NX
+#4) refactors the weights (section 8.2 of the KP3 paper arXiv:2411.12020)
+#5) writes the NGC/SGC clustering catalogs back out for data and randoms
 if args.nz == 'y':
     for reg in regions:#allreg:
+        #file names
         fb = dirout+'/'+tracer_out+'_'+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
+        #make n(z)
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
+        #do steps 2-5 above
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
+
+# determine linear weights for imaging systematics
+# this is new for doing after the fact based on clustering catalogs
+if args.imsys_clus == 'y':
+    #import package
+    from LSS.imaging import densvar 
+    
+    #setup redshift bins to use for regressions; you might find something else works better!
+    if args.input_tracer[:3] == 'ELG':
+        if args.imsys_zbin == 'y':
+            zrl = [(0.8,1.1),(1.1,1.6)]
+        else:
+            zrl = [(0.8,1.6)]
+    if args.input_tracer[:3] == 'QSO':
+        if args.imsys_zbin == 'y':
+            zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)] 
+        else:
+            zrl = [(0.8,3.5)]   
+    if args.input_tracer[:3] == 'LRG':
+        if args.imsys_zbin == 'y':
+            zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+        else:
+            zrl = [(0.4,1.1)]  
+    if args.input_tracer[:3] == 'BGS':
+        zrl = [(0.1,0.4)]
+
+    
+    #get maps to regress against
+    if args.usemaps == None:
+        fit_maps = mainp.fit_maps
+    else:
+        fit_maps = [mapn for mapn in args.usemaps]
+
+    #get NGC/SGC catalogs and stack them (weights will be fit splitting the data into different photometric regions)
+    fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
+    dat_ngc = Table(fitsio.read(fname))
+    fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
+    dat_sgc = Table(fitsio.read(fname))
+    dat = vstack([dat_sgc,dat_ngc])
+    #foutname = os.path.join(dirout, tracer_clus+'_clustering.dat.fits')
+    #get randoms
+    ranl = []
+    for i in range(0,args.nran4imsys):
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits')) 
+        ranl.append(ran)
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits')) 
+        ranl.append(ran)
+    rands = np.concatenate(ranl)
+    
+    #fiducial column name for weights, initialize as 1.
+    syscol = 'WEIGHT_IMLIN_CLUS' 
+    dat[syscol] = np.ones(len(dat))
+    #photometric regions
+    regl = ['S','N']
+    if args.type == 'QSO':
+        regl = ['DES','SnotDES','N']
+    
+    #do fit looping over regions and redshift bins
+    for reg in regl:
+        #handling for loading maps of potential systematics to regress against
+        regu = reg
+        if reg == 'DES' or reg == 'SnotDES':
+            regu = 'S'
+        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
+        sys_tab = Table.read(pwf)
+        cols = list(sys_tab.dtype.names)
+        for col in cols:
+            #apply extinction corrections to depth to get total depth estimate
+            if 'DEPTH' in col:
+                bnd = col.split('_')[-1]
+                sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+        #Delta EBV using DESI EBV maps
+        debv = common.get_debv()
+        for ec in ['GR','RZ']:
+            if 'EBV_DIFF_'+ec in fit_maps: 
+                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        
+        selr = rands['PHOTSYS'] == reg
+
+        for zr in zrl:
+            zmin = zr[0]
+            zmax = zr[1]
+            
+            common.printlog('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax),logger)
+            if args.input_tracer == 'LRG' and args.usemaps == None:
+                if reg == 'N':
+                    fitmapsbin = fit_maps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fit_maps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fit_maps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fit_maps81s
+            else:
+                fitmapsbin = fit_maps
+            use_maps = fitmapsbin
+            #now, everything in place to actually perform regression for this reg and zbin
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
+            #we want to update the weights for the selection of data just input to the regression
+            sel = wsysl != 1 
+            dat[syscol][sel] = wsysl[sel]
+    #attach data to NGC/SGC catalogs, write those out
+    #we will do a join
+    dat.keep_columns(['TARGETID',syscol])
+    
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
+    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
+    #apply weight to final weight columns
+    dat_ngc['WEIGHT_SYS'] = dat_ngc[syscol]
+    dat_ngc['WEIGHT'] *= dat_ngc['WEIGHT_SYS']
+    #write out NGC
+    common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits'),logger=logger)
+    #do SGC
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
+    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
+    #apply weight to final weight columns
+    dat_sgc['WEIGHT_SYS'] = sat_ngc[syscol]
+    dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
+    #write out SGC
+    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits'),logger=logger)
+
+#column needs to be added to randoms
+if args.imsys_clus_ran == 'y':
+    #do randoms
+    syscol = 'WEIGHT_IMLIN_CLUS'
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
+    dat_ngc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
+    dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
+    dat = vstack([dat_sgc,dat_ngc])
+    dat.rename_column('TARGETID','TARGETID_DATA') #randoms have their weights modulated based on the data used for the redshift
+    regl = ['NGC','SGC']
+    def _add2ran(rann):
+        for reg in regl:
+            ran_fn = os.path.join(dirout, tracer_out+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
+            ran = Table(fitsio.read(ran_fn))
+            if syscol in ran.colnames:
+                ran.remove_column(syscol)
+            ran = join(ran,dat,keys=['TARGETID_DATA'])
+            ran['WEIGHT'] *= ran[syscol]
+            ran['WEIGHT_SYS'] = ran[syscol]
+            common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
+
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_add2ran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _add2ran(rn)
 
