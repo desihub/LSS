@@ -164,7 +164,8 @@ if args.mkfulldat == 'y':
         fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
         #add more columns here based on args.ccut
         if 'umz' in args.ccut:
-            fsf_cols.append('ABSMAG01_SDSS_U','ABSMAG01_SDSS_Z')
+            fsf_cols.append('ABSMAG01_SDSS_U')
+            fsf_cols.append('ABSMAG01_SDSS_Z')
             umz_str = csplit[3]
             umz_split = float(csplit[4]) #value to split on
             common.printlog('splitting on U-Z percentile '+str(umz_split),logger)
