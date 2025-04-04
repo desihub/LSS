@@ -407,7 +407,7 @@ if args.imsys_clus == 'y':
         dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     #apply weight to final weight columns
-    dat_sgc['WEIGHT_SYS'] = dat_ngc[syscol]
+    dat_sgc['WEIGHT_SYS'] = dat_sgc[syscol]
     dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     #write out SGC
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits'),logger=logger)
