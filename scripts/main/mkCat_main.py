@@ -519,25 +519,25 @@ if args.mask_ran_nopriority == 'y':
     mapcuts = mainp.mapcuts
 
     ran_fname_base = dirout+type+notqso+'_'
-	def _mk_inputran(rann):
-		outfn = ran_fname_base.replace('dvs_ro','global')+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
-		if args.survey == 'Y1':
-			infn = ran_fname_base+str(rann)+'_full_noveto.ran.fits'
-		else:
-			infn = dirout+args.prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
-		maxp = 10000 #we don't want to apply any priority cut
-	
-		masked_dat = common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks,wo='n')
-		masked_dat = common.apply_map_veto_arrays(masked_dat,mapn,maps,mapcuts)
-		common.write_LSS_scratchcp(masked_dat,outfn,logger=logger)
-	inds = np.arange(rm,rx)
-	if args.par == 'y':
-		from multiprocessing import Pool
-		with Pool(processes=9) as pool:
-			res = pool.map(_mk_inputran, inds)
-	else:
-		for rn in inds:#range(rm,rx):
-			 _mk_inputran(rn)
+    def _mk_inputran(rann):
+        outfn = ran_fname_base.replace('dvs_ro','global')+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
+        if args.survey == 'Y1':
+            infn = ran_fname_base+str(rann)+'_full_noveto.ran.fits'
+        else:
+            infn = dirout+args.prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
+        maxp = 10000 #we don't want to apply any priority cut
+    
+        masked_dat = common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks,wo='n')
+        masked_dat = common.apply_map_veto_arrays(masked_dat,mapn,maps,mapcuts)
+        common.write_LSS_scratchcp(masked_dat,outfn,logger=logger)
+    inds = np.arange(rm,rx)
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool(processes=9) as pool:
+            res = pool.map(_mk_inputran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _mk_inputran(rn)
 
 
 if args.add_tlcomp == 'y':
