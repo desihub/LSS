@@ -524,7 +524,7 @@ if args.mask_ran_nopriority == 'y':
         if args.survey == 'Y1':
             infn = ran_fname_base+str(rann)+'_full_noveto.ran.fits'
         else:
-            infn = dirout+args.prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
+            infn = dirout+prog.lower()+'_'+str(rann)+'_full_noveto.ran.fits'
         maxp = 10000 #we don't want to apply any priority cut
     
         masked_dat = common.apply_veto(infn,outfn,ebits=ebits,zmask=False,maxp=maxp,logger=logger,reccircmasks=mainp.reccircmasks,wo='n')
