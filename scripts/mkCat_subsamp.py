@@ -1,6 +1,9 @@
 #script to read in existing LSS catalog information for some tracer and create a sub-sample
-#Example submission to be added
-
+#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 65% highest star formation (percentile at which data looked bimodel)
+#
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_ANY --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
+#
+#
 #standard python
 import sys
 import os
@@ -334,7 +337,7 @@ if args.imsys_clus == 'y':
     dat[syscol] = np.ones(len(dat))
     #photometric regions
     regl = ['S','N']
-    if args.type == 'QSO':
+    if args.input_tracer == 'QSO':
         regl = ['DES','SnotDES','N']
     
     #do fit looping over regions and redshift bins
