@@ -1,5 +1,5 @@
 #script to read in existing LSS catalog information for some tracer and create a sub-sample
-#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 65% highest star formation (percentile at which data looked bimodel)
+#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodel)
 #
 #srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_ANY --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
 #Up to imaging systematics regression takes ~7 minutes 
@@ -407,7 +407,7 @@ if args.imsys_clus == 'y':
         dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     #apply weight to final weight columns
-    dat_sgc['WEIGHT_SYS'] = sat_ngc[syscol]
+    dat_sgc['WEIGHT_SYS'] = dat_ngc[syscol]
     dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     #write out SGC
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits'),logger=logger)
