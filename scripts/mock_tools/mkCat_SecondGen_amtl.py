@@ -836,7 +836,7 @@ if args.mkclusran == 'y':
             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
     
     fl = os.path.join(readdir, finaltracer) + '_'
-    print('adding tlobs to randoms with ', fl)
+    common.printlog('adding tlobs to randoms with '+ fl,logger)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     ranin = os.path.join(readdir, finaltracer) + '_'
     tlf = fitsio.read(fl+'frac_tlobs.fits')
@@ -879,7 +879,7 @@ if args.mkclusran == 'y':
             res = pool.map(_parfun4, inds)
 
 #        ct.clusNStoGC(os.path.join(dirout, args.tracer + notqso+'_'), rannum[1] - rannum[0])
-    print('*** END WITH MKCLUSRAN ***')
+    common.printlog('*** END WITH MKCLUSRAN ***',logger)
 
     gc.collect()
 
