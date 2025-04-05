@@ -774,7 +774,7 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
 
 
 if args.mkclusdat == 'y':
-    print('--- START MKCLUSDAT ---')
+    common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
     
 
@@ -796,7 +796,7 @@ if args.mkclusdat == 'y':
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
     #ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
-    print('*** END WITH MKCLUSDAT ***')
+    common.printlog('*** END WITH MKCLUSDAT ***',logger)
 
     gc.collect()
 
@@ -839,6 +839,7 @@ if args.mkclusran == 'y':
     print('adding tlobs to randoms with ', fl)
     clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     ranin = os.path.join(readdir, finaltracer) + '_'
+    tlf = fitsio.read(fl+'frac_tlobs.fits')
     if 'BGS_BRIGHT' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
     if 'BGS_ANY' in args.tracer:
@@ -851,13 +852,13 @@ if args.mkclusran == 'y':
         mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
         ranf = finaltracer+'_'+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
         datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
-        common.printlog('length before join for PRIORITY '+str(len(datain)))
+        common.printlog('length before join for PRIORITY '+str(len(datain)),logger=logger)
         datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
-        common.printlog('length after join for PRIORITY '+str(len(datain)))
+        common.printlog('length after join for PRIORITY '+str(len(datain)),logger=logger)
         selpri &= datain['PRIORITY'] <= maxp
         datain = datain[selpri]
-        common.printlog('length after PRIORITY mask'+str(len(datain)))
-        tlf = fitsio.read(fl+'frac_tlobs.fits')
+        common.printlog('length after PRIORITY mask'+str(len(datain)),logger=logger)
+        
         datain = add_tlobs_ran_array(datain,tlf,logger)
 
         ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)

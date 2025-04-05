@@ -3041,12 +3041,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     else:
         print(specf)
     fs = fitsio.read(specf)
-    fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status)
+    fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,logger=logger)
     fs = Table(fs)
     fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     gtl = np.unique(fs['TILELOCID'])
 
     if mockz:
+        common.printlog('getting mock assignment info',logger)
         assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup.fits').format(PROG=prog)
         fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
         fs = Table(fs)
@@ -3054,7 +3055,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
 
     #print(len(gtl))
     fs.keep_columns(['TILELOCID','PRIORITY'])
-    ''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
+    #''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
     dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
     if logger is not None:
         logger.info('columns after join to spec info '+str(dz.dtype.names))
@@ -4071,6 +4072,7 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
 def add_tlobs_ran_array(ranf,tlf,logger=None):
     import LSS.common_tools as common
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
+    common.printlog('adding FRAC_TLOBS_TILES to '+ranf,logger)
     tlarray = []
     nt = 0
     utls = np.unique(ranf['TILES'])
