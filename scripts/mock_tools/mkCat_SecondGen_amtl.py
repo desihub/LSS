@@ -350,9 +350,13 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
     tar_in = fitsio.read(tarf, columns=addcols)
     pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
+    pa['ZWARN'] = pa['ZWARN'].filled(999999)
+    sel = pa['ZWARN'] == 999999
+    common.printlog('number with no assignments '+str(np.sum(sel))+' total number '+str(len(pa)),logger=logger)
     #print(len(dat_comb))
-    common.printlog('completed joinb to target info',logger)
+    common.printlog('completed join to target info',logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
+    
     common.write_LSS_scratchcp(pa,outf,logger=logger)
 
 
