@@ -859,7 +859,7 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length before join for PRIORITY '+str(len(datain)),logger=logger)
         datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
         common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
-        selpri &= datain['PRIORITY'] <= maxp
+        selpri = datain['PRIORITY'] <= maxp
         datain = datain[selpri]
         common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
         
