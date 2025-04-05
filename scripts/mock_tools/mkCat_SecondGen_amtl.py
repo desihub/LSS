@@ -842,6 +842,8 @@ if args.mkclusran == 'y':
     ranin = os.path.join(readdir, finaltracer) + '_'
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     common.printlog('read in frac_tlobs file',logger)
+    mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
+    common.printlog('read in mock obs file',logger)
     if 'BGS_BRIGHT' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
     if 'BGS_ANY' in args.tracer:
@@ -851,7 +853,7 @@ if args.mkclusran == 'y':
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
-        mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
+            
         ranf = finaltracer+'_'+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
         datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
         common.printlog(str(rann)+' length before join for PRIORITY '+str(len(datain)),logger=logger)
