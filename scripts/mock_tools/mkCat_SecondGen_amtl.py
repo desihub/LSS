@@ -852,12 +852,12 @@ if args.mkclusran == 'y':
         mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
         ranf = finaltracer+'_'+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
         datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
-        common.printlog('length before join for PRIORITY '+str(len(datain)),logger=logger)
+        common.printlog(str(rann)+' length before join for PRIORITY '+str(len(datain)),logger=logger)
         datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
-        common.printlog('length after join for PRIORITY '+str(len(datain)),logger=logger)
+        common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
         selpri &= datain['PRIORITY'] <= maxp
         datain = datain[selpri]
-        common.printlog('length after PRIORITY mask'+str(len(datain)),logger=logger)
+        common.printlog(str(rann)+' length after PRIORITY mask'+str(len(datain)),logger=logger)
         
         datain = add_tlobs_ran_array(datain,tlf,logger)
 
