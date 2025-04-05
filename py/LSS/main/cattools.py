@@ -4235,7 +4235,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         outfn =  (fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits').replace(tp,extradir+tp)  
         
         des_resamp = False
-        if 'QSO' in flin:
+        if 'QSO' in tp:
             if 'S' in reg or reg == '':
                 des_resamp = True
         if reg == '' and des_resamp == False: #N/S resampling
