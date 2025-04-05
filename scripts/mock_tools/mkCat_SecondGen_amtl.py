@@ -861,7 +861,7 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
         selpri &= datain['PRIORITY'] <= maxp
         datain = datain[selpri]
-        common.printlog(str(rann)+' length after PRIORITY mask'+str(len(datain)),logger=logger)
+        common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
         
         datain = add_tlobs_ran_array(datain,tlf,logger)
 
