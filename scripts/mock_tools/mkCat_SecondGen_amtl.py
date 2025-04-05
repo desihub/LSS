@@ -380,6 +380,10 @@ if args.joindspec == 'y':
 
     common.printlog('about to join assignments and potential assignments',logger)
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
+    tj['ZWARN'] = tj['ZWARN'].filled(999999)
+    sel = tj['ZWARN'] == 999999
+    common.printlog('number with no assignments '+str(np.sum(sel))+' total number '+str(len(tj)),logger=logger)
+
     common.printlog('finished join',logger)
     
     if not os.path.isfile(fcoll):
