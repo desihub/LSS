@@ -812,7 +812,7 @@ if args.tracer[:3] == 'BGS':
 
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA']
 if args.mkclusran == 'y':
-    print('--- START MKCLUSRAN ---')
+    common.printlog('--- START MKCLUSRAN ---',logger)
     #if len(nztl) == 0:
     #    nztl.append('')
     
