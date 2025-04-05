@@ -863,7 +863,7 @@ if args.mkclusran == 'y':
         datain = datain[selpri]
         common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
         
-        datain = add_tlobs_ran_array(datain,tlf,logger)
+        datain = ct.add_tlobs_ran_array(datain,tlf,logger)
 
         ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
