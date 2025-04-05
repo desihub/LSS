@@ -4072,7 +4072,7 @@ def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
 def add_tlobs_ran_array(ranf,tlf,logger=None):
     import LSS.common_tools as common
     tldic = dict(zip(tlf['TILES'],tlf['FRAC_TLOBS_TILES']))
-    common.printlog('adding FRAC_TLOBS_TILES to '+ranf,logger)
+    common.printlog('adding FRAC_TLOBS_TILES',logger)
     tlarray = []
     nt = 0
     utls = np.unique(ranf['TILES'])
