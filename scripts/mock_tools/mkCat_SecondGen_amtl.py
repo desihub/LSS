@@ -850,7 +850,7 @@ if args.mkclusran == 'y':
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
         ranf = finaltracer+'_'+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
-        datain = fitsio.read(data_dir+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
+        datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
         common.printlog('length before join for PRIORITY '+str(len(datain)))
         datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
         common.printlog('length after join for PRIORITY '+str(len(datain)))
