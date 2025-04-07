@@ -360,15 +360,15 @@ def doran(ii):
         maps = None
         mapcuts = None
         if args.hpmapcut == '_HPmapcut':
-			lssmapdirout = dirout+'/hpmaps/'
-			tracer_clus = type+notqso
-			if tracer_clus == 'BGS_ANY':
-				tracer_clushp = 'BGS_BRIGHT'
-			if 'ELG' in tracer_clus:
-				tracer_clushp = 'ELG_LOPnotqso'
-			mapn = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
-			maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
-			mapcuts = mainp.mapcuts
+            lssmapdirout = dirout+'/hpmaps/'
+            tracer_clus = type+notqso
+            if tracer_clus == 'BGS_ANY':
+                tracer_clushp = 'BGS_BRIGHT'
+            if 'ELG' in tracer_clus:
+                tracer_clushp = 'ELG_LOPnotqso'
+            mapn = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+            maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+            mapcuts = mainp.mapcuts
 
         ct.mk_maskedran_wdup(gtl,ldirspec,ii,imbits,outf,pdir,ebits,notqso='',hpmapcut=args.hpmapcut,ftiles=None,mapn=mapn,maps=maps,mapcuts=mapcuts):        
 
