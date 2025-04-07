@@ -1368,6 +1368,7 @@ def count_tiles_input(fjg,logger=None):
     take input array with require columns TARGETID TILEID TILELOCID
     return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES and the TILELOCIDS
     '''
+    fjg = Table(fjg)
     fjg.keep_columns(['TARGETID','TILEID','TILELOCID'])
     fjg = np.array(fjg)
     #print(fjg.dtype.names)
