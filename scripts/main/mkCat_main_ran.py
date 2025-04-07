@@ -362,6 +362,7 @@ def doran(ii):
         if args.hpmapcut == '_HPmapcut':
             lssmapdirout = dirout+'/hpmaps/'
             tracer_clus = type+notqso
+            tracer_clushp = tracer_clus
             if tracer_clus == 'BGS_ANY':
                 tracer_clushp = 'BGS_BRIGHT'
             if 'ELG' in tracer_clus:
