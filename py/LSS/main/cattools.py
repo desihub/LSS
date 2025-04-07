@@ -2402,7 +2402,7 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
     #add tile info
     if ftiles is None:
         logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
-        dzpd = count_tiles_input(dz,logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+        dzpd = count_tiles_input(np.copy(dz),logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
     else:
         dzpd = fitsio.read(ftiles)
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
