@@ -865,7 +865,7 @@ if args.mkclusran == 'y':
         selpri = datain['PRIORITY'] <= maxp
         datain = datain[selpri]
         common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
-        
+        datain = unique(datain,keys=['TARGETID'])
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         
 
