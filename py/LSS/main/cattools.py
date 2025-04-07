@@ -2341,6 +2341,81 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     del dz
 
 
+def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_HPmapcut',ftiles=None,mapn=None,maps=None,mapcuts=None):
+    #apply the masks to the duplicated randoms associated with the data version
+    #this will make mock processing more efficient, as it should only need to be done once and then used by all mock realizations
+    #gtl should contain all hardware masking
+    import LSS.common_tools as common
+    #import logging
+    logger = logging.getLogger('LSSran')
+
+    zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
+    logger.info('about to load '+zf)
+    dz = Table(fitsio.read(zf))
+    logger.info('loaded '+zf+ ' '+str(len(dz))+' rows with columns '+str(dz.dtype.names))
+
+    cols = list(dz.dtype.names)
+    if tscol not in cols:
+        dz[tscol] = np.ones(len(dz))
+
+    dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
+    
+    wg = np.isin(dz['TILELOCID'],gtl)
+    dz = dz[wg]
+    logger.info('now has '+str(len(dz))+' rows after masking bad hardware')
+
+    #imaging veto mask
+        
+	logger.info(str(rann)+' getting mask info from original randoms ')
+	dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+	tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] 
+	tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+	keep = (tarf['NOBS_G']>0) & (tarf['NOBS_R']>0) & (tarf['NOBS_Z']>0)
+
+	for biti in imbits:
+		keep &= ((tarf['MASKBITS'] & 2**biti)==0)
+	logger.info('from parent randoms for initial mask, '+str(np.sum(keep))+' kept out of '+str(len(tarf)))
+	if isinstance(ebits, str):
+        gtids = tarf['TARGETID'][keep]
+        del tarf
+        if 'lrg' in ebits:
+            tracer_mask = 'lrg'
+        mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
+        tarf = fitsio.read(mask_fn)
+        glrg = tarf['lrg_mask'] == 0
+        glrgtids = tarf['TARGETID'][glrg]
+        sel_lrg = np.isin(gtids,glrgtids)
+        gtids = gtids[sel_lrg]
+        logger.info('applying '+ebits+' leaves '+str(len(gtids)))
+    else:
+	    for biti in imbits:
+		    keep &= ((tarf['MASKBITS'] & 2**biti)==0)
+        gtids = tarf['TARGETID'][keep]
+        del tarf
+        logger.info('applying extra imaging mask leaves '+str(len(gtids)))
+
+    sel_immask = np.isin(dz['TARGETID'],gtids)
+    dz = dz[sel_immask]
+    logger.info(str(len(dz))+ ' left in dup random file')
+
+    #healpix map veto
+    if hpmapcut == '_HPmapcut':
+        dz = common.apply_map_veto_arrays(dz,mapn,maps,mapcuts,nside=256,logger=logger)
+    
+    #add tile info
+    if ftiles is None:
+        logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
+        dzpd = count_tiles_input(dz,logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+    else:
+        dzpd = fitsio.read(ftiles)
+    dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
+    dz['NTILE'][~tin] = 0
+    common.write_LSS_scratchcp(dz,outf,logger=logger)
+    del dz
+    return True    
+
+
 def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr2=0,tlid_full=None,badfib=None,ftiles=None,badfib_status=None):
     import LSS.common_tools as common
     #import logging
@@ -2396,6 +2471,8 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
         dzpd = count_tiles_input(dz[wg],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
     else:
         dzpd = Table.read(ftiles)
+
+
 
 
     #zfpd = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'_Alltilelocinfo.fits'

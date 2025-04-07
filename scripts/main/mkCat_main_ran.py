@@ -70,6 +70,8 @@ parser.add_argument("--counttiles", help="get NTILE, etc. counts",default='n')
 
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--fullr_mode", help="if prog, noveto files are only split dark/bright",default='prog')
+parser.add_argument("--mkdupranmasked",help="make duplicate randoms but with masks applied, to be used for randoms",default='n')
+parser.add_argument("--hpmapcut", help="string indicating whether healpix map cut gets applied",default='_HPmapcut')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
 parser.add_argument("--fillran", help="add columns",default='n')
 parser.add_argument("--apply_veto", help="apply vetos to the full files",default='n')
@@ -352,7 +354,24 @@ def doran(ii):
         common.write_LSS_scratchcp(tc,ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits')
         #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
-        
+    if args.mkdupranmasked == 'y':
+        outf = dirout+type+notqso+'_'+str(ii)+'_dupran_masked'+args.hpmapcut+'.fits'
+        mapn = None
+        maps = None
+        mapcuts = None
+        if args.hpmapcut == '_HPmapcut':
+			lssmapdirout = dirout+'/hpmaps/'
+			tracer_clus = type+notqso
+			if tracer_clus == 'BGS_ANY':
+				tracer_clushp = 'BGS_BRIGHT'
+			if 'ELG' in tracer_clus:
+				tracer_clushp = 'ELG_LOPnotqso'
+			mapn = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_N.fits')
+			maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
+			mapcuts = mainp.mapcuts
+
+        ct.mk_maskedran_wdup(gtl,ldirspec,ii,imbits,outf,pdir,ebits,notqso='',hpmapcut=args.hpmapcut,ftiles=None,mapn=mapn,maps=maps,mapcuts=mapcuts):        
+
     if mkfullr:
         maxp = 3400
         if type[:3] == 'LRG' or notqso == 'notqso':
