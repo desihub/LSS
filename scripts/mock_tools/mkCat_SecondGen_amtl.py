@@ -857,7 +857,7 @@ if args.mkclusran == 'y':
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         common.printlog('running random '+str(rann),logger)        
-        ranf = finaltracer+'_'+str(rann)+'_full_noPriveto_HPmapcut.ran.fits'
+        ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
         datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
         common.printlog(str(rann)+' length before join for PRIORITY '+str(len(datain)),logger=logger)
         datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
