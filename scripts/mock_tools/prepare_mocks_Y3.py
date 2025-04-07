@@ -3,11 +3,11 @@ from astropy.io import fits # Access to FITS (Flexible Image Transport System) f
 from astropy.table import Table, hstack, vstack, Column # A class to represent tables of heterogeneous data.
 import fitsio
 import numpy as np
-import os
+import os, sys
 import argparse
-import sys
+import random
 import json
-from desitarget.targetmask import obsconditions
+from desitarget.targetmask import desi_mask, bgs_mask, obsconditions
 from desimodel.footprint import is_point_in_desi
 from multiprocessing import Pool
 import time
@@ -20,6 +20,8 @@ from LSS.globals import main
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
+parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
+parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
 parser.add_argument("--mockname", help="name of mocks", default='EZmock')
 parser.add_argument("--input_mockpath", help="full directory path to input mocks",default='')
 parser.add_argument("--input_mockfile", help="mock file name",default='')
@@ -51,9 +53,19 @@ data = Table.read(args.input_mockpath+args.input_mockfile)
 if 'WEIGHT' not in data.colnames:
     data['WEIGHT'] = np.ones(data['RA'].shape[0])
 
-desitar = {'LRG':1, 'QSO': 4, 'ELG':34,'BGS': int(2**60)}
-priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
-numobs = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':1}
+desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG + desi_mask.ELG_LOP, 'BGS': desi_mask.BGS_ANY}
+#priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
+priority = {'LRG': desi_mask.LRG.priorities['UNOBS'],
+            'QSO': desi_mask.QSO.priorities['UNOBS'],
+            'ELG': desi_mask.ELG_LOP.priorities['UNOBS'],
+            'ELG_VOL': desi_mask.ELG.priorities['UNOBS'],
+            'ELG_HIP': desi_mask.LRG.priorities['UNOBS'], # same priority as LRG
+            'BGS': bgs_mask.BGS_BRIGHT.priorities['UNOBS']}
+
+numobs = {'LRG': desi_mask.LRG.numobs,
+          'ELG': desi_mask.ELG_LOP.numobs,
+          'QSO': desi_mask.QSO.numobs,
+          'BGS': bgs_mask.BGS_BRIGHT.numobs}
 norm = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':2**60}
 
 type_ = args.tracer
@@ -95,7 +107,47 @@ if args.mockname == 'EZmock' and args.nzmask == 'y':
     targets = targets[y3_nz_mask]
 
 print(len(targets),' in Y3 area')
-print('getting nobs and mask bits')
+#print('getting nobs and mask bits')
+
+# compare the projected number density between the mock and data (full_HPmap) 
+survey_lss_path = f"/dvs_ro/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.specdata}/LSScats/{args.dataversion}/"
+survey_data_file = survey_lss_path + f"{type_}_full_HPmapcut.dat.fits"
+survey_rand_file = survey_lss_path + f"{type_}_0_full_HPmapcut.ran.fits"
+data_header = fitsio.read_header(survey_data_file, ext=1)
+data_len = data_header['NAXIS2']
+
+rand_header = fitsio.read_header(survey_rand_file, ext=1)
+survey_skyarea = rand_header['NAXIS2']/2500.0    # 2500 deg^-2 is the projected number density of randoms for the catalog
+data_nden = data_len/survey_skyarea
+
+def get_mock_skyarea(tiletab, nden=2500.0):
+    # use random to estimate the sky footprint area
+    Nrand = int(4*180.0**2.0/np.pi * nden)
+    random.seed(11)
+    rand_ra = np.random.rand(Nrand) * 360.0       # random number in [0., 360) 
+    rand_phi = np.radians(rand_ra)
+    
+    rand_theta = np.arccos(1 - 2*np.random.rand(Nrand))
+    rand_dec = 90.0 - np.degrees(rand_theta)      # random number in [-90, 90)
+    selY3_rand = is_point_in_desi(tiletab, rand_ra, rand_dec)  # select points in the desired footprint
+    sky_area = np.sum(selY3_rand)/nden
+    return sky_area
+    
+mock_skyarea = get_mock_skyarea(tiletab)
+mock_nden = len(targets)/mock_skyarea
+
+nden_ratio = mock_nden/data_nden
+print("Mock/Data projected density ratio:", nden_ratio)
+
+#if nden_ratio > 1.01:
+#    print("Downsample the mock.")
+#    random.seed(17)
+#    rand_dist = np.random.rand(len(targets))
+#    downsample_rate = 1.0/nden_ratio
+#    downsample_mask = (rand_dist < downsample_rate) 
+#    targets = targets[downsample_mask]
+    
+#assert nden_ratio > 0.99, "The mock's projected number density is >1% lower than that of data."
 
 def wrapper(bid_index):
 
@@ -142,7 +194,7 @@ if 'MASKBITS' not in targets.colnames:
             targets[col] = res[col]
         del res
 
-mainp = main(tp = type_, specver = 'loa-v1')
+mainp = main(tp = type_, specver = args.specdata)
 targets = common.cutphotmask(targets, bits=mainp.imbits)
 
 
