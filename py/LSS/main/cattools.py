@@ -2363,19 +2363,19 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
     wg = np.isin(dz['TILELOCID'],gtl)
     dz = dz[wg]
     logger.info('now has '+str(len(dz))+' rows after masking bad hardware')
-
+    
     #imaging veto mask
         
-	logger.info(str(rann)+' getting mask info from original randoms ')
-	dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
-	tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] 
-	tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
-	keep = (tarf['NOBS_G']>0) & (tarf['NOBS_R']>0) & (tarf['NOBS_Z']>0)
+    logger.info(str(rann)+' getting mask info from original randoms ')
+    dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+    tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] 
+    tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+    keep = (tarf['NOBS_G']>0) & (tarf['NOBS_R']>0) & (tarf['NOBS_Z']>0)
 
-	for biti in imbits:
-		keep &= ((tarf['MASKBITS'] & 2**biti)==0)
-	logger.info('from parent randoms for initial mask, '+str(np.sum(keep))+' kept out of '+str(len(tarf)))
-	if isinstance(ebits, str):
+    for biti in imbits:
+        keep &= ((tarf['MASKBITS'] & 2**biti)==0)
+    logger.info('from parent randoms for initial mask, '+str(np.sum(keep))+' kept out of '+str(len(tarf)))
+    if isinstance(ebits, str):
         gtids = tarf['TARGETID'][keep]
         del tarf
         if 'lrg' in ebits:
@@ -2388,8 +2388,8 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
         gtids = gtids[sel_lrg]
         logger.info('applying '+ebits+' leaves '+str(len(gtids)))
     else:
-	    for biti in imbits:
-		    keep &= ((tarf['MASKBITS'] & 2**biti)==0)
+        for biti in imbits:
+            keep &= ((tarf['MASKBITS'] & 2**biti)==0)
         gtids = tarf['TARGETID'][keep]
         del tarf
         logger.info('applying extra imaging mask leaves '+str(len(gtids)))
