@@ -232,7 +232,7 @@ ta['DEC'] =tiles[selt]['DEC']
 #if mkfullr or combr:
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo))
+specf = Table(fitsio.read(specfo.replace('global','dvs_ro')))
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
