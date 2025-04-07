@@ -370,7 +370,7 @@ def doran(ii):
             maps = fitsio.read(lssmapdirout+tracer_clushp+'_mapprops_healpix_nested_nside'+str(nside)+'_S.fits')
             mapcuts = mainp.mapcuts
 
-        ct.mk_maskedran_wdup(gtl,ldirspec,ii,imbits,outf,pdir,ebits,notqso='',hpmapcut=args.hpmapcut,ftiles=None,mapn=mapn,maps=maps,mapcuts=mapcuts):        
+        ct.mk_maskedran_wdup(gtl,ldirspec,ii,imbits,outf,pdir,ebits,notqso='',hpmapcut=args.hpmapcut,ftiles=None,mapn=mapn,maps=maps,mapcuts=mapcuts)        
 
     if mkfullr:
         maxp = 3400
