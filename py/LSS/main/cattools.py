@@ -2351,8 +2351,8 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
 
     zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     logger.info('about to load '+zf)
-    dz = Table(fitsio.read(zf,columns=['LOCATION', 'TARGETID', 'RA', 'DEC', 'TILEID', 'COLLISION']))
-    logger.info('unique collision values '+str(np.unique(dz['COLLISION'])))
+    dz = Table(fitsio.read(zf,columns=['LOCATION', 'TARGETID', 'RA', 'DEC', 'TILEID']))
+    #logger.info('unique collision values '+str(np.unique(dz['COLLISION'])))
     logger.info('loaded '+zf+ ' '+str(len(dz))+' rows with columns '+str(dz.dtype.names))
 
     dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
