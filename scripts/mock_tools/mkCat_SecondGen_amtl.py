@@ -846,6 +846,9 @@ if args.mkclusran == 'y':
     tlf = fitsio.read(fl+'frac_tlobs.fits')
     common.printlog('read in frac_tlobs file',logger)
     mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
+    mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
+    badpri = mockobs['PRIORITY'] > maxp
+    bad_tlid = mockobs_tlid[badpri]
     common.printlog('read in mock obs file',logger)
     if 'BGS_BRIGHT' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
@@ -859,13 +862,15 @@ if args.mkclusran == 'y':
         common.printlog('running random '+str(rann),logger)        
         ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
         datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
-        common.printlog(str(rann)+' length before join for PRIORITY '+str(len(datain)),logger=logger)
-        datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
-        common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
-        selpri = datain['PRIORITY'] <= maxp
+        in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
+        common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
+        #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
+        #common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
+        selpri = ~np.isin(in_tlid,bad_tlid)#datain['PRIORITY'] <= maxp
         datain = datain[selpri]
         common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
         datain = unique(datain,keys=['TARGETID'])
+        common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         
 
