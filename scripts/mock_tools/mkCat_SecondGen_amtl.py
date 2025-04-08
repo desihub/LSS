@@ -361,7 +361,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         
         pota_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-DARK.fits'
         common.printlog('reading from potential assignments file '+pota_fn,logger)
-        pa = fitsio.read(pota_fn,columns=['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']))
+        pa = fitsio.read(pota_fn,columns=['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION'])
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
         sel_coll = pa['COLLISION'] == 0
         pa = pa[sel_coll]
