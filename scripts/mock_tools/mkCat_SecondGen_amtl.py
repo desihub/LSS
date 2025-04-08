@@ -383,6 +383,7 @@ if args.joindspec == 'y':
         pafn = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
         pa = Table(fitsio.read(pafn))
         common.printlog('loaded potential assignements',logger)
+    pa = Table(pa)
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
     if gtl is not None:
         goodtl = np.isin(pa['TILELOCID'], gtl)
