@@ -259,10 +259,10 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('entering altmtl',logger)
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
-    if args.simName is None:
-        fbadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
-    else:
-        sys.exit('code something to define fba directory based on simName')
+    #if args.simName is None:
+    fbadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    #else:
+    #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
     common.printlog('entering common.combtiles_wdup_altmtl for FASSIGN',logger)
