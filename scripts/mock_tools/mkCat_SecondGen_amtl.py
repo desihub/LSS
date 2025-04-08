@@ -328,31 +328,31 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
     if args.usepota == 'n':
-		pa_hdu = 'FAVAIL'
-		addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
-		if pdir == 'bright':
-			addcols.append('BGS_TARGET')
-			addcols.append('R_MAG_ABS')
-			addcols.append('G_R_OBS')
-			addcols.append('G_R_REST')
-		#pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
-		tl = []    
-		tls = tiles['TILEID']
-		if args.par == 'n':
-			for tile in tiles['TILEID']:
-				fa = _get_fa(tile)
-				tl.append(fa)
-		if args.par == 'y':
-			#doesn't seem to work within function
-			from concurrent.futures import ProcessPoolExecutor
-			
-			with ProcessPoolExecutor() as executor:
-				for fa in executor.map(_get_fa, list(tls)):
-					tl.append(fa)
-			
-		pa = vstack(tl)
-		del tl
-		common.printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
+        pa_hdu = 'FAVAIL'
+        addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
+        if pdir == 'bright':
+            addcols.append('BGS_TARGET')
+            addcols.append('R_MAG_ABS')
+            addcols.append('G_R_OBS')
+            addcols.append('G_R_REST')
+        #pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
+        tl = []    
+        tls = tiles['TILEID']
+        if args.par == 'n':
+            for tile in tiles['TILEID']:
+                fa = _get_fa(tile)
+                tl.append(fa)
+        if args.par == 'y':
+            #doesn't seem to work within function
+            from concurrent.futures import ProcessPoolExecutor
+            
+            with ProcessPoolExecutor() as executor:
+                for fa in executor.map(_get_fa, list(tls)):
+                    tl.append(fa)
+            
+        pa = vstack(tl)
+        del tl
+        common.printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
         tar_in = fitsio.read(tarf, columns=addcols)
         pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
         common.printlog('completed join to target info',logger)
@@ -397,18 +397,18 @@ if args.joindspec == 'y':
 
     common.printlog('finished join',logger)
     if args.usepota == 'n':#when using precomputed potential assignments, collisions are masked above
-		if not os.path.isfile(fcoll):
-			common.printlog('finding collisions',logger)
-			fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
-			#fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
-			fcoll = mocktools.create_collision_from_pota(fin, fcoll)
-		else:
-			common.printlog('collision file already exist '+ fcoll,logger)
-	
-		coll = Table(fitsio.read(fcoll))
-		common.printlog('length before masking collisions '+str(len(tj)),logger)
-		tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
-		common.printlog('length after masking collisions '+str(len(tj)),logger)
+        if not os.path.isfile(fcoll):
+            common.printlog('finding collisions',logger)
+            fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
+            #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
+            fcoll = mocktools.create_collision_from_pota(fin, fcoll)
+        else:
+            common.printlog('collision file already exist '+ fcoll,logger)
+    
+        coll = Table(fitsio.read(fcoll))
+        common.printlog('length before masking collisions '+str(len(tj)),logger)
+        tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
+        common.printlog('length after masking collisions '+str(len(tj)),logger)
 
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
     common.write_LSS_scratchcp(tj,outfs,logger=logger)
