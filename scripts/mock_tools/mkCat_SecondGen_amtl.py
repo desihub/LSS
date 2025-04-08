@@ -53,11 +53,12 @@ parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cu
 parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
-parser.add_argument("--simName", help="base directory of AltMTL mock",default=None)
+parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
 parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
+parser.add_argument("--usepota", help="use the already calculated potential assignments file instead of combining fiberassign files",default='n')
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
@@ -259,7 +260,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     if args.simName is None:
-        fbadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+        fbadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     else:
         sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
@@ -272,7 +273,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('size of tiles '+ str(len(tiles)),logger)
     
     
-    tids = fitsio.read(tarf,columns=['TARGETID'])['TARGETID']
+    if args.usepota == 'n': #should not be necessary if using already created potential assignments
+        tids = fitsio.read(tarf,columns=['TARGETID'])['TARGETID']
     #pa_hdu = 'FASSIGN'
     def _get_fa(tile):
         fadate = common.return_altmtl_fba_fadate(tile)
@@ -325,41 +327,47 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
+    if args.usepota == 'n':
+		pa_hdu = 'FAVAIL'
+		addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
+		if pdir == 'bright':
+			addcols.append('BGS_TARGET')
+			addcols.append('R_MAG_ABS')
+			addcols.append('G_R_OBS')
+			addcols.append('G_R_REST')
+		#pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
+		tl = []    
+		tls = tiles['TILEID']
+		if args.par == 'n':
+			for tile in tiles['TILEID']:
+				fa = _get_fa(tile)
+				tl.append(fa)
+		if args.par == 'y':
+			#doesn't seem to work within function
+			from concurrent.futures import ProcessPoolExecutor
+			
+			with ProcessPoolExecutor() as executor:
+				for fa in executor.map(_get_fa, list(tls)):
+					tl.append(fa)
+			
+		pa = vstack(tl)
+		del tl
+		common.printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
+        tar_in = fitsio.read(tarf, columns=addcols)
+        pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
+        common.printlog('completed join to target info',logger)
 
-    pa_hdu = 'FAVAIL'
-    addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
-    if pdir == 'bright':
-        addcols.append('BGS_TARGET')
-        addcols.append('R_MAG_ABS')
-        addcols.append('G_R_OBS')
-        addcols.append('G_R_REST')
-    #pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
-    tl = []    
-    tls = tiles['TILEID']
-    if args.par == 'n':
-        for tile in tiles['TILEID']:
-            fa = _get_fa(tile)
-            tl.append(fa)
-    if args.par == 'y':
-        #doesn't seem to work within function
-        from concurrent.futures import ProcessPoolExecutor
+    else:
         
-        with ProcessPoolExecutor() as executor:
-            for fa in executor.map(_get_fa, list(tls)):
-                tl.append(fa)
-        
-    pa = vstack(tl)
-    del tl
-    common.printlog('size combitles for ' + pa_hdu+' , '+str(len(pa)),logger=logger)
-    tar_in = fitsio.read(tarf, columns=addcols)
-    pa = join(pa, tar_in, keys=['TARGETID'],join_type='left')
-    #pa['ZWARN'] = pa['ZWARN'].filled(999999)
-    #sel = pa['ZWARN'] == 999999
-    #common.printlog('number with no assignments '+str(np.sum(sel))+' total number '+str(len(pa)),logger=logger)
-    #print(len(dat_comb))
-    common.printlog('completed join to target info',logger)
-    outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')
-    
+        pota_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-DARK.fits'
+        common.printlog('reading from potential assignments file '+pota_fn,logger)
+        pa = fitsio.read(pota_fn,columns=['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']))
+        common.printlog('read '+str(len(pa))+' potential assignments',logger)
+        sel_coll = pa['COLLISION'] == 0
+        pa = pa[sel_coll]
+        common.printlog(str(len(pa))+' left after removing collisions')
+
+    outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')   
     common.write_LSS_scratchcp(pa,outf,logger=logger)
 
 
@@ -388,19 +396,19 @@ if args.joindspec == 'y':
     common.printlog('number with no assignments '+str(np.sum(sel))+' total number '+str(len(tj)),logger=logger)
 
     common.printlog('finished join',logger)
-    
-    if not os.path.isfile(fcoll):
-        common.printlog('finding collisions',logger)
-        fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
-        #fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
-        fcoll = mocktools.create_collision_from_pota(fin, fcoll)
-    else:
-        common.printlog('collision file already exist '+ fcoll,logger)
-
-    coll = Table(fitsio.read(fcoll))
-    common.printlog('length before masking collisions '+str(len(tj)),logger)
-    tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
-    common.printlog('length after masking collisions '+str(len(tj)),logger)
+    if args.usepota == 'n':#when using precomputed potential assignments, collisions are masked above
+		if not os.path.isfile(fcoll):
+			common.printlog('finding collisions',logger)
+			fin = os.path.join(args.targDir, 'mock%d' %mocknum, 'pota-' + pr + '.fits')
+			#fin = os.path.join('/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit','mock%d' %mocknum, 'pota-' + pr + '.fits')
+			fcoll = mocktools.create_collision_from_pota(fin, fcoll)
+		else:
+			common.printlog('collision file already exist '+ fcoll,logger)
+	
+		coll = Table(fitsio.read(fcoll))
+		common.printlog('length before masking collisions '+str(len(tj)),logger)
+		tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
+		common.printlog('length after masking collisions '+str(len(tj)),logger)
 
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
     common.write_LSS_scratchcp(tj,outfs,logger=logger)
