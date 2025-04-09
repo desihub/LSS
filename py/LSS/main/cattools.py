@@ -3342,10 +3342,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         
     if tp == 'QSO' and azf != '':
         common.printlog('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)),logger)
-    try:
+    #try:
+    if dz.masked:
         dz['Z'] = dz['Z'].filled(999999)
-    except:
-        common.printlog('filling masked Z rows did not succeed',logger)
+    #except:
+    #    common.printlog('filling masked Z rows did not succeed',logger)
     selm = dz['Z'] == 999999
     common.printlog('999999s for Z '+str(len(dz[selm])),logger)
     selo = dz['LOCATION_ASSIGNED'] == True
@@ -3365,7 +3366,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     tll = []
     ti = 0
     common.printlog('getting completeness',logger)
-    dz['TILES'] = dz['TILES'].filled('0')
+    if dz.masked:
+        dz['TILES'] = dz['TILES'].filled('0')
     dz.sort('TILES')
     tlsl = dz['TILES']
     #tlsl.sort()
