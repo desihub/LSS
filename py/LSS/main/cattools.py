@@ -2342,7 +2342,7 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     del dz
 
 
-def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_HPmapcut',ftiles=None,mapn=None,maps=None,mapcuts=None):
+def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_HPmapcut',ftiles=None,mapn=None,maps=None,mapcuts=None,reccircmasks=None):
     #apply the masks to the duplicated randoms associated with the data version
     #this will make mock processing more efficient, as it should only need to be done once and then used by all mock realizations
     #gtl should contain all hardware masking
@@ -2373,6 +2373,9 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
     for biti in imbits:
         keep &= ((tarf['MASKBITS'] & 2**biti)==0)
     logger.info('from parent randoms for initial mask, '+str(np.sum(keep))+' kept out of '+str(len(tarf)))
+
+
+
     if isinstance(ebits, str):
         gtids = tarf['TARGETID'][keep]
         del tarf
@@ -2395,6 +2398,12 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
     sel_immask = np.isin(dz['TARGETID'],gtids)
     dz = dz[sel_immask]
     logger.info(str(len(dz))+ ' left in dup random file')
+
+    if reccircmasks is not None:
+        for maskfn in reccircmasks:
+            mask = common.maskcircandrec(dz,maskfn,logger=logger)
+            dz = dz[~mask]
+            logger.info(str(len(dz))+ ' left in dup random file after reccircmasks')
 
     #healpix map veto
     if hpmapcut == '_HPmapcut':
