@@ -883,10 +883,9 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         
-
         ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
-
+        del datain
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
         #ct.mkclusran(os.path.join(dirout, args.tracer + notqso + '_'), os.path.join(dirout, args.tracer + notqso + '_'), rann, rcols = rcols, nosplit='n', tsnrcut = 0, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto)#,ntilecut=ntile,ccut=ccut)
     #for clustering, make rannum start from 0
