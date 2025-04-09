@@ -869,11 +869,11 @@ if args.mkclusran == 'y':
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
-        common.printlog('running random '+str(rann),logger)        
+        common.printlog('about to read input random for '+str(rann),logger)        
         ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
-        datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])
-        in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
+        datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
+        in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
         #common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
         selpri = ~np.isin(in_tlid,bad_tlid)#datain['PRIORITY'] <= maxp
