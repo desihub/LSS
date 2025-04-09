@@ -975,7 +975,7 @@ if args.nz == 'y':
         fcd = fb_nz+'_clustering.dat.fits'
         fout = fb_nz+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,compmd=nzcompmd)
-        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
+        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
 
 
 
