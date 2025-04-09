@@ -1257,7 +1257,7 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         tlobs = Table()
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
-        write_LSS_scratchcp(tlobs,tlobs_fn)
+        write_LSS_scratchcp(tlobs,tlobs_fn,logger=logger)
         del tlobs
         fcompa = []
         fracta = []
