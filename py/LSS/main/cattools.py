@@ -3136,27 +3136,27 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if mockz:
         wg = np.ones(len(dz),dtype=bool)
         logger.info('good hardware all set to true because mock should already have been masked')
-	else:
-		specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
-		if logger is not None:
-			logger.info('reading from spec file '+specf)
-		else:
-			print(specf)
-	
-		fs = fitsio.read(specf)
-		fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,logger=logger)
-		fs = Table(fs)
-		fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
-		gtl = np.unique(fs['TILELOCID'])
-	
-		wg = np.isin(dz['TILELOCID'],gtl)
-		#print(len(dz[wg]))
-		if gtl_all is not None:
-			wg &= np.isin(dz['TILELOCID'],gtl_all)
-		if logger is not None:
-			logger.info('number at good hardware '+str(len(dz[wg])))
-		else:
-			print(len(dz[wg]))
+    else:
+        specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+        if logger is not None:
+            logger.info('reading from spec file '+specf)
+        else:
+            print(specf)
+    
+        fs = fitsio.read(specf)
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,logger=logger)
+        fs = Table(fs)
+        fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+        gtl = np.unique(fs['TILELOCID'])
+    
+        wg = np.isin(dz['TILELOCID'],gtl)
+        #print(len(dz[wg]))
+        if gtl_all is not None:
+            wg &= np.isin(dz['TILELOCID'],gtl_all)
+        if logger is not None:
+            logger.info('number at good hardware '+str(len(dz[wg])))
+        else:
+            print(len(dz[wg]))
     #print(len(dz[wg]))
     dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
     dz['GOODHARDLOC'][wg] = 1
