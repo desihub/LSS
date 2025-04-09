@@ -2389,7 +2389,7 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
         gtids = gtids[sel_lrg]
         logger.info('applying '+ebits+' leaves '+str(len(gtids)))
     else:
-        for biti in imbits:
+        for biti in ebits:
             keep &= ((tarf['MASKBITS'] & 2**biti)==0)
         gtids = tarf['TARGETID'][keep]
         del tarf
