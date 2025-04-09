@@ -3374,6 +3374,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     nts = len(tlsl)
     
     tlslu = np.unique(tlsl)
+    n_of_tiles = len(tlslu)
     laa = dz['LOCATION_ASSIGNED']
 
     i = 0
@@ -3391,7 +3392,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
                 break
 
         if ti%1000 == 0:
-            common.printlog('at tiles '+str(ti)+' of '+str(nts),logger)
+            common.printlog('at tiles '+str(ti)+' of '+str(n_of_tiles),logger)
 
         if nli == 0:
             common.printlog('no data for '+str(tlslu[ti]),logger)
