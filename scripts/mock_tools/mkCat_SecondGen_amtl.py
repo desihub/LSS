@@ -433,7 +433,7 @@ if args.tracer[:3] == 'BGS':
     maxp = 2100
 
 if args.fulld == 'y':
-    print('--- START FULLD ---')
+    common.printlog('--- START FULLD ---',logger=logger)
     mainp = main(args.tracer, args.specdata, survey=args.survey)
 
     ftar = None
@@ -442,7 +442,7 @@ if args.fulld == 'y':
 
     #collisions should already have been masked
     ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
-    print('*** END WITH FULLD ***')
+    common.printlog('*** END WITH FULLD ***',logger=logger)
     gc.collect()
 
 #    maxp = 3400
@@ -596,8 +596,8 @@ else:
 lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/LSScats/{VERMAP}/hpmaps'.format(SURVEY=survey, SPECDATA=args.specdata, VERMAP=vermap)
 
 if args.apply_veto == 'y':
-    print('--- START APPLY_VETO; including HP maps---')
-    print('applying vetos to mock ' + str(mocknum))
+    common.printlog('--- START APPLY_VETO; including HP maps---',logger=logger)
+    common.printlog('applying vetos to mock ' + str(mocknum),logger=logger)
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
     mapcuts = mainp.mapcuts
@@ -640,8 +640,8 @@ if args.apply_veto == 'y':
     else:
         in_use = fin
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
-    dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto) #returns vetoed array
-    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts)
+    dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto,logger=logger) #returns vetoed array
+    dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
     common.write_LSS_scratchcp(dataf,fout,logger=logger)
     print('data veto done, now doing randoms')
 
