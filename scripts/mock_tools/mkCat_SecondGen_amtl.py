@@ -897,7 +897,7 @@ if args.mkclusran == 'y':
 
         inds = np.arange(rannum[0], rannum[1])
         nproc = 9 #try this so doesn't run out of memory
-        if 'QSO' in finaltracer:
+        if finaltracer[:3] == 'QSO':
             nproc = 6 #OOM otherwise for DR2 footprint
         with Pool(processes=nproc) as pool:
             res = pool.map(_parfun4, inds)
