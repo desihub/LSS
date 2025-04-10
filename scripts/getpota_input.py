@@ -2,6 +2,11 @@
 Find all potential assignment and counts tiles for some input (must have data model needed for fiberassign) and some set of tiles
 Use the following environment
 source /global/common/software/desi/desi_environment.sh main
+#below might get updated, but is need as of April 10th 2025 to reproduce assignments
+export PATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/bin:$PATH
+export PYTHONPATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/py:$PYTHONPATH
+export SKYHEALPIXS_DIR=$DESI_ROOT/target/skyhealpixs/v1
+
 '''
 
 import numpy as np
