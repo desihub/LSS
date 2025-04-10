@@ -117,20 +117,27 @@ data_header = fitsio.read_header(survey_data_file, ext=1)
 data_len = data_header['NAXIS2']
 
 rand_header = fitsio.read_header(survey_rand_file, ext=1)
-survey_skyarea = rand_header['NAXIS2']/2500.0    # 2500 deg^-2 is the projected number density of randoms for the catalog
+rand_den = 2500.0         # 2500 deg^-2 is the projected number density of randoms for the catalog
+survey_skyarea = rand_header['NAXIS2']/rand_den
+print("Survey sky area [deg]:", survey_skyarea)
 data_nden = data_len/survey_skyarea
 
-def get_mock_skyarea(tiletab, nden=2500.0):
-    # use random to estimate the sky footprint area
-    Nrand = int(4*180.0**2.0/np.pi * nden)
-    random.seed(11)
-    rand_ra = np.random.rand(Nrand) * 360.0       # random number in [0., 360) 
-    rand_phi = np.radians(rand_ra)
+def get_mock_skyarea(tiletab, rand_den=2500.0):
+    survey_randfile = os.path.join(os.path.dirname(args.output_fullpathfn), f"randoms-{args.survey}-{args.specdata}-nden{rand_den}.fits")
+    try: 
+        print("Load the pre-selected randoms.")
+        Nrand = len(Table.read(survey_randfile))
+        
+    except FileNotFoundError:    
+        print("Load the full-sky randoms and select them within survey footprint.")
+        rand_file = "/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-0.fits"
+        allsky_rand = fitsio.read(rand_file, columns=['RA', 'DEC'])
+        survey_mask = is_point_in_desi(tiletab, allsky_rand['RA'], allsky_rand['DEC'])  # select points in the survey footprint
+        Nrand = np.sum(survey_mask)
+        Table(allsky_rand[survey_mask]).write(survey_randfile, overwrite=True)
     
-    rand_theta = np.arccos(1 - 2*np.random.rand(Nrand))
-    rand_dec = 90.0 - np.degrees(rand_theta)      # random number in [-90, 90)
-    selY3_rand = is_point_in_desi(tiletab, rand_ra, rand_dec)  # select points in the desired footprint
-    sky_area = np.sum(selY3_rand)/nden
+    sky_area = Nrand/rand_den
+    print("Mock skey area [deg]:", sky_area)
     return sky_area
     
 mock_skyarea = get_mock_skyarea(tiletab)
@@ -217,7 +224,7 @@ targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
 
 #change the name of the output ...
 out_file_name = args.output_fullpathfn
-common.write_LSS_scratchcp(targets,out_file_name,extname='TARGETS')
+common.write_LSS_scratchcp(targets, out_file_name, extname='TARGETS')
 fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
 fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
 
