@@ -1394,9 +1394,9 @@ def count_tiles_input_alt(fjg,logger=None):
         tl.append("-".join(tlsu.astype(str)))
        
 
-        if ti%1000000 == 0:
-            common.printlog(str(ti),logger)
-        ti += 1
+        if i%1000000 == 0:
+            common.printlog(str(i),logger)
+        
     
     tc = Table()
     tc['TARGETID'] = tids
