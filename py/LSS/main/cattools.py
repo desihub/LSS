@@ -1361,6 +1361,51 @@ def cut_specdat(dz):
 #     wfqa = ~nomtl
 #     return fs[wfqa]
 
+def count_tiles_input_alt(fjg,logger=None):
+    import LSS.common_tools as common
+    '''
+    take input array with require columns TARGETID TILEID
+    return table with unique TARGETID and the number of tiles it showed up on (NTILE), the TILES 
+    '''
+    #fjg = Table(fjg)
+    #fjg.keep_columns(['TARGETID','TILEID'])
+    #fjg = np.array(fjg)
+    #print(fjg.dtype.names)
+    tidstot = fjg['TARGETID']
+    tileidstot = fjg['TILED']
+    del fjg
+    indsort = np.argsort(tidstot)
+    tidstot = tidstot[indsort]
+    tileidstot = tileidstot[indsort]
+
+    tids,cnts = np.unique(tidstot,return_counts=True)
+    common.printlog('counting tiles, going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid',logger)
+    cntold = 0
+    tl = []
+    nt = []
+    for i in range(0,len(tids)):
+        #get indices, given array was sorted
+        cntstot = cntold + cnts[i]
+        inds = cntold,cntstot 
+        #get tileids for given targetid
+        tls = tileidstot[inds[0]:inds[1]]
+        tlsu = np.unique(tls)    
+        nt.append(len(tlsu))
+        tl.append("-".join(tlsu.astype(str)))
+       
+
+        if ti%1000000 == 0:
+            common.printlog(str(ti),logger)
+        ti += 1
+    
+    tc = Table()
+    tc['TARGETID'] = tids
+    tc['NTILE'] = nt
+    tc['TILES'] = tl
+    #tc['TILELOCIDS'] = tli
+    
+    return tc
+
 
 def count_tiles_input(fjg,logger=None):
     import LSS.common_tools as common
