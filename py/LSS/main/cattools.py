@@ -1379,7 +1379,7 @@ def count_tiles_input_alt(fjg,logger=None):
     tileidstot = tileidstot[indsort]
 
     tids,cnts = np.unique(tidstot,return_counts=True)
-    common.printlog('counting tiles, going through '+str(len(fjg))+' rows with '+str(len(tids))+' unique targetid',logger)
+    common.printlog('counting tiles, going through '+str(len(tidstot))+' rows with '+str(len(tids))+' unique targetid',logger)
     cntold = 0
     tl = []
     nt = []
