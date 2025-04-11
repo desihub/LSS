@@ -1372,7 +1372,7 @@ def count_tiles_input_alt(fjg,logger=None):
     #fjg = np.array(fjg)
     #print(fjg.dtype.names)
     tidstot = fjg['TARGETID']
-    tileidstot = fjg['TILED']
+    tileidstot = fjg['TILEID']
     del fjg
     indsort = np.argsort(tidstot)
     tidstot = tidstot[indsort]
