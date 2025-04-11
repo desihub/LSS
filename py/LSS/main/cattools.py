@@ -1387,6 +1387,7 @@ def count_tiles_input_alt(fjg,logger=None):
         #get indices, given array was sorted
         cntstot = cntold + cnts[i]
         inds = cntold,cntstot 
+        cntold = cntstot
         #get tileids for given targetid
         tls = tileidstot[inds[0]:inds[1]]
         tlsu = np.unique(tls)    
