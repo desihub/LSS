@@ -192,7 +192,7 @@ for name, val in all_maps.items():
 
 
 #Define functions
-def get_region_pixels(data, nside=256, nest=True):
+def get_region_pixels(data, nside=256, nest=True,reg_split='NS']):
     """
     Get pixel indices for N and S regions using PHOTSYS and DES mask.
 
@@ -212,11 +212,16 @@ def get_region_pixels(data, nside=256, nest=True):
     mask_bm = data['PHOTSYS'] == 'N'
     mask_des = np.in1d(data_pix, des_pixels)
     mask_decals = (~mask_bm) & (~mask_des)
-
+    
     # Pixels for each region
     pix_north = data_pix[mask_bm]
-    pix_south = data_pix[mask_des]  # strictly DES here
-    return pix_north, pix_south, mask_bm, mask_des
+    pix_south = data_pix[~mask_bm]
+    pix_des = data_pix[mask_des]  # strictly DES here
+    pix_decals = data_pix[mask_decals]
+    if reg_split == 'NS':
+        return pix_north, pix_south, mask_bm, ~mask_bm
+    if reg_split == 'NSdes':
+        return pix_north, pix_decals, pix_des, mask_bm, mask_decals,mask_des
 
 
 def compute_overdensity_north_south(
