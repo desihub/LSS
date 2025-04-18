@@ -8,8 +8,8 @@ import healpy as hp
 import treecorr
 from astropy.table import join,Table,hstack
 
-import sys
-sys.path.append("/pscratch/sd/s/shreeb/shreeb/LSS/py")
+# import sys
+# sys.path.append("/pscratch/sd/s/shreeb/shreeb/LSS/py")
 import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
@@ -62,7 +62,7 @@ all_default_map_names = [
     'BETA_RMS',
     'HI',
     'KAPPA_PLANCK',
-    'EBV',  # this one usually from get_debv()
+    'EBV',
     'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z',
     'GALDEPTH_G', 'GALDEPTH_R', 'GALDEPTH_Z',
     'PSFDEPTH_W1', 'PSFDEPTH_W2',
