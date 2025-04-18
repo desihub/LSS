@@ -192,7 +192,7 @@ for name, val in all_maps.items():
 
 
 #Define functions
-def get_region_pixels(data, nside=256, nest=True,reg_split='NS']):
+def get_region_pixels(data, nside=256, nest=True,reg_split='NS'):
     """
     Get pixel indices for N and S regions using PHOTSYS and DES mask.
 
