@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="Base directory for catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--outdir", help="Output directory for plots", default=None)
 parser.add_argument("--version", help="Catalog version", default='test')
+parser.add_argument("--extra_clusdir", help="extra directory in path for finding clustering catalogs", default='nonKP')
 parser.add_argument("--survey", help="Survey name (e.g. Y1, DA02)", default='Y1')
 parser.add_argument("--data", help="Data type (LSS or mock)", default='LSS')
 parser.add_argument("--verspec", help="Spectroscopic version", default='iron')
@@ -28,8 +29,8 @@ parser.add_argument("--norm", help="whether to normalize the maps before cross c
 args = parser.parse_args()
 
 # --- Derived paths ---
-indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats', args.version)
-outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global')
+indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats', args.version,args.extra_clusdir)
+outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global').replace(args.extra_clusdir,'')
 os.makedirs(outdir, exist_ok=True)
 
 # --- Tracer list ---
