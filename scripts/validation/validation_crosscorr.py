@@ -227,8 +227,8 @@ def get_region_pixels(data, nside=256, nest=True,reg_split='NS'):
 
 def compute_overdensity_north_south(
     catalog_dir,
-    data_filename='ELG_LOPnotqso_clustering.dat.fits',
-    random_prefix='ELG_LOPnotqso_',
+    data_filename=args.tracers+'_clustering.dat.fits',
+    random_prefix=args.tracers+'_',
     random_suffix='_clustering.ran.fits',
     n_randoms=18,
     nside=256,
@@ -316,8 +316,8 @@ def compute_overdensity_north_south(
 
 def compute_overdensity(
     catalog_dir,
-    data_filename='ELG_LOPnotqso_clustering.dat.fits',
-    random_prefix='ELG_LOPnotqso_',
+    data_filename=args.tracers+'_clustering.dat.fits',
+    random_prefix=args.tracers+'_',
     random_suffix='_clustering.ran.fits',
     n_randoms=18,
     nside=256,
