@@ -29,8 +29,8 @@ parser.add_argument("--norm", help="whether to normalize the maps before cross c
 args = parser.parse_args()
 
 # --- Derived paths ---
-indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats', args.version,args.extra_clusdir)
-outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global').replace(args.extra_clusdir,'')
+indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats')
+outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global')#.replace(args.extra_clusdir,'')
 os.makedirs(outdir, exist_ok=True)
 
 # --- Tracer list ---
@@ -509,8 +509,8 @@ for tracer in tracers:
     catalog_file = f"{tracer}_clustering.dat.fits"
 
     # Compute overdensity tracer maps
-    dens_n, dens_s, mask_n, mask_s = compute_overdensity_north_south(indir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
-    dens_ns, mask_ns = compute_overdensity(indir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
+    dens_n, dens_s, mask_n, mask_s = compute_overdensity_north_south(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
+    dens_ns, mask_ns = compute_overdensity(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
     dens_map = {'N': dens_n, 'S': dens_s, 'NS': dens_ns}
     masks = {'N': mask_n, 'S': mask_s, 'NS': mask_ns}
 
