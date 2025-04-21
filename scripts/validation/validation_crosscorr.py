@@ -23,7 +23,7 @@ parser.add_argument("--verspec", help="Spectroscopic version", default='iron')
 parser.add_argument("--tracers", help="Tracer type or 'all'", default='ELG_LOPnotqso')  # Currently works for only 1 tracer. 'all' will only return results for LRG. Needs to be updated later.
 parser.add_argument("--nran",help="number of random files to use",default=1,type=int)
 parser.add_argument("--sys_wts", help="Whether to use imaging systematic weights", default='False')
-parser.add_argument("--mapmd", help="set of maps to use",default='validate')
+parser.add_argument("--mapmd", help="set of maps to use",default='default')
 parser.add_argument("--norm", help="whether to normalize the maps before cross correlation",default='False')
 
 args = parser.parse_args()
