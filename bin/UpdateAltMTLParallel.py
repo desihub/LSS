@@ -26,10 +26,11 @@ print(args)
 def procFunc(nproc):
     altmtldir = os.path.join(args.altMTLBaseDir,'Univ{:03d}'.format(nproc))
 
-    #this step is not necessary if the tiletracker has already been updated (i.e. if the dateloop portion of the script needs to be run more than once)
-    #would be good to add a check and skip this when possible (somewhat hard to know apriori)
-    #should figure this out though, as overwriting is pretty bad, all new entries DONEFLAG = TRUE
-    if not args.skip_update:
+    #reading tile tracker to check if all entries are complete (this could be made more lightweight certainly)
+    tt = np.array(Table.read(os.path.join(altmtldir,'mainsurvey-{}obscon-TileTracker.ecsv'.format(args.obscon)))) 
+
+    #Tile tracker is only updated when the existing tile tracker has all entries complete and the skip update flag is not set
+    if not args.skip_update and np.all(tt['DONEFLAG']):
         amt.updateTileTracker(altmtldir, args.endDate)
 
     amt.loop_alt_ledger(obscon = args.obscon, survey = args.survey, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', zcatdir = '/global/cfs/cdirs/desi/spectro/redux/daily/', altmtlbasedir = args.altMTLBaseDir, ndirs = None, numobs_from_ledger = True, secondary = False, getosubp = False, quickRestart = False, multiproc = True, nproc = nproc, singleDate = False, redoFA = False, mock = args.mock, targets = None, debug = False, verbose = False, reproducing = args.reproducing)
