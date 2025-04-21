@@ -29,7 +29,7 @@ parser.add_argument("--norm", help="whether to normalize the maps before cross c
 args = parser.parse_args()
 
 # --- Derived paths ---
-indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats')
+indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats',args.version)
 outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global')#.replace(args.extra_clusdir,'')
 os.makedirs(outdir, exist_ok=True)
 
