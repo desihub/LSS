@@ -153,11 +153,11 @@ if args.mapmd in ['all', 'special']:
             ranmap_lmask[pix] += 1
     sel = ranmap > 0
     lrg_mask_frac[sel] = ranmap_lmask[sel] / ranmap[sel]
-    special_maps['lrg_mask_frac'] = {'NS': lrg_mask_frac}
+    special_maps['lrg_mask_frac'] = {'S': lrg_mask_frac,'N': lrg_mask_frac}
 
     # Sagittarius stream
     sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
-    special_maps['sagittarius'] = {'NS': sag,'N':sag,'S':sag}
+    special_maps['sagittarius'] = {'S':sag}
 
 # ---------- Load EXTRA-special maps ----------
 if args.mapmd in ['all', 'extraspecial']:
@@ -165,13 +165,13 @@ if args.mapmd in ['all', 'extraspecial']:
     star_bins = ['0_10', '10_14', '14_18', '18_22']
     for b in star_bins:
         data = np.load(f'/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/stardens/stellar_density_maps_smoothed/stellar_density_map_data_{b}_smoothed.npy')
-        extraspecial_maps[f'stellar_density_{b}'] = {'NS': data}
+        extraspecial_maps[f'stellar_density_{b}'] = {'N': data,'S': data}
 
     # MWS emission line maps
     mws_maps = ['OII_3727', 'Hbeta_4861', 'OIII_4959', 'OIII_5007', 'NeIII_3869']
     mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
     for mp in mws_maps:
-        extraspecial_maps[mp] = {'NS': mwsf[mp],'N': mwsf[mp],'S': mwsf[mp]}
+        extraspecial_maps[mp] = {'N': mwsf[mp],'S': mwsf[mp]}
 
 # ---------- Combine all maps ----------
 all_maps = {}
