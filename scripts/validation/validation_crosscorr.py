@@ -587,7 +587,7 @@ for tracer in tracers:
             normtype = ''
 
         pdf_file = os.path.join(
-            outdir, f'{tracer}_{region}_{args.mapmd}_{normtype}full_validation.pdf'
+            outdir, f'crosscorr_{tracer}_{region}_{args.mapmd}_{normtype}full_validation.pdf'
         )
         axes[0,1].set_title(f"{tracer} - {region}", fontsize = 20)
         fig.tight_layout()
