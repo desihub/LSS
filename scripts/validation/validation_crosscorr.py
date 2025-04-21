@@ -157,7 +157,7 @@ if args.mapmd in ['all', 'special']:
 
     # Sagittarius stream
     sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
-    special_maps['sagittarius'] = {'NS': sag}
+    special_maps['sagittarius'] = {'NS': sag,'N':sag,'S':sag}
 
 # ---------- Load EXTRA-special maps ----------
 if args.mapmd in ['all', 'extraspecial']:
@@ -171,7 +171,7 @@ if args.mapmd in ['all', 'extraspecial']:
     mws_maps = ['OII_3727', 'Hbeta_4861', 'OIII_4959', 'OIII_5007', 'NeIII_3869']
     mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
     for mp in mws_maps:
-        extraspecial_maps[mp] = {'NS': mwsf[mp]}
+        extraspecial_maps[mp] = {'NS': mwsf[mp],'N': mwsf[mp],'S': mwsf[mp]}
 
 # ---------- Combine all maps ----------
 all_maps = {}
