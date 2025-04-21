@@ -589,7 +589,7 @@ for tracer in tracers:
         if args.sys_wts:
             str_wt = '_wsys'
         pdf_file = os.path.join(
-            outdir, f'crosscorr_{tracer}_{region}_{args.mapmd}_{normtype}full_validation{strwt}.pdf'
+            outdir, f'crosscorr_{tracer}_{region}_{args.mapmd}_{normtype}full_validation{str_wt}.pdf'
         )
         axes[0,1].set_title(f"{tracer} - {region}", fontsize = 20)
         fig.tight_layout()
