@@ -144,8 +144,6 @@ if 'mock' not in args.verspec:
 
     dirin = ldirspec+'LSScats/'+version+'/'
     LSSdir = ldirspec+'LSScats/'
-    tsnrcut = mainp.tsnrcut
-    dchi2 = mainp.dchi2
     
     nzmd = 'data'
     dirout = args.basedir_out + '/LSScats/' + version + '/'+args.KP+'/blinded/'
