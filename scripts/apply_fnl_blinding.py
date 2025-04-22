@@ -215,7 +215,7 @@ if root:
         [w0_blind,wa_blind] = w0wa[ind]
 
  
-common.printlog('doing fNL blinding',logger)
+    common.printlog('doing fNL blinding',logger)
 from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
 logger = logging.getLogger('recon')
 if root:
