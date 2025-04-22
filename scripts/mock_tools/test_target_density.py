@@ -134,6 +134,7 @@ if args.mockname == 'ab_secondgen':
 
     else:
         #abacus 2nd gen has this selection defined to split LOP/VLO
+        datat = []
         mask_LOP = mask_secondgen(nz=1, foot='Y5', nz_lop=1)
         idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
         idx_VLO = np.setdiff1d(idx_main, idx_LOP)
