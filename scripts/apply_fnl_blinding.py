@@ -39,6 +39,9 @@ import LSS.recon_tools as rectools
 from LSS.cosmodesi_io_tools import catalog_fn
 import LSS.common_tools as common
 
+from cosmoprimo.fiducial import DESI
+from cosmoprimo.utils import DistanceToRedshift
+from cosmoprimo import Cosmology
 
 
 if os.environ['NERSC_HOST'] == 'cori':
@@ -214,12 +217,37 @@ if root:
         ind = int(np.loadtxt(fn))    
         [w0_blind,wa_blind] = w0wa[ind]
 
+    #choose f_shift to compensate shift in monopole amplitude
+    cosmo_fid = DESI()
+    cosmo_shift = cosmo_fid.clone(w0_fld=w0_blind, wa_fld=wa_blind)
+
+    DM_fid = cosmo_fid.comoving_angular_distance(ztp)
+    DH_fid = 1. / cosmo_fid.hubble_function(ztp)
+
+    DM_shift = cosmo_shift.comoving_angular_distance(ztp)
+    DH_shift = 1. / cosmo_shift.hubble_function(ztp)
+
+    vol_fac =  (DM_shift**2 * DH_shift) / (DM_fid**2 * DH_fid)
+
+    #a, b, c for quadratic formula
+    a = 0.2 / bias**2
+    b = 2 / (3 * bias)
+    c = 1 - (1 + 0.2 * (args.fiducial_f / bias)**2. + 2/3 * args.fiducial_f / bias) / vol_fac
+
+    f_shift = (-b + np.sqrt(b**2. - 4.*a*c))/(2*a)
+    dfper = (f_shift - args.fiducial_f)/args.fiducial_f
+    maxfper = 0.1
+    if abs(dfper) > maxfper:
+        dfper = maxfper*dfper/abs(dfper)
+        f_shift = (1+dfper)*args.fiducial_f
+    fgrowth_blind = f_shift
+
  
     common.printlog('doing fNL blinding',logger)
 from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
 logger = logging.getLogger('recon')
 if root:
-    f_blind = 0#fgrowth_blind
+    f_blind = fgrowth_blind
     if args.get_par_mode == 'specified':
         fnl_blind = args.specified_fnl
         if fnl_blind is None:
