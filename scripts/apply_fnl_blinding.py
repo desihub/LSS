@@ -219,20 +219,20 @@ common.printlog('doing fNL blinding',logger)
 from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
 logger = logging.getLogger('recon')
 if root:
-	f_blind = fgrowth_blind
-	if args.get_par_mode == 'specified':
-		fnl_blind = args.specified_fnl
-		if fnl_blind is None:
-			sys.exit('you must provide arguments for --specified_fnl  in the specified get_par_mode')
-		fnl_blind = float(fnl_blind )
-		print('fnl value is '+str(fnl_blind))
-	else:
-		# generate blinding value from the choosen index above
-		np.random.seed(ind)
-		fnl_blind = np.random.uniform(low=-15, high=15, size=1)[0]
-	
+    f_blind = fgrowth_blind
+    if args.get_par_mode == 'specified':
+        fnl_blind = args.specified_fnl
+        if fnl_blind is None:
+            sys.exit('you must provide arguments for --specified_fnl  in the specified get_par_mode')
+        fnl_blind = float(fnl_blind )
+        print('fnl value is '+str(fnl_blind))
+    else:
+        # generate blinding value from the choosen index above
+        np.random.seed(ind)
+        fnl_blind = np.random.uniform(low=-15, high=15, size=1)[0]
+    
 if not root:
-	w0_blind, wa_blind, f_blind, fnl_blind = None, None, None, None
+    w0_blind, wa_blind, f_blind, fnl_blind = None, None, None, None
 w0_blind = mpicomm.bcast(w0_blind, root=0)
 wa_blind = mpicomm.bcast(wa_blind, root=0)
 f_blind = mpicomm.bcast(f_blind, root=0)
@@ -254,38 +254,39 @@ blinding = CutskyCatalogBlinding(cosmo_fid='DESI', cosmo_blind=cosmo_blind, bias
 #regions = ['N', 'S'] if args.reg_md == 'NS' else ['NGC', 'SGC']
 regions = ['NGC', 'SGC']
 for region in regions:
-	# path of data and randoms:
-	cat_dir = dirout
-	if args.KP == 'fNL':
-		cat_dir = dirfid
-	catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(args.maxr - args.minr))
-	data_fn = catalog_fn(**catalog_kwargs, cat_dir=cat_dir, name='data')
-	data_outfn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
-	randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=cat_dir, name='randoms')
-	if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
+    # path of data and randoms:
+    cat_dir = dirout
+    if args.KP == 'fNL':
+        cat_dir = dirfid
+    catalog_kwargs = dict(tracer=args.type, region=region, ctype='clustering', nrandoms=(args.maxr - args.minr))
+    data_fn = catalog_fn(**catalog_kwargs, cat_dir=cat_dir, name='data')
+    data_outfn = catalog_fn(**catalog_kwargs, cat_dir=dirout, name='data')
+    randoms_fn = catalog_fn(**catalog_kwargs, cat_dir=cat_dir, name='randoms')
+    if np.ndim(randoms_fn) == 0: randoms_fn = [randoms_fn]
 
-	data_positions, data_weights = None, None
-	randoms_positions, randoms_weights = None, None
-	if root:
-		logger.info('Loading {}.'.format(data_fn))
-		data = Table.read(data_fn)
-		data_positions, data_weights = [np.array(data['RA'], dtype='float64'), np.array(data['DEC'], dtype='float64'), np.array(data['Z'], dtype='float64')], data['WEIGHT']
+    data_positions, data_weights = None, None
+    randoms_positions, randoms_weights = None, None
+    if root:
+        logger.info('Loading {}.'.format(data_fn))
+        data = Table.read(data_fn)
+        data_positions, data_weights = [np.array(data['RA'], dtype='float64'), np.array(data['DEC'], dtype='float64'), np.array(data['Z'], dtype='float64')], data['WEIGHT']
 
-		logger.info('Loading {}'.format(randoms_fn))
-		randoms = vstack([Table(fitsio.read(fn)) for fn in randoms_fn])
-		randoms_positions, randoms_weights = [np.array(randoms['RA'], dtype='float64'), np.array(randoms['DEC'], dtype='float64'), np.array(randoms['Z'], dtype='float64')], randoms['WEIGHT']
+        logger.info('Loading {}'.format(randoms_fn))
+        randoms = vstack([Table(fitsio.read(fn)) for fn in randoms_fn])
+        randoms_positions, randoms_weights = [np.array(randoms['RA'], dtype='float64'), np.array(randoms['DEC'], dtype='float64'), np.array(randoms['Z'], dtype='float64')], randoms['WEIGHT']
 
-	# add fnl blinding weight to the data weight
-	new_data_weights = blinding.png(data_positions, data_weights=data_weights,
-									randoms_positions=randoms_positions, randoms_weights=randoms_weights,
-									method='data_weights', shotnoise_correction=True)
+    # add fnl blinding weight to the data weight
+    new_data_weights = blinding.png(data_positions, data_weights=data_weights,
+                                    randoms_positions=randoms_positions, randoms_weights=randoms_weights,
+                                    method='data_weights', shotnoise_correction=True)
 
-	# overwrite the data!
-	if root:
-		fnl_blind_weights = new_data_weights / data['WEIGHT']
-		data['WEIGHT'] = new_data_weights
-		data['WEIGHT_BLIND'] = fnl_blind_weights
-		common.write_LSS_scratchcp(data, data_outfn,logger=logger)
+    # overwrite the data!
+    if root:
+        fnl_blind_weights = new_data_weights / data['WEIGHT']
+        data['WEIGHT'] = new_data_weights
+        data['WEIGHT_BLIND'] = fnl_blind_weights
+        common.write_LSS_scratchcp(data, data_outfn,logger=logger)
+
     #now, adjust the random weight
     def _parfun(rannum):
         ranf_in = dirfid + args.type + notqso + reg + '_' + str(rannum) + '_clustering.ran.fits'
