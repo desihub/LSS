@@ -303,15 +303,20 @@ for region in regions:
 
         logger.info('Loading {}'.format(randoms_fn))
         randoms = vstack([Table(fitsio.read(fn)) for fn in randoms_fn])
+        
         randoms_positions, randoms_weights = [np.array(randoms['RA'], dtype='float64'), np.array(randoms['DEC'], dtype='float64'), np.array(randoms['Z'], dtype='float64')], randoms['WEIGHT']
-
+        del randoms
     # add fnl blinding weight to the data weight
     new_data_weights = blinding.png(data_positions, data_weights=data_weights,
                                     randoms_positions=randoms_positions, randoms_weights=randoms_weights,
                                     method='data_weights', shotnoise_correction=True)
 
+    
+    
     # overwrite the data!
-    if root:
+    if root:        
+        del randoms_positions
+        del randoms_weights
         fnl_blind_weights = new_data_weights / data['WEIGHT']
         data['WEIGHT'] = new_data_weights
         data['WEIGHT_BLIND'] = fnl_blind_weights
