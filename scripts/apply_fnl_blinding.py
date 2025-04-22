@@ -110,7 +110,9 @@ args = parser.parse_args()
 mpicomm = None
 if args.useMPI == 'y':
     try:
-        mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
+        from pypower import mpi
+    	mpicomm = mpi.COMM_WORLD
+        #mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
     except AttributeError:
         mpicomm = None  # non-MPI version
         sys.exit('Not in MPI mode. The fNL blinding requires MPI, the script will exit before attempting fNL blinding')
