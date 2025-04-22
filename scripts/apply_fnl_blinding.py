@@ -86,7 +86,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec", help="version for redshifts", default='loa-v1')
 parser.add_argument("--notqso", help="if y, do not include any qso targets", default='n')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)# use 1 for abacus mocks
-parser.add_argument("--maxr", help="maximum for random files, default is 1", default=1, type=int) # use 2 for abacus mocks
+parser.add_argument("--maxr", help="maximum for random files, default is 1", default=18, type=int) # use 2 for abacus mocks
 
 parser.add_argument("--get_par_mode", help="how to get the row of the file with w0/wa values", choices=['random', 'from_file','specified'],default='from_file')
 
@@ -334,4 +334,5 @@ for region in regions:
         with Pool() as pool:
             res = pool.map(_parfun, inds)
 
-common.printlog('done with fNL blinding, done with script',logger)
+if root:
+    common.printlog('done with fNL blinding, done with script',logger)
