@@ -510,11 +510,11 @@ for tracer in tracers:
 
     # Compute overdensity tracer maps
     dens_n, dens_s, mask_n, mask_s = compute_overdensity_north_south(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
-    dens_ns, mask_ns = compute_overdensity(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
-    dens_map = {'N': dens_n, 'S': dens_s, 'NS': dens_ns}
-    masks = {'N': mask_n, 'S': mask_s, 'NS': mask_ns}
+    #dens_ns, mask_ns = compute_overdensity(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
+    dens_map = {'N': dens_n, 'S': dens_s}#, 'NS': dens_ns}
+    masks = {'N': mask_n, 'S': mask_s}#, 'NS': mask_ns}
 
-    for region in ['N', 'S', 'NS']:
+    for region in ['N', 'S']#, 'NS']:
         if region not in dens_map: continue
 
         tracer_map = dens_map[region]
