@@ -115,6 +115,9 @@ print(len(data),' in tiles area')
 
 #downsampling needed for abacus
 if args.mockname == 'ab_secondgen':
+    status = data['STATUS'][()]
+    idx = np.arange(len(status))
+
     mask_main = mask_secondgen(nz=1, foot='Y5')
     idx_main = idx[(status & (mask_main))==mask_main]
 
