@@ -22,11 +22,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
 parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
-parser.add_argument("--mockname", help="name of mocks", default='EZmock')
+parser.add_argument("--mockname", help="name of mocks", default='ab_secondgen')
 parser.add_argument("--input_mockpath", help="full directory path to input mocks",default='')
 parser.add_argument("--input_mockfile", help="mock file name",default='')
-parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
-parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
 parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog", default='Z_COSMO')
 parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD",default='Z')
@@ -83,28 +81,28 @@ if args.mockname == 'ab_secondgen':
     mockpath = '/global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky'
     file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
     
-	def mask_secondgen(nz=0, foot=None, nz_lop=0):
-		if foot == 'Y1':
-			Y5 = 0
-			Y1 = 1
-		elif foot == 'Y5':
-			Y5 = 1
-			Y1 = 0
-		else:
-			Y5 = 0
-			Y1 = 0
-		return nz * (2**0) + Y5 * (2**1) + nz_lop * (2**2) + Y1 * (2**3)
-	datas = []
+    def mask_secondgen(nz=0, foot=None, nz_lop=0):
+        if foot == 'Y1':
+            Y5 = 0
+            Y1 = 1
+        elif foot == 'Y5':
+            Y5 = 1
+            Y1 = 0
+        else:
+            Y5 = 0
+            Y1 = 0
+        return nz * (2**0) + Y5 * (2**1) + nz_lop * (2**2) + Y1 * (2**3)
+    datas = []
 
-	for bins in zs[type_]:
-		print(bins)
-		thepath = os.path.join(mockpath, type_, bins, file_name.format(TYPE = type_, Z = bins, PH = "%03d" % real))
-		print('thepath')
-		print(thepath)
-		dat = fitsio.read(thepath, columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
-		mask = (dat['Z']>= zs[type_][bins][0])&(dat['Z']< zs[type_][bins][1])
-		datas.append(Table(dat[mask]))
-	data = vstack(datas)
+    for bins in zs[type_]:
+        print(bins)
+        thepath = os.path.join(mockpath, type_, bins, file_name.format(TYPE = type_, Z = bins, PH = "%03d" % real))
+        print('thepath')
+        print(thepath)
+        dat = fitsio.read(thepath, columns=['RA','DEC','Z','Z_COSMO','STATUS'])#f[1].data
+        mask = (dat['Z']>= zs[type_][bins][0])&(dat['Z']< zs[type_][bins][1])
+        datas.append(Table(dat[mask]))
+    data = vstack(datas)
 #elif conditions could be added here to properly process other kinds of inputs
 else:
     data = Table.read(args.input_mockpath+args.input_mockfile)
@@ -116,103 +114,103 @@ print(len(data),' in tiles area')
 
 #downsampling needed for abacus
 if args.mockname == 'ab_secondgen':
-	mask_main = mask_secondgen(nz=1, foot='Y5')
-	idx_main = idx[(status & (mask_main))==mask_main]
+    mask_main = mask_secondgen(nz=1, foot='Y5')
+    idx_main = idx[(status & (mask_main))==mask_main]
 
-	if type_ == 'LRG' or type_ == 'QSO':
-		ran_tot = np.random.uniform(size = len(idx_main))
-		idx_main = idx_main[(ran_tot<=downsampling[type_])]
-		data = data[idx_main]
-		data = Table(data)
-		data['DESI_TARGET'] = desitar[type_]
-		data['PRIORITY_INIT'] = priority[type_]
-		data['PRIORITY'] = priority[type_]
-		data['NUMOBS_MORE'] = numobs[type_]
-		data['NUMOBS_INIT'] = numobs[type_]
+    if type_ == 'LRG' or type_ == 'QSO':
+        ran_tot = np.random.uniform(size = len(idx_main))
+        idx_main = idx_main[(ran_tot<=downsampling[type_])]
+        data = data[idx_main]
+        data = Table(data)
+        data['DESI_TARGET'] = desitar[type_]
+        data['PRIORITY_INIT'] = priority[type_]
+        data['PRIORITY'] = priority[type_]
+        data['NUMOBS_MORE'] = numobs[type_]
+        data['NUMOBS_INIT'] = numobs[type_]
 
-	else:
-		#abacus 2nd gen has this selection defined to split LOP/VLO
-		mask_LOP = mask_secondgen(nz=1, foot='Y5', nz_lop=1)
-		idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
-		idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+    else:
+        #abacus 2nd gen has this selection defined to split LOP/VLO
+        mask_LOP = mask_secondgen(nz=1, foot='Y5', nz_lop=1)
+        idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
+        idx_VLO = np.setdiff1d(idx_main, idx_LOP)
 
-		ran_lop = np.random.uniform(size = len(idx_LOP))
-		idx_LOP = idx_LOP[(ran_lop<=downsampling[type_])]
-		ran_vlo = np.random.uniform(size = len(idx_VLO))
-		idx_VLO = idx_VLO[(ran_vlo<=downsampling[type_])]
+        ran_lop = np.random.uniform(size = len(idx_LOP))
+        idx_LOP = idx_LOP[(ran_lop<=downsampling[type_])]
+        ran_vlo = np.random.uniform(size = len(idx_VLO))
+        idx_VLO = idx_VLO[(ran_vlo<=downsampling[type_])]
 
-		data_lop = Table(data[idx_LOP])
-		data_vlo = Table(data[idx_VLO])
-		
-		df_lop=data_lop.to_pandas()
-		df_vlo=data_vlo.to_pandas()
+        data_lop = Table(data[idx_LOP])
+        data_vlo = Table(data[idx_VLO])
+        
+        df_lop=data_lop.to_pandas()
+        df_vlo=data_vlo.to_pandas()
 
-		num_HIP_LOP = int(len(df_lop) * percentage_elg_hip)
-		df_HIP_LOP = df_lop.sample(n=num_HIP_LOP)
-		remaining_LOP = df_lop.drop(df_HIP_LOP.index)
-		df_HIP_LOP.reset_index(drop=True, inplace=True)
-		remaining_LOP.reset_index(drop=True, inplace=True)
+        num_HIP_LOP = int(len(df_lop) * percentage_elg_hip)
+        df_HIP_LOP = df_lop.sample(n=num_HIP_LOP)
+        remaining_LOP = df_lop.drop(df_HIP_LOP.index)
+        df_HIP_LOP.reset_index(drop=True, inplace=True)
+        remaining_LOP.reset_index(drop=True, inplace=True)
 
-		num_HIP_VLO = int(len(df_vlo) * percentage_elg_hip)
-		df_HIP_VLO = df_vlo.sample(n=num_HIP_VLO)
-		remaining_VLO = df_vlo.drop(df_HIP_VLO.index)
-		df_HIP_VLO.reset_index(drop=True, inplace=True)
-		remaining_VLO.reset_index(drop=True, inplace=True)
+        num_HIP_VLO = int(len(df_vlo) * percentage_elg_hip)
+        df_HIP_VLO = df_vlo.sample(n=num_HIP_VLO)
+        remaining_VLO = df_vlo.drop(df_HIP_VLO.index)
+        df_HIP_VLO.reset_index(drop=True, inplace=True)
+        remaining_VLO.reset_index(drop=True, inplace=True)
 
-		remaining_LOP['PRIORITY_INIT'] = 3100
-		remaining_LOP['PRIORITY'] = 3100
-		remaining_LOP['DESI_TARGET'] = 2**5 + 2**1
+        remaining_LOP['PRIORITY_INIT'] = 3100
+        remaining_LOP['PRIORITY'] = 3100
+        remaining_LOP['DESI_TARGET'] = 2**5 + 2**1
 
 
-		remaining_VLO['PRIORITY_INIT'] = 3000
-		remaining_VLO['PRIORITY'] = 3000
-		remaining_VLO['DESI_TARGET'] = 2**7 + 2**1
+        remaining_VLO['PRIORITY_INIT'] = 3000
+        remaining_VLO['PRIORITY'] = 3000
+        remaining_VLO['DESI_TARGET'] = 2**7 + 2**1
 
-		df_HIP_LOP['PRIORITY_INIT'] = 3200
-		df_HIP_LOP['PRIORITY'] = 3200
-		df_HIP_LOP['DESI_TARGET'] = 2**6 + 2**1 + 2**5
+        df_HIP_LOP['PRIORITY_INIT'] = 3200
+        df_HIP_LOP['PRIORITY'] = 3200
+        df_HIP_LOP['DESI_TARGET'] = 2**6 + 2**1 + 2**5
 
-		df_HIP_VLO['PRIORITY_INIT'] = 3200
-		df_HIP_VLO['PRIORITY'] = 3200
-		df_HIP_VLO['DESI_TARGET'] = 2**6 + 2**1 + 2**7
+        df_HIP_VLO['PRIORITY_INIT'] = 3200
+        df_HIP_VLO['PRIORITY'] = 3200
+        df_HIP_VLO['DESI_TARGET'] = 2**6 + 2**1 + 2**7
 
-		remaining_LOP['NUMOBS_MORE'] = numobs[type_]
-		remaining_LOP['NUMOBS_INIT'] = numobs[type_]
-		remaining_VLO['NUMOBS_MORE'] = numobs[type_]
-		remaining_VLO['NUMOBS_INIT'] = numobs[type_]
-		df_HIP_LOP['NUMOBS_MORE'] = numobs[type_]
-		df_HIP_LOP['NUMOBS_INIT'] = numobs[type_]
-		df_HIP_VLO['NUMOBS_MORE'] = numobs[type_]
-		df_HIP_VLO['NUMOBS_INIT'] = numobs[type_]
+        remaining_LOP['NUMOBS_MORE'] = numobs[type_]
+        remaining_LOP['NUMOBS_INIT'] = numobs[type_]
+        remaining_VLO['NUMOBS_MORE'] = numobs[type_]
+        remaining_VLO['NUMOBS_INIT'] = numobs[type_]
+        df_HIP_LOP['NUMOBS_MORE'] = numobs[type_]
+        df_HIP_LOP['NUMOBS_INIT'] = numobs[type_]
+        df_HIP_VLO['NUMOBS_MORE'] = numobs[type_]
+        df_HIP_VLO['NUMOBS_INIT'] = numobs[type_]
 
-		datat.append(Table.from_pandas(remaining_LOP))
-		datat.append(Table.from_pandas(remaining_VLO))
-		datat.append(Table.from_pandas(df_HIP_LOP))
-		datat.append(Table.from_pandas(df_HIP_VLO))
-		data = vstack(datat)
+        datat.append(Table.from_pandas(remaining_LOP))
+        datat.append(Table.from_pandas(remaining_VLO))
+        datat.append(Table.from_pandas(df_HIP_LOP))
+        datat.append(Table.from_pandas(df_HIP_VLO))
+        data = vstack(datat)
         del datat
 
 else:
-	data['DESI_TARGET'] = desitar[type_]
-	data['PRIORITY_INIT'] = priority[type_]
-	data['PRIORITY'] = priority[type_]
-	if type_ == 'ELG':
-		if args.ELGsplit == 'y':
-			sel_LOP = data[args.ELGtpcol] == 1 #assuming that the input mocks have set the LOP sample to 1 for this column
-			data['DESI_TARGET'][~sel_LOP] = 2+2**7
-			data['PRIORITY_INIT'][~sel_LOP] = 3000
-			data['PRIORITY'][~sel_LOP] = 3000
-			data['DESI_TARGET'][sel_LOP] = 2+2**5
-			data['PRIORITY_INIT'][sel_LOP] = 3100
-			data['PRIORITY'][sel_LOP] = 3100
+    data['DESI_TARGET'] = desitar[type_]
+    data['PRIORITY_INIT'] = priority[type_]
+    data['PRIORITY'] = priority[type_]
+    if type_ == 'ELG':
+        if args.ELGsplit == 'y':
+            sel_LOP = data[args.ELGtpcol] == 1 #assuming that the input mocks have set the LOP sample to 1 for this column
+            data['DESI_TARGET'][~sel_LOP] = 2+2**7
+            data['PRIORITY_INIT'][~sel_LOP] = 3000
+            data['PRIORITY'][~sel_LOP] = 3000
+            data['DESI_TARGET'][sel_LOP] = 2+2**5
+            data['PRIORITY_INIT'][sel_LOP] = 3100
+            data['PRIORITY'][sel_LOP] = 3100
 
-		rans = rng.random(len(data))
-		sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
-		data['DESI_TARGET'][sel_HIP] += 2**6
-		data['PRIORITY_INIT'][sel_HIP] = 3200
-		data['PRIORITY'][sel_HIP] = 3200
-		print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
-	
+        rans = rng.random(len(data))
+        sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
+        data['DESI_TARGET'][sel_HIP] += 2**6
+        data['PRIORITY_INIT'][sel_HIP] = 3200
+        data['PRIORITY'][sel_HIP] = 3200
+        print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
+    
 if type_ == 'QSO':
     sel_highz = data[args.zrsdcol] > 2.1
     data['NUMOBS_MORE'][sel_highz] = 4
