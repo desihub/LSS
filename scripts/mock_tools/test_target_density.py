@@ -81,7 +81,7 @@ if args.mockname == 'ab_secondgen':
     percentage_elg_hip = 0.1
     mockpath = '/global/cfs/cdirs/desi/cosmosim/SecondGenMocks/AbacusSummit/CutSky'
     file_name = 'cutsky_{TYPE}_{Z}_AbacusSummit_base_c000_ph{PH}.fits'
-    
+    real = 0
     def mask_secondgen(nz=0, foot=None, nz_lop=0):
         if foot == 'Y1':
             Y5 = 0
