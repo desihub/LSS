@@ -235,7 +235,7 @@ obsdens = len(obsdata)/obsarea
 mdens = len(data)/area
 
 print('The mock target density for '+type_+' is '+str(round(mdens,3)))
-print('The mock target density for '+type_+' is '+str(round(obsdens,3)))
+print('The data target density for '+type_+' is '+str(round(obsdens,3)))
 
 if type_ == 'ELG' and args.ELGsplit == 'y':
     sel_mock = (data['DESI_TARGET'] & 2**7) > 0
@@ -243,12 +243,12 @@ if type_ == 'ELG' and args.ELGsplit == 'y':
     obsdens = np.sum(sel_obs)/obsarea
     mdens = np.sum(sel_mock)/area
     print('The mock target density for ELG_VLO is '+str(round(mdens,3)))
-    print('The mock target density for ELG_VLO is '+str(round(obsdens,3)))
+    print('The data target density for ELG_VLO is '+str(round(obsdens,3)))
     sel_mock = (data['DESI_TARGET'] & 2**5) > 0
     sel_obs = (obsdata['DESI_TARGET'] & 2**5) > 0
     obsdens = np.sum(sel_obs)/obsarea
     mdens = np.sum(sel_mock)/area
     print('The mock target density for ELG_LOP is '+str(round(mdens,3)))
-    print('The mock target density for ELG_LOP is '+str(round(obsdens,3)))
+    print('The data target density for ELG_LOP is '+str(round(obsdens,3)))
 
 #put in something to make plots as function of z
