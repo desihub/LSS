@@ -47,6 +47,7 @@ tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/
 #just using 1 random file for now
 ranf = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/rands_intiles_nomask_0.fits'
 if not os.path.isfile(ranf):
+    print('did not find '+ranf+', will make it')
     input_ran = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-0.fits',columns=['RA','DEC'])
     sel_tiles = is_point_in_desi(tiletab,input_ran['RA'],input_ran['DEC'])
     input_ran = input_ran[sel_tiles]
