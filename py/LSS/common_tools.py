@@ -740,7 +740,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ft['NZ'] = nl
     #fd['NZ'] = nl
     fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
+    #AJR is unsure why multiply these three here rather than use the original 'WEIGHT'...
     fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
+    cols = list(fd.dtype.names)
+    if 'WEIGHT_BLIND' in cols:
+        fd['WEIGHT'] *= fd['WEIGHT_BLIND']
     #ff['LSS'].insert_column('NZ',nl)
     print(np.min(nl),np.max(nl))
 
@@ -786,6 +790,10 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
         if compmd == 'ran':
             wt *= fd['FRAC_TLOBS_TILES']
+        cols = list(fd.dtype.names)
+        if 'WEIGHT_BLIND' in cols:
+            wt *= fd['WEIGHT_BLIND']
+
         wtfac = np.ones(len(fd))
         sel = wt > 0
         wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
