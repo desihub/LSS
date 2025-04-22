@@ -324,6 +324,7 @@ for region in regions:
 
         #now, adjust the random weight
         def _parfun(rannum):
+            common.printlog('doing random '+str(rannum),logger)
             ranf_in = dirfid + args.type + notqso +'_'+ region + '_' + str(rannum) + '_clustering.ran.fits'
             ranf_out = dirout + args.type + notqso +'_'+ region + '_' + str(rannum) + '_clustering.ran.fits'
             rans = fitsio.read(ranf_in)
