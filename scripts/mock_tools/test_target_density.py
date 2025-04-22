@@ -216,11 +216,6 @@ else:
         data['PRIORITY'][sel_HIP] = 3200
         print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
     
-if type_ == 'QSO':
-    sel_highz = data[args.zrsdcol] > 2.1
-    data['NUMOBS_MORE'][sel_highz] = 4
-    data['NUMOBS_INIT'][sel_highz] = 4
-    print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
 
 
 obstype = type_
