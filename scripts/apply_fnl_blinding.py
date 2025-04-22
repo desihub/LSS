@@ -219,7 +219,7 @@ if root:
 from mockfactory.blinding import get_cosmo_blind, CutskyCatalogBlinding
 logger = logging.getLogger('recon')
 if root:
-    f_blind = fgrowth_blind
+    f_blind = 0#fgrowth_blind
     if args.get_par_mode == 'specified':
         fnl_blind = args.specified_fnl
         if fnl_blind is None:
