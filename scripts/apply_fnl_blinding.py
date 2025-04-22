@@ -111,7 +111,7 @@ mpicomm = None
 if args.useMPI == 'y':
     try:
         from pypower import mpi
-    	mpicomm = mpi.COMM_WORLD
+        mpicomm = mpi.COMM_WORLD
         #mpicomm = pyrecon.mpi.COMM_WORLD  # MPI version
     except AttributeError:
         mpicomm = None  # non-MPI version
