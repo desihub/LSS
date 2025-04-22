@@ -16,20 +16,21 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="Base directory for catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--outdir", help="Output directory for plots", default=None)
 parser.add_argument("--version", help="Catalog version", default='test')
+parser.add_argument("--extra_clusdir", help="extra directory in path for finding clustering catalogs", default='/nonKP')
 parser.add_argument("--survey", help="Survey name (e.g. Y1, DA02)", default='Y1')
 parser.add_argument("--data", help="Data type (LSS or mock)", default='LSS')
 parser.add_argument("--verspec", help="Spectroscopic version", default='iron')
 parser.add_argument("--tracers", help="Tracer type or 'all'", default='ELG_LOPnotqso')  # Currently works for only 1 tracer. 'all' will only return results for LRG. Needs to be updated later.
 parser.add_argument("--nran",help="number of random files to use",default=1,type=int)
-parser.add_argument("--sys_wts", help="Whether to use imaging systematic weights", default='False')
-parser.add_argument("--mapmd", help="set of maps to use",default='validate')
-parser.add_argument("--norm", help="whether to normalize the maps before cross correlation",default='False')
+parser.add_argument("--sys_wts", help="Whether to use imaging systematic weights", default=False,type=bool)
+parser.add_argument("--mapmd", help="set of maps to use",default='default')
+parser.add_argument("--norm", help="whether to normalize the maps before cross correlation",default=False,type=bool)
 
 args = parser.parse_args()
 
 # --- Derived paths ---
-indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats', args.version)
-outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global')
+indir = os.path.join(args.basedir, args.survey, args.data, args.verspec, 'LSScats',args.version)
+outdir = args.outdir or os.path.join(indir, 'plots/imaging/').replace('dvs_ro', 'global')#.replace(args.extra_clusdir,'')
 os.makedirs(outdir, exist_ok=True)
 
 # --- Tracer list ---
@@ -152,11 +153,11 @@ if args.mapmd in ['all', 'special']:
             ranmap_lmask[pix] += 1
     sel = ranmap > 0
     lrg_mask_frac[sel] = ranmap_lmask[sel] / ranmap[sel]
-    special_maps['lrg_mask_frac'] = {'NS': lrg_mask_frac}
+    special_maps['lrg_mask_frac'] = {'S': lrg_mask_frac,'N': lrg_mask_frac}
 
     # Sagittarius stream
     sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
-    special_maps['sagittarius'] = {'NS': sag}
+    special_maps['sagittarius'] = {'S':sag}
 
 # ---------- Load EXTRA-special maps ----------
 if args.mapmd in ['all', 'extraspecial']:
@@ -164,13 +165,13 @@ if args.mapmd in ['all', 'extraspecial']:
     star_bins = ['0_10', '10_14', '14_18', '18_22']
     for b in star_bins:
         data = np.load(f'/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/stardens/stellar_density_maps_smoothed/stellar_density_map_data_{b}_smoothed.npy')
-        extraspecial_maps[f'stellar_density_{b}'] = {'NS': data}
+        extraspecial_maps[f'stellar_density_{b}'] = {'N': data,'S': data}
 
     # MWS emission line maps
     mws_maps = ['OII_3727', 'Hbeta_4861', 'OIII_4959', 'OIII_5007', 'NeIII_3869']
     mwsf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/mws_emline_maps/MWS_emission_line_fluxes_combined.fits')
     for mp in mws_maps:
-        extraspecial_maps[mp] = {'NS': mwsf[mp]}
+        extraspecial_maps[mp] = {'N': mwsf[mp],'S': mwsf[mp]}
 
 # ---------- Combine all maps ----------
 all_maps = {}
@@ -192,7 +193,7 @@ for name, val in all_maps.items():
 
 
 #Define functions
-def get_region_pixels(data, nside=256, nest=True):
+def get_region_pixels(data, nside=256, nest=True,reg_split='NS'):
     """
     Get pixel indices for N and S regions using PHOTSYS and DES mask.
 
@@ -212,17 +213,22 @@ def get_region_pixels(data, nside=256, nest=True):
     mask_bm = data['PHOTSYS'] == 'N'
     mask_des = np.in1d(data_pix, des_pixels)
     mask_decals = (~mask_bm) & (~mask_des)
-
+    
     # Pixels for each region
     pix_north = data_pix[mask_bm]
-    pix_south = data_pix[mask_des]  # strictly DES here
-    return pix_north, pix_south, mask_bm, mask_des
+    pix_south = data_pix[~mask_bm]
+    pix_des = data_pix[mask_des]  # strictly DES here
+    pix_decals = data_pix[mask_decals]
+    if reg_split == 'NS':
+        return pix_north, pix_south, mask_bm, ~mask_bm
+    if reg_split == 'NSdes':
+        return pix_north, pix_decals, pix_des, mask_bm, mask_decals,mask_des
 
 
 def compute_overdensity_north_south(
     catalog_dir,
-    data_filename='ELG_LOPnotqso_clustering.dat.fits',
-    random_prefix='ELG_LOPnotqso_',
+    data_filename=args.tracers+'_clustering.dat.fits',
+    random_prefix=args.tracers+'_',
     random_suffix='_clustering.ran.fits',
     n_randoms=18,
     nside=256,
@@ -310,8 +316,8 @@ def compute_overdensity_north_south(
 
 def compute_overdensity(
     catalog_dir,
-    data_filename='ELG_LOPnotqso_clustering.dat.fits',
-    random_prefix='ELG_LOPnotqso_',
+    data_filename=args.tracers+'_clustering.dat.fits',
+    random_prefix=args.tracers+'_',
     random_suffix='_clustering.ran.fits',
     n_randoms=18,
     nside=256,
@@ -503,12 +509,12 @@ for tracer in tracers:
     catalog_file = f"{tracer}_clustering.dat.fits"
 
     # Compute overdensity tracer maps
-    dens_n, dens_s, mask_n, mask_s = compute_overdensity_north_south(indir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
-    dens_ns, mask_ns = compute_overdensity(indir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
-    dens_map = {'N': dens_n, 'S': dens_s, 'NS': dens_ns}
-    masks = {'N': mask_n, 'S': mask_s, 'NS': mask_ns}
+    dens_n, dens_s, mask_n, mask_s = compute_overdensity_north_south(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
+    #dens_ns, mask_ns = compute_overdensity(indir+args.extra_clusdir, data_filename=catalog_file, random_prefix=f'{tracer}_', n_randoms= args.nran, sys_wts = args.sys_wts)
+    dens_map = {'N': dens_n, 'S': dens_s}#, 'NS': dens_ns}
+    masks = {'N': mask_n, 'S': mask_s}#, 'NS': mask_ns}
 
-    for region in ['N', 'S', 'NS']:
+    for region in ['N', 'S']#, 'NS']:
         if region not in dens_map: continue
 
         tracer_map = dens_map[region]
@@ -579,9 +585,11 @@ for tracer in tracers:
             normtype = 'norm_'
         else:
             normtype = ''
-
+        str_wt = '_nowsys'
+        if args.sys_wts:
+            str_wt = '_wsys'
         pdf_file = os.path.join(
-            outdir, f'{tracer}_{region}_{args.mapmd}_{normtype}full_validation.pdf'
+            outdir, f'crosscorr_{tracer}_{region}_{args.mapmd}_{normtype}full_validation{str_wt}.pdf'
         )
         axes[0,1].set_title(f"{tracer} - {region}", fontsize = 20)
         fig.tight_layout()
