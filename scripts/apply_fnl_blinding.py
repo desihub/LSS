@@ -129,14 +129,14 @@ if mpicomm is None:
 root = mpicomm is None or mpicomm.rank == 0
 
 
-if root: print(args)
+if root: common.printlog(args,logger)
 
 type = args.type
 version = args.version
 specrel = args.verspec
 
 notqso = 'notqso' if (args.notqso == 'y') else ''
-if root: print('blinding catalogs for tracer type ' + type + notqso)
+if root: common.printlog('blinding catalogs for tracer type ' + type + notqso,logger)
 
 prog = 'BRIGHT' if (type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY') else 'DARK'
 progl = prog.lower()
