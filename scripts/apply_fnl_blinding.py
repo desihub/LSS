@@ -325,7 +325,7 @@ for region in regions:
 if root:
     dngc = fitsio.read(dirout+args.type+'_NGC_clustering.dat.fits')
     dsgc = fitsio.read(dirout+args.type+'_SGC_clustering.dat.fits')
-    data = np.concatenate([dngc,dsgc])
+    data = Table(np.concatenate([dngc,dsgc]))
     data.keep_columns(['TARGETID','WEIGHT_BLIND'])
     data.rename_column('TARGETID', 'TARGETID_DATA')
 
