@@ -59,7 +59,7 @@ class SV3:
         #'/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/altmtl/debug_jl/alt_mtls_run64_2/BitweightsRound2/BitweightFiles/sv3/dark/sv3bw-dark-AllTiles.fits'
         
 class main:
-    def __init__(self,tp,specver='iron',survey='main'):
+    def __init__(self,tp,specver='iron',survey='main',relax_zbounds='n'):
         self.mdir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/' #location of ledgers
         self.tdir = '/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/'#location of targets
         ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
@@ -74,6 +74,7 @@ class main:
         self.dchi2 = 0
         self.zmin = 0
         self.zmax = 4.5
+        zfloor = 0.002
         self.reccircmasks=None
         self.mapcuts = {'EBV':0.15,'STARDENS':4.4,'PSFSIZE_G':2.4,'PSFSIZE_R':2.3,'PSFSIZE_Z':2,'GALDEPTH_G':250,'GALDEPTH_R':80,'GALDEPTH_Z':30,'PSFDEPTH_W1':2}
         if tp[:3] == 'BGS':
@@ -82,8 +83,8 @@ class main:
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
             self.dchi2 = 40
-            self.zmin = 0.01
-            self.zmax = 0.5
+            self.zmin = zfloor
+            self.zmax = 0.6
             if tp == 'BGS_BRIGHT-21.5':
                 self.zmin = 0.1
                 self.zmax = 0.4
@@ -101,6 +102,8 @@ class main:
             self.tsnrcut = 80
             self.dchi2 = 0
             self.zmin = 0.8
+            if relax_zbounds == 'y':
+                self.zmin = zfloor
             self.zmax = 3.5
             self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
@@ -115,12 +118,19 @@ class main:
             self.dchi2 = 15
             self.zmin = 0.4
             self.zmax = 1.1
+            if relax_zbounds == 'y':
+                self.zmin = zfloor
+                self.zmax = 1.5
+            
         if tp[:3] == 'ELG':
             self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']#,'EBV_DIFF_MPF']
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8
             self.zmax = 1.6
+            if relax_zbounds == 'y':
+                self.zmin = zfloor
+
             self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt','/global/cfs/cdirs/desi/users/rongpu/desi_mask/elg_custom_mask_v1.1_draft.txt']
 
         if tp[:3] == 'ELG':# or tp[:3] == 'BGS':
