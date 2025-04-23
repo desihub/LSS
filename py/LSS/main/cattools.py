@@ -3257,7 +3257,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     
     common.printlog('getting tile counts',logger)
     if ftiles is None:
-        dtl = count_tiles_input(dz[wg],logger=logger)
+        dtl = count_tiles_input_alt(dz[wg],logger=logger)
     else:
         dtl = Table.read(ftiles)
     
