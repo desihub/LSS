@@ -196,9 +196,9 @@ if args.mockname == 'ab_secondgen':
         del datat
 
 else:
-    data['DESI_TARGET'] = desitar[type_]
-    data['PRIORITY_INIT'] = priority[type_]
-    data['PRIORITY'] = priority[type_]
+    data['DESI_TARGET'] = desitar[type_[:3]]
+    data['PRIORITY_INIT'] = priority[type_[:3]]
+    data['PRIORITY'] = priority[type_[:3]]
     if type_ == 'ELG':
         if args.ELGsplit == 'y':
             sel_LOP = data[args.ELGtpcol] == 1 #assuming that the input mocks have set the LOP sample to 1 for this column
