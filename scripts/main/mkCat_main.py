@@ -1365,8 +1365,10 @@ if args.nz == 'y':
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
+        zmu = (zmin//dz)*dz #make sure some integer multiple of dz
+        common.printlog('minimum z used in n(z) calc is '+str(zmu),logger)
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmu,zmax=zmax,compmd=nzcompmd)
+        common.addnbar(fb,bs=dz,zmin=zmu,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
 
 if args.addNtileweight2full == 'y':
     froot = dirout+tracer_clus
