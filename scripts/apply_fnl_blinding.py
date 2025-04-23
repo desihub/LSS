@@ -322,23 +322,33 @@ for region in regions:
         data['WEIGHT_BLIND'] = fnl_blind_weights
         common.write_LSS_scratchcp(data, data_outfn,logger=logger)
 
-        #now, adjust the random weight
-        def _parfun(rannum):
-            common.printlog('doing random '+str(rannum),logger)
-            ranf_in = dirfid + args.type + notqso +'_'+ region + '_' + str(rannum) + '_clustering.ran.fits'
-            ranf_out = dirout + args.type + notqso +'_'+ region + '_' + str(rannum) + '_clustering.ran.fits'
-            rans = fitsio.read(ranf_in)
-            data.keep_columns(['TARGETID','WEIGHT_BLIND'])
-            data.rename_column('TARGETID', 'TARGETID_DATA')
-            rans = join(rans,data,keys=['TARGETID_DATA'])
-            rans['WEIGHT'] *= rans['WEIGHT_BLIND']
-            common.write_LSS_scratchcp(rans,ranf_out,logger=logger)
-        nran = args.maxr-args.minr
-        inds = np.arange(args.minr,args.maxr)
-    
-        from multiprocessing import Pool
-        with Pool() as pool:
-            res = pool.map(_parfun, inds)
-
 if root:
+    dngc = fitsio.read(dirout+args.type+'_NGC_clustering.dat.fits')
+    dsgc = fitsio.read(dirout+args.type+'_SGC_clustering.dat.fits')
+    data = np.concatenate([dngc,dsgc])
+	data.keep_columns(['TARGETID','WEIGHT_BLIND'])
+	data.rename_column('TARGETID', 'TARGETID_DATA')
+
+    del dngc
+    del dsgc
+	#now, adjust the random weight
+	def _parfun(rannum):
+		for region in regions:
+			common.printlog('doing '+region+' random '+str(rannum),logger)
+			ranf_in = dirfid + args.type + notqso +'_'+ region + '_' + str(rannum) + '_clustering.ran.fits'
+			ranf_out = dirout + args.type + notqso +'_'+ region + '_' + str(rannum) + '_clustering.ran.fits'
+			rans = fitsio.read(ranf_in)
+			rans = join(rans,data,keys=['TARGETID_DATA'])
+			rans['WEIGHT'] *= rans['WEIGHT_BLIND']
+			common.write_LSS_scratchcp(rans,ranf_out,logger=logger)
+
+	
+	nran = args.maxr-args.minr
+	inds = np.arange(args.minr,args.maxr)
+
+	from multiprocessing import Pool
+	with Pool() as pool:
+		res = pool.map(_parfun, inds)
+
+
     common.printlog('done with fNL blinding, done with script',logger)
