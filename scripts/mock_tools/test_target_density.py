@@ -39,7 +39,7 @@ rng = np.random.default_rng(seed=int(args.ran_seed))
 
 if args.tracer in ['LRG', 'QSO', 'ELG']:
     tile = 'DARK'
-elif args.tracer == 'BGS':
+elif args.tracer[:3] == 'BGS':
     tile = 'BRIGHT'
 
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
