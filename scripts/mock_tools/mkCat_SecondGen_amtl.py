@@ -626,14 +626,18 @@ if args.apply_veto == 'y':
     #dataf = None
     if addcols == 1:
         if dataf is None:
+            common.printlog('reading '+fin,logger)
             dataf = Table(fitsio.read(fin))
         if addlrg == 1:
             lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
+            common.printlog('joining to LRG mask info',logger)
             dataf = join(dataf, lrgmask, keys=['TARGETID'])
         if joinmask == 1:                   
             targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d.fits' % mocknum), columns = readcols))
+            common.printlog('adding mask column info',logger)
             dataf = join(dataf, targf, keys=['TARGETID'])
         if 'PHOTSYS' not in colnames:
+            common.printlog('adding PHOTSYS info',logger)
             dataf = common.addNS(dataf)
         #common.write_LSS(dataf, fin)
 
