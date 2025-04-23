@@ -86,6 +86,7 @@ parser.add_argument("--extra_clus_dir", help="an optional extra layer of directo
 
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='n')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -112,6 +113,8 @@ parser.add_argument("--imsys",help="add weights for imaging systematics using eb
 parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
 parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
 parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
+parser.add_argument("--replace_syscol",help="whether to replace any existing weight_sys with new",default='n')
+parser.add_argument("--imsys_clus_fb_ran",help="add linear weight fits in fine redshift bins to randoms",default='n')
 
 
 
@@ -218,7 +221,7 @@ else:
 
 progl = prog.lower()
 
-mainp = main(args.type,args.verspec,survey=args.survey)
+mainp = main(args.type,args.verspec,survey=args.survey,relax_zbounds=args.relax_zbounds)
 mdir = mainp.mdir+progl+'/' #location of ledgers
 tdir = mainp.tdir+progl+'/' #location of targets
 #mtld = mainp.mtld
@@ -810,7 +813,11 @@ if type[:3] == 'LRG':
     if args.imsys_zbin == 'y':
         zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
     else:
-        zrl = [(0.4,1.1)]  
+        zrl = [(0.4,1.1)]
+    zsysmin = 0.4
+    zsysmax = 1.1
+    if args.relax_zbounds == 'y':
+        zsysmax = 1.2      
 if 'BGS_BRIGHT-' in type:
     zrl = [(0.1,0.4)]
 elif type[:3] == 'BGS':
@@ -1439,7 +1446,6 @@ if args.imsys_clus == 'y':
     common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
     if syscol in dat_sgc.colnames:
         dat_sgc.remove_column(syscol)
-
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
 
@@ -1511,32 +1517,76 @@ if args.imsys_clus_fb == 'y':
         #seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
         dz = 0.1
-        zm = zmin
+        zm = zsysmin
         zx = zm + dz
         fitmapsbin = fit_maps
-        while zm < zmax:
+        while zm < zsysmax:
             zx = zm + dz
             zx = round(zx,1)
             print('getting weights for region '+reg+' and '+str(zm)+'<z<'+str(zx))
             if type == 'LRG':
-                fitmapsbin = mainp.fit_maps46s
-            #    if reg == 'N':
-            #        fitmapsbin = fit_maps
-            #    else:
-            #        if zmax == 0.6:
-            #            fitmapsbin = mainp.fit_maps46s
-            #        if zmax == 0.8:
-            #            fitmapsbin = mainp.fit_maps68s
-            #        if zmax == 1.1:
-            #            fitmapsbin = mainp.fit_maps81s
-            #else:
-            #    fitmapsbin = fit_maps
+                fitmapsbin = mainp.fit_maps_all
+            else:
+                fitmapsbin = fit_maps
             use_maps = fitmapsbin
             wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linclusimsysfit.png',wtmd='clus')
+            sel = wsysl != 1
+            dat[syscol][sel] = wsysl[sel]
+
             zm = zx
             #zm += dz
             #zm = round(zm,1)
+    #attach data to NGC/SGC catalogs, write those out
+    dat.keep_columns(['TARGETID',syscol])
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
+    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
+    if args.replace_syscol == 'y':
+        dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
+        dat_ngc['WEIGHT_SYS'] = dat_ngc[syscol]
+        dat_ngc['WEIGHT'] *= dat_ngc['WEIGHT_SYS']
+    common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
+    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
+    if args.replace_syscol == 'y':
+        dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
+        dat_sgc['WEIGHT_SYS'] = dat_sgc[syscol]
+        dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
 
+    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
+
+if args.imsys_clus_fb_ran == 'y':
+    #do randoms
+    syscol = 'WEIGHT_IMLIN_CLUS'
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
+    dat_ngc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
+    fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
+    dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
+    dat = vstack([dat_sgc,dat_ngc])
+    dat.rename_column('TARGETID','TARGETID_DATA')
+    regl = ['NGC','SGC']
+    def _add2ran(rann):
+        for reg in regl:
+            ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
+            ran = Table(fitsio.read(ran_fn))
+            if syscol in ran.colnames:
+                ran.remove_column(syscol)
+            ran = join(ran,dat,keys=['TARGETID_DATA'])
+            if args.replace_syscol == 'y':
+                ran['WEIGHT'] /= ran['WEIGHT_SYS']
+                ran['WEIGHT_SYS'] = ran[syscol]
+                ran['WEIGHT'] *= ran['WEIGHT_SYS']
+            
+            common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
+
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_add2ran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _add2ran(rn)
 
 
 #if args.nz == 'y':
