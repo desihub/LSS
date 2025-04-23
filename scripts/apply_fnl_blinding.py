@@ -8,8 +8,8 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 EXAMPLE USE
 ===========
 
-srun -n 128 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/apply_fnl_blinding.py --type LRG --basedir_out /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1 --version v1.1 
-
+srun -n 64 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/apply_fnl_blinding.py --type LRG --basedir_out /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1 --version v1.1 
+(using -n 64 slightly slows down fNL blinding but greatly speeds up writing of updated randoms)
 
 '''
 
