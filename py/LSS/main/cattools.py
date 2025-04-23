@@ -3289,6 +3289,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         print('sorted')
     
     dz = unique(dz,keys=['TARGETID'],keep='last')
+    common.printlog('cut to unique targetid',logger)
     dz.remove_column('sort')
     
     if logger is not None:
