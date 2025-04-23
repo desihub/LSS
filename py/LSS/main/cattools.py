@@ -3083,7 +3083,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -3401,7 +3401,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         common.printlog('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)),logger)
     #try:
     if dz.masked:
+        common.printlog('filling masked Z rows with 999999',logger)
         dz['Z'] = dz['Z'].filled(999999)
+    else:
+        common.printlog('table is not masked, no masked rows to fill',logger)
     #except:
     #    common.printlog('filling masked Z rows did not succeed',logger)
     selm = dz['Z'] == 999999
@@ -3434,39 +3437,42 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     n_of_tiles = len(tlslu)
     laa = dz['LOCATION_ASSIGNED']
 
-    i = 0
-    while i < len(dz):
-        tls  = []
-        tlis = []
-        nli = 0
-        nai = 0
-
-        while tlsl[i] == tlslu[ti]:
-            nli += 1
-            nai += laa[i]
-            i += 1
-            if i == len(dz):
-                break
-
-        if ti%1000 == 0:
-            common.printlog('at tiles '+str(ti)+' of '+str(n_of_tiles),logger)
-
-        if nli == 0:
-            common.printlog('no data for '+str(tlslu[ti]),logger)
-            cp = 0
-        else:
-            cp = nai/nli#no/nt
-        
-        compa.append(cp)
-        tll.append(tlslu[ti])
-        ti += 1
-    comp_dicta = dict(zip(tll, compa))
-    fcompa = []
-    for tl in dz['TILES']:
-        fcompa.append(comp_dicta[tl])
-    dz['COMP_TILE'] = np.array(fcompa)
-    wc0 = dz['COMP_TILE'] == 0
-    common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
+    if calc_ctile == 'y':
+        i = 0
+        while i < len(dz):
+            tls  = []
+            tlis = []
+            nli = 0
+            nai = 0
+    
+            while tlsl[i] == tlslu[ti]:
+                nli += 1
+                nai += laa[i]
+                i += 1
+                if i == len(dz):
+                    break
+    
+            if ti%1000 == 0:
+                common.printlog('at tiles '+str(ti)+' of '+str(n_of_tiles),logger)
+    
+            if nli == 0:
+                common.printlog('no data for '+str(tlslu[ti]),logger)
+                cp = 0
+            else:
+                cp = nai/nli#no/nt
+            
+            compa.append(cp)
+            tll.append(tlslu[ti])
+            ti += 1
+        comp_dicta = dict(zip(tll, compa))
+        fcompa = []
+        for tl in dz['TILES']:
+            fcompa.append(comp_dicta[tl])
+        dz['COMP_TILE'] = np.array(fcompa)
+        wc0 = dz['COMP_TILE'] == 0
+        common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
+    else:
+        dz['COMP_TILE'] = 1
 
     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
@@ -3515,6 +3521,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
                
     
     common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if return_array == 'y':
+        return dz
 
 
 def get_ELG_SSR_tile(ff,o2c_thresh,zmin=.6,zmax=1.5,tsnrcut=80):

@@ -432,6 +432,7 @@ if args.tracer[:3] == 'LRG' or notqso == 'notqso':
 if args.tracer[:3] == 'BGS':
     maxp = 2100
 
+dataf = None
 if args.fulld == 'y':
     common.printlog('--- START FULLD ---',logger=logger)
     mainp = main(args.tracer, args.specdata, survey=args.survey)
@@ -441,8 +442,9 @@ if args.fulld == 'y':
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
-    ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
+    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
     common.printlog('*** END WITH FULLD ***',logger=logger)
+    
     gc.collect()
 
 #    maxp = 3400
@@ -621,9 +623,10 @@ if args.apply_veto == 'y':
         #sys.exit()
     if 'PHOTSYS' not in colnames:
         addcols = 1
-    dataf = None
+    #dataf = None
     if addcols == 1:
-        dataf = Table(fitsio.read(fin))
+        if dataf is None:
+            dataf = Table(fitsio.read(fin))
         if addlrg == 1:
             lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
             dataf = join(dataf, lrgmask, keys=['TARGETID'])
