@@ -36,7 +36,7 @@ plt.legend()
 plt.grid()
 if args.tracer[:3] == 'ELG':
     plt.ylim(0,0.0012)
-if args.tracer[:3] == 'BGS_BRIGHT':
+if args.tracer[:3] == 'BGS':
     plt.yscale('log')
     plt.xlim(0,0.6)
     plt.ylim(1e-5,0.15)
