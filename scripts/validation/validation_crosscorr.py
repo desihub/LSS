@@ -559,6 +559,7 @@ for tracer in tracers:
                     # A² × w_ff
                     ax2 = axes[row_idx][2]
                     ax2.plot(theta_fg, A**2 * w_ff, marker='o', color = colors[region], label = f'A = {round(A,4)}')
+                    ax2.plot(theta_fg, R_theta**2 * w_ff, marker=':^', color = colors[region], label = r'using R($\theta$) instead of A')
                     # ax2.set_xscale("log")
                     ax2.set_xlabel(r"$\theta$ (degrees)", fontsize = 14)
                     ax2.set_ylabel(r"Systematic Impact = A$^2$ × w$_{ff}$", fontsize = 14)
