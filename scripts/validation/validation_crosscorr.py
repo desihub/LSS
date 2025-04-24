@@ -514,7 +514,7 @@ for tracer in tracers:
     dens_map = {'N': dens_n, 'S': dens_s}#, 'NS': dens_ns}
     masks = {'N': mask_n, 'S': mask_s}#, 'NS': mask_ns}
 
-    for region in ['N', 'S']#, 'NS']:
+    for region in ['N', 'S']:#, 'NS']:
         if region not in dens_map: continue
 
         tracer_map = dens_map[region]
