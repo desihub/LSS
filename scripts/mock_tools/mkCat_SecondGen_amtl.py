@@ -878,7 +878,7 @@ if args.mkclusran == 'y':
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         common.printlog('about to read input random for '+str(rann),logger)        
         ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
-        datain = fitsio.read(data_dir+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
+        datain = fitsio.read(data_dir.replace('global','dvs_ro')+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
