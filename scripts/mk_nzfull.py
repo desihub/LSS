@@ -34,8 +34,8 @@ plt.xlabel('redshift')
 plt.ylabel('n(z) (h/Mpc)^3')
 plt.legend()
 plt.grid()
-if args.tracer == 'ELG_LOPnotqso':
-    plt.ylim(0,0.001)
+if args.tracer[:3] == 'ELG':
+    plt.ylim(0,0.0012)
 if args.tracer[:3] == 'BGS_BRIGHT':
     plt.yscale('log')
     plt.xlim(0,0.6)
