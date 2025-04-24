@@ -45,16 +45,16 @@ srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LS
 *
 
 ### Make clustering data and random catalogs
- # Read of input randoms (same for all tracers) takes ~ 4 minutes
- # LRG 14 minutes total 6 minutes per 9 for initial clustering catalogs (18 total); couple minutes to do NGC/SGC and nz
+ # Read of input randoms (same for all tracers) takes ~ 2 minutes (after change to use dvs_ro)
+ # LRG 12 minutes total 4 minutes per 9 for initial clustering catalogs (18 total); 4 minutes to do NGC/SGC and nz 
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer LRG  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
 *
- # ELG 18 minutes total; 7 minutes per 9 randoms for initial clustering catalogs; 4 minutes to do NGC/SGC and nz
+ # ELG 13 minutes total; 4 minutes per 9 randoms for initial clustering catalogs; 5 minutes to do NGC/SGC and nz
 *
-srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y   --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y   --mkclusdat y --mkclusran y --splitGC y --nz y --par y 09:16:10
 *
- # QSO 22 minutes total; require running 6 randoms at a time as OOM with 9; 6 minutes per 6 randoms + 4 minutes through n(z) and NGC/SGC split
+ # QSO 17 minutes total; require running 6 randoms at a time as OOM with 9; 4.3 minutes per 6 randoms + 4 minutes through n(z) and NGC/SGC split 
  # Noted needed environment change to cosmodesi
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer QSO  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
