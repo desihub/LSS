@@ -368,7 +368,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         common.printlog(str(len(pa))+' left after removing collisions',logger)
 
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits')   
-    common.write_LSS_scratchcp(pa,outf,logger=logger)
+    if args.joindspec == 'n':#no need to waste time writing out if not going to be read
+        common.write_LSS_scratchcp(pa,outf,logger=logger)
 
 
 
