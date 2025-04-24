@@ -16,9 +16,9 @@ args = parser.parse_args()
 zmax = 1.6
 zmin = 0.01
 bs = 0.01
-if type[:3] == 'QSO':
+if args.tracer[:3] == 'QSO':
 	zmax = 4
-	bs = 0.02
+	#bs = 0.02
 
 fb = args.inputdir+args.tracer
 fbr = fb
