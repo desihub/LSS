@@ -6,10 +6,10 @@ combination: 17 minutes
 full data LRG: 10 minutes
 full data QSO: 6 minutes
 full data ELG: 23 minutes
-clustering catalogs LRG: 14 minutes
-clustering catalogs ELG: 18 minutes
-clustering catalogs QSO: 22 minutes
-Total: 111 minutes; 1.87 node hours
+clustering catalogs LRG: 12 minutes
+clustering catalogs ELG: 13 minutes
+clustering catalogs QSO: 17 minutes
+Total: 99 minutes; 1.65 node hours
 
 ### Make all needed combination files (file with all repeats),
  # takes 17 minutes # 
