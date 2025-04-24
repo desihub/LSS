@@ -27,7 +27,7 @@ if args.tracer == 'BGS_BRIGHT-21.5':
 fcr = fbr+'_0_full_HPmapcut.ran.fits'
 fcd = fb+'_full_HPmapcut.dat.fits'
 
-common.mknz_full(fb, fbr, args.tracer[:3], bs=dz, zmin=zmin, zmax=zmax, write=wo)
+common.mknz_full(fb, fbr, args.tracer[:3], bs=bs, zmin=zmin, zmax=zmax, write=wo)
 nzf = np.loadtxt(fb+'_full_HPmapcut_nz.txt').transpose()
 plt.plot(nzf[0],nzf[3])
 plt.xlabel('redshift')
