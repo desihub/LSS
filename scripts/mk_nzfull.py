@@ -42,5 +42,5 @@ if args.tracer[:3] == 'BGS_BRIGHT':
     plt.ylim(1e-5,0.15)
 if args.tracer == 'BGS_BRIGHT-21.5':
     plt.xlim(0,0.5)
-plt.title(tracer_clus)
+plt.title(args.tracer_clus)
 plt.savefig(args.inputdir+'plots/'+args.tracer+'_nz.png')
