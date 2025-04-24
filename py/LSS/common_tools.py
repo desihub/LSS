@@ -510,6 +510,7 @@ def mknz_full(fcd,fcr,tp,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,write='n',md='
 
         for i in range(0,len(nz)):
             outf.write(str(zm[i])+' '+str(zl[i])+' '+str(zh[i])+' '+str(nz[i])+' '+str(zhist[0][i])+' '+str(vol[i])+'\n')
+        outf.close()
     return nz
 
 def get_cols_rzdshuf(tabd,cols_rd,cols_z):
