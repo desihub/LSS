@@ -1,0 +1,879 @@
+#top level dark time commands and timings, after improvements
+
+### Total processing time
+
+combination: 17 minutes
+full data LRG: 10 minutes
+full data QSO: 6 minutes
+full data ELG: 23 minutes
+clustering catalogs LRG: 14 minutes
+clustering catalogs ELG: 18 minutes
+clustering catalogs QSO: 22 minutes
+Total: 111 minutes; 1.87 node hours
+
+### Make all needed combination files (file with all repeats),
+ # takes 17 minutes # 
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
+*
+# breakdown
+# 2.5 for getting bad hardware mask, 3.5 for gathering/writing assignment info (16 seconds in write),
+# 3.5 minutes to load/mask/write potential assignments (1:45 in wrting; necessary?) 
+# 4.5 minutes to join potential assignments and assignments, then 3 minutes to write out
+
+### Make full data catalogs, with vetos
+#loading in data takes ~2 minutes (repeated for all types)
+#counting tiles proportional to sample size ~1:20 for LRGs
+ # LRG takes 10 minutes total
+ # full_noveto takes 6 minutes, 4 minutes on vetoing/completeness calculation
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer LRG --fulld y --apply_veto y --par y
+*
+
+ # QSO takes 6 minutes total
+ # full_noveto takes 4 minutes, 2 minutes on vetoing/completeness calculation
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer QSO --fulld y --apply_veto y --par y
+*
+
+ # ELG takes 23 minutes total
+ # full_noveto takes 17 minutes; 6 minutes on vetoing/completeness calculation
+ # 0.5 minutes on cutting to type; 3.5 minutes on join to target info; 6 minutes on tile counts; 2 minutes cutting to unique; 2 minutes joining ntile; 1 minute getting FRACZ_TILELOCID; 1 minute to writeout; 0.5 minutes other
+ # 2 minutes to join to mask info; 0.5 minutes to mask; 2 minutes on completeness; 1 minute on the healpix mask; 1 minute on writeout
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
+*
+
+### Make clustering data and random catalogs
+ # Read of input randoms (same for all tracers) takes ~ 4 minutes
+ # LRG 14 minutes total 6 minutes per 9 for initial clustering catalogs (18 total); couple minutes to do NGC/SGC and nz
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer LRG  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+*
+ # ELG 18 minutes total; 7 minutes per 9 randoms for initial clustering catalogs; 4 minutes to do NGC/SGC and nz
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y   --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+*
+ # QSO 22 minutes total; require running 6 randoms at a time as OOM with 9; 6 minutes per 6 randoms + 4 minutes through n(z) and NGC/SGC split
+ # Noted needed environment change to cosmodesi
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer QSO  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+
+
+
+#command
+#note, this step appears to be cutting to good hardware and masking collisions already. If so, make sure time isn't wasted by repeating
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y
+*
+#log output
+2025-04-03 12:51:54,470 - LSSran - INFO - --- Calculate good tiles from goodhardwARE IN DATA ---
+2025-04-03 12:52:29,716 - LSSran - INFO - number with no data 114111
+2025-04-03 12:52:29,775 - LSSran - INFO - number with bad qa 730556
+2025-04-03 12:53:14,326 - LSSran - INFO - number at bad fibers 660966
+2025-04-03 12:53:19,225 - LSSran - INFO - --- START COMBD ---
+2025-04-03 12:53:19,225 - LSSran - INFO - entering altmtl
+2025-04-03 12:53:19,225 - LSSran - INFO - entering common.combtiles_wdup_altmtl for FASSIGN
+2025-04-03 12:53:19,225 - LSSran - INFO - size of tiles 6671
+256 True
+Namespace(tracer='dark', mockver='ab_secondgen', mocknum=5, ccut=None, absmagmd='simp', base_output='/pscratch/sd/a/ajross/SecondGen/', outmd='scratch', targDir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1', simName=None, survey='DA2', specdata='loa-v1', combd='y', joindspec='y', fulld='n', fullr='n', add_gtl='y', mkHPmaps='n', add_veto='n', apply_veto='n', apply_veto_ran='n', mkclusran='n', mkclusdat='n', mkclusran_allpot='n', mkclusdat_allpot='n', start_from_full='n', mkclusran_tiles='n', mkclusdat_tiles='n', FKPfull='n', splitGC='n', nz='n', minr=0, maxr=18, par='y', notqso='n', equal_data_dens='n', nran_clus_data=4, use_map_veto='_HPmapcut', resamp='n', getFKP='n', add_bitweights=None, add_weight_ntile='n', compmd='not_altmtl', add_tlcomp='n', add_nt_misspw='n')
+2025-04-03 12:54:21,198 - LSSran - INFO - size combitles for FASSIGN , 28222949
+2025-04-03 12:56:09,352 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkassignwdup.fits
+2025-04-03 12:56:24,595 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/datcomb_darkassignwdup.fits.tmp2734271320
+2025-04-03 12:56:26,688 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkassignwdup.fits
+2025-04-03 12:56:26,688 - LSSran - INFO - checking read of column TARGETID
+2025-04-03 12:56:27,281 - LSSran - INFO - removing temp file
+2025-04-03 12:56:27,654 - LSSran - INFO - entering common.combtiles_wdup_altmtl for FAVAIL
+2025-04-03 13:05:09,720 - LSSran - INFO - size combitles for FAVAIL , 152316074
+2025-04-03 13:11:40,541 - LSSran - INFO - completed joinb to target info
+2025-04-03 13:11:40,541 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkwdup.fits
+2025-04-03 13:13:00,637 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/datcomb_darkwdup.fits.tmp9270704377
+2025-04-03 13:13:11,452 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkwdup.fits
+2025-04-03 13:13:11,452 - LSSran - INFO - checking read of column LOCATION
+2025-04-03 13:13:14,722 - LSSran - INFO - removing temp file
+2025-04-03 13:13:44,680 - LSSran - INFO - about to join assignments and potential assignments
+2025-04-03 13:20:27,196 - LSSran - INFO - finished join
+2025-04-03 13:20:27,197 - LSSran - INFO - finding collisions
+2025-04-03 13:22:34,629 - LSSran - INFO - length before masking collisions 144064990
+2025-04-03 13:26:19,882 - LSSran - INFO - length after masking collisions 139799241
+2025-04-03 13:26:19,883 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/datcomb_dark_tarspecwdup_zdone.fits
+2025-04-03 13:28:49,387 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/datcomb_dark_tarspecwdup_zdone.fits.tmp7642203587
+2025-04-03 13:29:06,830 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/datcomb_dark_tarspecwdup_zdone.fits
+2025-04-03 13:29:06,831 - LSSran - INFO - checking read of column LOCATION
+2025-04-03 13:29:10,928 - LSSran - INFO - removing temp file
+Creating collision file from pota file /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/mock5/pota-DARK.fits
+size of collisions 4550815
+closed fits file
+moved output to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/collision_dark_mock5.fits
+
+#command, takes 15 minutes
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl n --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer LRG --fulld y --apply_veto y --par y
+*
+#log output
+2025-04-04 20:54:52,363 - LSSran - INFO - --- Calculate good tiles from goodhardwARE IN DATA ---
+2025-04-04 20:55:24,892 - LSSran - INFO - number with no data 114111
+2025-04-04 20:55:24,951 - LSSran - INFO - number with bad qa 730556
+2025-04-04 20:56:11,429 - LSSran - INFO - number at bad fibers 660966
+2025-04-04 20:56:37,810 - LSSran - INFO - length before cut is 139799241, length of input cut after to type is 25947160
+2025-04-04 20:56:42,801 - LSSran - INFO - length before masking collisions 25947160
+2025-04-04 20:57:24,598 - LSSran - INFO - length after masking collisions 25947160
+2025-04-04 20:57:24,598 - LSSran - INFO - reading from spec file /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/datcomb_dark_spec_zdone.fits
+2025-04-04 21:01:24,973 - LSSran - INFO - columns after join to spec info ('LOCATION', 'FIBER', 'TARGETID', 'TILEID', 'RA', 'DEC', 'PRIORITY_INIT', 'DESI_TARGET', 'TILELOCID', 'PRIORITY', 'SUBPRIORITY', 'TRUEZ', 'RSDZ', 'ZWARN', 'ZWARN_MTL', 'PRIORITY_ASSIGNED')
+2025-04-04 21:01:27,066 - LSSran - INFO - number at good hardware 25916064
+2025-04-04 21:01:27,279 - LSSran - INFO - number assigned 5965700
+2025-04-04 21:01:27,318 - LSSran - INFO - number assigned at good priority 5965700.0
+2025-04-04 21:01:27,361 - LSSran - INFO - number assigned at good priority and good hardware 5958396.0
+2025-04-04 21:01:31,224 - LSSran - INFO - number of unique targets at assigned tilelocid: 6524286
+2025-04-04 21:01:31,225 - LSSran - INFO - getting tile counts
+2025-04-04 21:01:38,648 - LSSran - INFO - counting tiles, going through 25916064 rows with 7408469 unique targetid
+2025-04-04 21:01:38,648 - LSSran - INFO - 0
+2025-04-04 21:01:52,213 - LSSran - INFO - 1000000
+2025-04-04 21:02:05,861 - LSSran - INFO - 2000000
+2025-04-04 21:02:19,523 - LSSran - INFO - 3000000
+2025-04-04 21:02:33,151 - LSSran - INFO - 4000000
+2025-04-04 21:02:46,848 - LSSran - INFO - 5000000
+2025-04-04 21:03:00,544 - LSSran - INFO - 6000000
+2025-04-04 21:03:14,214 - LSSran - INFO - 7000000
+2025-04-04 21:03:21,758 - LSSran - INFO - about to sort
+2025-04-04 21:03:24,224 - LSSran - INFO - sorted
+2025-04-04 21:03:56,453 - LSSran - INFO - cut number assigned 5698522
+2025-04-04 21:03:56,457 - LSSran - INFO - cut number assigned at good priority 5698522
+2025-04-04 21:03:56,462 - LSSran - INFO - cut number assigned at good priority and good hardware 5697676
+2025-04-04 21:03:56,462 - LSSran - INFO - length after cutting to unique targets 7410695
+2025-04-04 21:03:56,462 - LSSran - INFO - joining to ntile info
+2025-04-04 21:04:32,248 - LSSran - INFO - filling masked Z rows did not succeed
+2025-04-04 21:04:32,263 - LSSran - INFO - 999999s for Z 0
+2025-04-04 21:04:32,997 - LSSran - INFO - unique Z for unassigned:     Z    
+---------
+0.9713858
+2025-04-04 21:04:32,997 - LSSran - INFO - length after cutting to unique targetid 7410695
+2025-04-04 21:04:32,997 - LSSran - INFO - LOCATION_ASSIGNED numbers
+2025-04-04 21:04:33,128 - LSSran - INFO - (<Column name='LOCATION_ASSIGNED' dtype='bool' length=2>
+False
+ True, array([1712173, 5698522]))
+2025-04-04 21:04:33,128 - LSSran - INFO - TILELOCID_ASSIGNED numbers
+2025-04-04 21:04:33,252 - LSSran - INFO - (<Column name='TILELOCID_ASSIGNED' dtype='bool' length=2>
+False
+ True, array([ 889157, 6521538]))
+2025-04-04 21:04:33,253 - LSSran - INFO - getting completeness
+2025-04-04 21:04:40,384 - LSSran - INFO - at tiles 0 of 7410695
+2025-04-04 21:04:40,471 - LSSran - INFO - at tiles 1000 of 7410695
+2025-04-04 21:04:40,520 - LSSran - INFO - at tiles 2000 of 7410695
+2025-04-04 21:04:40,673 - LSSran - INFO - at tiles 3000 of 7410695
+2025-04-04 21:04:40,781 - LSSran - INFO - at tiles 4000 of 7410695
+2025-04-04 21:04:40,807 - LSSran - INFO - at tiles 5000 of 7410695
+2025-04-04 21:04:40,832 - LSSran - INFO - at tiles 6000 of 7410695
+2025-04-04 21:04:40,873 - LSSran - INFO - at tiles 7000 of 7410695
+2025-04-04 21:04:40,900 - LSSran - INFO - at tiles 8000 of 7410695
+2025-04-04 21:04:40,934 - LSSran - INFO - at tiles 9000 of 7410695
+2025-04-04 21:04:40,972 - LSSran - INFO - at tiles 10000 of 7410695
+2025-04-04 21:04:41,016 - LSSran - INFO - at tiles 11000 of 7410695
+2025-04-04 21:04:41,058 - LSSran - INFO - at tiles 12000 of 7410695
+2025-04-04 21:04:41,099 - LSSran - INFO - at tiles 13000 of 7410695
+2025-04-04 21:04:41,132 - LSSran - INFO - at tiles 14000 of 7410695
+2025-04-04 21:04:41,157 - LSSran - INFO - at tiles 15000 of 7410695
+2025-04-04 21:04:41,200 - LSSran - INFO - at tiles 16000 of 7410695
+2025-04-04 21:04:41,242 - LSSran - INFO - at tiles 17000 of 7410695
+2025-04-04 21:04:41,281 - LSSran - INFO - at tiles 18000 of 7410695
+2025-04-04 21:04:41,314 - LSSran - INFO - at tiles 19000 of 7410695
+2025-04-04 21:04:41,360 - LSSran - INFO - at tiles 20000 of 7410695
+2025-04-04 21:04:41,391 - LSSran - INFO - at tiles 21000 of 7410695
+2025-04-04 21:04:41,429 - LSSran - INFO - at tiles 22000 of 7410695
+2025-04-04 21:04:41,469 - LSSran - INFO - at tiles 23000 of 7410695
+2025-04-04 21:04:41,505 - LSSran - INFO - at tiles 24000 of 7410695
+2025-04-04 21:04:41,578 - LSSran - INFO - at tiles 25000 of 7410695
+2025-04-04 21:04:41,604 - LSSran - INFO - at tiles 26000 of 7410695
+2025-04-04 21:04:41,637 - LSSran - INFO - at tiles 27000 of 7410695
+2025-04-04 21:04:41,711 - LSSran - INFO - at tiles 28000 of 7410695
+2025-04-04 21:04:41,770 - LSSran - INFO - at tiles 29000 of 7410695
+2025-04-04 21:04:41,820 - LSSran - INFO - at tiles 30000 of 7410695
+2025-04-04 21:04:41,895 - LSSran - INFO - at tiles 31000 of 7410695
+2025-04-04 21:04:41,926 - LSSran - INFO - at tiles 32000 of 7410695
+2025-04-04 21:04:41,953 - LSSran - INFO - at tiles 33000 of 7410695
+2025-04-04 21:04:42,002 - LSSran - INFO - at tiles 34000 of 7410695
+2025-04-04 21:04:42,051 - LSSran - INFO - at tiles 35000 of 7410695
+2025-04-04 21:04:42,082 - LSSran - INFO - at tiles 36000 of 7410695
+2025-04-04 21:04:42,141 - LSSran - INFO - at tiles 37000 of 7410695
+2025-04-04 21:04:42,165 - LSSran - INFO - at tiles 38000 of 7410695
+2025-04-04 21:04:42,192 - LSSran - INFO - at tiles 39000 of 7410695
+2025-04-04 21:04:42,227 - LSSran - INFO - at tiles 40000 of 7410695
+2025-04-04 21:04:42,255 - LSSran - INFO - at tiles 41000 of 7410695
+2025-04-04 21:04:42,285 - LSSran - INFO - at tiles 42000 of 7410695
+2025-04-04 21:04:42,311 - LSSran - INFO - at tiles 43000 of 7410695
+2025-04-04 21:04:42,341 - LSSran - INFO - at tiles 44000 of 7410695
+2025-04-04 21:04:42,403 - LSSran - INFO - at tiles 45000 of 7410695
+2025-04-04 21:04:42,440 - LSSran - INFO - at tiles 46000 of 7410695
+2025-04-04 21:04:42,478 - LSSran - INFO - at tiles 47000 of 7410695
+2025-04-04 21:04:42,522 - LSSran - INFO - at tiles 48000 of 7410695
+2025-04-04 21:04:42,584 - LSSran - INFO - at tiles 49000 of 7410695
+2025-04-04 21:04:42,614 - LSSran - INFO - at tiles 50000 of 7410695
+2025-04-04 21:04:42,643 - LSSran - INFO - at tiles 51000 of 7410695
+2025-04-04 21:04:42,684 - LSSran - INFO - at tiles 52000 of 7410695
+2025-04-04 21:04:42,710 - LSSran - INFO - at tiles 53000 of 7410695
+2025-04-04 21:04:42,736 - LSSran - INFO - at tiles 54000 of 7410695
+2025-04-04 21:04:42,762 - LSSran - INFO - at tiles 55000 of 7410695
+2025-04-04 21:04:42,791 - LSSran - INFO - at tiles 56000 of 7410695
+2025-04-04 21:04:43,017 - LSSran - INFO - at tiles 57000 of 7410695
+2025-04-04 21:04:43,139 - LSSran - INFO - at tiles 58000 of 7410695
+2025-04-04 21:04:43,177 - LSSran - INFO - at tiles 59000 of 7410695
+2025-04-04 21:04:43,204 - LSSran - INFO - at tiles 60000 of 7410695
+2025-04-04 21:04:43,240 - LSSran - INFO - at tiles 61000 of 7410695
+2025-04-04 21:04:43,284 - LSSran - INFO - at tiles 62000 of 7410695
+2025-04-04 21:04:43,315 - LSSran - INFO - at tiles 63000 of 7410695
+2025-04-04 21:04:43,351 - LSSran - INFO - at tiles 64000 of 7410695
+2025-04-04 21:04:43,413 - LSSran - INFO - at tiles 65000 of 7410695
+2025-04-04 21:04:43,449 - LSSran - INFO - at tiles 66000 of 7410695
+2025-04-04 21:04:43,487 - LSSran - INFO - at tiles 67000 of 7410695
+2025-04-04 21:04:43,514 - LSSran - INFO - at tiles 68000 of 7410695
+2025-04-04 21:04:43,562 - LSSran - INFO - at tiles 69000 of 7410695
+2025-04-04 21:04:43,602 - LSSran - INFO - at tiles 70000 of 7410695
+2025-04-04 21:04:43,627 - LSSran - INFO - at tiles 71000 of 7410695
+2025-04-04 21:04:43,652 - LSSran - INFO - at tiles 72000 of 7410695
+2025-04-04 21:04:43,678 - LSSran - INFO - at tiles 73000 of 7410695
+2025-04-04 21:04:43,703 - LSSran - INFO - at tiles 74000 of 7410695
+2025-04-04 21:04:43,729 - LSSran - INFO - at tiles 75000 of 7410695
+2025-04-04 21:04:43,775 - LSSran - INFO - at tiles 76000 of 7410695
+2025-04-04 21:04:43,826 - LSSran - INFO - at tiles 77000 of 7410695
+2025-04-04 21:04:43,867 - LSSran - INFO - at tiles 78000 of 7410695
+2025-04-04 21:04:43,901 - LSSran - INFO - at tiles 79000 of 7410695
+2025-04-04 21:04:43,928 - LSSran - INFO - at tiles 80000 of 7410695
+2025-04-04 21:04:43,952 - LSSran - INFO - at tiles 81000 of 7410695
+2025-04-04 21:04:43,977 - LSSran - INFO - at tiles 82000 of 7410695
+2025-04-04 21:04:44,003 - LSSran - INFO - at tiles 83000 of 7410695
+2025-04-04 21:04:44,029 - LSSran - INFO - at tiles 84000 of 7410695
+2025-04-04 21:04:44,055 - LSSran - INFO - at tiles 85000 of 7410695
+2025-04-04 21:04:44,079 - LSSran - INFO - at tiles 86000 of 7410695
+2025-04-04 21:04:44,108 - LSSran - INFO - at tiles 87000 of 7410695
+2025-04-04 21:04:44,140 - LSSran - INFO - at tiles 88000 of 7410695
+2025-04-04 21:04:44,180 - LSSran - INFO - at tiles 89000 of 7410695
+2025-04-04 21:04:44,213 - LSSran - INFO - at tiles 90000 of 7410695
+2025-04-04 21:04:44,309 - LSSran - INFO - at tiles 91000 of 7410695
+2025-04-04 21:04:44,340 - LSSran - INFO - at tiles 92000 of 7410695
+2025-04-04 21:04:44,365 - LSSran - INFO - at tiles 93000 of 7410695
+2025-04-04 21:04:44,388 - LSSran - INFO - at tiles 94000 of 7410695
+2025-04-04 21:04:44,414 - LSSran - INFO - at tiles 95000 of 7410695
+2025-04-04 21:04:44,440 - LSSran - INFO - at tiles 96000 of 7410695
+2025-04-04 21:04:44,471 - LSSran - INFO - at tiles 97000 of 7410695
+2025-04-04 21:04:44,508 - LSSran - INFO - at tiles 98000 of 7410695
+2025-04-04 21:04:44,544 - LSSran - INFO - at tiles 99000 of 7410695
+2025-04-04 21:04:44,587 - LSSran - INFO - at tiles 100000 of 7410695
+2025-04-04 21:04:44,620 - LSSran - INFO - at tiles 101000 of 7410695
+2025-04-04 21:04:44,649 - LSSran - INFO - at tiles 102000 of 7410695
+2025-04-04 21:04:44,678 - LSSran - INFO - at tiles 103000 of 7410695
+2025-04-04 21:04:44,714 - LSSran - INFO - at tiles 104000 of 7410695
+2025-04-04 21:04:44,741 - LSSran - INFO - at tiles 105000 of 7410695
+2025-04-04 21:04:44,916 - LSSran - INFO - at tiles 106000 of 7410695
+2025-04-04 21:04:44,943 - LSSran - INFO - at tiles 107000 of 7410695
+2025-04-04 21:04:44,971 - LSSran - INFO - at tiles 108000 of 7410695
+2025-04-04 21:04:44,997 - LSSran - INFO - at tiles 109000 of 7410695
+2025-04-04 21:04:45,024 - LSSran - INFO - at tiles 110000 of 7410695
+2025-04-04 21:04:45,052 - LSSran - INFO - at tiles 111000 of 7410695
+2025-04-04 21:04:45,081 - LSSran - INFO - at tiles 112000 of 7410695
+2025-04-04 21:04:45,128 - LSSran - INFO - at tiles 113000 of 7410695
+2025-04-04 21:04:45,162 - LSSran - INFO - at tiles 114000 of 7410695
+2025-04-04 21:04:45,193 - LSSran - INFO - at tiles 115000 of 7410695
+2025-04-04 21:04:45,223 - LSSran - INFO - at tiles 116000 of 7410695
+2025-04-04 21:04:45,255 - LSSran - INFO - at tiles 117000 of 7410695
+2025-04-04 21:04:45,286 - LSSran - INFO - at tiles 118000 of 7410695
+2025-04-04 21:04:45,310 - LSSran - INFO - at tiles 119000 of 7410695
+2025-04-04 21:04:45,336 - LSSran - INFO - at tiles 120000 of 7410695
+2025-04-04 21:04:45,360 - LSSran - INFO - at tiles 121000 of 7410695
+2025-04-04 21:04:45,385 - LSSran - INFO - at tiles 122000 of 7410695
+2025-04-04 21:04:45,410 - LSSran - INFO - at tiles 123000 of 7410695
+2025-04-04 21:04:45,434 - LSSran - INFO - at tiles 124000 of 7410695
+2025-04-04 21:04:45,459 - LSSran - INFO - at tiles 125000 of 7410695
+2025-04-04 21:04:45,489 - LSSran - INFO - at tiles 126000 of 7410695
+2025-04-04 21:04:45,517 - LSSran - INFO - at tiles 127000 of 7410695
+2025-04-04 21:04:45,608 - LSSran - INFO - at tiles 128000 of 7410695
+2025-04-04 21:04:45,704 - LSSran - INFO - at tiles 129000 of 7410695
+2025-04-04 21:04:45,779 - LSSran - INFO - at tiles 130000 of 7410695
+2025-04-04 21:04:45,828 - LSSran - INFO - at tiles 131000 of 7410695
+2025-04-04 21:04:45,875 - LSSran - INFO - at tiles 132000 of 7410695
+2025-04-04 21:04:45,966 - LSSran - INFO - at tiles 133000 of 7410695
+2025-04-04 21:04:46,063 - LSSran - INFO - at tiles 134000 of 7410695
+2025-04-04 21:04:46,089 - LSSran - INFO - at tiles 135000 of 7410695
+2025-04-04 21:04:46,119 - LSSran - INFO - at tiles 136000 of 7410695
+2025-04-04 21:04:46,166 - LSSran - INFO - at tiles 137000 of 7410695
+2025-04-04 21:04:46,205 - LSSran - INFO - at tiles 138000 of 7410695
+2025-04-04 21:04:46,297 - LSSran - INFO - at tiles 139000 of 7410695
+2025-04-04 21:04:46,333 - LSSran - INFO - at tiles 140000 of 7410695
+2025-04-04 21:04:46,370 - LSSran - INFO - at tiles 141000 of 7410695
+2025-04-04 21:04:46,401 - LSSran - INFO - at tiles 142000 of 7410695
+2025-04-04 21:04:46,443 - LSSran - INFO - at tiles 143000 of 7410695
+2025-04-04 21:04:46,627 - LSSran - INFO - at tiles 144000 of 7410695
+2025-04-04 21:04:46,674 - LSSran - INFO - at tiles 145000 of 7410695
+2025-04-04 21:04:46,753 - LSSran - INFO - at tiles 146000 of 7410695
+2025-04-04 21:04:46,848 - LSSran - INFO - at tiles 147000 of 7410695
+2025-04-04 21:04:46,929 - LSSran - INFO - at tiles 148000 of 7410695
+2025-04-04 21:04:46,977 - LSSran - INFO - at tiles 149000 of 7410695
+2025-04-04 21:04:47,019 - LSSran - INFO - at tiles 150000 of 7410695
+2025-04-04 21:04:47,046 - LSSran - INFO - at tiles 151000 of 7410695
+2025-04-04 21:04:47,074 - LSSran - INFO - at tiles 152000 of 7410695
+2025-04-04 21:04:47,113 - LSSran - INFO - at tiles 153000 of 7410695
+2025-04-04 21:04:47,149 - LSSran - INFO - at tiles 154000 of 7410695
+2025-04-04 21:04:47,200 - LSSran - INFO - at tiles 155000 of 7410695
+2025-04-04 21:04:47,234 - LSSran - INFO - at tiles 156000 of 7410695
+2025-04-04 21:04:47,262 - LSSran - INFO - at tiles 157000 of 7410695
+2025-04-04 21:04:47,287 - LSSran - INFO - at tiles 158000 of 7410695
+2025-04-04 21:04:47,312 - LSSran - INFO - at tiles 159000 of 7410695
+2025-04-04 21:04:47,383 - LSSran - INFO - at tiles 160000 of 7410695
+2025-04-04 21:04:47,428 - LSSran - INFO - at tiles 161000 of 7410695
+2025-04-04 21:04:47,473 - LSSran - INFO - at tiles 162000 of 7410695
+2025-04-04 21:04:47,496 - LSSran - INFO - at tiles 163000 of 7410695
+2025-04-04 21:04:47,520 - LSSran - INFO - at tiles 164000 of 7410695
+2025-04-04 21:04:47,547 - LSSran - INFO - at tiles 165000 of 7410695
+2025-04-04 21:04:47,572 - LSSran - INFO - at tiles 166000 of 7410695
+2025-04-04 21:04:47,595 - LSSran - INFO - at tiles 167000 of 7410695
+2025-04-04 21:04:47,624 - LSSran - INFO - at tiles 168000 of 7410695
+2025-04-04 21:04:47,654 - LSSran - INFO - at tiles 169000 of 7410695
+2025-04-04 21:04:47,689 - LSSran - INFO - at tiles 170000 of 7410695
+2025-04-04 21:04:47,773 - LSSran - INFO - at tiles 171000 of 7410695
+2025-04-04 21:04:47,809 - LSSran - INFO - at tiles 172000 of 7410695
+2025-04-04 21:04:47,843 - LSSran - INFO - at tiles 173000 of 7410695
+2025-04-04 21:04:47,872 - LSSran - INFO - at tiles 174000 of 7410695
+2025-04-04 21:04:47,902 - LSSran - INFO - at tiles 175000 of 7410695
+2025-04-04 21:04:47,967 - LSSran - INFO - at tiles 176000 of 7410695
+2025-04-04 21:04:48,036 - LSSran - INFO - at tiles 177000 of 7410695
+2025-04-04 21:04:48,064 - LSSran - INFO - at tiles 178000 of 7410695
+2025-04-04 21:04:48,094 - LSSran - INFO - at tiles 179000 of 7410695
+2025-04-04 21:04:48,123 - LSSran - INFO - at tiles 180000 of 7410695
+2025-04-04 21:04:48,153 - LSSran - INFO - at tiles 181000 of 7410695
+2025-04-04 21:04:48,180 - LSSran - INFO - at tiles 182000 of 7410695
+2025-04-04 21:04:48,209 - LSSran - INFO - at tiles 183000 of 7410695
+2025-04-04 21:04:48,238 - LSSran - INFO - at tiles 184000 of 7410695
+2025-04-04 21:04:48,268 - LSSran - INFO - at tiles 185000 of 7410695
+2025-04-04 21:04:48,303 - LSSran - INFO - at tiles 186000 of 7410695
+2025-04-04 21:04:48,336 - LSSran - INFO - at tiles 187000 of 7410695
+2025-04-04 21:04:48,362 - LSSran - INFO - at tiles 188000 of 7410695
+2025-04-04 21:04:48,396 - LSSran - INFO - at tiles 189000 of 7410695
+2025-04-04 21:04:48,446 - LSSran - INFO - at tiles 190000 of 7410695
+2025-04-04 21:04:48,512 - LSSran - INFO - at tiles 191000 of 7410695
+2025-04-04 21:04:48,543 - LSSran - INFO - at tiles 192000 of 7410695
+2025-04-04 21:04:48,587 - LSSran - INFO - at tiles 193000 of 7410695
+2025-04-04 21:04:48,657 - LSSran - INFO - at tiles 194000 of 7410695
+2025-04-04 21:04:48,688 - LSSran - INFO - at tiles 195000 of 7410695
+2025-04-04 21:04:48,718 - LSSran - INFO - at tiles 196000 of 7410695
+2025-04-04 21:04:48,764 - LSSran - INFO - at tiles 197000 of 7410695
+2025-04-04 21:04:48,790 - LSSran - INFO - at tiles 198000 of 7410695
+2025-04-04 21:04:48,843 - LSSran - INFO - at tiles 199000 of 7410695
+2025-04-04 21:04:48,907 - LSSran - INFO - at tiles 200000 of 7410695
+2025-04-04 21:04:48,933 - LSSran - INFO - at tiles 201000 of 7410695
+2025-04-04 21:04:48,960 - LSSran - INFO - at tiles 202000 of 7410695
+2025-04-04 21:04:49,006 - LSSran - INFO - at tiles 203000 of 7410695
+2025-04-04 21:04:49,096 - LSSran - INFO - at tiles 204000 of 7410695
+2025-04-04 21:04:49,304 - LSSran - INFO - at tiles 205000 of 7410695
+2025-04-04 21:04:49,331 - LSSran - INFO - at tiles 206000 of 7410695
+2025-04-04 21:04:49,358 - LSSran - INFO - at tiles 207000 of 7410695
+2025-04-04 21:04:49,383 - LSSran - INFO - at tiles 208000 of 7410695
+2025-04-04 21:04:49,409 - LSSran - INFO - at tiles 209000 of 7410695
+2025-04-04 21:04:49,439 - LSSran - INFO - at tiles 210000 of 7410695
+2025-04-04 21:04:49,464 - LSSran - INFO - at tiles 211000 of 7410695
+2025-04-04 21:04:49,497 - LSSran - INFO - at tiles 212000 of 7410695
+2025-04-04 21:04:49,537 - LSSran - INFO - at tiles 213000 of 7410695
+2025-04-04 21:04:49,568 - LSSran - INFO - at tiles 214000 of 7410695
+2025-04-04 21:04:49,596 - LSSran - INFO - at tiles 215000 of 7410695
+2025-04-04 21:04:49,633 - LSSran - INFO - at tiles 216000 of 7410695
+2025-04-04 21:04:49,678 - LSSran - INFO - at tiles 217000 of 7410695
+2025-04-04 21:04:49,706 - LSSran - INFO - at tiles 218000 of 7410695
+2025-04-04 21:04:49,755 - LSSran - INFO - at tiles 219000 of 7410695
+2025-04-04 21:04:49,809 - LSSran - INFO - at tiles 220000 of 7410695
+2025-04-04 21:04:49,838 - LSSran - INFO - at tiles 221000 of 7410695
+2025-04-04 21:04:49,878 - LSSran - INFO - at tiles 222000 of 7410695
+2025-04-04 21:04:49,931 - LSSran - INFO - at tiles 223000 of 7410695
+2025-04-04 21:04:49,960 - LSSran - INFO - at tiles 224000 of 7410695
+2025-04-04 21:04:50,001 - LSSran - INFO - at tiles 225000 of 7410695
+2025-04-04 21:04:50,048 - LSSran - INFO - at tiles 226000 of 7410695
+2025-04-04 21:04:50,094 - LSSran - INFO - at tiles 227000 of 7410695
+2025-04-04 21:04:50,144 - LSSran - INFO - at tiles 228000 of 7410695
+2025-04-04 21:04:50,181 - LSSran - INFO - at tiles 229000 of 7410695
+2025-04-04 21:04:50,225 - LSSran - INFO - at tiles 230000 of 7410695
+2025-04-04 21:04:50,267 - LSSran - INFO - at tiles 231000 of 7410695
+2025-04-04 21:04:50,307 - LSSran - INFO - at tiles 232000 of 7410695
+2025-04-04 21:04:50,333 - LSSran - INFO - at tiles 233000 of 7410695
+2025-04-04 21:04:50,360 - LSSran - INFO - at tiles 234000 of 7410695
+2025-04-04 21:04:50,386 - LSSran - INFO - at tiles 235000 of 7410695
+2025-04-04 21:04:50,412 - LSSran - INFO - at tiles 236000 of 7410695
+2025-04-04 21:04:50,437 - LSSran - INFO - at tiles 237000 of 7410695
+2025-04-04 21:04:50,464 - LSSran - INFO - at tiles 238000 of 7410695
+2025-04-04 21:04:50,496 - LSSran - INFO - at tiles 239000 of 7410695
+2025-04-04 21:04:50,534 - LSSran - INFO - at tiles 240000 of 7410695
+2025-04-04 21:04:50,563 - LSSran - INFO - at tiles 241000 of 7410695
+2025-04-04 21:04:50,603 - LSSran - INFO - at tiles 242000 of 7410695
+2025-04-04 21:04:50,639 - LSSran - INFO - at tiles 243000 of 7410695
+2025-04-04 21:04:50,670 - LSSran - INFO - at tiles 244000 of 7410695
+2025-04-04 21:04:50,697 - LSSran - INFO - at tiles 245000 of 7410695
+2025-04-04 21:04:50,723 - LSSran - INFO - at tiles 246000 of 7410695
+2025-04-04 21:04:50,761 - LSSran - INFO - at tiles 247000 of 7410695
+2025-04-04 21:04:50,788 - LSSran - INFO - at tiles 248000 of 7410695
+2025-04-04 21:04:50,820 - LSSran - INFO - at tiles 249000 of 7410695
+2025-04-04 21:04:50,847 - LSSran - INFO - at tiles 250000 of 7410695
+2025-04-04 21:04:50,877 - LSSran - INFO - at tiles 251000 of 7410695
+2025-04-04 21:04:50,936 - LSSran - INFO - at tiles 252000 of 7410695
+2025-04-04 21:04:50,966 - LSSran - INFO - at tiles 253000 of 7410695
+2025-04-04 21:04:51,013 - LSSran - INFO - at tiles 254000 of 7410695
+2025-04-04 21:04:51,043 - LSSran - INFO - at tiles 255000 of 7410695
+2025-04-04 21:04:51,070 - LSSran - INFO - at tiles 256000 of 7410695
+2025-04-04 21:04:51,097 - LSSran - INFO - at tiles 257000 of 7410695
+2025-04-04 21:04:51,127 - LSSran - INFO - at tiles 258000 of 7410695
+2025-04-04 21:04:51,155 - LSSran - INFO - at tiles 259000 of 7410695
+2025-04-04 21:04:51,182 - LSSran - INFO - at tiles 260000 of 7410695
+2025-04-04 21:04:51,227 - LSSran - INFO - at tiles 261000 of 7410695
+2025-04-04 21:04:51,256 - LSSran - INFO - at tiles 262000 of 7410695
+2025-04-04 21:04:51,296 - LSSran - INFO - at tiles 263000 of 7410695
+2025-04-04 21:04:51,338 - LSSran - INFO - at tiles 264000 of 7410695
+2025-04-04 21:04:51,369 - LSSran - INFO - at tiles 265000 of 7410695
+2025-04-04 21:04:51,405 - LSSran - INFO - at tiles 266000 of 7410695
+2025-04-04 21:04:51,438 - LSSran - INFO - at tiles 267000 of 7410695
+2025-04-04 21:04:51,469 - LSSran - INFO - at tiles 268000 of 7410695
+2025-04-04 21:04:51,505 - LSSran - INFO - at tiles 269000 of 7410695
+2025-04-04 21:04:51,546 - LSSran - INFO - at tiles 270000 of 7410695
+2025-04-04 21:04:51,583 - LSSran - INFO - at tiles 271000 of 7410695
+2025-04-04 21:04:51,620 - LSSran - INFO - at tiles 272000 of 7410695
+2025-04-04 21:04:51,652 - LSSran - INFO - at tiles 273000 of 7410695
+2025-04-04 21:04:51,779 - LSSran - INFO - at tiles 274000 of 7410695
+2025-04-04 21:04:51,886 - LSSran - INFO - at tiles 275000 of 7410695
+2025-04-04 21:04:51,921 - LSSran - INFO - at tiles 276000 of 7410695
+2025-04-04 21:04:51,959 - LSSran - INFO - at tiles 277000 of 7410695
+2025-04-04 21:04:51,997 - LSSran - INFO - at tiles 278000 of 7410695
+2025-04-04 21:04:52,033 - LSSran - INFO - at tiles 279000 of 7410695
+2025-04-04 21:04:52,057 - LSSran - INFO - at tiles 280000 of 7410695
+2025-04-04 21:04:52,082 - LSSran - INFO - at tiles 281000 of 7410695
+2025-04-04 21:04:52,123 - LSSran - INFO - at tiles 282000 of 7410695
+2025-04-04 21:04:52,157 - LSSran - INFO - at tiles 283000 of 7410695
+2025-04-04 21:04:52,184 - LSSran - INFO - at tiles 284000 of 7410695
+2025-04-04 21:04:52,211 - LSSran - INFO - at tiles 285000 of 7410695
+2025-04-04 21:04:52,237 - LSSran - INFO - at tiles 286000 of 7410695
+2025-04-04 21:04:52,265 - LSSran - INFO - at tiles 287000 of 7410695
+2025-04-04 21:04:52,314 - LSSran - INFO - at tiles 288000 of 7410695
+2025-04-04 21:04:52,357 - LSSran - INFO - at tiles 289000 of 7410695
+2025-04-04 21:04:52,383 - LSSran - INFO - at tiles 290000 of 7410695
+2025-04-04 21:04:52,413 - LSSran - INFO - at tiles 291000 of 7410695
+2025-04-04 21:04:52,455 - LSSran - INFO - at tiles 292000 of 7410695
+2025-04-04 21:04:52,501 - LSSran - INFO - at tiles 293000 of 7410695
+2025-04-04 21:04:52,540 - LSSran - INFO - at tiles 294000 of 7410695
+2025-04-04 21:04:52,624 - LSSran - INFO - at tiles 295000 of 7410695
+2025-04-04 21:04:52,648 - LSSran - INFO - at tiles 296000 of 7410695
+2025-04-04 21:04:52,673 - LSSran - INFO - at tiles 297000 of 7410695
+2025-04-04 21:04:52,702 - LSSran - INFO - at tiles 298000 of 7410695
+2025-04-04 21:04:52,733 - LSSran - INFO - at tiles 299000 of 7410695
+2025-04-04 21:04:52,765 - LSSran - INFO - at tiles 300000 of 7410695
+2025-04-04 21:04:52,789 - LSSran - INFO - at tiles 301000 of 7410695
+2025-04-04 21:04:52,814 - LSSran - INFO - at tiles 302000 of 7410695
+2025-04-04 21:04:52,844 - LSSran - INFO - at tiles 303000 of 7410695
+2025-04-04 21:04:52,930 - LSSran - INFO - at tiles 304000 of 7410695
+2025-04-04 21:04:52,986 - LSSran - INFO - at tiles 305000 of 7410695
+2025-04-04 21:04:53,063 - LSSran - INFO - at tiles 306000 of 7410695
+2025-04-04 21:04:53,124 - LSSran - INFO - at tiles 307000 of 7410695
+2025-04-04 21:04:53,149 - LSSran - INFO - at tiles 308000 of 7410695
+2025-04-04 21:04:53,189 - LSSran - INFO - at tiles 309000 of 7410695
+2025-04-04 21:04:53,243 - LSSran - INFO - at tiles 310000 of 7410695
+2025-04-04 21:04:53,284 - LSSran - INFO - at tiles 311000 of 7410695
+2025-04-04 21:04:53,318 - LSSran - INFO - at tiles 312000 of 7410695
+2025-04-04 21:04:53,398 - LSSran - INFO - at tiles 313000 of 7410695
+2025-04-04 21:04:53,478 - LSSran - INFO - at tiles 314000 of 7410695
+2025-04-04 21:04:53,588 - LSSran - INFO - at tiles 315000 of 7410695
+2025-04-04 21:04:53,628 - LSSran - INFO - at tiles 316000 of 7410695
+2025-04-04 21:04:53,656 - LSSran - INFO - at tiles 317000 of 7410695
+2025-04-04 21:04:53,698 - LSSran - INFO - at tiles 318000 of 7410695
+2025-04-04 21:04:53,740 - LSSran - INFO - at tiles 319000 of 7410695
+2025-04-04 21:04:53,827 - LSSran - INFO - at tiles 320000 of 7410695
+2025-04-04 21:04:53,869 - LSSran - INFO - at tiles 321000 of 7410695
+2025-04-04 21:04:53,896 - LSSran - INFO - at tiles 322000 of 7410695
+2025-04-04 21:04:53,923 - LSSran - INFO - at tiles 323000 of 7410695
+2025-04-04 21:04:53,974 - LSSran - INFO - at tiles 324000 of 7410695
+2025-04-04 21:04:54,002 - LSSran - INFO - at tiles 325000 of 7410695
+2025-04-04 21:04:54,029 - LSSran - INFO - at tiles 326000 of 7410695
+2025-04-04 21:04:54,104 - LSSran - INFO - at tiles 327000 of 7410695
+2025-04-04 21:04:54,143 - LSSran - INFO - at tiles 328000 of 7410695
+2025-04-04 21:04:54,171 - LSSran - INFO - at tiles 329000 of 7410695
+2025-04-04 21:04:54,198 - LSSran - INFO - at tiles 330000 of 7410695
+2025-04-04 21:04:54,232 - LSSran - INFO - at tiles 331000 of 7410695
+2025-04-04 21:04:54,278 - LSSran - INFO - at tiles 332000 of 7410695
+2025-04-04 21:04:54,324 - LSSran - INFO - at tiles 333000 of 7410695
+2025-04-04 21:04:54,373 - LSSran - INFO - at tiles 334000 of 7410695
+2025-04-04 21:04:54,475 - LSSran - INFO - at tiles 335000 of 7410695
+2025-04-04 21:04:54,527 - LSSran - INFO - at tiles 336000 of 7410695
+2025-04-04 21:04:54,574 - LSSran - INFO - at tiles 337000 of 7410695
+2025-04-04 21:04:54,686 - LSSran - INFO - at tiles 338000 of 7410695
+2025-04-04 21:04:54,737 - LSSran - INFO - at tiles 339000 of 7410695
+2025-04-04 21:04:54,869 - LSSran - INFO - at tiles 340000 of 7410695
+2025-04-04 21:04:54,897 - LSSran - INFO - at tiles 341000 of 7410695
+2025-04-04 21:04:54,926 - LSSran - INFO - at tiles 342000 of 7410695
+2025-04-04 21:04:54,957 - LSSran - INFO - at tiles 343000 of 7410695
+2025-04-04 21:04:54,990 - LSSran - INFO - at tiles 344000 of 7410695
+2025-04-04 21:04:55,024 - LSSran - INFO - at tiles 345000 of 7410695
+2025-04-04 21:04:55,062 - LSSran - INFO - at tiles 346000 of 7410695
+2025-04-04 21:04:55,125 - LSSran - INFO - at tiles 347000 of 7410695
+2025-04-04 21:04:55,159 - LSSran - INFO - at tiles 348000 of 7410695
+2025-04-04 21:04:55,192 - LSSran - INFO - at tiles 349000 of 7410695
+2025-04-04 21:04:55,234 - LSSran - INFO - at tiles 350000 of 7410695
+2025-04-04 21:04:55,290 - LSSran - INFO - at tiles 351000 of 7410695
+2025-04-04 21:04:55,334 - LSSran - INFO - at tiles 352000 of 7410695
+2025-04-04 21:04:55,374 - LSSran - INFO - at tiles 353000 of 7410695
+2025-04-04 21:04:55,400 - LSSran - INFO - at tiles 354000 of 7410695
+2025-04-04 21:04:55,427 - LSSran - INFO - at tiles 355000 of 7410695
+2025-04-04 21:04:55,459 - LSSran - INFO - at tiles 356000 of 7410695
+2025-04-04 21:04:55,495 - LSSran - INFO - at tiles 357000 of 7410695
+2025-04-04 21:04:55,522 - LSSran - INFO - at tiles 358000 of 7410695
+2025-04-04 21:04:55,552 - LSSran - INFO - at tiles 359000 of 7410695
+2025-04-04 21:04:55,590 - LSSran - INFO - at tiles 360000 of 7410695
+2025-04-04 21:04:55,654 - LSSran - INFO - at tiles 361000 of 7410695
+2025-04-04 21:04:55,698 - LSSran - INFO - at tiles 362000 of 7410695
+2025-04-04 21:04:55,724 - LSSran - INFO - at tiles 363000 of 7410695
+2025-04-04 21:04:55,774 - LSSran - INFO - at tiles 364000 of 7410695
+2025-04-04 21:04:55,816 - LSSran - INFO - at tiles 365000 of 7410695
+2025-04-04 21:04:55,852 - LSSran - INFO - at tiles 366000 of 7410695
+2025-04-04 21:04:55,884 - LSSran - INFO - at tiles 367000 of 7410695
+2025-04-04 21:04:55,917 - LSSran - INFO - at tiles 368000 of 7410695
+2025-04-04 21:04:55,975 - LSSran - INFO - at tiles 369000 of 7410695
+2025-04-04 21:04:56,010 - LSSran - INFO - at tiles 370000 of 7410695
+2025-04-04 21:04:56,252 - LSSran - INFO - at tiles 371000 of 7410695
+2025-04-04 21:04:56,294 - LSSran - INFO - at tiles 372000 of 7410695
+2025-04-04 21:04:56,325 - LSSran - INFO - at tiles 373000 of 7410695
+2025-04-04 21:04:56,365 - LSSran - INFO - at tiles 374000 of 7410695
+2025-04-04 21:04:56,399 - LSSran - INFO - at tiles 375000 of 7410695
+2025-04-04 21:04:56,433 - LSSran - INFO - at tiles 376000 of 7410695
+2025-04-04 21:04:56,479 - LSSran - INFO - at tiles 377000 of 7410695
+2025-04-04 21:04:56,531 - LSSran - INFO - at tiles 378000 of 7410695
+2025-04-04 21:04:56,564 - LSSran - INFO - at tiles 379000 of 7410695
+2025-04-04 21:04:56,711 - LSSran - INFO - at tiles 380000 of 7410695
+2025-04-04 21:04:56,746 - LSSran - INFO - at tiles 381000 of 7410695
+2025-04-04 21:04:56,780 - LSSran - INFO - at tiles 382000 of 7410695
+2025-04-04 21:04:56,843 - LSSran - INFO - at tiles 383000 of 7410695
+2025-04-04 21:04:56,896 - LSSran - INFO - at tiles 384000 of 7410695
+2025-04-04 21:04:56,924 - LSSran - INFO - at tiles 385000 of 7410695
+2025-04-04 21:04:56,975 - LSSran - INFO - at tiles 386000 of 7410695
+2025-04-04 21:04:57,110 - LSSran - INFO - at tiles 387000 of 7410695
+2025-04-04 21:04:57,212 - LSSran - INFO - at tiles 388000 of 7410695
+2025-04-04 21:04:57,249 - LSSran - INFO - at tiles 389000 of 7410695
+2025-04-04 21:04:57,302 - LSSran - INFO - at tiles 390000 of 7410695
+2025-04-04 21:04:57,328 - LSSran - INFO - at tiles 391000 of 7410695
+2025-04-04 21:04:57,371 - LSSran - INFO - at tiles 392000 of 7410695
+2025-04-04 21:04:57,414 - LSSran - INFO - at tiles 393000 of 7410695
+2025-04-04 21:04:57,454 - LSSran - INFO - at tiles 394000 of 7410695
+2025-04-04 21:04:57,488 - LSSran - INFO - at tiles 395000 of 7410695
+2025-04-04 21:04:57,562 - LSSran - INFO - at tiles 396000 of 7410695
+2025-04-04 21:04:57,630 - LSSran - INFO - at tiles 397000 of 7410695
+2025-04-04 21:04:57,733 - LSSran - INFO - at tiles 398000 of 7410695
+2025-04-04 21:04:57,765 - LSSran - INFO - at tiles 399000 of 7410695
+2025-04-04 21:04:57,797 - LSSran - INFO - at tiles 400000 of 7410695
+2025-04-04 21:04:57,847 - LSSran - INFO - at tiles 401000 of 7410695
+2025-04-04 21:04:57,901 - LSSran - INFO - at tiles 402000 of 7410695
+2025-04-04 21:04:57,969 - LSSran - INFO - at tiles 403000 of 7410695
+2025-04-04 21:04:57,993 - LSSran - INFO - at tiles 404000 of 7410695
+2025-04-04 21:04:58,026 - LSSran - INFO - at tiles 405000 of 7410695
+2025-04-04 21:04:58,058 - LSSran - INFO - at tiles 406000 of 7410695
+2025-04-04 21:04:58,108 - LSSran - INFO - at tiles 407000 of 7410695
+2025-04-04 21:04:58,142 - LSSran - INFO - at tiles 408000 of 7410695
+2025-04-04 21:04:58,199 - LSSran - INFO - at tiles 409000 of 7410695
+2025-04-04 21:04:58,245 - LSSran - INFO - at tiles 410000 of 7410695
+2025-04-04 21:04:58,470 - LSSran - INFO - at tiles 411000 of 7410695
+2025-04-04 21:04:58,528 - LSSran - INFO - at tiles 412000 of 7410695
+2025-04-04 21:04:58,600 - LSSran - INFO - at tiles 413000 of 7410695
+2025-04-04 21:04:58,692 - LSSran - INFO - at tiles 414000 of 7410695
+2025-04-04 21:04:58,727 - LSSran - INFO - at tiles 415000 of 7410695
+2025-04-04 21:04:58,861 - LSSran - INFO - at tiles 416000 of 7410695
+2025-04-04 21:04:58,910 - LSSran - INFO - at tiles 417000 of 7410695
+2025-04-04 21:04:59,045 - LSSran - INFO - at tiles 418000 of 7410695
+2025-04-04 21:04:59,096 - LSSran - INFO - at tiles 419000 of 7410695
+2025-04-04 21:04:59,149 - LSSran - INFO - at tiles 420000 of 7410695
+2025-04-04 21:04:59,281 - LSSran - INFO - at tiles 421000 of 7410695
+2025-04-04 21:04:59,388 - LSSran - INFO - at tiles 422000 of 7410695
+2025-04-04 21:04:59,518 - LSSran - INFO - at tiles 423000 of 7410695
+2025-04-04 21:04:59,581 - LSSran - INFO - at tiles 424000 of 7410695
+2025-04-04 21:04:59,612 - LSSran - INFO - at tiles 425000 of 7410695
+2025-04-04 21:04:59,665 - LSSran - INFO - at tiles 426000 of 7410695
+2025-04-04 21:04:59,725 - LSSran - INFO - at tiles 427000 of 7410695
+2025-04-04 21:04:59,853 - LSSran - INFO - at tiles 428000 of 7410695
+2025-04-04 21:04:59,971 - LSSran - INFO - at tiles 429000 of 7410695
+2025-04-04 21:05:00,097 - LSSran - INFO - at tiles 430000 of 7410695
+2025-04-04 21:05:00,190 - LSSran - INFO - at tiles 431000 of 7410695
+2025-04-04 21:05:00,326 - LSSran - INFO - at tiles 432000 of 7410695
+2025-04-04 21:05:00,421 - LSSran - INFO - at tiles 433000 of 7410695
+2025-04-04 21:05:00,486 - LSSran - INFO - at tiles 434000 of 7410695
+2025-04-04 21:05:00,728 - LSSran - INFO - at tiles 435000 of 7410695
+2025-04-04 21:05:04,357 - LSSran - INFO - number of targets in 0 completeness regions 6569
+2025-04-04 21:05:06,601 - LSSran - INFO - number of unique targets around unassigned locations is 895058
+2025-04-04 21:05:06,601 - LSSran - INFO - getting fraction assigned for each tilelocid
+2025-04-04 21:05:06,883 - LSSran - INFO - at row 0 of 6367845
+2025-04-04 21:05:07,335 - LSSran - INFO - at row 100000 of 6367845
+2025-04-04 21:05:07,551 - LSSran - INFO - at row 200000 of 6367845
+2025-04-04 21:05:07,767 - LSSran - INFO - at row 300000 of 6367845
+2025-04-04 21:05:07,984 - LSSran - INFO - at row 400000 of 6367845
+2025-04-04 21:05:08,200 - LSSran - INFO - at row 500000 of 6367845
+2025-04-04 21:05:08,417 - LSSran - INFO - at row 600000 of 6367845
+2025-04-04 21:05:08,633 - LSSran - INFO - at row 700000 of 6367845
+2025-04-04 21:05:08,851 - LSSran - INFO - at row 800000 of 6367845
+2025-04-04 21:05:09,068 - LSSran - INFO - at row 900000 of 6367845
+2025-04-04 21:05:09,289 - LSSran - INFO - at row 1000000 of 6367845
+2025-04-04 21:05:09,505 - LSSran - INFO - at row 1100000 of 6367845
+2025-04-04 21:05:09,723 - LSSran - INFO - at row 1200000 of 6367845
+2025-04-04 21:05:09,940 - LSSran - INFO - at row 1300000 of 6367845
+2025-04-04 21:05:10,157 - LSSran - INFO - at row 1400000 of 6367845
+2025-04-04 21:05:10,374 - LSSran - INFO - at row 1500000 of 6367845
+2025-04-04 21:05:10,591 - LSSran - INFO - at row 1600000 of 6367845
+2025-04-04 21:05:10,809 - LSSran - INFO - at row 1700000 of 6367845
+2025-04-04 21:05:11,025 - LSSran - INFO - at row 1800000 of 6367845
+2025-04-04 21:05:11,242 - LSSran - INFO - at row 1900000 of 6367845
+2025-04-04 21:05:11,459 - LSSran - INFO - at row 2000000 of 6367845
+2025-04-04 21:05:11,676 - LSSran - INFO - at row 2100000 of 6367845
+2025-04-04 21:05:11,892 - LSSran - INFO - at row 2200000 of 6367845
+2025-04-04 21:05:12,109 - LSSran - INFO - at row 2300000 of 6367845
+2025-04-04 21:05:12,325 - LSSran - INFO - at row 2400000 of 6367845
+2025-04-04 21:05:12,542 - LSSran - INFO - at row 2500000 of 6367845
+2025-04-04 21:05:12,758 - LSSran - INFO - at row 2600000 of 6367845
+2025-04-04 21:05:12,974 - LSSran - INFO - at row 2700000 of 6367845
+2025-04-04 21:05:13,190 - LSSran - INFO - at row 2800000 of 6367845
+2025-04-04 21:05:13,407 - LSSran - INFO - at row 2900000 of 6367845
+2025-04-04 21:05:13,629 - LSSran - INFO - at row 3000000 of 6367845
+2025-04-04 21:05:13,847 - LSSran - INFO - at row 3100000 of 6367845
+2025-04-04 21:05:14,063 - LSSran - INFO - at row 3200000 of 6367845
+2025-04-04 21:05:14,279 - LSSran - INFO - at row 3300000 of 6367845
+2025-04-04 21:05:14,496 - LSSran - INFO - at row 3400000 of 6367845
+2025-04-04 21:05:14,713 - LSSran - INFO - at row 3500000 of 6367845
+2025-04-04 21:05:14,930 - LSSran - INFO - at row 3600000 of 6367845
+2025-04-04 21:05:15,147 - LSSran - INFO - at row 3700000 of 6367845
+2025-04-04 21:05:15,364 - LSSran - INFO - at row 3800000 of 6367845
+2025-04-04 21:05:15,579 - LSSran - INFO - at row 3900000 of 6367845
+2025-04-04 21:05:15,797 - LSSran - INFO - at row 4000000 of 6367845
+2025-04-04 21:05:16,014 - LSSran - INFO - at row 4100000 of 6367845
+2025-04-04 21:05:16,230 - LSSran - INFO - at row 4200000 of 6367845
+2025-04-04 21:05:16,449 - LSSran - INFO - at row 4300000 of 6367845
+2025-04-04 21:05:16,667 - LSSran - INFO - at row 4400000 of 6367845
+2025-04-04 21:05:16,885 - LSSran - INFO - at row 4500000 of 6367845
+2025-04-04 21:05:17,101 - LSSran - INFO - at row 4600000 of 6367845
+2025-04-04 21:05:17,318 - LSSran - INFO - at row 4700000 of 6367845
+2025-04-04 21:05:17,534 - LSSran - INFO - at row 4800000 of 6367845
+2025-04-04 21:05:17,753 - LSSran - INFO - at row 4900000 of 6367845
+2025-04-04 21:05:17,970 - LSSran - INFO - at row 5000000 of 6367845
+2025-04-04 21:05:18,185 - LSSran - INFO - at row 5100000 of 6367845
+2025-04-04 21:05:18,402 - LSSran - INFO - at row 5200000 of 6367845
+2025-04-04 21:05:18,619 - LSSran - INFO - at row 5300000 of 6367845
+2025-04-04 21:05:18,838 - LSSran - INFO - at row 5400000 of 6367845
+2025-04-04 21:05:19,054 - LSSran - INFO - at row 5500000 of 6367845
+2025-04-04 21:05:19,271 - LSSran - INFO - at row 5600000 of 6367845
+2025-04-04 21:05:19,488 - LSSran - INFO - at row 5700000 of 6367845
+2025-04-04 21:05:19,705 - LSSran - INFO - at row 5800000 of 6367845
+2025-04-04 21:05:19,922 - LSSran - INFO - at row 5900000 of 6367845
+2025-04-04 21:05:20,138 - LSSran - INFO - at row 6000000 of 6367845
+2025-04-04 21:05:20,354 - LSSran - INFO - at row 6100000 of 6367845
+2025-04-04 21:05:20,572 - LSSran - INFO - at row 6200000 of 6367845
+2025-04-04 21:05:20,790 - LSSran - INFO - at row 6300000 of 6367845
+2025-04-04 21:05:26,052 - LSSran - INFO - number of fibers with no observation, number targets on those fibers: 0,0
+2025-04-04 21:05:26,055 - LSSran - INFO - sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match
+2025-04-04 21:05:27,345 - LSSran - INFO - 6515637.0,7404126.000000003,7410695
+2025-04-04 21:05:27,524 - LSSran - INFO - number of unique tileid: NTILE
+-----
+    0
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+2025-04-04 21:05:27,560 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/LSScats/LRG_full_noveto.dat.fits
+2025-04-04 21:05:44,785 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/LRG_full_noveto.dat.fits.tmp5297157252
+2025-04-04 21:05:46,439 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/LSScats/LRG_full_noveto.dat.fits
+2025-04-04 21:05:46,439 - LSSran - INFO - checking read of column LOCATION
+2025-04-04 21:05:46,751 - LSSran - INFO - removing temp file
+/global/homes/a/ajross/LSS/py/LSS/common_tools.py:1366: RuntimeWarning: divide by zero encountered in log10
+  mvals = np.log10(mvals)
+2025-04-04 21:09:22,773 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/LSScats/LRG_full_HPmapcut.dat.fits
+2025-04-04 21:09:40,192 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/LRG_full_HPmapcut.dat.fits.tmp184055237
+2025-04-04 21:09:41,782 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/LSScats/LRG_full_HPmapcut.dat.fits
+2025-04-04 21:09:41,782 - LSSran - INFO - checking read of column LOCATION
+2025-04-04 21:09:42,080 - LSSran - INFO - removing temp file
+256 True
+Namespace(tracer='LRG', mockver='ab_secondgen', mocknum=5, ccut=None, absmagmd='simp', base_output='/pscratch/sd/a/ajross/SecondGen/', outmd='scratch', targDir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1', simName=None, survey='DA2', specdata='loa-v1', dataversion='v1.1', combd='n', joindspec='n', fulld='y', fullr='n', add_gtl='y', mkHPmaps='n', add_veto='n', apply_veto='y', apply_veto_ran='n', mkclusran='n', mkclusdat='n', mkclusran_allpot='n', mkclusdat_allpot='n', start_from_full='n', mkclusran_tiles='n', mkclusdat_tiles='n', FKPfull='n', splitGC='n', nz='n', minr=0, maxr=18, par='y', notqso='n', equal_data_dens='n', nran_clus_data=4, use_map_veto='_HPmapcut', resamp='n', getFKP='n', add_bitweights=None, add_weight_ntile='n', compmd='not_altmtl', add_tlcomp='n', add_nt_misspw='n')
+--- START FULLD ---
+number with no data 114111
+number with bad qa 730556
+number at bad fibers 660966
+number at low tsnr2 487520
+*** END WITH FULLD ***
+--- START APPLY_VETO; including HP maps---
+applying vetos to mock 5
+length of input 7410695
+length after cutting to good locations 7408138
+length after cutting locations with priority_assigned > 3200: 6805210
+number before imaging mask 6805210
+number after imaging mask 6313487
+updating completeness
+at tiles 0 of 428525
+at tiles 10000 of 428525
+at tiles 20000 of 428525
+at tiles 30000 of 428525
+at tiles 40000 of 428525
+at tiles 50000 of 428525
+at tiles 60000 of 428525
+at tiles 70000 of 428525
+at tiles 80000 of 428525
+at tiles 90000 of 428525
+at tiles 100000 of 428525
+at tiles 110000 of 428525
+at tiles 120000 of 428525
+at tiles 130000 of 428525
+at tiles 140000 of 428525
+at tiles 150000 of 428525
+at tiles 160000 of 428525
+at tiles 170000 of 428525
+at tiles 180000 of 428525
+at tiles 190000 of 428525
+at tiles 200000 of 428525
+at tiles 210000 of 428525
+at tiles 220000 of 428525
+at tiles 230000 of 428525
+at tiles 240000 of 428525
+at tiles 250000 of 428525
+at tiles 260000 of 428525
+at tiles 270000 of 428525
+at tiles 280000 of 428525
+at tiles 290000 of 428525
+at tiles 300000 of 428525
+at tiles 310000 of 428525
+at tiles 320000 of 428525
+at tiles 330000 of 428525
+at tiles 340000 of 428525
+at tiles 350000 of 428525
+at tiles 360000 of 428525
+at tiles 370000 of 428525
+at tiles 380000 of 428525
+at tiles 390000 of 428525
+at tiles 400000 of 428525
+at tiles 410000 of 428525
+at tiles 420000 of 428525
+will write to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/LSScats/LRG_frac_tlobs.fits
+closed fits file /pscratch/sd/a/ajross/LRG_frac_tlobs.fits.tmp7067059383
+moved output to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/LSScats/LRG_frac_tlobs.fits
+checking read of column TILES
+removing temp file
+data quantities measured, moving to write-out phase
+assignment completeness is 0.8381482372577943
+sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match
+6301426.628347756,6307750.000000002,6313487
+initial 6313487
+0.0,0.3439601957798004
+0.0,0.5212233066558838
+EBV,6225006,0.9859853991938211
+0.0,25638.416015625
+0.0,55549.5703125
+STARDENS,6207106,0.9831501989312721
+0.0,3.0577707290649414
+0.0,2.6906306743621826
+PSFSIZE_G,6183035,0.9793375673379862
+0.0,2.8462111949920654
+0.0,2.486802816390991
+PSFSIZE_R,6169905,0.9772578925085298
+0.0,2.1562395095825195
+0.0,2.434757709503174
+PSFSIZE_Z,6167121,0.9768169317526115
+GALDEPTH_G,6160306,0.9757374965688533
+GALDEPTH_R,6154204,0.9747709942223687
+GALDEPTH_Z,6123298,0.9698757596238022
+PSFDEPTH_W1,6123054,0.9698371122012289
+data veto done, now doing randoms
+
+#command takes 16 minutes, logs very long, most of tile in adding frac_tlobs_tiles
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer LRG --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1 --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+*
+
+
+#command, takes ~25 minutes
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl y --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
+*
+
+#command takes ~15 minutes
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1 --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+*
+
+#command
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl y --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer QSO --fulld y --apply_veto y --par y
+*
+
+#change combination step so that it can read existing potential assignments
+#command, took 17 minutes; 2.5 for getting bad hardware mask, 3.5 for gathering/writing assignment info (16 seconds in write),
+# 3.5 minutes to load/mask/write potential assignments (1:45 in wrting) 
+# 4.5 minutes to join potential assignments and assignments, then 3 minutes to write out
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
+*
+#output:
+2025-04-08 11:19:33,950 - LSSran - INFO - --- Calculate good tiles from goodhardwARE IN DATA ---
+2025-04-08 11:20:39,120 - LSSran - INFO - number with no data 114111
+2025-04-08 11:20:39,180 - LSSran - INFO - number with bad qa 730556
+2025-04-08 11:21:24,035 - LSSran - INFO - number at bad fibers 660966
+2025-04-08 11:22:06,459 - LSSran - INFO - number at low tsnr2 487520
+2025-04-08 11:22:11,457 - LSSran - INFO - --- START COMBD ---
+2025-04-08 11:22:11,457 - LSSran - INFO - entering altmtl
+2025-04-08 11:22:11,457 - LSSran - INFO - entering common.combtiles_wdup_altmtl for FASSIGN
+2025-04-08 11:22:11,457 - LSSran - INFO - size of tiles 6671
+256 True
+Namespace(tracer='dark', mockver='ab_secondgen', mocknum=5, ccut=None, absmagmd='simp', base_output='/pscratch/sd/a/ajross/SecondGen/', outmd='scratch', targDir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1', simName='SecondGenMocks/AbacusSummit_v4_1', survey='DA2', specdata='loa-v1', dataversion='v1.1', combd='y', usepota='y', joindspec='y', fulld='n', fullr='n', add_gtl='y', mkHPmaps='n', add_veto='n', apply_veto='n', apply_veto_ran='n', mkclusran='n', mkclusdat='n', mkclusran_allpot='n', mkclusdat_allpot='n', start_from_full='n', mkclusran_tiles='n', mkclusdat_tiles='n', FKPfull='n', splitGC='n', nz='n', minr=0, maxr=18, par='y', notqso='n', equal_data_dens='n', nran_clus_data=4, use_map_veto='_HPmapcut', resamp='n', getFKP='n', add_bitweights=None, add_weight_ntile='n', compmd='not_altmtl', add_tlcomp='n', add_nt_misspw='n')
+2025-04-08 11:23:14,638 - LSSran - INFO - size combitles for FASSIGN , 28222949
+2025-04-08 11:25:13,916 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkassignwdup.fits
+2025-04-08 11:25:29,147 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/datcomb_darkassignwdup.fits.tmp2290509651
+2025-04-08 11:25:31,556 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkassignwdup.fits
+2025-04-08 11:25:31,556 - LSSran - INFO - checking read of column TARGETID
+2025-04-08 11:25:32,146 - LSSran - INFO - removing temp file
+2025-04-08 11:25:32,580 - LSSran - INFO - entering common.combtiles_wdup_altmtl for FAVAIL
+2025-04-08 11:25:32,580 - LSSran - INFO - reading from potential assignments file /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/mock5/pota-DARK.fits
+2025-04-08 11:26:43,901 - LSSran - INFO - read 152316131 potential assignments
+2025-04-08 11:26:48,000 - LSSran - INFO - 147765316 left after removing collisions
+2025-04-08 11:26:48,000 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkwdup.fits
+2025-04-08 11:28:16,691 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/datcomb_darkwdup.fits.tmp5983772428
+2025-04-08 11:28:29,365 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/fba5/datcomb_darkwdup.fits
+2025-04-08 11:28:29,365 - LSSran - INFO - checking read of column LOCATION
+2025-04-08 11:28:32,908 - LSSran - INFO - removing temp file
+2025-04-08 11:28:58,984 - LSSran - INFO - about to join assignments and potential assignments
+2025-04-08 11:33:24,164 - LSSran - INFO - number with no assignments 114973819 total number 139633343
+2025-04-08 11:33:24,165 - LSSran - INFO - finished join
+2025-04-08 11:33:24,165 - LSSran - INFO - will write to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/datcomb_dark_tarspecwdup_zdone.fits
+2025-04-08 11:36:05,704 - LSSran - INFO - closed fits file /pscratch/sd/a/ajross/datcomb_dark_tarspecwdup_zdone.fits.tmp7686608309
+2025-04-08 11:36:24,397 - LSSran - INFO - moved output to /pscratch/sd/a/ajross/SecondGen/loa-v1/mock5/datcomb_dark_tarspecwdup_zdone.fits
+2025-04-08 11:36:24,397 - LSSran - INFO - checking read of column LOCATION
+2025-04-08 11:36:28,638 - LSSran - INFO - removing temp file
+
+#reduce duplication of steps/remove unnecessary steps in mkfulldat and vetoing
+#loading in data takes ~2 minutes (repeated for all types)
+#counting tiles proportional to sample size ~1:20 for LRGs
+#LRG
+#full_noveto takes 6 minutes, 4 minutes on vetoing/completeness calculation
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer LRG --fulld y --apply_veto y --par y
+*
+#QSO
+#full_noveto takes 4 minutes, 2 minutes on vetoing/completeness calculation
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer QSO --fulld y --apply_veto y --par y
+*
+#ELG
+#full_noveto takes 18 minutes, 6 minutes on vetoing/completeness calculation
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
+*
+#clustering catalogs, data and randoms; read of input randoms takes ~ 4 minutes
+#LRG 6 minutes per 9 for initial clustering catalogs (18 total); couple minutes to do NGC/SGC and nz
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer LRG  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+*
+#ELG 9:48 14 minutes for all 18 randoms for initial clustering catalogs; 4 minutes for clustering
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y   --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+*
+#QSO OOM with 9; unfixed; run with 6 (maybe only 6 needed for QSO) 11:04-12:23 for all 18 + 4 minutes through n(z) and NGC/SGC split
+#need environment change
+*
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer QSO  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+
+#Test potential assignments timing
+#took ~10 minutes
+*
+srun -N 1 -C cpu -t 01:00:00 --qos interactive --account desi python /global/homes/a/ajross/LSS/scripts/getpota_input.py --input /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA0.fits --output $SCRATCH/pota-test0.fits --realization 0
+*
+*
