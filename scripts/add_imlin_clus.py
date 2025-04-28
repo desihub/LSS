@@ -114,37 +114,10 @@ tsnrcol = mainp.tsnrcol
 zmin = mainp.zmin
 zmax = mainp.zmax
 
-
-
-
-#share basedir location '/global/cfs/cdirs/desi/survey/catalogs'
 maindir = basedir +'/'+args.survey+'/LSS/'
 
-#if not os.path.exists(maindir+'/logs'):
-#    os.mkdir(maindir+'/logs')
-#    print('made '+maindir+'/logs')
-
-ldirspec = maindir+specrel+'/'
-if not os.path.exists(ldirspec):
-    os.mkdir(ldirspec)
-    common.printlog('made '+ldirspec,logger)
-    
-if not os.path.exists(ldirspec+'LSScats'):
-    os.mkdir(ldirspec+'LSScats')
-    common.printlog('made '+ldirspec+'LSScats',logger)
-
-dirout = ldirspec+'LSScats/'+version+'/'
-
-if not os.path.exists(dirout):
-    os.mkdir(dirout)
-    common.printlog('made '+dirout,logger)
-
-if not os.path.exists(dirout+args.extra_clus_dir):
-    os.mkdir(dirout+args.extra_clus_dir)
-    common.printlog('made '+dirout+args.extra_clus_dir,logger)
-
-
 dirin = dirout
+lssmapdirout = dirout+'/hpmaps/'
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
