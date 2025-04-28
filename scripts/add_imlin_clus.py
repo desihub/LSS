@@ -137,7 +137,7 @@ tpstr = args.type
 if 'BGS_BRIGHT' in tracer_clus:
     tpstr = 'BGS_BRIGHT'
 nside = 256
-
+inds = np.arange(rm,rx)
 
 if type[:3] == 'ELG':
     if args.imsys_zbin == 'y':
