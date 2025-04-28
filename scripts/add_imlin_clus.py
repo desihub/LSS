@@ -211,7 +211,7 @@ if args.imsys_clus == 'y':
         ranl.append(ran)
 
     rands = np.concatenate(ranl)
-    syscol = 'WEIGHT_IMLIN_CLUS'
+    #syscol = 'WEIGHT_IMLIN_CLUS'
     regl = ['S','N']
     if args.type == 'QSO':
         regl = ['DES','SnotDES','N']
