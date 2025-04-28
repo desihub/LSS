@@ -237,7 +237,7 @@ if args.imsys_clus == 'y':
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
        
-        if imsys_clus_fb:
+        if args.imsys_finezbin == 'y':
             dz = 0.1
             zm = zsysmin
             zx = zm + dz
