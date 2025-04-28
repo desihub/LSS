@@ -320,6 +320,7 @@ for region in regions:
         fnl_blind_weights = new_data_weights / data['WEIGHT']
         data['WEIGHT'] = new_data_weights
         data['WEIGHT_BLIND'] = fnl_blind_weights
+        data['WEIGHT_COMP'] *= fnl_blind_weights
         common.write_LSS_scratchcp(data, data_outfn,logger=logger)
 
 if root:
