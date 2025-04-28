@@ -76,6 +76,8 @@ parser.add_argument("--add_syscol2blind",help="whether to add the new weight col
 
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
 
+parser.add_argument("--par", help="run different random number in parallel?",default='y')
+
 
 args = parser.parse_args()
 common.printlog(str(args),logger)
@@ -276,8 +278,7 @@ if args.imsys_clus == 'y':
     dat.keep_columns(['TARGETID',syscol])
     if syscol in dat_ngc.colnames:
         dat_ngc.remove_column(syscol)
-    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
-    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
+    dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])    
     if args.replace_syscol == 'y':
         dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
         dat_ngc['WEIGHT_SYS'] = dat_ngc[syscol]
@@ -291,6 +292,7 @@ if args.imsys_clus == 'y':
         dat_sgc['WEIGHT_SYS'] = dat_sgc[syscol]
         dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
+    common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
 
 
 if args.imsys_clus_ran == 'y':
