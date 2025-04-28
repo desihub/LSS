@@ -116,6 +116,10 @@ zmax = mainp.zmax
 
 maindir = basedir +'/'+args.survey+'/LSS/'
 
+ldirspec = maindir+specrel+'/'
+    
+dirout = ldirspec+'LSScats/'+version+'/'
+
 dirin = dirout
 lssmapdirout = dirout+'/hpmaps/'
 
