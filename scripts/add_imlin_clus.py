@@ -153,7 +153,8 @@ else:
 
 zl = (zmin,zmax)
 
-tpstr = tracer_clus
+tracer_clus = args.type
+tpstr = args.type
 if 'BGS_BRIGHT' in tracer_clus:
     tpstr = 'BGS_BRIGHT'
 nside = 256
