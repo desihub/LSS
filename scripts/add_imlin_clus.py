@@ -185,17 +185,20 @@ elif type[:3] == 'BGS':
 if args.syscol is None:
     if args.imsys_zbin == 'y':
         syscol = 'WEIGHT_IMLIN'
-        if args.usemaps == 'all'
+        if args.usemaps == 'all':
             syscol += '_ALL'
     if args.imsys_1zbin == 'y':
         syscol = 'WEIGHT_IMLIN_1ZBIN'
-        if args.usemaps == 'all'
+        if args.usemaps == 'all':
             syscol += '_ALL'
 
     if args.imsys_finezbin == 'y':
         syscol = 'WEIGHT_IMLIN_FINEZBIN'
 else:
     syscol = args.syscol
+
+common.printlog('the added weight column will be '+syscol)
+
 debv = common.get_debv()
 
 sky_g,sky_r,sky_z = common.get_skyres()
