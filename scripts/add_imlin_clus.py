@@ -128,7 +128,7 @@ lssmapdirout = dirout+'/hpmaps/'
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
     if args.imsys_finezbin == 'y':
-		mainp.fit_maps_all
+        mainp.fit_maps_all
 elif args.usemaps[0] == 'all': 
     fit_maps = mainp.fit_maps_all
 elif args.usemaps[0] == 'allebv':
