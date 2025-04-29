@@ -238,6 +238,9 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
     if 'IMLIN_FINEZBIN' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_FINEZBIN'][mask]/catalog['WEIGHT_SYS'][mask]
 
+    if 'IMLIN_ALL' in weight_type:
+        weights *=  catalog['WEIGHT_IMLIN_ALL'][mask]/catalog['WEIGHT_SYS'][mask]
+
     if 'IMLIN_1ZBIN' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_1ZBIN'][mask]/catalog['WEIGHT_SYS'][mask]
 
