@@ -195,7 +195,7 @@ if args.syscol is None:
         syscol = 'WEIGHT_IMLIN_1ZBIN'
         if args.usemaps[0] == 'all':
             syscol += '_ALL'
-        if args.usemaps[0] == 'allebv:
+        if args.usemaps[0] == 'allebv':
             syscol += '_ALLEBV'
 
     if args.imsys_finezbin == 'y':
