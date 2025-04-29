@@ -127,7 +127,7 @@ lssmapdirout = dirout+'/hpmaps/'
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
-elif args.usemaps == 'all' or args.imsys_finezbin == 'y':
+elif args.usemaps[0] == 'all' or args.imsys_finezbin == 'y':
     fit_maps = mainp.fit_maps_all
 else:
     fit_maps = [mapn for mapn in args.usemaps]
@@ -185,11 +185,11 @@ elif type[:3] == 'BGS':
 if args.syscol is None:
     if args.imsys_zbin == 'y':
         syscol = 'WEIGHT_IMLIN'
-        if args.usemaps == 'all':
+        if args.usemaps[0] == 'all':
             syscol += '_ALL'
     if args.imsys_1zbin == 'y':
         syscol = 'WEIGHT_IMLIN_1ZBIN'
-        if args.usemaps == 'all':
+        if args.usemaps[0] == 'all':
             syscol += '_ALL'
 
     if args.imsys_finezbin == 'y':
