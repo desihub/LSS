@@ -279,9 +279,9 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
     if 'completeness_only' in weight_type:
         weights = catalog['WEIGHT_COMP'][mask]
         print('weights set to WEIGHT_COMP')
-    if 'EB' in weight_type:
-        weights *=  catalog['WEIGHT_SYSEB'][mask]
-        print('multiplying weights by WEIGHT_SYSEB')
+    #if 'EB' in weight_type:
+    #    weights *=  catalog['WEIGHT_SYSEB'][mask]
+    #    print('multiplying weights by WEIGHT_SYSEB')
     if 'nofail' in weight_type:
         weights /= catalog['WEIGHT_ZFAIL'][mask]
         print('dividing weights by WEIGHT_ZFAIL')
