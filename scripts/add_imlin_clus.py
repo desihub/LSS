@@ -276,7 +276,7 @@ if args.imsys_clus == 'y':
                 _add_sysweight(zm,zx)
     #attach data to NGC/SGC catalogs, write those out
     dat.keep_columns(['TARGETID',syscol])
-    if syscol in dat_ngc.colnames:
+    if syscol in list(dat_ngc.colnames):
         dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])    
     if args.replace_syscol == 'y':
@@ -284,7 +284,7 @@ if args.imsys_clus == 'y':
         dat_ngc['WEIGHT_SYS'] = dat_ngc[syscol]
         dat_ngc['WEIGHT'] *= dat_ngc['WEIGHT_SYS']
     common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits'),logger=logger)
-    if syscol in dat_sgc.colnames:
+    if syscol in list(dat_sgc.colnames):
         dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     if args.replace_syscol == 'y':
