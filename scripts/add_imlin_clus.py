@@ -291,7 +291,6 @@ if args.imsys_clus == 'y':
         dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
         dat_sgc['WEIGHT_SYS'] = dat_sgc[syscol]
         dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
-    dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
 
 
