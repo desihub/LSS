@@ -254,8 +254,17 @@ if args.imsys_clus == 'y':
                 use_maps = fitmapsbin
                 _add_sysweight(zm,zx)
                 zm = zx
-        
-        else:
+        elif args.imsys_1zbin == 'y':
+            zm = zmin
+            zx = zmax
+			if type == 'LRG':
+				fitmapsbin = mainp.fit_maps_all
+			else:
+				fitmapsbin = fit_maps
+			use_maps = fitmapsbin
+			_add_sysweight(zm,zx)
+            
+        elif args.imsys_zbin == 'y':
        
             for zr in zrl:
                 zm = zr[0]
@@ -274,6 +283,8 @@ if args.imsys_clus == 'y':
                     fitmapsbin = fit_maps
                 use_maps = fitmapsbin
                 _add_sysweight(zm,zx)
+        else:
+            sys.exit('no valid z binning choice in arguments, exiting...')
     #attach data to NGC/SGC catalogs, write those out
     dat.keep_columns(['TARGETID',syscol])
     if syscol in list(dat_ngc.colnames):
