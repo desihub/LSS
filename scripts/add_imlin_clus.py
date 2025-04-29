@@ -127,12 +127,16 @@ lssmapdirout = dirout+'/hpmaps/'
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
-elif args.usemaps[0] == 'all' or args.imsys_finezbin == 'y':
+    if args.imsys_finezbin == 'y':
+		mainp.fit_maps_all
+elif args.usemaps[0] == 'all': 
     fit_maps = mainp.fit_maps_all
 elif args.usemaps[0] == 'allebv':
     fit_maps = mainp.fit_maps_allebv
 else:
     fit_maps = [mapn for mapn in args.usemaps]
+
+common.printlog('using '+str(fit_maps))
 
 zl = (zmin,zmax)
 
