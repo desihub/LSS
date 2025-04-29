@@ -136,7 +136,7 @@ elif args.usemaps[0] == 'allebv':
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
-common.printlog('using '+str(fit_maps))
+common.printlog('using '+str(fit_maps),logger)
 
 zl = (zmin,zmax)
 
