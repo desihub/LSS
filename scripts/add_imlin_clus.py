@@ -129,6 +129,8 @@ if args.usemaps == None:
     fit_maps = mainp.fit_maps
 elif args.usemaps[0] == 'all' or args.imsys_finezbin == 'y':
     fit_maps = mainp.fit_maps_all
+elif args.usemaps[0] == 'allebv':
+    fit_maps = mainp.fit_maps_allebv
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
@@ -187,13 +189,20 @@ if args.syscol is None:
         syscol = 'WEIGHT_IMLIN'
         if args.usemaps[0] == 'all':
             syscol += '_ALL'
+        if args.usemaps[0] == 'allebv':
+            syscol += '_ALLEBV'
     if args.imsys_1zbin == 'y':
         syscol = 'WEIGHT_IMLIN_1ZBIN'
         if args.usemaps[0] == 'all':
             syscol += '_ALL'
+        if args.usemaps[0] == 'allebv:
+            syscol += '_ALLEBV'
 
     if args.imsys_finezbin == 'y':
         syscol = 'WEIGHT_IMLIN_FINEZBIN'
+        if args.usemaps[0] == 'allebv':
+            syscol += '_ALLEBV'
+
 else:
     syscol = args.syscol
 
