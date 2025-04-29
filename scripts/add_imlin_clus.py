@@ -74,7 +74,7 @@ parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics
 parser.add_argument("--replace_syscol",help="whether to replace any existing weight_sys with new",default='n')
 parser.add_argument("--add_syscol2blind",help="whether to add the new weight column to the blinded catalogs",default='n')
 
-parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
+parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
@@ -127,6 +127,8 @@ lssmapdirout = dirout+'/hpmaps/'
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
+elif args.usemaps == 'all' or args.imsys_finezbin == 'y':
+    fit_maps = mainp.fit_maps_all
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
@@ -183,8 +185,13 @@ elif type[:3] == 'BGS':
 if args.syscol is None:
     if args.imsys_zbin == 'y':
         syscol = 'WEIGHT_IMLIN'
+        if args.usemaps == 'all'
+            syscol += '_ALL'
     if args.imsys_1zbin == 'y':
         syscol = 'WEIGHT_IMLIN_1ZBIN'
+        if args.usemaps == 'all'
+            syscol += '_ALL'
+
     if args.imsys_finezbin == 'y':
         syscol = 'WEIGHT_IMLIN_FINEZBIN'
 else:
@@ -247,10 +254,11 @@ if args.imsys_clus == 'y':
             while zm < zsysmax:
                 zx = zm + dz
                 zx = round(zx,1)
-                if type == 'LRG':
-                    fitmapsbin = mainp.fit_maps_all
-                else:
-                    fitmapsbin = fit_maps
+                #this is now controlled above
+                #if type == 'LRG':
+                #    fitmapsbin = mainp.fit_maps_all
+                #else:
+                #    fitmapsbin = fit_maps
                 use_maps = fitmapsbin
                 _add_sysweight(zm,zx)
                 zm = zx
