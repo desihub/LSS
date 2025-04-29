@@ -197,7 +197,7 @@ if args.syscol is None:
 else:
     syscol = args.syscol
 
-common.printlog('the added weight column will be '+syscol)
+common.printlog('the added weight column will be '+syscol,logger)
 
 debv = common.get_debv()
 
