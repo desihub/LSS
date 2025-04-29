@@ -257,12 +257,12 @@ if args.imsys_clus == 'y':
         elif args.imsys_1zbin == 'y':
             zm = zmin
             zx = zmax
-			if type == 'LRG':
-				fitmapsbin = mainp.fit_maps_all
-			else:
-				fitmapsbin = fit_maps
-			use_maps = fitmapsbin
-			_add_sysweight(zm,zx)
+            if type == 'LRG':
+                fitmapsbin = mainp.fit_maps_all
+            else:
+                fitmapsbin = fit_maps
+            use_maps = fitmapsbin
+            _add_sysweight(zm,zx)
             
         elif args.imsys_zbin == 'y':
        
