@@ -43,7 +43,7 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 #get QSO clustering catalogs (--mkclusdat y --mkclusran y), split them NGC/SGC (--splitGC y), refactor/add FKP weights (--nz y)
 #~23 minutes, OOM required running only 6 randoms at a time
-srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer QSO --notqso y --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer QSO --mkclusdat y --mkclusran y --splitGC y --nz y --par y
 
 #total clustering catalogs ~55 minutes
 #could be faster if not all randoms needed
