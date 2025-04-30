@@ -235,18 +235,19 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_IMLIN'][mask]/catalog['WEIGHT_SYS'][mask]
 
-    if 'IMLIN_FINEZBIN' in weight_type:
-        weights *=  catalog['WEIGHT_IMLIN_FINEZBIN'][mask]/catalog['WEIGHT_SYS'][mask]
 
     if 'IMLIN_FINEZBIN_ALLEBV' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_FINEZBIN_ALLEBV'][mask]/catalog['WEIGHT_SYS'][mask]
 
+    elif 'IMLIN_FINEZBIN' in weight_type:
+        weights *=  catalog['WEIGHT_IMLIN_FINEZBIN'][mask]/catalog['WEIGHT_SYS'][mask]
 
-    if 'IMLIN_ALL' in weight_type:
-        weights *=  catalog['WEIGHT_IMLIN_ALL'][mask]/catalog['WEIGHT_SYS'][mask]
 
     if 'IMLIN_ALLEBV' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_ALLEBV'][mask]/catalog['WEIGHT_SYS'][mask]
+
+    elif 'IMLIN_ALL' in weight_type:
+        weights *=  catalog['WEIGHT_IMLIN_ALL'][mask]/catalog['WEIGHT_SYS'][mask]
 
 
     if 'IMLIN_1ZBIN' in weight_type:
