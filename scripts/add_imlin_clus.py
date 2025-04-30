@@ -378,7 +378,7 @@ if args.add_syscol2blind == 'y':
         common.write_LSS_scratchcp(dat_blind,fname_blind,logger=logger)
     dat = vstack(dats)
     dat.rename_column('TARGETID','TARGETID_DATA')
-
+    regl = ['NGC','SGC']
     def _add2ranblind(rann):
         for reg in regl:
             ran_fn = os.path.join(dirout+args.extra_clus_dir+'/blinded/', tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
