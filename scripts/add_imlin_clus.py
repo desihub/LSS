@@ -369,13 +369,16 @@ if args.add_syscol2blind == 'y':
         dats.append(dati)
         fname_blind = os.path.join(dirout+args.extra_clus_dir+'/blinded/', tracer_clus+'_'+reg+'_clustering.dat.fits')
         dat_blind = Table(fitsio.read(fname_blind))
+        if syscol in list(dat_blind.colnames):
+            dat_blind.remove_column(syscol)
+
         dat_blind = join(dat_blind,dati,keys=['TARGETID'])
         if args.replace_syscol == 'y':
             dat_blind['WEIGHT_SYS'] = dat_blind[syscol]
         common.write_LSS_scratchcp(dat_blind,fname_blind,logger=logger)
     dat = vstack(dats)
     dat.rename_column('TARGETID','TARGETID_DATA')
-
+    regl = ['NGC','SGC']
     def _add2ranblind(rann):
         for reg in regl:
             ran_fn = os.path.join(dirout+args.extra_clus_dir+'/blinded/', tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
