@@ -46,11 +46,12 @@ def test_dir(value):
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
 parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
+parser.add_argument("--base_altmtl_dir", help="base directory of altmtl folder",default='/global/cfs/cdirs/desi/survey/catalogs/')
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
 parser.add_argument("--ccut", help="extra-cut",default=None)
 parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cut",default='simp')
-parser.add_argument("--base_output", help="base directory for output",default=os.getenv('SCRATCH')+'/SecondGen/')
+parser.add_argument("--base_output", help="base directory for output")
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
@@ -147,12 +148,14 @@ else:
 
 pd = pdir
 
-
-maindir = args.base_output
+if args.base_output == None:
+    maindir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)
+else:
+    maindir = args.base_output
 mockz = 'RSDZ'
 
 if args.targDir == None:
-    args.targDir = maindir.format(MOCKNUM=mocknum)
+    args.targDir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/'
 
 
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
@@ -260,7 +263,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    fbadir = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
@@ -359,7 +362,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
 
     else:
         
-        pota_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-DARK.fits'
+        pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-DARK.fits'
         common.printlog('reading from potential assignments file '+pota_fn,logger)
         pa = fitsio.read(pota_fn,columns=['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION'])
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
@@ -443,7 +446,7 @@ if args.fulld == 'y':
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
-    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(args.base_output, 'fba%d' % mocknum).format(MOCKNUM=mocknum))
+    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(maindir, 'fba%d' % mocknum))
     common.printlog('*** END WITH FULLD ***',logger=logger)
     
     gc.collect()
