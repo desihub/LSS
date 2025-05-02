@@ -4077,7 +4077,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
 
     #select down to specific columns below and then also split N/S
     
-    common.printlog('cutting to z range '+str(zmin)' '+str(zmax))
+    common.printlog('cutting to z range '+str(zmin)+' '+str(zmax),logger)
     selz = ff['Z'] > zmin
     selz &= ff['Z'] < zmax
     ff = ff[selz]
