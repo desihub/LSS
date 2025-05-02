@@ -822,8 +822,8 @@ if 'BGS_BRIGHT-' in type:
     zrl = [(0.1,0.4)]
 elif type[:3] == 'BGS':
     zrl = [(0.01,0.5)]
-    zmin = 0.01
-    zmax = 0.5    
+    #zmin = 0.01
+    #zmax = 0.5    
 
 
 
