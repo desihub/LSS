@@ -15,6 +15,7 @@ parser.add_argument('-d', '--endDate', required=True, type=int, help = 'The date
 parser.add_argument('-o', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
 parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
 parser.add_argument('--nproc', required=True, type=int, help='Number of processes. If running on a single node, this is the number of alt mtl realizations')
+parser.add_argument('--skip_update',action='store_true',dest='skip_update', default=False,help = "This flag should only be set if updateTileTracker has already been run up to the set enddate")
 
 
 parser.add_argument('-rep', '--reproducing', action='store_true', dest='reproducing', default=False, help = 'WARNING: THIS FLAG SHOULD ONLY BE USED FOR DEBUGGING. Pass this flag to confirm to the alt mtl code that you are trying to reproduce real MTLs. This option should (must?) be used in conjunction with --shuffleSubpriorities.', required = False)
@@ -31,7 +32,7 @@ def procFunc(nproc):
     tt = np.array(Table.read(os.path.join(altmtldir,'mainsurvey-{}obscon-TileTracker.ecsv'.format(args.obscon)))) 
 
     #Tile tracker is only updated when the existing tile tracker has all entries complete and the skip update flag is not set
-    if not np.all(tt['DONEFLAG']):
+    if not args.skip_update and np.all(tt['DONEFLAG']):
         amt.updateTileTracker(altmtldir, args.endDate)
 
     amt.loop_alt_ledger(obscon = args.obscon, survey = args.survey, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', zcatdir = '/global/cfs/cdirs/desi/spectro/redux/daily/', altmtlbasedir = args.altMTLBaseDir, ndirs = None, numobs_from_ledger = True, secondary = False, getosubp = False, quickRestart = False, multiproc = True, nproc = nproc, singleDate = False, redoFA = False, mock = args.mock, targets = None, debug = False, verbose = False, reproducing = args.reproducing)
