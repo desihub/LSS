@@ -109,6 +109,52 @@ if args.mockname == 'EZmock' and args.nzmask == 'y':
 print(len(targets),' in Y3 area')
 #print('getting nobs and mask bits')
 
+# compare the projected number density between the mock and data (full_HPmap) 
+survey_lss_path = f"/dvs_ro/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.specdata}/LSScats/{args.dataversion}/"
+survey_data_file = survey_lss_path + f"{type_}_full_HPmapcut.dat.fits"
+survey_rand_file = survey_lss_path + f"{type_}_0_full_HPmapcut.ran.fits"
+data_header = fitsio.read_header(survey_data_file, ext=1)
+data_len = data_header['NAXIS2']
+
+rand_header = fitsio.read_header(survey_rand_file, ext=1)
+rand_den = 2500.0         # 2500 deg^-2 is the projected number density of randoms for the catalog
+survey_skyarea = rand_header['NAXIS2']/rand_den
+print("Survey sky area [deg]:", survey_skyarea)
+data_nden = data_len/survey_skyarea
+
+def get_mock_skyarea(tiletab, rand_den=2500.0):
+    survey_randfile = os.path.join(os.path.dirname(args.output_fullpathfn), f"randoms-{args.survey}-{args.specdata}-nden{rand_den}.fits")
+    try: 
+        print("Load the pre-selected randoms.")
+        Nrand = len(Table.read(survey_randfile))
+        
+    except FileNotFoundError:    
+        print("Load the full-sky randoms and select them within survey footprint.")
+        rand_file = "/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-0.fits"
+        allsky_rand = fitsio.read(rand_file, columns=['RA', 'DEC'])
+        survey_mask = is_point_in_desi(tiletab, allsky_rand['RA'], allsky_rand['DEC'])  # select points in the survey footprint
+        Nrand = np.sum(survey_mask)
+        Table(allsky_rand[survey_mask]).write(survey_randfile, overwrite=True)
+    
+    sky_area = Nrand/rand_den
+    print("Mock skey area [deg]:", sky_area)
+    return sky_area
+    
+mock_skyarea = get_mock_skyarea(tiletab)
+mock_nden = len(targets)/mock_skyarea
+
+nden_ratio = mock_nden/data_nden
+print("Mock/Data projected density ratio:", nden_ratio)
+
+#if nden_ratio > 1.01:
+#    print("Downsample the mock.")
+#    random.seed(17)
+#    rand_dist = np.random.rand(len(targets))
+#    downsample_rate = 1.0/nden_ratio
+#    downsample_mask = (rand_dist < downsample_rate) 
+#    targets = targets[downsample_mask]
+    
+#assert nden_ratio > 0.99, "The mock's projected number density is >1% lower than that of data."
 
 def wrapper(bid_index):
 

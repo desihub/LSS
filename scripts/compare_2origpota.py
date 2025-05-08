@@ -1,7 +1,7 @@
 '''
 This is a little demo script for the Assignment.check_avail_collisions() function.
 '''
-import os
+
 import numpy as np
 import argparse
 from astropy.table import Table
@@ -12,7 +12,6 @@ from fiberassign.targets import Targets, TargetsAvailable, LocationsAvailable, c
 from fiberassign.assign import Assignment
 
 from fiberassign.utils import Logger
-from fiberassign.utils import get_fba_use_fabs
 
 import fitsio
 
@@ -47,13 +46,6 @@ def getcoll(tile):
     ts = '%06i' % tile
 
     fbah = fitsio.read_header('/dvs_ro/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
-    if "USE_FABS" in fbah:
-        fba_use_fabs = fbah["USE_FABS"]
-    else:
-        fba_use_fabs = get_fba_use_fabs(fbah["RUNDATE"])
-
-    os.environ["FIBERASSIGN_USE_FABS"] = str(fba_use_fabs)
-
     #if fbah['FA_VER'][0] == '5':
     dt = fbah['RUNDATE']#[:19]
     hw = load_hardware(rundate=dt, add_margins=margins)
