@@ -275,7 +275,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
 def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = '1.1.1', reproducing = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
-    fht = fitsio.read_header('/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz')
+    fa_fn = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+    fht = fitsio.read_header(fa_fn)
     indir = fht['OUTDIR']
     if (fht['DESIROOT'] == '/data/datasystems') and not ( ('holding' in indir.lower()) or ('main' in indir.lower())):
         indir = '/global/cfs/cdirs/desi/survey/fiberassign/SV3/' +fht['PMTIME'][:10].translate({ord('-'): None})  +'/'      
@@ -464,6 +465,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
         fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
+    if faver >=5:
+        fo.write(" --fafns_for_stucksky "+fa_fn)
     fo.close()    
 
 #     if float(fht['FA_VER'][:3]) < 2.4:
