@@ -1,7 +1,7 @@
 '''
 This is a little demo script for the Assignment.check_avail_collisions() function.
 '''
-
+import os
 import numpy as np
 import argparse
 from astropy.table import Table
