@@ -462,6 +462,10 @@ def updateTileTracker(altmtldir, endDate):
     survey = ExistingTileTracker_fn_spt[0].strip('survey')
     obscon = ExistingTileTracker_fn_spt[1].strip('obscon')
 
+    #if an oldTT file already exists remove it
+    if os.path.exists(os.path.join(altmtldir,'oldTT.ecsv')):
+        os.remove(os.path.join(altmtldir,'oldTT.ecsv'))
+
     #rename old file to avoid overwriting
     os.rename(os.path.join(altmtldir,ExistingTileTracker_fn),os.path.join(altmtldir,'oldTT.ecsv'))
 
