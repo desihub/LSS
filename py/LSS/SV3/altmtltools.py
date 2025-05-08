@@ -1495,7 +1495,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     ### JL - this loop is through all realizations serially or (usually) one realization parallelized
     for n in iterloop:
         if debugOrig:
-            altmtldir = altmtlbasedir
+            altmtldir = altmtlbasedir + '/Univ000/'
         else:
             altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))
