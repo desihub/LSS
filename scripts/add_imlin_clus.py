@@ -125,14 +125,39 @@ dirout = ldirspec+'LSScats/'+version+'/'
 dirin = dirout
 lssmapdirout = dirout+'/hpmaps/'
 
+if args.syscol is None:
+    if args.imsys_zbin == 'y':
+        syscol = 'WEIGHT_IMLIN'
+        #if args.usemaps[0] == 'all':
+        #    syscol += '_ALL'
+        #if args.usemaps[0] == 'allebv':
+        #    syscol += '_ALLEBV'
+    if args.imsys_1zbin == 'y':
+        syscol = 'WEIGHT_IMLIN_1ZBIN'
+        #if args.usemaps[0] == 'all':
+        #    syscol += '_ALL'
+        #if args.usemaps[0] == 'allebv':
+        #    syscol += '_ALLEBV'
+
+    if args.imsys_finezbin == 'y':
+        syscol = 'WEIGHT_IMLIN_FINEZBIN'
+        #if args.usemaps[0] == 'allebv':
+        #    syscol += '_ALLEBV'
+
+else:
+    syscol = args.syscol
+
+
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
     if args.imsys_finezbin == 'y':
         mainp.fit_maps_all
 elif args.usemaps[0] == 'all': 
     fit_maps = mainp.fit_maps_all
+    syscol += '_ALL'
 elif args.usemaps[0] == 'allebv':
     fit_maps = mainp.fit_maps_allebv
+    syscol += '_ALLEBV'
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
@@ -188,27 +213,6 @@ elif type[:3] == 'BGS':
     zmax = 0.5    
 
 
-if args.syscol is None:
-    if args.imsys_zbin == 'y':
-        syscol = 'WEIGHT_IMLIN'
-        if args.usemaps[0] == 'all':
-            syscol += '_ALL'
-        if args.usemaps[0] == 'allebv':
-            syscol += '_ALLEBV'
-    if args.imsys_1zbin == 'y':
-        syscol = 'WEIGHT_IMLIN_1ZBIN'
-        if args.usemaps[0] == 'all':
-            syscol += '_ALL'
-        if args.usemaps[0] == 'allebv':
-            syscol += '_ALLEBV'
-
-    if args.imsys_finezbin == 'y':
-        syscol = 'WEIGHT_IMLIN_FINEZBIN'
-        if args.usemaps[0] == 'allebv':
-            syscol += '_ALLEBV'
-
-else:
-    syscol = args.syscol
 
 common.printlog('the added weight column will be '+syscol,logger)
 
