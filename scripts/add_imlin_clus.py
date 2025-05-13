@@ -178,7 +178,7 @@ if type[:3] == 'ELG':
     elif args.imsys_1zbin == 'y':
         zrl = [(0.8,1.6)]
     elif args.imsys_finezbin == 'y':
-        imsys_clus_fb = y
+        imsys_clus_fb = 'y'
     zsysmin = 0.8
     zsysmax = 1.6
 
@@ -189,7 +189,7 @@ if type[:3] == 'QSO':
     elif args.imsys_1zbin == 'y':
         zrl = [(0.8,3.5)]   
     elif args.imsys_finezbin == 'y':
-        imsys_clus_fb = y
+        imsys_clus_fb = 'y'
     zsysmin = 0.8
     zsysmax = 3.5
 if type[:3] == 'LRG':
@@ -198,7 +198,7 @@ if type[:3] == 'LRG':
     elif args.imsys_1zbin == 'y':
         zrl = [(0.4,1.1)]
     elif args.imsys_finezbin == 'y':
-        imsys_clus_fb = y
+        imsys_clus_fb = 'y'
     zsysmin = 0.4
     zsysmax = 1.1
     if args.relax_zbounds == 'y':
