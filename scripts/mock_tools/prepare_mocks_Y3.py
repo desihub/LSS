@@ -28,8 +28,8 @@ parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
 parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
-parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog", default='Z_COSMO')
-parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD",default='Z')
+parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog")
+parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD")
 parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 'n', assuming all LOP",default='y')
 parser.add_argument("--ELGtpcol", help="column distinguishing the ELG type; assumed boolean with True being LOP",default='LOP')
 parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
@@ -73,6 +73,7 @@ type_ = args.tracer
 data['DESI_TARGET'] = desitar[type_]
 data['PRIORITY_INIT'] = priority[type_]
 data['PRIORITY'] = priority[type_]
+    
 if type_ == 'ELG':
     if args.ELGsplit == 'y':
         sel_LOP = data[args.ELGtpcol] == 1
@@ -161,14 +162,32 @@ targets = common.cutphotmask(targets, bits=mainp.imbits)
 
 print('cut targets based on photometric mask')
 n=len(targets)
-if 'TRUEZ' not in targets.colnames:
+if ('TRUEZ' not in targets.colnames) and (args.ztruecol != None):
     targets.rename_column(args.ztruecol, 'TRUEZ')
-if 'RSDZ' not in targets.colnames:
+if ('RSDZ' not in targets.colnames) and (args.zrsdcol != None):
     targets.rename_column(args.zrsdcol, 'RSDZ')
-if args.tracer == 'BGS':
+    
+if type_ == 'BGS':
     targets['BGS_TARGET'] = 2
+    if args.mockname.lower() == 'uchuu':
+        faint_mask = (targets['BGS_TYPE'] == 'FAINT')
+
+    PromoteFracBGSFaint=0.2
+    ran_hip = np.random.uniform(size = len(targets))
+    promote_mask = (ran_hip <= PromoteFracBGSFaint)
+    faint_hip_mask = faint_mask&promote_mask
+    
+    targets[faint_hip_mask]['BGS_TARGET'] += 2**3
+
+    faint_lowp_mask = faint_mask&(~promote_mask)
+    targets[faint_lowp_mask]['PRIORITY_INIT'] = 2000
+
+    targets[faint_lowp_mask]['PRIORITY'] = 2000
+    
 else:	
     targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
+
+
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
 targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
