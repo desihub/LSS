@@ -73,7 +73,40 @@ type_ = args.tracer
 data['DESI_TARGET'] = desitar[type_]
 data['PRIORITY_INIT'] = priority[type_]
 data['PRIORITY'] = priority[type_]
+data['NUMOBS_MORE'] = numobs[type_]
+data['NUMOBS_INIT'] = numobs[type_]
+
+if type_ == 'BGS':
+
+    if args.mockname.lower() == 'uchuu':
+        mask_bright = (data['BGS_TYPE'] == 'BRIGHT')
+        mask_faint  = (data['BGS_TYPE'] == 'FAINT')
+        dat_bright  = data[mask_bright]
+        dat_faint   = data[mask_faint]
+        print('size of BRIGHT', len(dat_bright))
+        print('size of FAINT', len(dat_faint))
+
+        dat_bright['BGS_TARGET'] = 2**1
+                
+        dat_faint['BGS_TARGET'] = 2**0
+        
+        PromoteFracBGSFaint=0.2
+        ran_hip = np.random.uniform(size = len(dat_faint))
+        faint_hip_mask = (ran_hip <= PromoteFracBGSFaint)
+        
+        dat_faint['BGS_TARGET'][faint_hip_mask] += 2**3   # for high-priority BGS faint
     
+        dat_faint['PRIORITY_INIT'][~faint_hip_mask] = 2000
+        dat_faint['PRIORITY'][~faint_hip_mask] = 2000
+
+        data = vstack([dat_faint, dat_bright])
+        print("Unique PRIORITY_INIT: ", np.unique(data['PRIORITY_INIT']))
+        print("Unique PRIORITY: ", np.unique(data['PRIORITY']))
+        print("Unique BGS_TARGET: ", np.unique(data['BGS_TARGET']))
+        print("High_priority_BGS_faint/BGS_faint: ", np.sum(dat_faint['BGS_TARGET']==9)/len(dat_faint))
+else:	
+    data['BGS_TARGET'] = np.zeros(len(data), dtype='i8') 
+
 if type_ == 'ELG':
     if args.ELGsplit == 'y':
         sel_LOP = data[args.ELGtpcol] == 1
@@ -87,8 +120,7 @@ if type_ == 'ELG':
     data['PRIORITY'][sel_HIP] = 3200
     print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
 	
-data['NUMOBS_MORE'] = numobs[type_]
-data['NUMOBS_INIT'] = numobs[type_]
+
 if type_ == 'QSO':
     sel_highz = data[args.zrsdcol] > 2.1
     data['NUMOBS_MORE'][sel_highz] = 4
@@ -167,25 +199,6 @@ if ('TRUEZ' not in targets.colnames) and (args.ztruecol != None):
 if ('RSDZ' not in targets.colnames) and (args.zrsdcol != None):
     targets.rename_column(args.zrsdcol, 'RSDZ')
     
-if type_ == 'BGS':
-    targets['BGS_TARGET'] = 2
-    if args.mockname.lower() == 'uchuu':
-        faint_mask = (targets['BGS_TYPE'] == 'FAINT')
-
-    PromoteFracBGSFaint=0.2
-    ran_hip = np.random.uniform(size = len(targets))
-    promote_mask = (ran_hip <= PromoteFracBGSFaint)
-    faint_hip_mask = faint_mask&promote_mask
-    
-    targets[faint_hip_mask]['BGS_TARGET'] += 2**3
-
-    faint_lowp_mask = faint_mask&(~promote_mask)
-    targets[faint_lowp_mask]['PRIORITY_INIT'] = 2000
-
-    targets[faint_lowp_mask]['PRIORITY'] = 2000
-    
-else:	
-    targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
 
 
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
