@@ -349,7 +349,7 @@ if args.imsys_clus_ran == 'y':
             ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
             ran = Table(fitsio.read(ran_fn))
             if syscolr in ran.colnames:
-                ran.remove_column(syscol)
+                ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
