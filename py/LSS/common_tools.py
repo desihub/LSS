@@ -127,7 +127,7 @@ def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibst
     if remove_badfiber_spike_nz:
         badfib1 = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt')
         badfib2 = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt')
-        bad = np.isin(fs['FIBER'],np.concatenate((badfib1,badfib2)))
+        bad = np.isin(cat_out['FIBER'],np.concatenate((badfib1,badfib2)))
         printlog('number removed from spike mask is '+str(np.sum(bad)),logger)
         cat_out = cat_out[~bad]
         
