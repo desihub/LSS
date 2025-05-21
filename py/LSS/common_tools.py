@@ -40,29 +40,29 @@ def mask_bad_fibers_time_dependent(dz, badfibers_td,logger=None):
 			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
 				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))
 				)[-1])))
-			print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))))
+			#print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))))
 			#print(5/0)
 		elif len(badfibers_td[i].split()) == 3:
 			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
 				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
 				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
 				)[-1])))
-			print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
-				)))
+			#print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
+			#	)))
 		elif len(badfibers_td[i].split()) == 4:
 			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
 				& (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
 				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
 				| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
 				))[-1])))
-			print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& ((((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
-				| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))))
-				))
+			#print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& ((((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+			#	| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))))
+			#	))
 		elif len(badfibers_td[i].split()) == 5:
 			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
 				& (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
@@ -70,12 +70,12 @@ def mask_bad_fibers_time_dependent(dz, badfibers_td,logger=None):
 				| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
 				& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
 				))[-1])))
-			print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
-				| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
-				& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
-				)))
+			#print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+			#	| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+			#	& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
+			#	)))
 	dz_inds = np.ones(len(dz)).astype('int')
 	dz_inds[inds_to_remove.astype('int')] = 0
 	nremove = len(dz_inds)-np.sum(dz_inds)
