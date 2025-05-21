@@ -3173,7 +3173,18 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
         fs = Table(fs)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
-
+    else:
+        specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+        if logger is not None:
+            logger.info('reading from spec file '+specf)
+        else:
+            print(specf)
+        fs = fitsio.read(specf)
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status)
+        fs = Table(fs)
+        fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+        gtl = np.unique(fs['TILELOCID'])
+    
     #print(len(gtl))
     fs.keep_columns(['TILELOCID','PRIORITY'])
     #''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
@@ -3193,17 +3204,17 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         wg = np.ones(len(dz),dtype=bool)
         logger.info('good hardware all set to true because mock should already have been masked')
     else:
-        specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
-        if logger is not None:
-            logger.info('reading from spec file '+specf)
-        else:
-            print(specf)
+        #specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+        #if logger is not None:
+        #    logger.info('reading from spec file '+specf)
+        #else:
+        #    print(specf)
     
-        fs = fitsio.read(specf)
-        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-        fs = Table(fs)
-        fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
-        gtl = np.unique(fs['TILELOCID'])
+        #fs = fitsio.read(specf)
+        #fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+        #fs = Table(fs)
+        #fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+        #gtl = np.unique(fs['TILELOCID'])
     
         wg = np.isin(dz['TILELOCID'],gtl)
         #print(len(dz[wg]))
