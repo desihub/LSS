@@ -3441,6 +3441,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     common.printlog('getting completeness',logger)
     if dz.masked:
         dz['TILES'] = dz['TILES'].filled('0')
+
     dz.sort('TILES')
     tlsl = dz['TILES']
     #tlsl.sort()
@@ -3449,6 +3450,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     tlslu = np.unique(tlsl)
     n_of_tiles = len(tlslu)
     laa = dz['LOCATION_ASSIGNED']
+    sel_check = tlsl == '0':
+        common.printlog('number with TILES 0 '+str(sum(sel_check)),logger)
+    sel_check = tlsl == '--':
+        common.printlog('number with TILES -- '+str(sum(sel_check)),logger)
+    sel_check = tlslu == '--':
+        common.printlog('number with unique TILES -- '+str(sum(sel_check)),logger)
 
     if calc_ctile == 'y':
         i = 0
