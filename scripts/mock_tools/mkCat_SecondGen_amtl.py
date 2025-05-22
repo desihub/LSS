@@ -169,7 +169,10 @@ if args.add_gtl == 'y':
 
 
     common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
-    mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
+    if pdir == 'dark':
+        mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
+    if pdir == 'bright':
+        mainp = main('BGS', args.specdata, survey)
     tsnrcut = mainp.tsnrcut
     tnsrcol = mainp.tsnrcol        
 
