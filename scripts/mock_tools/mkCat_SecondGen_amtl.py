@@ -367,7 +367,13 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         
         pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
         common.printlog('reading from potential assignments file '+pota_fn,logger)
-        pa = fitsio.read(pota_fn,columns=['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION'])
+        pota_cols = ['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']
+        if pdir == 'bright':
+            pota_cols.append('BGS_TARGET')
+            #pota_cols.append('REST_GMR_0P1')
+            
+        #BGS_TARGET
+        pa = fitsio.read(pota_fn,columns=pota_cols)
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
         sel_coll = pa['COLLISION'] == 0
         pa = pa[sel_coll]
