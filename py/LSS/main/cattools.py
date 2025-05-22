@@ -3443,52 +3443,47 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     if dz.masked:
         dz['TILES'] = dz['TILES'].filled('0')
 
-    dz.sort('TILES')
+    #dz.sort('TILES')
     tlsl = np.array(dz['TILES'])
-    common.printlog(str(tlsl.dtype),logger)
+    #common.printlog(str(tlsl.dtype),logger)
     #tlsl.sort()
     nts = len(tlsl)
     
-    tlslu = np.unique(tlsl)
-    n_of_tiles = len(tlslu)
-    laa = dz['LOCATION_ASSIGNED']
-    sel_check = np.where(tlsl=='0')#(tlsl == '0')
-    #common.printlog('sel_check dtype '+str())
-    common.printlog('number with TILES 0 '+str(len(sel_check)),logger)
-    sel_check = np.where(tlsl=='--')#(tlsl == '--')
-    common.printlog('number with TILES -- '+str(len(sel_check)),logger)
-    sel_check = np.where(tlslu=='--')#(tlslu == '--')
-    common.printlog('number with unique TILES -- '+str(len(sel_check)),logger)
 
     if calc_ctile == 'y':
-        i = 0
-        while i < len(dz):
-            tls  = []
-            tlis = []
-            nli = 0
-            nai = 0
-    
-            while tlsl[i] == tlslu[ti]:
-                nli += 1
-                nai += laa[i]
-                i += 1
-                if i == len(dz):
-                    break
-    
-            if ti%1000 == 0:
-                common.printlog('at tiles '+str(ti)+' of '+str(n_of_tiles),logger)
-    
-            if nli == 0:
-                common.printlog('no data for '+str(tlslu[ti])+' and '+str(tlsl[i]),logger)
-                cp = 0
-                i += 1
-            else:
-                cp = nai/nli#no/nt
+        tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
+        n_of_tiles = len(tlslu)
+        laa = dz['LOCATION_ASSIGNED']
+        acnts = np.bincounts(indices,laa)
+        compa = acnts/cnts
+        #i = 0
+        #while i < len(dz):
+        #    tls  = []
+#             tlis = []
+#             nli = 0
+#             nai = 0
+#     
+#             while tlsl[i] == tlslu[ti]:
+#                 nli += 1
+#                 nai += laa[i]
+#                 i += 1
+#                 if i == len(dz):
+#                     break
+#     
+#             if ti%1000 == 0:
+#                 common.printlog('at tiles '+str(ti)+' of '+str(n_of_tiles),logger)
+#     
+#             if nli == 0:
+#                 common.printlog('no data for '+str(tlslu[ti])+' and '+str(tlsl[i]),logger)
+#                 cp = 0
+#                 i += 1
+#             else:
+#                 cp = nai/nli#no/nt
             
-            compa.append(cp)
-            tll.append(tlslu[ti])
-            ti += 1
-        comp_dicta = dict(zip(tll, compa))
+#            compa.append(cp)
+#            tll.append(tlslu[ti])
+#            ti += 1
+        comp_dicta = dict(zip(tlslu, compa))
         fcompa = []
         for tl in dz['TILES']:
             fcompa.append(comp_dicta[tl])
