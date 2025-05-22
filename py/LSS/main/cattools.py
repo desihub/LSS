@@ -3444,20 +3444,21 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz['TILES'] = dz['TILES'].filled('0')
 
     dz.sort('TILES')
-    tlsl = dz['TILES']
+    tlsl = np.array(dz['TILES'])
+    common.printlog(str(tlsl.dtype),logger)
     #tlsl.sort()
     nts = len(tlsl)
     
     tlslu = np.unique(tlsl)
     n_of_tiles = len(tlslu)
     laa = dz['LOCATION_ASSIGNED']
-    sel_check = (tlsl == '0')
+    sel_check = np.where(tlsl=='0')#(tlsl == '0')
     #common.printlog('sel_check dtype '+str())
-    common.printlog('number with TILES 0 '+str(sum(sel_check))+' '+str(len(sel_check))+' '+str(sum(~sel_check)),logger)
-    sel_check = (tlsl == '--')
-    common.printlog('number with TILES -- '+str(sum(sel_check)),logger)
-    sel_check = (tlslu == '--')
-    common.printlog('number with unique TILES -- '+str(sum(sel_check)),logger)
+    common.printlog('number with TILES 0 '+str(len(sel_check))),logger)
+    sel_check = np.where(tlsl=='--')#(tlsl == '--')
+    common.printlog('number with TILES -- '+str(len(sel_check)),logger)
+    sel_check = np.where(tlslu=='--')#(tlslu == '--')
+    common.printlog('number with unique TILES -- '+str(len(sel_check)),logger)
 
     if calc_ctile == 'y':
         i = 0
