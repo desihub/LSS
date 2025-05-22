@@ -117,7 +117,8 @@ def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibst
         #printlog('number at bad fibers '+str(sum(bad)),logger)
         #wfqa &= ~bad
         if type(badfib).__name__ == 'list':
-            cat_out = mask_bad_fibers_time_dependent(fs[wfqa], badfib)
+            common.printlog('will mask fibers with time dependence',logger)
+            cat_out = mask_bad_fibers_time_dependent(fs[wfqa], badfib,logger=logger)
         else:
             bad = np.isin(fs['FIBER'],badfib)
             printlog('number at bad fibers '+str(sum(bad)),logger)
