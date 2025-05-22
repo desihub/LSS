@@ -613,8 +613,13 @@ lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/L
 if args.apply_veto == 'y':
     common.printlog('--- START APPLY_VETO; including HP maps---',logger=logger)
     common.printlog('applying vetos to mock ' + str(mocknum),logger=logger)
-    mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
-    maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
+    tracer_hp = tracer_clus
+    if 'ELG' in tracer_clus:
+        tracer_hp = 'ELG_LOPnotqso'
+    if 'BGS' in tracer_clus:
+        tracer_hp = 'BGS_BRIGHT'
+    mapn = fitsio.read(os.path.join(lssmapdirout, tracer_hp + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
+    maps = fitsio.read(os.path.join(lssmapdirout, tracer_hp + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
     mapcuts = mainp.mapcuts
 
     fin = os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits')
