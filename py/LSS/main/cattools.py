@@ -3454,7 +3454,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
         n_of_tiles = len(tlslu)
         laa = dz['LOCATION_ASSIGNED']
-        acnts = np.bincounts(indices,laa)
+        acnts = np.bincount(indices,laa)
         compa = acnts/cnts
         #i = 0
         #while i < len(dz):
