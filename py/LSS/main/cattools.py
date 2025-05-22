@@ -3469,8 +3469,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
                 common.printlog('at tiles '+str(ti)+' of '+str(n_of_tiles),logger)
     
             if nli == 0:
-                common.printlog('no data for '+str(tlslu[ti]),logger)
+                common.printlog('no data for '+str(tlslu[ti])+' and '+str(tlsl[i]),logger)
                 cp = 0
+                i += 1
             else:
                 cp = nai/nli#no/nt
             
