@@ -691,6 +691,18 @@ def clusran_shufrd(flin,ran_sw='',P0=10000,zmin=0.01,zmax=1.6,dz=0.01):
         #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
     #    common.write_LSS(ffr,outfn)
 
+def get_comp_tile(input_array):
+    #for some input with the correct columns, get the completeness in each unique TILES group
+    tlslu,indices,cnts= np.unique(input_array['TILES'],return_inverse=True,return_counts=True)
+    acnts = np.bincount(indices,weights=input_array['LOCATION_ASSIGNED'])
+    comp = acnts/cnts
+    comp_dicta = dict(zip(tlslu, comp))
+    fcompa = []
+    for tl in input_array['TILES']:
+        fcompa.append(comp_dicta[tl])
+    return np.array(fcompa)
+    
+
 def get_comp(fb,ran_sw=''):
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     fd = Table(fitsio.read(fn))
