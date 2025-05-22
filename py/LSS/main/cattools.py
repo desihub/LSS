@@ -3181,6 +3181,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
             print(specf)
         fs = fitsio.read(specf)
         common.printlog('badfib type is '+str(type(badfib)),logger)
+        common.printlog('badfib type row 0 '+str(type(badfib[0])),logger)
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
         fs = Table(fs)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
