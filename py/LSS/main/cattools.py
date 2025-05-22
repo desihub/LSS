@@ -3451,7 +3451,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     n_of_tiles = len(tlslu)
     laa = dz['LOCATION_ASSIGNED']
     sel_check = (tlsl == '0')
-    common.printlog('number with TILES 0 '+str(sum(sel_check)),logger)
+    #common.printlog('sel_check dtype '+str())
+    common.printlog('number with TILES 0 '+str(sum(sel_check))+' '+str(len(sel_check))+' '+str(sum(~sel_check)),logger)
     sel_check = (tlsl == '--')
     common.printlog('number with TILES -- '+str(sum(sel_check)),logger)
     sel_check = (tlslu == '--')
