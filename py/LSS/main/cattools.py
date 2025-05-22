@@ -3440,7 +3440,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     tll = []
     ti = 0
     common.printlog('getting completeness',logger)
-    if dz.masked:
+    if dz['TILES'].masked:
+        common.printlog('filling masked TILES values')
         dz['TILES'] = dz['TILES'].filled('0')
 
     #dz.sort('TILES')
