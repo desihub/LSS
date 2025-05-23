@@ -86,7 +86,7 @@ parser.add_argument("--extra_clus_dir", help="an optional extra layer of directo
 
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
-parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='n')
+parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -814,7 +814,8 @@ if type[:3] == 'QSO':
         zrl = [(0.8,3.5)]   
 if type[:3] == 'LRG':
     if args.imsys_zbin == 'y':
-        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+        #zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+        zrl = [(0.3,0.4)(0.4,0.5),(0.5,0.6),(0.6,0.7),(0.7,0.8),(0.8,0.9),(0.9,1.0),(1.0,1.1),(1.1,1.2)] 
     else:
         zrl = [(0.4,1.1)]
     zsysmin = 0.4
