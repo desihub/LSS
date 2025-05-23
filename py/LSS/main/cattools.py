@@ -3443,9 +3443,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
     #if dz['TILES'].masked:
     try:
         dz['TILES'] = dz['TILES'].filled('0')
-        common.printlog('filling masked TILES values')
+        common.printlog('filling masked TILES values',logger)
     except:
-        common.printlog('filling masked TILES values did not succeed, perhaps it is not masked')
+        common.printlog('filling masked TILES values did not succeed, perhaps it is not masked',logger)
     #dz.sort('TILES')
     tlsl = np.array(dz['TILES'])
     #common.printlog(str(tlsl.dtype),logger)
