@@ -11,7 +11,7 @@
 #SBATCH -e ./stdout/%x.e%j
 
 
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+source /global/common/software/desi/desi_environment.sh main
 
 survey="DA2"
 nproc=128
