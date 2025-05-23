@@ -907,15 +907,16 @@ if args.imsys == 'y':
             
             print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
             if type == 'LRG' and args.usemaps is None:
-                if reg == 'N':
-                    fitmapsbin = fit_maps
-                else:
-                    if zmax == 0.6:
-                        fitmapsbin = mainp.fit_maps46s
-                    if zmax == 0.8:
-                        fitmapsbin = mainp.fit_maps68s
-                    if zmax == 1.1:
-                        fitmapsbin = mainp.fit_maps81s
+                fitmapsbin = mainp.fit_maps_allebv
+                #if reg == 'N':
+                #    fitmapsbin = fit_maps
+                #else:
+                #    if zmax == 0.6:
+                #        fitmapsbin = mainp.fit_maps46s
+                #    if zmax == 0.8:
+                #        fitmapsbin = mainp.fit_maps68s
+                #    if zmax == 1.1:
+                #        fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
             use_maps = fitmapsbin
