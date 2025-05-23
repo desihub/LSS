@@ -69,9 +69,9 @@ class main:
         self.ebits = None
         self.badfib = None
         self.badfib_status = None
-        self.tsnrcol = 'TSNR2_ELG'
-        self.tsnrcut = 0
-        self.dchi2 = 0
+        #self.tsnrcol = 'TSNR2_ELG' #better to throw an error having this undefined rather than having code use a bad value
+        #self.tsnrcut = 0
+        #self.dchi2 = 0
         self.zmin = 0
         self.zmax = 4.5
         zfloor = 0.002

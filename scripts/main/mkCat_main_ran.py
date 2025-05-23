@@ -191,7 +191,12 @@ if not os.path.exists(dirout):
     os.makedirs(dirout)
     logger.info('made '+dirout)
 
-mainp = main(type,args.verspec)
+globtype = args.type
+if args.type == 'dark':
+    globtype = 'LRG'
+if args.type == 'bright':
+    globtype == 'BGS'
+mainp = main(globtype,args.verspec)
 
 mt = mainp.mtld
 tiles = mainp.tiles
