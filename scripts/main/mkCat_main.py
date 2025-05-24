@@ -881,8 +881,8 @@ if args.imsys == 'y':
                 bnd = col.split('_')[-1]
                 sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
         for ec in ['GR','RZ']:
-            if 'EBV_DIFF_'+ec in fit_maps: 
-                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+            #if 'EBV_DIFF_'+ec in fit_maps: 
+            sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
         if 'EBV_DIFF_MPF' in fit_maps:
             sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
         #for bnd in ['G','R','Z']:
