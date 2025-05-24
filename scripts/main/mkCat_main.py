@@ -118,7 +118,7 @@ parser.add_argument("--imsys_clus_fb_ran",help="add linear weight fits in fine r
 
 
 
-parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
+parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--regmode",help="RF and Linear are choices",default='RF')
