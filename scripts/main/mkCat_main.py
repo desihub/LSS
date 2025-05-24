@@ -863,6 +863,7 @@ if args.imsys == 'y':
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
+    common.printlog('combined randoms',logger)
     syscol = 'WEIGHT_IMLIN'
     regl = ['S','N']
     if args.type == 'QSO':
