@@ -905,7 +905,7 @@ if args.imsys == 'y':
             #fcd = fb+'_clustering.dat.fits'
             #dd = Table.read(fcd)
             
-            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            common.printlog('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax),logger)
             if type == 'LRG' and args.usemaps is None:
                 fitmapsbin = mainp.fit_maps_allebv
                 #if reg == 'N':
