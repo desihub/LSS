@@ -54,6 +54,7 @@ parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cu
 parser.add_argument("--base_output", help="base directory for output")
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
+parser.add_argument("--pota", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
@@ -142,9 +143,11 @@ survey = args.survey
 if tracer[:3] == 'BGS' or tracer == 'bright' or tracer == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
+    mainp = main('BGS', args.specdata, survey) #needed for bad fiber list
 else:
     pr = 'DARK'
     pdir = 'dark'
+    mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
 
 pd = pdir
 
@@ -169,17 +172,13 @@ if args.add_gtl == 'y':
 
 
     common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
-    if pdir == 'dark':
-        mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
-    if pdir == 'bright':
-        mainp = main('BGS', args.specdata, survey)
     tsnrcut = mainp.tsnrcut
     tnsrcol = mainp.tsnrcol        
 
     specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
     specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
     gtl = np.unique(specfc['TILELOCID'])
 
@@ -266,7 +265,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    fbadir = os.path.join(args.base_altmtl_dir,args.survey,args.simName,'altmtl'+str(mocknum),'Univ000/fa/MAIN/')
+    #TEMP AURE  fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
@@ -298,6 +298,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
             lb4join = len(fa)
             #td += 1
             fa['TILEID'] = int(tile)
+        
             fa = join(fa,ft,keys=['TARGETID'])
             if len(fa) != lb4join:
                 print(tile,lb4join,len(fa))
@@ -364,8 +365,10 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         common.printlog('completed join to target info',logger)
 
     else:
-        
-        pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
+            if args.pota is None:
+                pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
+            else:
+                pota_fn = args.pota# '/global/cfs/projectdirs/desi/users/jerryou/DESI_Y3/DA2/Uchuu/BGS/mock0/pota-BRIGHT.fits' #args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
         common.printlog('reading from potential assignments file '+pota_fn,logger)
         pota_cols = ['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']
         if pdir == 'bright':
@@ -384,6 +387,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         common.write_LSS_scratchcp(pa,outf,logger=logger)
 
 
+#print('asn is',asn)
+#print('pa is',pa)
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
 if args.joindspec == 'y':
@@ -403,7 +408,8 @@ if args.joindspec == 'y':
         pa = pa[goodtl]
 
 
-    common.printlog('about to join assignments and potential assignments',logger)
+    common.printlog('HERE!!!, about to join assignments and potential assignments',logger)
+    
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     tj['ZWARN'] = tj['ZWARN'].filled(999999)
     sel = tj['ZWARN'] == 999999
