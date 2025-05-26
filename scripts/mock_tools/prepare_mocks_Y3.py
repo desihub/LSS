@@ -46,6 +46,21 @@ elif args.tracer == 'BGS':
 
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
 
+def mask_abacusHF(nz=0, foot=None, nz_lop=0):
+    if foot == 'Y1':
+        Y5 = 0
+        Y1 = 1
+        Y3 = 0
+    elif foot == 'Y3':
+        Y5 = 0
+        Y1 = 0
+        Y3 = 1
+    else:
+        Y5 = 1
+        Y1 = 0
+        Y3 = 0
+
+    return nz * (2**0) + Y5 * (2**1) + nz_lop * (2**2) + Y1 * (2**3) + Y3 * (2**5) 
 
 data = Table.read(args.input_mockpath+args.input_mockfile)
 
@@ -109,10 +124,38 @@ else:
 
 if type_ == 'ELG':
     if args.ELGsplit == 'y':
-        sel_LOP = data[args.ELGtpcol] == 1
-        data['DESI_TARGET'][~sel_LOP] = 2+2**7
-        data['PRIORITY_INIT'][~sel_LOP] = 3000
-        data['PRIORITY'][~sel_LOP] = 3000
+        if args.mockname.lower() == 'abacushf':
+            datat = []
+            status = data['STATUS'][()]
+            idx = np.arange(len(status))
+            
+            mask_main = mask_abacusHF(nz=1, foot='Y3')
+            idx_main = idx[(status & (mask_main))==mask_main]
+
+            mask_LOP = mask_abacusHF(nz=1, foot='Y3', nz_lop=1)
+            idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
+            
+            idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+
+            data_lop = Table(data[idx_LOP])
+            data_vlo = Table(data[idx_VLO])
+
+            data_lop['DESI_TARGET'] += 2**5
+
+            data_vlo['PRIORITY_INIT'] = 3000
+            data_vlo['PRIORITY'] = 3000
+            data_vlo['DESI_TARGET'] += 2**7 
+
+
+            datat.append(data_lop)
+            datat.append(data_vlo)
+            data = vstack(datat)
+        else:
+            sel_LOP = data[args.ELGtpcol] == 1
+            data['DESI_TARGET'][~sel_LOP] = 2+2**7
+            data['PRIORITY_INIT'][~sel_LOP] = 3000
+            data['PRIORITY'][~sel_LOP] = 3000
+    
     rans = rng.random(len(data))
     sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
     data['DESI_TARGET'][sel_HIP] += 2**6
@@ -127,22 +170,32 @@ if type_ == 'QSO':
     data['NUMOBS_INIT'][sel_highz] = 4
     print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
 targets = data
-n=len(targets)  ##A Ashley le falta estoo!
 
 del data
 
+if args.mockname.lower() != 'abacushf':
 #targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
-targets['TARGETID'] = (np.arange(1,n+1) + 1e8*desitar[type_]/norm[type_]).astype(int)
-print(len(targets),' in Y5 area')
-selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
-targets = targets[selY3]
-if args.mockname == 'EZmock' and args.nzmask == 'y':
-    y3_nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
-    targets = targets[y3_nz_mask]
+    print(len(targets),' in Y5 area')
+    selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
+    targets = targets[selY3]
+    if args.mockname == 'EZmock' and args.nzmask == 'y':
+        y3_nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
+        targets = targets[y3_nz_mask]
+else:
+    if type_ != 'ELG':
+
+        status = targets['STATUS'][()]
+        idx = np.arange(len(status))
+        mask_main = mask_abacusHF(nz=1, foot='Y3')
+        idx_main = idx[(status & (mask_main))==mask_main]
+        targets = targets[idx_main]
 
 print(len(targets),' in Y3 area')
 #print('getting nobs and mask bits')
 
+
+n=len(targets)  ##A Ashley le falta estoo!
+targets['TARGETID'] = (np.arange(1,n+1)+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
 
 def wrapper(bid_index):
 
