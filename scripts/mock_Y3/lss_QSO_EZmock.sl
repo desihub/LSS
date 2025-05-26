@@ -44,4 +44,4 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #get QSO clustering catalogs (--mkclusdat y --mkclusran y), split them NGC/SGC (--splitGC y), refactor/add FKP weights (--nz y)
 #takes ~17 minutes, OOM required running only 6 randoms at a time
 #takes ~100% cpu node memory
-time srun -n 1 --cpu-bind=none python ${codepath}/mkCat_SecondGen_amtl.py --base_altmtl_dir ${base_altmtl_dir} --mockver ab_secondgen --mocknum $mocknum --survey DA2 --simName $simName --specdata ${specdata} --tracer QSO --notqso y --mkclusdat y --mkclusran y --splitGC y --nz y --par y
+time srun -n 1 --cpu-bind=none python ${codepath}/mkCat_SecondGen_amtl.py --base_altmtl_dir ${base_altmtl_dir} --mockver ab_secondgen --mocknum $mocknum --survey DA2 --simName $simName --specdata ${specdata} --tracer QSO --mkclusdat y --mkclusran y --splitGC y --nz y --par y
