@@ -3871,7 +3871,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir=''):
+def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -4119,7 +4119,12 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         kl.append('PROB_OBS')
     if 'WEIGHT_NT_MISSPW' in cols:
         kl.append('WEIGHT_NT_MISSPW')
-
+    if extracols is not None:
+        if isinstance(extracols, list):
+            for ex in extracols:
+                kl.append(ex)
+        else:
+            kl.append(extracols)
     if tp[:3] == 'BGS':
         #ff['flux_r_dered'] = ff['FLUX_R']/ff['MW_TRANSMISSION_R']
         #kl.append('flux_r_dered')
