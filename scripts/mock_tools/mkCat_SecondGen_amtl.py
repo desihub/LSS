@@ -366,10 +366,10 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         common.printlog('completed join to target info',logger)
 
     else:
-            if args.pota is None:
-                pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
-            else:
-                pota_fn = args.pota# '/global/cfs/projectdirs/desi/users/jerryou/DESI_Y3/DA2/Uchuu/BGS/mock0/pota-BRIGHT.fits' #args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
+        if args.pota is None:
+            pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
+        else:
+            pota_fn = args.pota# '/global/cfs/projectdirs/desi/users/jerryou/DESI_Y3/DA2/Uchuu/BGS/mock0/pota-BRIGHT.fits' #args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
         common.printlog('reading from potential assignments file '+pota_fn,logger)
         pota_cols = ['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']
         if pdir == 'bright':
@@ -824,7 +824,7 @@ if args.mkclusdat == 'y':
     
     if args.add_extracols is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
-        columns_extra = ['TARGETID'']
+        columns_extra = ['TARGETID']
         if isinstance(args.add_extracols, list):
             for ex in args.add_extracols:
                 if ex not in ffile.columns:
