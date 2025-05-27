@@ -142,6 +142,7 @@ def get_good_real(dic,real_num):
     good_tids = all_asgn['TARGETID'][good_asgn]
     asgn_real = np.isin(alltids,good_tids)
     assign_real_dic[real_num] = asgn_real
+    logger.info('got realization '+str(real_num))
     del asgn_real
 
 from multiprocessing import Pool
