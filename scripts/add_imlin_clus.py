@@ -342,8 +342,8 @@ if args.imsys_clus_ran == 'y':
     dat.rename_column('TARGETID','TARGETID_DATA')
     regl = ['NGC','SGC']
     syscolr = syscol
-    if args.replace_syscol == 'y':
-        syscolr = 'WEIGHT_SYS'
+    #if args.replace_syscol == 'y':
+    #    syscolr = 'WEIGHT_SYS'
     def _add2ran(rann):
         for reg in regl:
             ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
@@ -351,6 +351,10 @@ if args.imsys_clus_ran == 'y':
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
+            if args.replace_syscol == 'y':
+                ran['WEIGHT'] /= ran['WEIGHT_SYS']
+                ran['WEIGHT_SYS'] = ran[syscolr]
+                ran['WEIGHT'] *= ran['WEIGHT_SYS']
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
     if args.par == 'y':
@@ -363,8 +367,8 @@ if args.imsys_clus_ran == 'y':
             
 if args.add_syscol2blind == 'y':
     syscolr = syscol
-    if args.replace_syscol == 'y':
-        syscolr = 'WEIGHT_SYS'
+    #if args.replace_syscol == 'y':
+    #    syscolr = 'WEIGHT_SYS'
 
     dats = []
     for reg in ['NGC','SGC']:
@@ -378,7 +382,10 @@ if args.add_syscol2blind == 'y':
 
         dat_blind = join(dat_blind,dati,keys=['TARGETID'])
         if args.replace_syscol == 'y':
+            dat_blind['WEIGHT'] /= dat_blind['WEIGHT_SYS']
             dat_blind['WEIGHT_SYS'] = dat_blind[syscol]
+            dat_blind['WEIGHT'] *= dat_blind['WEIGHT_SYS']
+
         common.write_LSS_scratchcp(dat_blind,fname_blind,logger=logger)
     dat = vstack(dats)
     dat.rename_column('TARGETID','TARGETID_DATA')
@@ -390,6 +397,11 @@ if args.add_syscol2blind == 'y':
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
+            if args.replace_syscol == 'y':
+                ran['WEIGHT'] /= ran['WEIGHT_SYS']
+                ran['WEIGHT_SYS'] = ran[syscolr]
+                ran['WEIGHT'] *= ran['WEIGHT_SYS']
+
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
     if args.par == 'y':
