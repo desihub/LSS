@@ -262,7 +262,7 @@ if args.imsys_clus == 'y':
 
         def _add_sysweight(zm,zx):
             common.printlog('getting weights for region '+reg+' and '+str(zm)+'<z<'+str(zx),logger)
-            wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linclusimsysfit.png',wtmd='clus')
+            wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linclusimsysfit.png',wtmd='clus',logger=logger)
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
        

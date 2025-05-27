@@ -333,7 +333,7 @@ def read_systematic_maps(data_ra, data_dec, rand_ra, rand_dec,sys_tab=None):
     return data_syst, rand_syst
 
 
-def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png',modoutname='temp.txt'):
+def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_tab=None,wtmd='fracz',figname='temp.png',modoutname='temp.txt',logger=None):
     import LSS.common_tools as common
     sel = dd[zcol] > zmin
     sel &= dd[zcol] < zmax
@@ -370,10 +370,10 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     cols = list(dd.dtype.names)
     weights_ran = np.ones(len(rd))
     if wtmd == 'fracz':
-        print('using 1/FRACZ_TILELOCID based completeness weights')
+        common.printlog('using 1/FRACZ_TILELOCID based completeness weights',logger)
         wts = 1/dds['FRACZ_TILELOCID']
         if 'FRAC_TLOBS_TILES' in cols:
-            print('using FRAC_TLOBS_TILES')
+            common.printlog('using FRAC_TLOBS_TILES',logger)
             wts *= 1/dds['FRAC_TLOBS_TILES']
     if wtmd == 'wt':
         wts = dds['WEIGHT']
@@ -410,9 +410,10 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     #for name in fit_maps:
     #    print(name,len(s.data_syst[name]),len(s.data_we))
     s.fit_minuit(fit_maps=fit_maps)
-    print(s.best_pars)
-    print(list(s.best_pars))
+    common.printlog(str(s.best_pars),logger)
+    common.printlog(str(list(s.best_pars)),logger)
     pars_dict = {}
+    common.printlog('writing to '+modoutname,logger)
     fo = open(modoutname,'w')
     for par_name, p in zip(s.par_names, list(s.best_pars)):
         pars_dict[par_name] = p
@@ -420,6 +421,7 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     fo.close()
     if plotr:
         #s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
+        common.printlog('saving figure to '+figname)
         s.plot_overdensity(pars=[None, pars_dict], ylim=[0.7, 1.3])
         plt.savefig(figname)
         plt.clf()
