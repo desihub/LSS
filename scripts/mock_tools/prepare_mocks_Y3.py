@@ -252,8 +252,10 @@ if ('TRUEZ' not in targets.colnames) and (args.ztruecol != None):
     targets.rename_column(args.ztruecol, 'TRUEZ')
 if ('RSDZ' not in targets.colnames) and (args.zrsdcol != None):
     targets.rename_column(args.zrsdcol, 'RSDZ')
-    
 
+if (type_ == 'BGS') and (args.mockname.lower() == 'uchuu'):
+    targets.rename_column('ABSMAG_R', 'R_MAG_ABS')
+    
 
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
