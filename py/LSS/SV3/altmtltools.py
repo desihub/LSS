@@ -457,7 +457,7 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
 
-def updateTileTracker(altmtldir, endDate):
+def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     """Update action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -468,7 +468,14 @@ def updateTileTracker(altmtldir, endDate):
         ledgers. e.g. /pscratch/u/user/simName/Univ000/
     endDate : :class:`int`
         Integer date to which to extend tiletracker entries.
-    
+    obscon : :class:`str`, optional, defaults to "dark"
+        A string matching ONE obscondition in the desitarget bitmask yaml
+        file (i.e. in `desitarget.targetmask.obsconditions`), e.g. "DARK"
+        Governs how priorities are set when merging targets.
+    survey : :class:`str`, optional, defaults to "main"
+        Used to look up the correct ledger, in combination with `obscon`.
+        Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
+        for the main survey and different iterations of SV, respectively.    
 
     Returns
     -------
@@ -481,43 +488,32 @@ def updateTileTracker(altmtldir, endDate):
     - Survey and obscon are determined from existing file
     """
 
-    #find current tiletracker file for this altmtldir
-    altmtldir_files = os.listdir(altmtldir)
-    ExistingTileTracker_fn = [s for s in altmtldir_files if 'TileTracker' in s][0]
+    #find current tile tracker using common naming schema
+    TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
 
-    #process it to grab the survey and obscon info using string methods
-    ExistingTileTracker_fn_spt = ExistingTileTracker_fn.split('-')
-    survey = ExistingTileTracker_fn_spt[0].strip('survey')
-    obscon = ExistingTileTracker_fn_spt[1].strip('obscon')
+    #open current tile tracker, read current endDate
+    current_TT = Table.read(TileTrackerFN)
+    prev_endDate = current_TT.meta['EndDate']
 
-    #if an oldTT file already exists remove it
-    if os.path.exists(os.path.join(altmtldir,'oldTT.ecsv')):
-        os.remove(os.path.join(altmtldir,'oldTT.ecsv'))
+    #generate TileTracker update file
+    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True)
 
-    #rename old file to avoid overwriting
-    os.rename(os.path.join(altmtldir,ExistingTileTracker_fn),os.path.join(altmtldir,'oldTT.ecsv'))
-
-    #make new tile tracker file
-    makeTileTracker(altmtldir, survey, obscon, startDate = 20210514, endDate = endDate)
-
-    #read new tile tracker and set done flag = True for all entries in old tile tracker
-    old_TT = np.array(Table.read(os.path.join(altmtldir,'oldTT.ecsv')))
-    new_TT = np.array(Table.read(os.path.join(altmtldir,ExistingTileTracker_fn)))
-
+    #read into memory
+    update_TT = Table.read(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
+    
     #columns to determine if entries are in both tiletrackers.
     compare_cols = ['TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'ARCHIVEDATE']
 
-    existing_cols = np.isin(new_TT[compare_cols],old_TT[compare_cols])
+    existing_cols = np.isin(update_TT[compare_cols], current_TT[compare_cols])
 
-    #write out update new tiletracker (faster way to do this?)
-    #doneflag column determined by presence in old tiletracker
-    ActionList = [new_TT['TILEID'], new_TT['ACTIONTYPE'], new_TT['ACTIONTIME'], existing_cols, new_TT['ARCHIVEDATE']]
-    t = Table(ActionList,
-           names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': 20210514, 'EndDate': endDate, 'amtldir':altmtldir})
-    t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
+    #Combine current tile tracker with new entries
+    combined_TT = vstack([current_TT,update_TT[~existing_cols]])
+    #update meta information
+    combined_TT.meta['EndDate'] = update_TT.meta['EndDate']
+    combined_TT.meta['StartDate'] = current_TT.meta['StartDate']
     
-    t.write(os.path.join(altmtldir,ExistingTileTracker_fn), format='ascii.ecsv', overwrite = True)
+    #overwrite current tiletracker
+    combined_TT.write(TileTrackerFN.replace('TileTracker','TileTracker-Merge'), format='ascii.ecsv', overwrite=True)
     
     
 
@@ -587,7 +583,9 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
 
     #if we only want entries from tiles within the [startDate, endDate] window
     if update_only:
-        #convert into datetime objects
+        #change output name to avoid overwriting the existing tile tracker
+        TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
+        #convert dates into datetime objects
         startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
         endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
 
@@ -597,7 +595,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
 
         #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
-        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel)
+        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check prog/survey match)
         time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (MTLDT['TIMESTAMP'] < endDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
         TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
@@ -639,7 +637,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TypeOfActions.append('fa')
         TimesOfActions.append(thisfadate)
         archiveDates.append(thisfanite)
-        if thisfanite < startDate:
+        if thisfanite < startDate and not update_only: #05/28/25 : adding special case for update_only, we want all flags set to False
             doneFlag.append(True)
         else:
             doneFlag.append(False)
@@ -658,7 +656,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
             else:
                 TypeOfActions.append('update')
             TimesOfActions.append(thisupdateTimestamp)
-            if (thisupdateNite < startDate):
+            if (thisupdateNite < startDate and not update_only): #05/28/25 : adding special case for update_only, we want all flags set to False
                 doneFlag.append(True)
             else:
                 doneFlag.append(False)
@@ -667,7 +665,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
     t = Table(ActionList,
            names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir})
+           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir},
+           dtype=('<i8', '<U6', '<U25', 'bool', '<i8'))
     t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
     
     t.write(TileTrackerFN, format='ascii.ecsv', overwrite = overwrite)
