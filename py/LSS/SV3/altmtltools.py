@@ -60,7 +60,7 @@ from time import sleep
 import cProfile, pstats
 import io as ProfileIO
 from pstats import SortKey
-
+from datetime import datetime, timedelta
 import glob
 
 
@@ -524,7 +524,7 @@ def updateTileTracker(altmtldir, endDate):
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True):
+    endDate = None, overwrite = True, update_only = False):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -584,6 +584,22 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     TSS_Sel = TSS[(TSS['SURVEY'] == surveyForTSS) & (TSS['FAPRGRM'] == obscon.lower())]
     
     TilesSel = np.unique(TSS_Sel['TILEID'])
+
+    #if we only want entries from tiles within the [startDate, endDate] window
+    if update_only:
+        #convert into datetime objects
+        startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
+        endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
+
+        #format into strings for comparisson to MTL DT timestamp column
+        #note we increment endDate by one day to catch tiles from the final day (less than or equal to doesn't work due to column datatype comparison)
+        startDate_frm = startDate_dt.strftime("%Y-%m-%d")
+        endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+
+        #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
+        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel)
+        time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (MTLDT['TIMESTAMP'] < endDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
+        TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
     TileIDs = []
     TypeOfActions = []
