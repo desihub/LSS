@@ -421,7 +421,7 @@ def get_imweight(dd,rd,zmin,zmax,reg,fit_maps,use_maps,plotr=True,zcol='Z',sys_t
     fo.close()
     if plotr:
         #s.plot_overdensity(pars=[None, s.best_pars], ylim=[0.7, 1.3])#, title=f'{sample_name}: global fit')
-        common.printlog('saving figure to '+figname)
+        common.printlog('saving figure to '+figname,logger)
         s.plot_overdensity(pars=[None, pars_dict], ylim=[0.7, 1.3])
         plt.savefig(figname)
         plt.clf()
