@@ -17,9 +17,9 @@ from datetime import timedelta
 import os
 print(f"[DEBUG] Available cores: {len(os.sched_getaffinity(0))}")
 
-import sys
-sys.path.append("/pscratch/sd/s/shreeb/shreeb/LSS/py")
-import LSS.common_tools as common
+# import sys
+# sys.path.append("/pscratch/sd/s/shreeb/shreeb/LSS/py")
+# import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--basedir", help="Base directory for catalogs", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
