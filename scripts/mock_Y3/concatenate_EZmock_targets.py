@@ -10,10 +10,14 @@ import fitsio
 
 
 seed = int(sys.argv[1])
+idir = sys.argv[2]
+odir = sys.argv[3]
 
 tracers = ['LRG', 'ELG', 'QSO']
 
-idir0 = "/pscratch/sd/j/jerryou/DESI_Y3/SecondGenMocks/EZmock/{tracer}/"
+
+#idir0 = "/pscratch/sd/j/jerryou/DESI_Y3/SecondGenMocks/EZmock/{tracer}/"
+idir0 = idir+"/{tracer}/"
 filename = "EZmock_{tracer}_DA2_c000_ph000_NScomb_{seed:04d}.fits.gz"
 
 
@@ -33,7 +37,7 @@ for tracer in tracers:
 print("Targets:", np.unique(output['TARGETID']))
 
 
-odir = "/pscratch/sd/j/jerryou/DESI_Y3/SecondGenMocks/EZmock/forFA/"
+#odir = "/pscratch/sd/j/jerryou/DESI_Y3/SecondGenMocks/EZmock/forFA/"
 ofile = odir + f"forFA{seed}.fits"
 output.write(ofile, overwrite=True)
 
