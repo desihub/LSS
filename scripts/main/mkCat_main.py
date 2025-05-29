@@ -1258,6 +1258,12 @@ if args.compmd == 'altmtl':
 
 
 inds = np.arange(rm,rx)
+
+out_name = dirout +args.extra_clus_dir+ tracer_clus#type + notqso
+if args.zcmb == 'y':
+	out_name += '_zcmb'
+
+
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -1277,9 +1283,6 @@ if mkclusran:
     if 'BGS_BRIGHT' in args.type:
         ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
     
-    out_name = dirout +args.extra_clus_dir+ tracer_clus#type + notqso
-    if args.zcmb == 'y':
-        out_name += '_zcmb'
     clus_arrays = [fitsio.read(out_name+'_clustering.dat.fits')]
     def _parfun_cr(ii):
         ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
@@ -1294,7 +1297,7 @@ if mkclusran:
         #,ntilecut=ntile,ccut=ccut)
 
 if args.NStoGC == 'y':
-    fb = dirout+tracer_clus+'_'
+    fb = out_name+'_'#dirout+tracer_clus+'_'
     ct.clusNStoGC(fb, rx - rm)#,par=args.par)
 
 
@@ -1336,7 +1339,7 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 if args.splitGC == 'y':
-    fb = dirout+args.extra_clus_dir+tracer_clus+'_'
+    fb = out_name+'_'#dirout+args.extra_clus_dir+tracer_clus+'_'
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
     splitGC(fb,'.dat')
     def _spran(rann):
@@ -1371,7 +1374,7 @@ if args.resamp == 'y':
 #allreg = ['NGC','SGC']
 if args.nz == 'y':
     for reg in regions:#allreg:
-        fb = dirout+args.extra_clus_dir+tracer_clus+'_'+reg
+        fb = out_name+'_'+reg#dirout+args.extra_clus_dir+tracer_clus+'_'+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
