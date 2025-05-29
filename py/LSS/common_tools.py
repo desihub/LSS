@@ -247,6 +247,14 @@ def cutphotmask(aa,bits=None,logger=None):
     printlog(str(len(aa)) +' after imaging veto',logger=logger )
     return aa
 
+def mk_zcmbmap(nside=256,nest=True):
+    import healpy as hp
+    pix = np.arange(12*nside*nside)
+    th,phi = hp.pix2ang(nside,pix,nest=nest)
+    ra,dec = thphi2radec(th,phi)
+    zcmb = get_zcmbdipole(ra,dec)
+    return zcmb
+
 def get_zcmbdipole(ra,dec):
     '''
     given input arrays for ra/dec in degrees, calculate redshift from CMB dipole

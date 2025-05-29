@@ -217,7 +217,7 @@ elif type[:3] == 'BGS':
 common.printlog('the added weight column will be '+syscol,logger)
 
 debv = common.get_debv()
-
+zcmb = common.mk_zcmbmap()
 sky_g,sky_r,sky_z = common.get_skyres()
 
 
@@ -257,6 +257,8 @@ if args.imsys_clus == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        if 'ZCMB' in fit_maps:
+            sys_tab['ZCMB'] = zcmb
         #seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
 
