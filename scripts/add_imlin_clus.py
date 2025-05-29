@@ -173,6 +173,8 @@ tracer_clus = args.type
 tpstr = args.type
 if 'BGS_BRIGHT' in tracer_clus:
     tpstr = 'BGS_BRIGHT'
+if 'LRG' in tracer_clus:
+    tpstr = 'LRG'
 nside = 256
 inds = np.arange(rm,rx)
 
