@@ -85,6 +85,7 @@ parser.add_argument("--fillran", help="add imaging properties to randoms",defaul
 parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
+parser.add_argument("--zcmb", help="whether or not to correct redshifts based on cmb dipole",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
@@ -1249,7 +1250,7 @@ weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,zmin=zmin,zmax=zmax,correct_zcmb='n',wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,zmin=zmin,zmax=zmax,correct_zcmb=args.zcmb,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
 
 nzcompmd = 'ran'
 if args.compmd == 'altmtl':
@@ -1275,10 +1276,13 @@ if mkclusran:
     ranin = dirin + args.type + notqso + '_'
     if 'BGS_BRIGHT' in args.type:
         ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
-
-    clus_arrays = [fitsio.read(dirout +args.extra_clus_dir+ type + notqso+'_clustering.dat.fits')]
+    
+    out_name = dirout +args.extra_clus_dir+ tracer_clus#type + notqso
+    if args.zcmb == 'y':
+        out_name += '_zcmb'
+    clus_arrays = [fitsio.read(outname+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
+        ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:

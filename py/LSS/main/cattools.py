@@ -3906,10 +3906,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         print('Z column already in full file')
     else:
         ff['Z_not4clus'].name = 'Z'
-    if correct_zcmb == 'y':
-        zcmb = common.get_zcmbdipole(ff['RA'],ff['DEC'])
-        newz = (1+ff['Z'])*(1+zcmb)-1
-        ff['Z'] = newz
     if tp[:3] == 'QSO':
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = ff['Z']*0 == 0
@@ -3964,6 +3960,13 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             common.printlog('length after dchi2 cut '+str(len(ff[wz])),logger)
         #wz &= ff['TSNR2_BGS'] > tsnrcut
         #print('length after tsnrcut '+str(len(ff[wz])))
+
+    if correct_zcmb == 'y':
+        zcmb = common.get_zcmbdipole(ff['RA'],ff['DEC'])
+        newz = (1+ff['Z'])*(1+zcmb)-1
+        ff['Z'] = newz
+        wzm += 'zcmb_'
+
 
     if subfrac != 1:
         subfracl = np.ones(len(ff))
@@ -4390,7 +4393,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
     for ind in range(0,len(regl)):
         reg = regl[ind]
         if clus_arrays is None:
-            fcdn = Table.read((fl+wzm+reg+'clustering.dat.fits').replace(tp,extradir+tp))
+            fcdn = Table.read((fl+wzm+reg+'clustering.dat.fits')#.replace(tp,extradir+tp))
         else:
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
@@ -4409,7 +4412,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  (fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits').replace(tp,extradir+tp)  
+        outfn =  (fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits')#.replace(tp,extradir+tp)  
         
         des_resamp = False
         if 'QSO' in tp:
