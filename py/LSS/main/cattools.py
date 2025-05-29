@@ -4393,7 +4393,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
     for ind in range(0,len(regl)):
         reg = regl[ind]
         if clus_arrays is None:
-            fcdn = Table.read((fl+wzm+reg+'clustering.dat.fits')#.replace(tp,extradir+tp))
+            fcdn = Table.read(fl+wzm+reg+'clustering.dat.fits')#.replace(tp,extradir+tp))
         else:
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
@@ -4412,7 +4412,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  (fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits')#.replace(tp,extradir+tp)  
+        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits'#).replace(tp,extradir+tp)  
         
         des_resamp = False
         if 'QSO' in tp:
