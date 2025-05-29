@@ -159,7 +159,7 @@ elif args.usemaps[0] == 'allebv':
     fit_maps = mainp.fit_maps_allebv
     syscol += '_ALLEBV'
 elif args.usemaps[0] == 'allebvcmb':
-    fit_maps = mainp.fit_maps_allebv
+    fit_maps = mainp.fit_maps_allebvcmb
     syscol += '_ALLEBVCMB'
 
 else:
