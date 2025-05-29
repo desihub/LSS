@@ -158,6 +158,10 @@ elif args.usemaps[0] == 'all':
 elif args.usemaps[0] == 'allebv':
     fit_maps = mainp.fit_maps_allebv
     syscol += '_ALLEBV'
+elif args.usemaps[0] == 'allebvcmb':
+    fit_maps = mainp.fit_maps_allebv
+    syscol += '_ALLEBVCMB'
+
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
