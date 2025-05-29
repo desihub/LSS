@@ -3966,6 +3966,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         newz = (1+ff['Z'])*(1+zcmb)-1
         ff['Z'] = newz
         wzm += 'zcmb_'
+        common.printlog('corrected redshifts to cmb frame')
 
 
     if subfrac != 1:
