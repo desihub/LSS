@@ -1280,7 +1280,7 @@ if mkclusran:
     out_name = dirout +args.extra_clus_dir+ tracer_clus#type + notqso
     if args.zcmb == 'y':
         out_name += '_zcmb'
-    clus_arrays = [fitsio.read(outname+'_clustering.dat.fits')]
+    clus_arrays = [fitsio.read(out_name+'_clustering.dat.fits')]
     def _parfun_cr(ii):
         ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
