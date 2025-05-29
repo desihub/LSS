@@ -110,7 +110,8 @@ class main:
             #self.tsnrcol = 'TSNR2_QSO'
         if tp[:3] == 'LRG':
             self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1'] #used up until v0.6
-            self.fit_maps_allebv = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
+            self.fit_maps_allebv = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ']
+            self.fit_maps_allebvcmb = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
             self.fit_maps = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
             self.fit_maps46s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','GALDEPTH_R']
             self.fit_maps68s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','GALDEPTH_G']
