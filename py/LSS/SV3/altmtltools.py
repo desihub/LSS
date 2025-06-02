@@ -495,6 +495,11 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     current_TT = Table.read(TileTrackerFN)
     prev_endDate = current_TT.meta['EndDate']
 
+    #check if enddates are the same, skip remaining steps if true
+    if endDate == prev_endDate:
+        print('New end date is the same as the current end date, update will not be performed')
+        return
+
     #generate TileTracker update file
     makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True)
 
@@ -511,9 +516,17 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     #update meta information
     combined_TT.meta['EndDate'] = update_TT.meta['EndDate']
     combined_TT.meta['StartDate'] = current_TT.meta['StartDate']
+
+    #rename existing tiletracker
+    os.rename(TileTrackerFN,TileTrackerFN.replace('TileTracker','TileTracker-Thru{}'.format(prev_endDate)))
     
-    #overwrite current tiletracker
-    combined_TT.write(TileTrackerFN.replace('TileTracker','TileTracker-Merge'), format='ascii.ecsv', overwrite=True)
+    #write new merged tiletracker
+    combined_TT.write(TileTrackerFN, format='ascii.ecsv', overwrite=True)
+
+    #delete update tiletracker (going to leave this out for now, and assess if we want to delete this update files later)
+    #os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
+    
+    return
     
     
 
