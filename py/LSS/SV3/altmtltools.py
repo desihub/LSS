@@ -19,8 +19,8 @@ import astropy.io
 import astropy.io.fits as pf
 from astropy.table import Table,join,vstack
 
-import memory_profiler
-from memory_profiler import profile
+#import memory_profiler
+#from memory_profiler import profile
 
 import desitarget
 from desitarget import io, mtl
@@ -603,8 +603,9 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
 
         #format into strings for comparisson to MTL DT timestamp column
+        #note we increment startDate by one day to avoid overlapping on previous endDate
         #note we increment endDate by one day to catch tiles from the final day (less than or equal to doesn't work due to column datatype comparison)
-        startDate_frm = startDate_dt.strftime("%Y-%m-%d")
+        startDate_frm = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
         endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
 
         #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
