@@ -266,8 +266,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    fbadir = os.path.join(args.base_altmtl_dir,args.survey,args.simName,'altmtl'+str(mocknum),'Univ000/fa/MAIN/')
-    #TEMP AURE  fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    ###fbadir = os.path.join(args.base_altmtl_dir,args.survey,args.simName,'altmtl'+str(mocknum),'Univ000/fa/MAIN/')
+    fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
@@ -517,8 +517,7 @@ if args.tracer[:3] == 'BGS':
 nzmd = 'mock'
 mainp = main(args.tracer, args.specdata, survey=args.survey)
 imbits = mainp.imbits
-tsnrcut = mainp.tsnrcut
-
+#tsnrcut = mainp.tsnrcut
     
 if args.fullr == 'y':
     print('Calculate GTL')
