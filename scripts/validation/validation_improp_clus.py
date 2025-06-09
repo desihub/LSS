@@ -206,7 +206,8 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     return chi2,chi2nw
 
 do_zcmb = 'y'        
-    
+do_mws = 'y'
+do_extrastar = 'y'    
 
 for tp in tps:
     
@@ -223,6 +224,8 @@ for tp in tps:
         do_ebvnew_diff = 'y'
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'n'
+        do_mws = 'n'
+        do_extrastar = 'n'
         print('doing validation for '+tp)
     if args.mapmd == 'mws':
         maps = []
@@ -430,27 +433,29 @@ for tp in tps:
 
 
             
-            for mp in mws_maps:
-                fig = plt.figure()
-                parv = mwsf[mp]
-                sel_zero = (parv == 0)
-                sel_zero &= (parv*0 != 0)
-                pixlr[sel_zero] = 0
-                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
-                chi2tot += chi2
-                nmaptot += 1
-                figs.append(fig)
+            if do_mws == 'y':
+                for mp in mws_maps:
+                    fig = plt.figure()
+                    parv = mwsf[mp]
+                    sel_zero = (parv == 0)
+                    sel_zero &= (parv*0 != 0)
+                    pixlr[sel_zero] = 0
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2tot += chi2
+                    nmaptot += 1
+                    figs.append(fig)
 
-            for mp in starmaps:
-                fig = plt.figure()
-                parv = stardens[mp]
-                sel_zero = (parv == 0)
-                sel_zero &= (parv*0 != 0)
-                pixlr[sel_zero] = 0
-                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab='Gaia stars '+mp,titl=args.survey+' '+tp+zr+' '+reg)
-                chi2tot += chi2
-                nmaptot += 1
-                figs.append(fig)
+            if do_extrastar == 'y':
+                for mp in starmaps:
+                    fig = plt.figure()
+                    parv = stardens[mp]
+                    sel_zero = (parv == 0)
+                    sel_zero &= (parv*0 != 0)
+                    pixlr[sel_zero] = 0
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab='Gaia stars '+mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2tot += chi2
+                    nmaptot += 1
+                    figs.append(fig)
 
                 
             for mp in maps:
