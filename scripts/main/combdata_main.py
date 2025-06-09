@@ -197,12 +197,12 @@ if args.make_tile_file == 'y':
 logger.info('specrel is '+specrel)
 if specrel == 'daily':
     #specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    specfo = basedir+'main/LSS/daily/datcomb_'+prog+'_spec_zdone.fits'
+    specfo = basedir+'main/LSS/daily/datcomb_'+prog.replace('1b','')+'_spec_zdone.fits'
     #if not os.path.isfile(specfo) and args.subguad != 'y':
-    if os.path.isfile(specfo) and args.subguad == 'n' and args.redospec == 'n':
+    if os.path.isfile(specfo)  and args.redospec == 'n':# and args.subguad == 'n':
         specf = fitsio.read(specfo)    
-    else:
-        specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
+    #else:
+    #    specf = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/guadalupe/datcomb_'+prog+'_spec_zdone.fits')
 
     speccols = list(specf.dtype.names)
     logger.info(str(speccols))
