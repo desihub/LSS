@@ -150,6 +150,7 @@ if do_lrgmask == 'y':
     sel = ranmap > 0
     lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
+zcmb = common.mk_zcmbmap()
 
 if args.test == 'y':
     maps = [maps[0]] 
@@ -203,7 +204,8 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     fo.close()
     print('wrote to '+fname)
     return chi2,chi2nw
-        
+
+do_zcmb = 'y'        
     
 
 for tp in tps:
@@ -370,6 +372,15 @@ for tp in tps:
             if 'DES' in reg:
                 regu = 'S'
 
+            if do_zcmb == 'y':
+                fig = plt.figure()
+                parv = zcmb
+                mp = r'$\Delta$ Z CMB frame'
+                
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
 
             if dosky_g == 'y':
                 fig = plt.figure()
