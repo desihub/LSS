@@ -524,6 +524,37 @@ if args.survey == 'Y1' and args.counts_only == 'y':
         tc.write(outtc,format='fits', overwrite=True)
 
 
+if prog == 'dark':
+	if args.tracer == 'all':
+		#tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+		#notqsos = ['','','notqso','','']
+		tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
+		notqsos = ['','','']
+	else:
+		tps = [args.tracer]
+		notqsos = [args.notqso]    
+if prog == 'dark1b':
+	if args.tracer == 'all':
+		#tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+		#notqsos = ['','','notqso','','']
+		tps = ['LGE','QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
+		notqsos = ['','','','']
+	else:
+		tps = [args.tracer]
+		notqsos = [args.notqso]    
+
+if 'bright' in prog:
+	if args.tracer == 'all':
+		#tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+		#notqsos = ['',''] 
+		tps = ['BGS_ANY']#,'MWS_ANY']  
+		notqsos = [''] 
+
+	else:
+		tps = [args.tracer]
+		notqsos = [args.notqso]    
+
+
 if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     dotarspec = False
@@ -594,25 +625,6 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
     specf.keep_columns(spec_cols_4tar)
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
-    if prog == 'dark':
-        if args.tracer == 'all':
-            #tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-            #notqsos = ['','','notqso','','']
-            tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
-            notqsos = ['','','']
-        else:
-            tps = [args.tracer]
-            notqsos = [args.notqso]    
-    if prog == 'bright':
-        if args.tracer == 'all':
-            #tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-            #notqsos = ['',''] 
-            tps = ['BGS_ANY']#,'MWS_ANY']  
-            notqsos = [''] 
-
-        else:
-            tps = [args.tracer]
-            notqsos = [args.notqso]    
     for tp,notqso in zip(tps,notqsos):
         logger.info('now doing '+tp+notqso)
         logger.info(len(tiles4comb['TILEID']))
@@ -727,26 +739,26 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     specf.keep_columns(spec_cols_4tar)
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
-    if prog == 'dark':
-        if args.tracer == 'all':
-            #tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-            #notqsos = ['','','notqso','','']
-            tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
-            notqsos = ['','','']
-
-        else:
-            tps = [args.tracer]
-            notqsos = [args.notqso]    
-    if prog == 'bright':
-        if args.tracer == 'all':
-            #tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-            #notqsos = ['',''] 
-            tps = ['BGS_ANY']#,'MWS_ANY']  
-            notqsos = [''] 
-
-        else:
-            tps = [args.tracer]
-            notqsos = [args.notqso]    
+#     if prog == 'dark':
+#         if args.tracer == 'all':
+#             #tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+#             #notqsos = ['','','notqso','','']
+#             tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
+#             notqsos = ['','','']
+# 
+#         else:
+#             tps = [args.tracer]
+#             notqsos = [args.notqso]    
+#     if prog == 'bright':
+#         if args.tracer == 'all':
+#             #tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+#             #notqsos = ['',''] 
+#             tps = ['BGS_ANY']#,'MWS_ANY']  
+#             notqsos = [''] 
+# 
+#         else:
+#             tps = [args.tracer]
+#             notqsos = [args.notqso]    
 
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
