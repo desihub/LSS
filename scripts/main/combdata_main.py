@@ -889,7 +889,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
                 common.printlog('2nd join done',logger)
             del tarfn
-            if len(tjl) > 0:
+            if len(tjl) > 1:
                 tj = vstack(tjl)
             else:
                 tj = tjl[0]
@@ -916,13 +916,19 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #tj = join(tarfn,specf,keys=['TARGETID','TILELOCID'],join_type='left')
             tjl = []
             selreg = tarfn['DEC'] > 0
-            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-            common.printlog('1st join done',logger)
-            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-            common.printlog('2nd join done',logger)
-            tj = vstack(tjl)
+            if np.sum(selreg) > 0:
+                tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+                tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+                common.printlog('1st join done',logger)
+            if np.sum(~selreg) > 0:
+                tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+                tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+                common.printlog('2nd join done',logger)
+            if len(tjl) > 1:
+                tj = vstack(tjl)
+            else:
+                tj = tjl[0]
+            del tjl
             del tarfn
             #tj = np.concatenate(tjl)
             common.printlog('stacked now writing out',logger)
