@@ -776,7 +776,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
             nstid = len(tiles4comb['TILEID'])
             notid = len(np.unique(fo['TILEID']))
-            test_tid = np.isin(nstid,notid)
+            test_tid = np.isin(tiles4comb['TILEID'],np.unique(fo['TILEID']))
             common.printlog('there are '+str(nstid-np.sum(test_tid))+ ' tiles that need to be added to '+outf,logger)
             if nstid == np.sum(test_tid):
                 update = False
