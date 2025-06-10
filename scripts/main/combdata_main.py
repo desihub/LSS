@@ -291,13 +291,13 @@ if specrel == 'daily' and args.survey == 'main':
             tidsnp = ~tidsp
             tiles4hp = tiles4comb[tidsnp]
         else :
-            print('didnt load processed tiles file '+processed_tiles_file)
+            common.printlog('didnt load processed tiles file '+processed_tiles_file,logger)
             tiles4hp = tiles4comb
     
-        print('will combine pixels for '+str(len(tiles4hp))+' new tiles')
+        common.printlog('will combine pixels for '+str(len(tiles4hp))+' new tiles',logger)
         if len(tiles4hp) > 0:
             for px in hpxs:
-                print('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)))
+                common.printlog('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)),logger)
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
                 npx += 1
