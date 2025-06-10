@@ -1200,6 +1200,11 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
         tars = read_targets_in_tiles(mdir,tls[wt],mtl=True,isodate=fht['MTLTIME'])
         #tars.keep_columns(tarcols)
         tars = tars[[b for b in tarcol]]
+        if 'MTL2' in fht.keys():
+            mdir2 = '/global/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
+            tars2 = read_targets_in_tiles(mdir2,tls[wt],mtl=True,isodate=fht['MTLTIME'])
+            tars2 = tars2[[b for b in tarcol]]
+            tars = vstack([tars,tars2])
         theta, phi = np.radians(90-tars['DEC']), np.radians(tars['RA'])
         tpix = hp.ang2pix(8,theta,phi,nest=True)
         sel = tpix == hpx
