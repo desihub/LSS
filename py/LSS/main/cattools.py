@@ -1207,7 +1207,8 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
             tars2 = tars2[[b for b in tarcol]]
             common.printlog(str(tars.dtype.names),logger)
             common.printlog(str(tars2.dtype.names),logger)
-            tars = vstack([tars,tars2])
+            #tars = vstack([tars,tars2])
+            tars = np.concatenate([tars,tars2])
         theta, phi = np.radians(90-tars['DEC']), np.radians(tars['RA'])
         tpix = hp.ang2pix(8,theta,phi,nest=True)
         sel = tpix == hpx
