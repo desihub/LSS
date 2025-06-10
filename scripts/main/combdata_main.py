@@ -804,6 +804,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             del fo
         if args.counts_only != 'y' and update:
             common.printlog('updating '+outf,logger)
+            cols = None
             if os.path.isfile(outf):
                 tarfn = fitsio.read(outf)
                 cols = tarfn.dtype.names
@@ -827,7 +828,10 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
-                    tarf = fitsio.read(tarfo,columns=cols)
+                    if cols is not None:
+                        tarf = fitsio.read(tarfo)
+                    else:
+                        tarf = fitsio.read(tarfo,columns=cols)
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     if tp == 'BGS_BRIGHT':
                         sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
