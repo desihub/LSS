@@ -829,9 +829,9 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                 if os.path.isfile(tarfo):
                     if cols is not None:
-                        tarf = fitsio.read(tarfo)
-                    else:
                         tarf = fitsio.read(tarfo,columns=cols)
+                    else:
+                        tarf = fitsio.read(tarfo)
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     if tp == 'BGS_BRIGHT':
                         sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
