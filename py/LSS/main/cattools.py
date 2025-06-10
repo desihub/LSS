@@ -1171,9 +1171,10 @@ def combtiles_wdup(tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BG
     else:
         print('nothing to update, done')
 
-def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY']):
+def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET','MWS_TARGET','SUBPRIORITY','PRIORITY_INIT','TARGET_STATE','TIMESTAMP','ZWARN','PRIORITY'],logger=None):
     import desimodel.footprint as foot
     from desitarget.io import read_targets_in_tiles
+    import LSS.common_tools as common
     s = 0
     n = 0
 
@@ -1186,7 +1187,7 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
         tmask = ~np.isin(tls['TILEID'],tdone)
     else:
         tmask = np.ones(len(tls)).astype('bool')
-    print('there are potentially '+str(len(tls[tmask]))+' to get updates from, out of a possible '+str(len(tls))+' overlapping this pixel')
+    common.printlog('there are potentially '+str(len(tls[tmask]))+' to get updates from, out of a possible '+str(len(tls))+' overlapping this pixel',logger)
     for tile in tls[tmask]['TILEID']:
         ts = str(tile).zfill(6)
         faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -1204,6 +1205,8 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
             mdir2 = '/global/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
             tars2 = read_targets_in_tiles(mdir2,tls[wt],mtl=True,isodate=fht['MTLTIME'])
             tars2 = tars2[[b for b in tarcol]]
+            common.printlog(str(tars.dtype.names),logger)
+            common.printlog(str(tars2.dtype.names),logger)
             tars = vstack([tars,tars2])
         theta, phi = np.radians(90-tars['DEC']), np.radians(tars['RA'])
         tpix = hp.ang2pix(8,theta,phi,nest=True)
@@ -1221,10 +1224,10 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
                 tarsn = vstack([tarsn,tars],metadata_conflicts='silent')
             tarsn.sort('TARGETID')
 
-            print(tile,n,len(tls[tmask]),len(tarsn))
+            #print(tile,n,len(tls[tmask]),len(tarsn))
 
         else:
-            print('no overlapping targetid')
+            common.printlog('no overlapping targetid for tile '+str(tile),logger)
         n += 1
     if tarsn is not None and n > 0:
         tarsn.write(fout,format='fits', overwrite=True)
