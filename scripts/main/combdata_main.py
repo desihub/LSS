@@ -880,14 +880,20 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                     specf.remove_columns([col])
                 except:
                     print('column '+col +' was not in stacked spec table') 
-            tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-            tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-            common.printlog('1st join done',logger)
-            tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-            tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-            common.printlog('2nd join done',logger)
+            if np.sum(selreg) > 0:
+                tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+                tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+                common.printlog('1st join done',logger)
+            if np.sum(~selreg) > 0
+                tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+                tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+                common.printlog('2nd join done',logger)
             del tarfn
-            tj = vstack(tjl)
+            if len(tjl) > 0:
+                tj = vstack(tjl)
+            else:
+                tj = tjl[0]
+            del tjl
             common.printlog('stacked now writing out',logger)
             #for reg in regl:                
             #    sel = tarfn['PHOTSYS'] == reg
