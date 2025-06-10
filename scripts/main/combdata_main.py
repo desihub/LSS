@@ -844,6 +844,8 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                         s = 1
                     else:
                         #tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
+                        common.printlog(tarfn.dtype.names,logger)
+                        common.printlog(tarf.dtype.names,logger)
                         tarfn = np.hstack((tarfn,tarf[sel]))
                     common.printlog(str(len(tarfn))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
                 else:
