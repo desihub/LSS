@@ -1205,8 +1205,9 @@ def combtiles_wdup_hp(hpx,tiles,fout='',tarcol=['RA','DEC','TARGETID','DESI_TARG
             mdir2 = '/global/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
             tars2 = read_targets_in_tiles(mdir2,tls[wt],mtl=True,isodate=fht['MTLTIME'])
             tars2 = tars2[[b for b in tarcol]]
-            common.printlog(str(tars.dtype.names),logger)
-            common.printlog(str(tars2.dtype.names),logger)
+            #common.printlog(str(tars.dtype.names),logger)
+            #common.printlog(str(tars2.dtype.names),logger)
+            common.printlog('adding '+str(len(tars2))+ ' entries from MTL2 to tile '+str(tile),logger)
             #tars = vstack([tars,tars2])
             tars = np.concatenate([tars,tars2])
         theta, phi = np.radians(90-tars['DEC']), np.radians(tars['RA'])
