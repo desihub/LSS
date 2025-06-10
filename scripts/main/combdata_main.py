@@ -884,7 +884,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
                 tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
                 common.printlog('1st join done',logger)
-            if np.sum(~selreg) > 0
+            if np.sum(~selreg) > 0:
                 tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
                 tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
                 common.printlog('2nd join done',logger)
