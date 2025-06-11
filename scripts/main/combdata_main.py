@@ -721,11 +721,20 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             specf.write(specfo,overwrite=True,format='fits')
 
     newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
-    specf = Table.read(specfo)
+    
     if newspec:
-        print('new tiles were found for spec dataso there were updates to '+specfo)
+        common.printlog('new tiles were found for spec dataso there were updates to '+specfo,logger)
     else:
-        print('no new tiles were found for spec data, so no updates to '+specfo)
+        common.printlog('no new tiles were found for spec data, so no updates to '+specfo,logger)
+    specf = fitsio.read(specfo,columns=spec_cols_4tar)
+    common.printlog('spec file '+specfo+' has '+str(len(specf))+' rows',logger)
+    if '1b' in prog:
+        common.printlog('adding '+specfo.replace('1b','') +' to spec info')
+        specfnb = fitsio.read(specfo.replace('1b',''),columns=spec_cols_4tar)
+        specf = np.concatenate([specf,specfnb])
+        del specfnb
+    specf = Table(specf)
+    
 #     specf.keep_columns(['CHI2','COEFF','Z','ZERR','ZWARN','ZWARN_MTL','NPIXELS','SPECTYPE','SUBTYPE','NCOEFF','DELTACHI2'\
 #     ,'FIBERASSIGN_X','FIBERASSIGN_Y','TARGETID','LOCATION','FIBER','COADD_FIBERSTATUS'\
 #     ,'OBJTYPE','TILEID','INTEG_COADD_FLUX_B','MEAN_DELTA_X', 'RMS_DELTA_X', 'MEAN_DELTA_Y',\
@@ -735,8 +744,9 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
 #     'TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z',\
 #     'TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','Z_QN','Z_QN_CONF','IS_QSO_QN'])
 
+    
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specf.keep_columns(spec_cols_4tar)
+    #specf.keep_columns(spec_cols_4tar)
     #tj = join(tarf,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
     
 #     if prog == 'dark':
@@ -868,42 +878,45 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             #    specf.remove_columns(['PRIORITY'])
             #except:
             #    print('column PRIORITY was not in spec table')  
-            tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-            print('added TILELOCID, about to do joins')
-            #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-
-            #seems to run out of memory on join
-            tjl = []
-            print(tarfn.dtype.names)
-            selreg = tarfn['DEC'] > 0
-            print(len(tarfn[selreg]))
-            remcol = ['LOCATION','TILEID']
-            for col in remcol:
-                try:
-                    specf.remove_columns([col])
-                except:
-                    print('column '+col +' was not in stacked spec table') 
-            if np.sum(selreg) > 0:
-                tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-                tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-                common.printlog('1st join done',logger)
-            if np.sum(~selreg) > 0:
-                tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-                tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-                common.printlog('2nd join done',logger)
-            del tarfn
-            if len(tjl) > 1:
-                tj = vstack(tjl)
-            else:
-                tj = tjl[0]
-            del tjl
-            common.printlog('stacked now writing out',logger)
-            #for reg in regl:                
-            #    sel = tarfn['PHOTSYS'] == reg
-            #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-            #tj.write(outfs,format='fits', overwrite=True)
-            common.write_LSS_scratchcp(tj,outfs,logger=logger)
-            common.printlog('joined to spec data and wrote out to '+outfs,logger)
+            
+            #join to spec info; now only do so after updating 1b tiles
+            if '1b' in prog:
+				tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
+				print('added TILELOCID, about to do joins')
+				#tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+	
+				#seems to run out of memory on join
+				tjl = []
+				print(tarfn.dtype.names)
+				selreg = tarfn['DEC'] > 0
+				print(len(tarfn[selreg]))
+				remcol = ['LOCATION','TILEID']
+				for col in remcol:
+					try:
+						specf.remove_columns([col])
+					except:
+						print('column '+col +' was not in stacked spec table') 
+				if np.sum(selreg) > 0:
+					tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+					tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+					common.printlog('1st join done',logger)
+				if np.sum(~selreg) > 0:
+					tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+					tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+					common.printlog('2nd join done',logger)
+				del tarfn
+				if len(tjl) > 1:
+					tj = vstack(tjl)
+				else:
+					tj = tjl[0]
+				del tjl
+				common.printlog('stacked now writing out',logger)
+				#for reg in regl:                
+				#    sel = tarfn['PHOTSYS'] == reg
+				#    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+				#tj.write(outfs,format='fits', overwrite=True)
+				common.write_LSS_scratchcp(tj,outfs,logger=logger)
+				common.printlog('joined to spec data and wrote out to '+outfs,logger)
         elif redotarspec or dotarspec:
             common.printlog('joining spec info to target info',logger)
             tarfn = fitsio.read(outf)
