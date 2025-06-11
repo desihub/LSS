@@ -80,6 +80,9 @@ class main:
         if tp[:3] == 'BGS':
             self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI'] #used up until v0.6
             self.fit_maps = ['STARDENS','GALDEPTH_R','HI']
+            self.fit_maps_allebv = ['STARDENS','GALDEPTH_R','HI','EBV_DIFF_GR','EBV_DIFF_RZ']
+            self.fit_maps_allebvcmb = ['STARDENS','GALDEPTH_R','HI','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
+
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
             self.dchi2 = 40
