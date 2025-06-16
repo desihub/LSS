@@ -268,7 +268,6 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    ###fbadir = os.path.join(args.base_altmtl_dir,args.survey,args.simName,'altmtl'+str(mocknum),'Univ000/fa/MAIN/')
     fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
@@ -524,8 +523,6 @@ if args.tracer[:3] == 'BGS':
 
 nzmd = 'mock'
 mainp = main(args.tracer, args.specdata, survey=args.survey)
-imbits = mainp.imbits
-#tsnrcut = mainp.tsnrcut
     
 if args.fullr == 'y':
     print('Calculate GTL')
@@ -553,7 +550,7 @@ if args.fullr == 'y':
     specf = specf[sel]
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut, tsnr_col=mainp.tsnrcol,fibstatusbits=mainp.badfib_status)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib, tsnr_min=mainp.tsnrcut, tsnr_col=mainp.tsnrcol,fibstatusbits=mainp.badfib_status)
     gtl = np.unique(specfc['TILELOCID'])
     del specfc
 
@@ -579,7 +576,7 @@ if args.fullr == 'y':
         #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
         outf = dirout+'/'+pdir+'_'+str(rann)+'_full_noveto.ran.fits'
         logger.info('about to make full ran '+outf)
-        ct.mkfullran_prog(gtl,os.path.join(maindir,args.specdata, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
+        ct.mkfullran_prog(gtl,os.path.join(maindir,args.specdata, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,mainp.imbits,outf,pdir)
 
         gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)

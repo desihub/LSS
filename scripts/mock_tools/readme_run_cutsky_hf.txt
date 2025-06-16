@@ -1,0 +1,1 @@
+python prep_cutsky_torun.py --input_mockpath /global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0 --input_mockfile forFA0_Y3_noimagingmask_applied.fits --tracer LRG --snapshot z0.500 --abacus_realization 0 --redshift_range 0.4,1.1 --nrans 4

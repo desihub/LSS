@@ -243,8 +243,10 @@ if 'MASKBITS' not in targets.colnames and args.immask == 'y':
             targets[col] = res[col]
         del res
 
-mainp = main(tp = type_, specver = args.specdata)
-targets = common.cutphotmask(targets, bits=mainp.imbits)
+    mainp = main(tp = type_, specver = args.specdata)
+    targets = common.cutphotmask(targets, bits=mainp.imbits)
+else:
+    out_file_name = out_file_name.split('.fits')[0] + '_noimagingmask_applied.fits'
 
 
 print('cut targets based on photometric mask')
@@ -266,7 +268,6 @@ targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
 targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
 
 #change the name of the output ...
-out_file_name = args.output_fullpathfn
 common.write_LSS_scratchcp(targets, out_file_name, extname='TARGETS')
 fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
 fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)

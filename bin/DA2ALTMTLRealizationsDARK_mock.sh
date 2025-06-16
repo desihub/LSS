@@ -46,7 +46,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/
-ALTMTLHOME=/pscratch/sd/a/acarnero/test_newLSS
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -88,7 +88,7 @@ seed=14126579
 #If mocklist is not equals to "", then it will supercede ndir=$mockend-$mockinit
 #Mock realization
 mockinit=0
-mockend=25
+mockend=1
 
 let ndir=$mockend-$mockinit 
 
@@ -208,7 +208,7 @@ secondary=''
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
-targfile="--targfile=/pscratch/sd/a/acarnero/test_newLSS/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger
@@ -281,7 +281,8 @@ fi
 
 printf -v OFDL "%s/dateLoop%sAltMTLOutput_%sRepro%s.out" $outputMTLFinalDestination $obscon $survey $datestring
 
-altMTLBaseDir="$outputMTLFinalDestination/Univ000/"
+altMTLBaseDir="$outputMTLFinalDestination"
+#altMTLBaseDir="$outputMTLFinalDestination/Univ000/"
 
 runtimeInit=$( echo "$endInit - $start" | bc -l )
 argstring="--altMTLBaseDir=$altMTLBaseDir --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist"
