@@ -150,6 +150,7 @@ if do_lrgmask == 'y':
     sel = ranmap > 0
     lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
+zcmb = common.mk_zcmbmap()
 
 if args.test == 'y':
     maps = [maps[0]] 
@@ -203,8 +204,10 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     fo.close()
     print('wrote to '+fname)
     return chi2,chi2nw
-        
-    
+
+do_zcmb = 'y'        
+do_mws = 'y'
+do_extrastar = 'y'    
 
 for tp in tps:
     
@@ -221,6 +224,8 @@ for tp in tps:
         do_ebvnew_diff = 'y'
         do_lrgmask = 'n'
         do_ebvnocib_diff = 'n'
+        do_mws = 'n'
+        do_extrastar = 'n'
         print('doing validation for '+tp)
     if args.mapmd == 'mws':
         maps = []
@@ -272,7 +277,8 @@ for tp in tps:
     tpr = tp
     if 'BGS_BRIGHT' in tp:
         tpr = 'BGS_BRIGHT'
-    
+    if 'LRG' in tp:
+        tpr = 'LRG'
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     
@@ -286,7 +292,7 @@ for tp in tps:
         zbins = [(0.8,1.1),(1.1,1.6)]
         yl = (0.7,1.1)
     if tp == 'QSO':
-        zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1)]
+        zbins = [(0.8,1.6),(1.6,2.1),(0.8,2.1),(2.1,3.5)]
         if args.zsplit == 'fine':
             zbins = [(0.8,1.),(1,1.3),(1.3,1.6),(1.6,1.8),(1.8,2.1),(2.1,2.7),(2.7,3.5)]
 
@@ -370,6 +376,15 @@ for tp in tps:
             if 'DES' in reg:
                 regu = 'S'
 
+            if do_zcmb == 'y':
+                fig = plt.figure()
+                parv = zcmb
+                mp = r'$\Delta$ Z CMB frame'
+                
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
 
             if dosky_g == 'y':
                 fig = plt.figure()
@@ -419,27 +434,29 @@ for tp in tps:
 
 
             
-            for mp in mws_maps:
-                fig = plt.figure()
-                parv = mwsf[mp]
-                sel_zero = (parv == 0)
-                sel_zero &= (parv*0 != 0)
-                pixlr[sel_zero] = 0
-                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
-                chi2tot += chi2
-                nmaptot += 1
-                figs.append(fig)
+            if do_mws == 'y':
+                for mp in mws_maps:
+                    fig = plt.figure()
+                    parv = mwsf[mp]
+                    sel_zero = (parv == 0)
+                    sel_zero &= (parv*0 != 0)
+                    pixlr[sel_zero] = 0
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2tot += chi2
+                    nmaptot += 1
+                    figs.append(fig)
 
-            for mp in starmaps:
-                fig = plt.figure()
-                parv = stardens[mp]
-                sel_zero = (parv == 0)
-                sel_zero &= (parv*0 != 0)
-                pixlr[sel_zero] = 0
-                chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab='Gaia stars '+mp,titl=args.survey+' '+tp+zr+' '+reg)
-                chi2tot += chi2
-                nmaptot += 1
-                figs.append(fig)
+            if do_extrastar == 'y':
+                for mp in starmaps:
+                    fig = plt.figure()
+                    parv = stardens[mp]
+                    sel_zero = (parv == 0)
+                    sel_zero &= (parv*0 != 0)
+                    pixlr[sel_zero] = 0
+                    chi2,chi2nw = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,yl=yl,xlab='Gaia stars '+mp,titl=args.survey+' '+tp+zr+' '+reg)
+                    chi2tot += chi2
+                    nmaptot += 1
+                    figs.append(fig)
 
                 
             for mp in maps:

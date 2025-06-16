@@ -21,6 +21,10 @@ def create_dirs(value):
 
 par=True
 
+
+recreate_tileTrack = False
+aux_datapath = {'DARK': '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/aux/mainsurvey-DARKobscon-TileTracker.ecsv', 'BRIGHT': '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/aux_data/mainsurvey-BRIGHTobscon-TileTracker.ecsv'}
+
 arg1 = sys.argv[1].replace('global','dvs_ro') #Input mock
 arg2 = sys.argv[2] #Output path
 obscon = sys.argv[3] #DARK or BRIGHT
@@ -68,16 +72,22 @@ os.system('cp %s %s' % (os.path.join(path,'*'), path_to_altmtl))
 
 print('Creating tileTracker file and tilestatus file')
 
+
 startDateShort = 19990101
 endDate='20240418' #2024-04-18T00:00:00+00:00'
-#20240418
-
 if ('T' in endDate) & ('-' in endDate):
     endDateShort = int(endDate.split('T')[0].replace('-', ''))
 else:
     endDateShort = int(endDate)
 
-amtl.makeTileTracker(altmtl_path, survey = 'main', obscon = obscon.upper(), startDate = startDateShort, endDate = endDateShort, overwrite = True)
+if recreate_tileTrack:
+#20240418
+
+
+    amtl.makeTileTracker(altmtl_path, survey = 'main', obscon = obscon.upper(), startDate = startDateShort, endDate = endDateShort, overwrite = True)
+else:
+    
+    os.system('cp %s %s' %(aux_datapath[obscon.upper()], altmtl_path))
 
 ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
 
@@ -85,6 +95,8 @@ ztilefn = ztilefile.split('/')[-1]
 
 if not os.path.isfile(os.path.join(altmtl_path, ztilefn)):
     amtl.processTileFile(ztilefile, os.path.join(altmtl_path, ztilefn), None, endDate)
+
+
 
 '''
 if addextra:

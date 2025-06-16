@@ -54,6 +54,7 @@ parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cu
 parser.add_argument("--base_output", help="base directory for output")
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
+parser.add_argument("--pota", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
@@ -93,6 +94,7 @@ parser.add_argument("--use_map_veto", help="Tag for extraveto added in name, for
 parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
+parser.add_argument("--add_extracols", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 parser.add_argument("--add_weight_ntile", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
@@ -142,9 +144,11 @@ survey = args.survey
 if tracer[:3] == 'BGS' or tracer == 'bright' or tracer == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
+    mainp = main('BGS', args.specdata, survey) #needed for bad fiber list
 else:
     pr = 'DARK'
     pdir = 'dark'
+    mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
 
 pd = pdir
 
@@ -169,14 +173,13 @@ if args.add_gtl == 'y':
 
 
     common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
-    mainp = main('LRG', args.specdata, survey) #needed for bad fiber list
     tsnrcut = mainp.tsnrcut
     tnsrcol = mainp.tsnrcol        
 
     specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
     specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
     gtl = np.unique(specfc['TILELOCID'])
 
@@ -263,6 +266,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
+    ###fbadir = os.path.join(args.base_altmtl_dir,args.survey,args.simName,'altmtl'+str(mocknum),'Univ000/fa/MAIN/')
     fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
@@ -295,6 +299,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
             lb4join = len(fa)
             #td += 1
             fa['TILEID'] = int(tile)
+        
             fa = join(fa,ft,keys=['TARGETID'])
             if len(fa) != lb4join:
                 print(tile,lb4join,len(fa))
@@ -361,10 +366,18 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         common.printlog('completed join to target info',logger)
 
     else:
-        
-        pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-DARK.fits'
+        if args.pota is None:
+            pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
+        else:
+            pota_fn = args.pota# '/global/cfs/projectdirs/desi/users/jerryou/DESI_Y3/DA2/Uchuu/BGS/mock0/pota-BRIGHT.fits' #args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
         common.printlog('reading from potential assignments file '+pota_fn,logger)
-        pa = fitsio.read(pota_fn,columns=['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION'])
+        pota_cols = ['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']
+        if pdir == 'bright':
+            pota_cols.append('BGS_TARGET')
+            #pota_cols.append('REST_GMR_0P1')
+            
+        #BGS_TARGET
+        pa = fitsio.read(pota_fn,columns=pota_cols)
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
         sel_coll = pa['COLLISION'] == 0
         pa = pa[sel_coll]
@@ -375,6 +388,8 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         common.write_LSS_scratchcp(pa,outf,logger=logger)
 
 
+#print('asn is',asn)
+#print('pa is',pa)
 
 fcoll = os.path.join(lssdir, 'collision_'+pdir+'_mock%d.fits' % mocknum)
 if args.joindspec == 'y':
@@ -394,7 +409,8 @@ if args.joindspec == 'y':
         pa = pa[goodtl]
 
 
-    common.printlog('about to join assignments and potential assignments',logger)
+    common.printlog('HERE!!!, about to join assignments and potential assignments',logger)
+    
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     tj['ZWARN'] = tj['ZWARN'].filled(999999)
     sel = tj['ZWARN'] == 999999
@@ -501,8 +517,7 @@ if args.tracer[:3] == 'BGS':
 nzmd = 'mock'
 mainp = main(args.tracer, args.specdata, survey=args.survey)
 imbits = mainp.imbits
-tsnrcut = mainp.tsnrcut
-
+#tsnrcut = mainp.tsnrcut
     
 if args.fullr == 'y':
     print('Calculate GTL')
@@ -604,8 +619,13 @@ lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/L
 if args.apply_veto == 'y':
     common.printlog('--- START APPLY_VETO; including HP maps---',logger=logger)
     common.printlog('applying vetos to mock ' + str(mocknum),logger=logger)
-    mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
-    maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
+    tracer_hp = tracer_clus
+    if 'ELG' in tracer_clus:
+        tracer_hp = 'ELG_LOPnotqso'
+    if 'BGS' in tracer_clus:
+        tracer_hp = 'BGS_BRIGHT'
+    mapn = fitsio.read(os.path.join(lssmapdirout, tracer_hp + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))
+    maps = fitsio.read(os.path.join(lssmapdirout, tracer_hp + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
     mapcuts = mainp.mapcuts
 
     fin = os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits')
@@ -801,7 +821,22 @@ if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
     
-
+    if args.add_extracols is not None:
+        ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
+        columns_extra = ['TARGETID']
+        if isinstance(args.add_extracols, list):
+            for ex in args.add_extracols:
+                if ex not in ffile.columns:
+                    columns_extra.append(ex)
+        else:
+            if args.add_extracols not in columns_extra:
+                columns_extra.append(args.add_extracols)
+        if len(columns_extra) > 1:
+            targets = Table(fitsio.read(os.path.join(args.targDir, 'forFA{MOCKNUM}.fits').format(MOCKNUM=mocknum).replace('global','dvs_ro'), columns=columns_extra))
+            nm = Table(join(ffile, targets, keys=['TARGETID']))
+            common.write_LSS(nm, os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits'))
+            
+            
     if args.ccut is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
         if 'R_MAG_ABS' not in ffile.columns:

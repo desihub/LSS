@@ -126,7 +126,8 @@ specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
 logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
+#specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
 gtl = np.unique(specfc['TILELOCID'])
 
 assign_real_dic = {}
@@ -141,6 +142,7 @@ def get_good_real(dic,real_num):
     good_tids = all_asgn['TARGETID'][good_asgn]
     asgn_real = np.isin(alltids,good_tids)
     assign_real_dic[real_num] = asgn_real
+    logger.info('got realization '+str(real_num))
     del asgn_real
 
 from multiprocessing import Pool

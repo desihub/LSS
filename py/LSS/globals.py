@@ -69,9 +69,9 @@ class main:
         self.ebits = None
         self.badfib = None
         self.badfib_status = None
-        self.tsnrcol = 'TSNR2_ELG'
-        self.tsnrcut = 0
-        self.dchi2 = 0
+        self.tsnrcol = 'TSNR2_ELG' 
+        #self.tsnrcut = 0 #better to throw an error having this undefined rather than having code use a bad value
+        #self.dchi2 = 0
         self.zmin = 0
         self.zmax = 4.5
         zfloor = 0.002
@@ -80,6 +80,9 @@ class main:
         if tp[:3] == 'BGS':
             self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI'] #used up until v0.6
             self.fit_maps = ['STARDENS','GALDEPTH_R','HI']
+            self.fit_maps_allebv = ['STARDENS','GALDEPTH_R','HI','EBV_DIFF_GR','EBV_DIFF_RZ']
+            self.fit_maps_allebvcmb = ['STARDENS','GALDEPTH_R','HI','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
+
             self.tsnrcut = 1000
             self.tsnrcol = 'TSNR2_BGS'
             self.dchi2 = 40
@@ -98,6 +101,7 @@ class main:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
             self.fit_maps = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
+            self.fit_maps_all = self.fit_maps
             self.ebits = [8,9,11]    
             self.tsnrcut = 80
             self.dchi2 = 0
@@ -110,6 +114,7 @@ class main:
         if tp[:3] == 'LRG':
             self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1'] #used up until v0.6
             self.fit_maps_allebv = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ']
+            self.fit_maps_allebvcmb = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
             self.fit_maps = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1']
             self.fit_maps46s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','GALDEPTH_R']
             self.fit_maps68s = ['STARDENS','PSFSIZE_R','GALDEPTH_Z','HI','PSFDEPTH_W1','GALDEPTH_G']
@@ -125,6 +130,7 @@ class main:
             
         if tp[:3] == 'ELG':
             self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']#,'EBV_DIFF_MPF']
+            self.fit_maps_all = self.fit_maps
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8
@@ -180,7 +186,10 @@ class main:
         if specver == 'kibo-v1' or specver == 'loa-v1':
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+specver+'/emlin_catalog.fits'
             
+            
             self.badfib = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/unique_badfibers.txt')
+            if specver == 'loa-v1':
+                self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt').readlines()
             self.badfib_status  = [13,14]
         if specver == 'kibo-v1':
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/kibo/QSO_cat_kibo_cumulative_v1.fits'

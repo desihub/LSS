@@ -191,7 +191,12 @@ if not os.path.exists(dirout):
     os.makedirs(dirout)
     logger.info('made '+dirout)
 
-mainp = main(type,args.verspec)
+globtype = args.type
+if args.type == 'dark':
+    globtype = 'LRG'
+if args.type == 'bright':
+    globtype == 'BGS'
+mainp = main(globtype,args.verspec)
 
 mt = mainp.mtld
 tiles = mainp.tiles
@@ -238,7 +243,8 @@ specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
 logger.info('loaded specf file '+specfo)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
+#specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
+specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 

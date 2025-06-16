@@ -19,8 +19,8 @@ import astropy.io
 import astropy.io.fits as pf
 from astropy.table import Table,join,vstack
 
-import memory_profiler
-from memory_profiler import profile
+#import memory_profiler
+#from memory_profiler import profile
 
 import desitarget
 from desitarget import io, mtl
@@ -60,7 +60,7 @@ from time import sleep
 import cProfile, pstats
 import io as ProfileIO
 from pstats import SortKey
-
+from datetime import datetime, timedelta
 import glob
 
 
@@ -105,6 +105,34 @@ def datesInMonthForYear(yyyy):
     else:
         monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     return monthLengths
+
+import tempfile
+def safe_pickle_dump(data, filename):
+    # Step 1: Create a temporary file
+    dir_name = os.path.dirname(filename)
+    with tempfile.NamedTemporaryFile(dir=dir_name, delete=False) as tmp_file:
+        tmp_name = tmp_file.name
+        try:
+            # Step 2: Dump pickle data
+            with open(tmp_name, 'wb') as f:
+                pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                f.flush()
+                os.fsync(f.fileno())  # Ensure data is written to disk
+            
+            # Step 3: Sanity check by loading
+            with open(tmp_name, 'rb') as f:
+                test_data = pickle.load(f)
+            
+            # Step 4: Rename only if valid
+            os.replace(tmp_name, filename)
+            return True  # Success
+
+        except Exception as e:
+            os.remove(tmp_name)  # Clean up on failure
+            log.critical(f"Pickle dump failed: {e}")
+#            print(f"Pickle dump failed: {e}")
+            return False  # Failure
+
 
 def nextDate(date):
     # JL  takes NITE in YYYYMMDD form and increments to the next date
@@ -429,7 +457,7 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
 
-def updateTileTracker(altmtldir, endDate):
+def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     """Update action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -440,7 +468,14 @@ def updateTileTracker(altmtldir, endDate):
         ledgers. e.g. /pscratch/u/user/simName/Univ000/
     endDate : :class:`int`
         Integer date to which to extend tiletracker entries.
-    
+    obscon : :class:`str`, optional, defaults to "dark"
+        A string matching ONE obscondition in the desitarget bitmask yaml
+        file (i.e. in `desitarget.targetmask.obsconditions`), e.g. "DARK"
+        Governs how priorities are set when merging targets.
+    survey : :class:`str`, optional, defaults to "main"
+        Used to look up the correct ledger, in combination with `obscon`.
+        Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
+        for the main survey and different iterations of SV, respectively.    
 
     Returns
     -------
@@ -453,46 +488,52 @@ def updateTileTracker(altmtldir, endDate):
     - Survey and obscon are determined from existing file
     """
 
-    #find current tiletracker file for this altmtldir
-    altmtldir_files = os.listdir(altmtldir)
-    ExistingTileTracker_fn = [s for s in altmtldir_files if 'TileTracker' in s][0]
+    #find current tile tracker using common naming schema
+    TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
 
-    #process it to grab the survey and obscon info using string methods
-    ExistingTileTracker_fn_spt = ExistingTileTracker_fn.split('-')
-    survey = ExistingTileTracker_fn_spt[0].strip('survey')
-    obscon = ExistingTileTracker_fn_spt[1].strip('obscon')
+    #open current tile tracker, read current endDate
+    current_TT = Table.read(TileTrackerFN)
+    prev_endDate = current_TT.meta['EndDate']
 
-    #rename old file to avoid overwriting
-    os.rename(os.path.join(altmtldir,ExistingTileTracker_fn),os.path.join(altmtldir,'oldTT.ecsv'))
+    #check if enddates are the same, skip remaining steps if true
+    if endDate == prev_endDate:
+        print('New end date is the same as the current end date, update will not be performed')
+        return
 
-    #make new tile tracker file
-    makeTileTracker(altmtldir, survey, obscon, startDate = 20210514, endDate = endDate)
+    #generate TileTracker update file
+    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True)
 
-    #read new tile tracker and set done flag = True for all entries in old tile tracker
-    old_TT = np.array(Table.read(os.path.join(altmtldir,'oldTT.ecsv')))
-    new_TT = np.array(Table.read(os.path.join(altmtldir,ExistingTileTracker_fn)))
-
+    #read into memory
+    update_TT = Table.read(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
+    
     #columns to determine if entries are in both tiletrackers.
     compare_cols = ['TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'ARCHIVEDATE']
 
-    existing_cols = np.isin(new_TT[compare_cols],old_TT[compare_cols])
+    existing_cols = np.isin(update_TT[compare_cols], current_TT[compare_cols])
 
-    #write out update new tiletracker (faster way to do this?)
-    #doneflag column determined by presence in old tiletracker
-    ActionList = [new_TT['TILEID'], new_TT['ACTIONTYPE'], new_TT['ACTIONTIME'], existing_cols, new_TT['ARCHIVEDATE']]
-    t = Table(ActionList,
-           names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': 20210514, 'EndDate': endDate, 'amtldir':altmtldir})
-    t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
+    #Combine current tile tracker with new entries
+    combined_TT = vstack([current_TT,update_TT[~existing_cols]])
+    #update meta information
+    combined_TT.meta['EndDate'] = update_TT.meta['EndDate']
+    combined_TT.meta['StartDate'] = current_TT.meta['StartDate']
+
+    #rename existing tiletracker
+    os.rename(TileTrackerFN,TileTrackerFN.replace('TileTracker','TileTracker-Thru{}'.format(prev_endDate)))
     
-    t.write(os.path.join(altmtldir,ExistingTileTracker_fn), format='ascii.ecsv', overwrite = True)
+    #write new merged tiletracker
+    combined_TT.write(TileTrackerFN, format='ascii.ecsv', overwrite=True)
+
+    #delete update tiletracker (going to leave this out for now, and assess if we want to delete this update files later)
+    #os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
+    
+    return
     
     
 
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True):
+    endDate = None, overwrite = True, update_only = False):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -552,6 +593,25 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     TSS_Sel = TSS[(TSS['SURVEY'] == surveyForTSS) & (TSS['FAPRGRM'] == obscon.lower())]
     
     TilesSel = np.unique(TSS_Sel['TILEID'])
+
+    #if we only want entries from tiles within the [startDate, endDate] window
+    if update_only:
+        #change output name to avoid overwriting the existing tile tracker
+        TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
+        #convert dates into datetime objects
+        startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
+        endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
+
+        #format into strings for comparisson to MTL DT timestamp column
+        #note we increment startDate by one day to avoid overlapping on previous endDate
+        #note we increment endDate by one day to catch tiles from the final day (less than or equal to doesn't work due to column datatype comparison)
+        startDate_frm = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+        endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+
+        #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
+        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check prog/survey match)
+        time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (MTLDT['TIMESTAMP'] < endDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
+        TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
     TileIDs = []
     TypeOfActions = []
@@ -591,7 +651,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TypeOfActions.append('fa')
         TimesOfActions.append(thisfadate)
         archiveDates.append(thisfanite)
-        if thisfanite < startDate:
+        if thisfanite < startDate and not update_only: #05/28/25 : adding special case for update_only, we want all flags set to False
             doneFlag.append(True)
         else:
             doneFlag.append(False)
@@ -610,7 +670,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
             else:
                 TypeOfActions.append('update')
             TimesOfActions.append(thisupdateTimestamp)
-            if (thisupdateNite < startDate):
+            if (thisupdateNite < startDate and not update_only): #05/28/25 : adding special case for update_only, we want all flags set to False
                 doneFlag.append(True)
             else:
                 doneFlag.append(False)
@@ -619,7 +679,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
     t = Table(ActionList,
            names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir})
+           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir},
+           dtype=('<i8', '<U6', '<U25', 'bool', '<i8'))
     t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
     
     t.write(TileTrackerFN, format='ascii.ecsv', overwrite = overwrite)
@@ -1234,8 +1295,9 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
         if redoFA or (not (os.path.isfile(FAMapName))):
             if verbose:
                 log.info('dumping out fiber map to pickle file')
-            with open(FAMapName, 'wb') as handle:
-                pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
+            safe_pickle_dump((A2RMap, R2AMap), FAMapName)
+#            with open(FAMapName, 'wb') as handle:
+#                pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
         #thisUTCDate = get_utc_date(survey=survey)
         if verbose:
             log.info('---')
@@ -1495,7 +1557,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     ### JL - this loop is through all realizations serially or (usually) one realization parallelized
     for n in iterloop:
         if debugOrig:
-            altmtldir = altmtlbasedir
+            altmtldir = altmtlbasedir + '/Univ000/'
         else:
             altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))

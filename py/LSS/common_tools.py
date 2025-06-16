@@ -23,11 +23,70 @@ def radec2thphi(ra,dec):
     
 def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
+    
+def mask_bad_fibers_time_dependent(dz, badfibers_td,logger=None):
+	# Use the time-dependent bad fiber file to remove data
+	# dz is the input data file, which must have FIBER and LASTNIGHT columns
+
+	#badfibers_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt','r').readlines()
+
+	inds_to_remove = np.array([])
+	for i in range(len(badfibers_td)):
+		#print(i)
+	
+		if len(badfibers_td[i].split()) == 1:
+			inds_to_remove = np.concatenate((inds_to_remove, (np.where(dz['FIBER'] == int(badfibers_td[i]))[-1])))
+		elif len(badfibers_td[i].split()) == 2:
+			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))
+				)[-1])))
+			#print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))))
+			#print(5/0)
+		elif len(badfibers_td[i].split()) == 3:
+			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
+				)[-1])))
+			#print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
+			#	)))
+		elif len(badfibers_td[i].split()) == 4:
+			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+				& (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+				| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+				))[-1])))
+			#print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& ((((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+			#	| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))))
+			#	))
+		elif len(badfibers_td[i].split()) == 5:
+			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+				& (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+				| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+				& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
+				))[-1])))
+			#print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+			#	& ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+			#	| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+			#	& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
+			#	)))
+	dz_inds = np.ones(len(dz)).astype('int')
+	dz_inds[inds_to_remove.astype('int')] = 0
+	nremove = len(dz_inds)-np.sum(dz_inds)
+	printlog('number removed from time dependent mask is '+str(nremove),logger)
+	return dz[dz_inds == 1]
+
 
 
 #functions that shouldn't have any dependence on survey go here
 
-def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibstatusbits=None):
+def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibstatusbits=None,remove_badfiber_spike_nz=False,mask_petal_nights=False):
     from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0 #just in case of nans
@@ -42,11 +101,6 @@ def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibst
     printlog('number with bad qa '+str(num_badqa),logger)
     nomtl = nodata | badqa
     wfqa = ~nomtl
-    #veto fibers later determined to have poor success rates
-    if badfib is not None:
-        bad = np.isin(fs['FIBER'],badfib)
-        printlog('number at bad fibers '+str(sum(bad)),logger)
-        wfqa &= ~bad
     if tsnr_min > 0:
         low_tsnr = dz[tsnr_col] < tsnr_min
         wfqa &= ~low_tsnr
@@ -56,7 +110,56 @@ def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibst
         for bit in fibstatusbits:
             bfs |= (dz['COADD_FIBERSTATUS'] & 2**bit) > 0
         wfqa &= ~bfs
-    return fs[wfqa]
+
+    #veto fibers later determined to have poor success rates
+    if badfib is not None:
+        #bad = np.isin(fs['FIBER'],badfib)
+        #printlog('number at bad fibers '+str(sum(bad)),logger)
+        #wfqa &= ~bad
+        if type(badfib).__name__ == 'list':
+            printlog('will mask fibers with time dependence',logger)
+            cat_out = mask_bad_fibers_time_dependent(fs[wfqa], badfib,logger=logger)
+        else:
+            bad = np.isin(fs['FIBER'],badfib)
+            printlog('number at bad fibers '+str(sum(bad)),logger)
+            cat_out = fs[wfqa&~bad]
+    else:
+        cat_out = fs[wfqa]
+    if remove_badfiber_spike_nz:
+        badfib1 = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt')
+        badfib2 = np.loadtxt('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt')
+        bad = np.isin(cat_out['FIBER'],np.concatenate((badfib1,badfib2)))
+        printlog('number removed from spike mask is '+str(np.sum(bad)),logger)
+        cat_out = cat_out[~bad]
+        
+    if mask_petal_nights:
+        cat_out = mask_bad_petal_nights(cat_out,logger=logger)
+    
+    return cat_out
+    
+def mask_bad_petal_nights(dz, prog='dark',logger=None):
+	if prog == 'dark':
+		bad_petal_night_file = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt','r')
+	elif prog == 'bright':
+		bad_petal_night_file = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt','r')
+
+	inds_to_remove = np.array([])
+	for line in bad_petal_night_file:
+		night = int(line.split()[0])
+		for petal in line.split()[1:]:
+			inds_to_remove = np.concatenate(
+			(inds_to_remove, np.where( 
+			(dz['LASTNIGHT'] == night) 
+			& (dz['FIBER'] >= 500 * int(petal))
+			 & (dz['FIBER'] < 500 * (int(petal)+1)))[-1]))
+	
+	dz_inds = np.ones(len(dz)).astype('int')
+	dz_inds[inds_to_remove.astype('int')] = 0
+	nremove = len(dz_inds)-np.sum(dz_inds)
+	printlog('number removed from petal night mask is '+str(nremove),logger)
+
+	return dz[dz_inds == 1]
+
 
 def goodz_infull(tp,dz,zcol='Z_not4clus'):
     if tp == 'LRG':
@@ -143,6 +246,14 @@ def cutphotmask(aa,bits=None,logger=None):
     aa = aa[keep]
     printlog(str(len(aa)) +' after imaging veto',logger=logger )
     return aa
+
+def mk_zcmbmap(nside=256,nest=True):
+    import healpy as hp
+    pix = np.arange(12*nside*nside)
+    th,phi = hp.pix2ang(nside,pix,nest=nest)
+    ra,dec = thphi2radec(th,phi)
+    zcmb = get_zcmbdipole(ra,dec)
+    return zcmb
 
 def get_zcmbdipole(ra,dec):
     '''
@@ -587,6 +698,18 @@ def clusran_shufrd(flin,ran_sw='',P0=10000,zmin=0.01,zmax=1.6,dz=0.01):
     #if write_cat == 'y':
         #comments = ["'clustering' LSS catalog for random number "+str(rann)+", BASS/MzLS region","entries are only for data with good redshifts"]
     #    common.write_LSS(ffr,outfn)
+
+def get_comp_tile(input_array):
+    #for some input with the correct columns, get the completeness in each unique TILES group
+    tlslu,indices,cnts= np.unique(input_array['TILES'],return_inverse=True,return_counts=True)
+    acnts = np.bincount(indices,weights=input_array['LOCATION_ASSIGNED'])
+    comp = acnts/cnts
+    comp_dicta = dict(zip(tlslu, comp))
+    fcompa = []
+    for tl in input_array['TILES']:
+        fcompa.append(comp_dicta[tl])
+    return np.array(fcompa)
+    
 
 def get_comp(fb,ran_sw=''):
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'

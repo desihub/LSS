@@ -3,6 +3,8 @@ from desiutil.iers import freeze_iers
 freeze_iers()
 
 import os
+import numpy as np
+from astropy.table import Table
 import argparse
 from multiprocessing import Pool
 from LSS.SV3 import altmtltools as amt
@@ -26,12 +28,10 @@ print(args)
 def procFunc(nproc):
     altmtldir = os.path.join(args.altMTLBaseDir,'Univ{:03d}'.format(nproc))
 
-    #reading tile tracker to check if all entries are complete (this could be made more lightweight certainly)
-    tt = np.array(Table.read(os.path.join(altmtldir,'mainsurvey-{}obscon-TileTracker.ecsv'.format(args.obscon)))) 
-
-    #Tile tracker is only updated when the existing tile tracker has all entries complete and the skip update flag is not set
-    if not args.skip_update and np.all(tt['DONEFLAG']):
-        amt.updateTileTracker(altmtldir, args.endDate)
+    #Update script will first confirm that the new endDate is not equal to the previous endDate
+    #then generate an update tiletracker with entries from tiles in the range [previous endDate, new endData]
+    #finally, the existing tiletracker will be merged with the update tiletracker, and files renamed such that the merged tiletracker is used by loop_alt_ledger
+    amt.updateTileTracker(altmtldir, args.endDate, survey = args.survey, obscon = args.obscon)
 
     amt.loop_alt_ledger(obscon = args.obscon, survey = args.survey, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', zcatdir = '/global/cfs/cdirs/desi/spectro/redux/daily/', altmtlbasedir = args.altMTLBaseDir, ndirs = None, numobs_from_ledger = True, secondary = False, getosubp = False, quickRestart = False, multiproc = True, nproc = nproc, singleDate = False, redoFA = False, mock = args.mock, targets = None, debug = False, verbose = False, reproducing = args.reproducing)
 

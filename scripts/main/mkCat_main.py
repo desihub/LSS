@@ -85,8 +85,9 @@ parser.add_argument("--fillran", help="add imaging properties to randoms",defaul
 parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
+parser.add_argument("--zcmb", help="whether or not to correct redshifts based on cmb dipole",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
-parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='n')
+parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
@@ -118,7 +119,7 @@ parser.add_argument("--imsys_clus_fb_ran",help="add linear weight fits in fine r
 
 
 
-parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
+parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--regressis",help="RF weights for imaging systematics?",default='n')
 parser.add_argument("--regmode",help="RF and Linear are choices",default='RF')
@@ -297,6 +298,9 @@ if not os.path.exists(dirout):
     logger.printlog('made '+dirout,logger)    
 
 tarver = '1.1.1'
+if args.type == 'LGE':
+    tarver = '3.0.0'
+    progl = 'dark1b'
 tardir = '/global/cfs/cdirs/desi/target/catalogs/dr9/'+tarver+'/targets/main/resolve/'
 tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+tarver.strip('.')+'.fits'
 
@@ -382,7 +386,7 @@ if mkfulld:
     maskcoll = False
     if args.survey != 'main':
         maskcoll = True
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
 
 
 if args.add_veto == 'y':
@@ -811,7 +815,8 @@ if type[:3] == 'QSO':
         zrl = [(0.8,3.5)]   
 if type[:3] == 'LRG':
     if args.imsys_zbin == 'y':
-        zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+        #zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
+        zrl = [(0.3,0.4),(0.4,0.5),(0.5,0.6),(0.6,0.7),(0.7,0.8),(0.8,0.9),(0.9,1.0),(1.0,1.1),(1.1,1.2)] 
     else:
         zrl = [(0.4,1.1)]
     zsysmin = 0.4
@@ -859,6 +864,7 @@ if args.imsys == 'y':
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
     rands = np.concatenate(ranl)
+    common.printlog('combined randoms',logger)
     syscol = 'WEIGHT_IMLIN'
     regl = ['S','N']
     if args.type == 'QSO':
@@ -877,8 +883,8 @@ if args.imsys == 'y':
                 bnd = col.split('_')[-1]
                 sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
         for ec in ['GR','RZ']:
-            if 'EBV_DIFF_'+ec in fit_maps: 
-                sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+            #if 'EBV_DIFF_'+ec in fit_maps: 
+            sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
         if 'EBV_DIFF_MPF' in fit_maps:
             sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
         #for bnd in ['G','R','Z']:
@@ -901,17 +907,18 @@ if args.imsys == 'y':
             #fcd = fb+'_clustering.dat.fits'
             #dd = Table.read(fcd)
             
-            print('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax))
+            common.printlog('getting weights for region '+reg+' and '+str(zmin)+'<z<'+str(zmax),logger)
             if type == 'LRG' and args.usemaps is None:
-                if reg == 'N':
-                    fitmapsbin = fit_maps
-                else:
-                    if zmax == 0.6:
-                        fitmapsbin = mainp.fit_maps46s
-                    if zmax == 0.8:
-                        fitmapsbin = mainp.fit_maps68s
-                    if zmax == 1.1:
-                        fitmapsbin = mainp.fit_maps81s
+                fitmapsbin = mainp.fit_maps_allebv
+                #if reg == 'N':
+                #    fitmapsbin = fit_maps
+                #else:
+                #    if zmax == 0.6:
+                #        fitmapsbin = mainp.fit_maps46s
+                #    if zmax == 0.8:
+                #        fitmapsbin = mainp.fit_maps68s
+                #    if zmax == 1.1:
+                #        fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
             use_maps = fitmapsbin
@@ -1243,7 +1250,7 @@ weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,zmin=zmin,zmax=zmax,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,zmin=zmin,zmax=zmax,correct_zcmb=args.zcmb,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
 
 nzcompmd = 'ran'
 if args.compmd == 'altmtl':
@@ -1251,6 +1258,12 @@ if args.compmd == 'altmtl':
 
 
 inds = np.arange(rm,rx)
+
+out_name = dirout +args.extra_clus_dir+ tracer_clus#type + notqso
+if args.zcmb == 'y':
+	out_name += '_zcmb'
+
+
 if mkclusran:
     print('doing clustering randoms (possibly a 2nd time to get sys columns in)')
 #     tsnrcol = 'TSNR2_ELG'
@@ -1269,10 +1282,10 @@ if mkclusran:
     ranin = dirin + args.type + notqso + '_'
     if 'BGS_BRIGHT' in args.type:
         ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
-
-    clus_arrays = [fitsio.read(dirout +args.extra_clus_dir+ type + notqso+'_clustering.dat.fits')]
+    
+    clus_arrays = [fitsio.read(out_name+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,dirout+tracer_clus+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
+        ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
@@ -1284,7 +1297,7 @@ if mkclusran:
         #,ntilecut=ntile,ccut=ccut)
 
 if args.NStoGC == 'y':
-    fb = dirout+tracer_clus+'_'
+    fb = out_name+'_'#dirout+tracer_clus+'_'
     ct.clusNStoGC(fb, rx - rm)#,par=args.par)
 
 
@@ -1326,7 +1339,7 @@ def splitGC(flroot,datran='.dat',rann=0):
 
 
 if args.splitGC == 'y':
-    fb = dirout+args.extra_clus_dir+tracer_clus+'_'
+    fb = out_name+'_'#dirout+args.extra_clus_dir+tracer_clus+'_'
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
     splitGC(fb,'.dat')
     def _spran(rann):
@@ -1361,7 +1374,7 @@ if args.resamp == 'y':
 #allreg = ['NGC','SGC']
 if args.nz == 'y':
     for reg in regions:#allreg:
-        fb = dirout+args.extra_clus_dir+tracer_clus+'_'+reg
+        fb = out_name+'_'+reg#dirout+args.extra_clus_dir+tracer_clus+'_'+reg
         fcr = fb+'_0_clustering.ran.fits'
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'

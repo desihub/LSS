@@ -28,8 +28,8 @@ parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
 parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
-parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog", default='Z_COSMO')
-parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD",default='Z')
+parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog")
+parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD")
 parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 'n', assuming all LOP",default='y')
 parser.add_argument("--ELGtpcol", help="column distinguishing the ELG type; assumed boolean with True being LOP",default='LOP')
 parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
@@ -46,6 +46,21 @@ elif args.tracer == 'BGS':
 
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
 
+def mask_abacusHF(nz=0, foot=None, nz_lop=0):
+    if foot == 'Y1':
+        Y5 = 0
+        Y1 = 1
+        Y3 = 0
+    elif foot == 'Y3':
+        Y5 = 0
+        Y1 = 0
+        Y3 = 1
+    else:
+        Y5 = 1
+        Y1 = 0
+        Y3 = 0
+
+    return nz * (2**0) + Y5 * (2**1) + nz_lop * (2**2) + Y1 * (2**3) + Y3 * (2**5) 
 
 data = Table.read(args.input_mockpath+args.input_mockfile)
 
@@ -73,12 +88,74 @@ type_ = args.tracer
 data['DESI_TARGET'] = desitar[type_]
 data['PRIORITY_INIT'] = priority[type_]
 data['PRIORITY'] = priority[type_]
+data['NUMOBS_MORE'] = numobs[type_]
+data['NUMOBS_INIT'] = numobs[type_]
+
+if type_ == 'BGS':
+
+    if args.mockname.lower() == 'uchuu':
+        mask_bright = (data['BGS_TYPE'] == 'BRIGHT')
+        mask_faint  = (data['BGS_TYPE'] == 'FAINT')
+        dat_bright  = data[mask_bright]
+        dat_faint   = data[mask_faint]
+        print('size of BRIGHT', len(dat_bright))
+        print('size of FAINT', len(dat_faint))
+
+        dat_bright['BGS_TARGET'] = 2**1
+                
+        dat_faint['BGS_TARGET'] = 2**0
+        
+        PromoteFracBGSFaint=0.2
+        ran_hip = np.random.uniform(size = len(dat_faint))
+        faint_hip_mask = (ran_hip <= PromoteFracBGSFaint)
+        
+        dat_faint['BGS_TARGET'][faint_hip_mask] += 2**3   # for high-priority BGS faint
+    
+        dat_faint['PRIORITY_INIT'][~faint_hip_mask] = 2000
+        dat_faint['PRIORITY'][~faint_hip_mask] = 2000
+
+        data = vstack([dat_faint, dat_bright])
+        print("Unique PRIORITY_INIT: ", np.unique(data['PRIORITY_INIT']))
+        print("Unique PRIORITY: ", np.unique(data['PRIORITY']))
+        print("Unique BGS_TARGET: ", np.unique(data['BGS_TARGET']))
+        print("High_priority_BGS_faint/BGS_faint: ", np.sum(dat_faint['BGS_TARGET']==9)/len(dat_faint))
+else:	
+    data['BGS_TARGET'] = np.zeros(len(data), dtype='i8') 
+
 if type_ == 'ELG':
     if args.ELGsplit == 'y':
-        sel_LOP = data[args.ELGtpcol] == 1
-        data['DESI_TARGET'][~sel_LOP] = 2+2**7
-        data['PRIORITY_INIT'][~sel_LOP] = 3000
-        data['PRIORITY'][~sel_LOP] = 3000
+        if args.mockname.lower() == 'abacushf':
+            datat = []
+            status = data['STATUS'][()]
+            idx = np.arange(len(status))
+            
+            mask_main = mask_abacusHF(nz=1, foot='Y3')
+            idx_main = idx[(status & (mask_main))==mask_main]
+
+            mask_LOP = mask_abacusHF(nz=1, foot='Y3', nz_lop=1)
+            idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
+            
+            idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+
+            data_lop = Table(data[idx_LOP])
+            data_vlo = Table(data[idx_VLO])
+
+            data_lop['DESI_TARGET'] += 2**5
+
+            data_vlo['PRIORITY_INIT'] = 3000
+            data_vlo['PRIORITY'] = 3000
+            data_vlo['DESI_TARGET'] += 2**7 
+
+
+            datat.append(data_lop)
+            datat.append(data_vlo)
+            data = vstack(datat)
+        else:
+            sel_LOP = data[args.ELGtpcol] == 1
+            data['DESI_TARGET'][~sel_LOP] = 2+2**7
+            data['PRIORITY_INIT'][~sel_LOP] = 3000
+            data['PRIORITY'][~sel_LOP] = 3000
+    
     rans = rng.random(len(data))
     sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
     data['DESI_TARGET'][sel_HIP] += 2**6
@@ -86,75 +163,39 @@ if type_ == 'ELG':
     data['PRIORITY'][sel_HIP] = 3200
     print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
 	
-data['NUMOBS_MORE'] = numobs[type_]
-data['NUMOBS_INIT'] = numobs[type_]
+
 if type_ == 'QSO':
     sel_highz = data[args.zrsdcol] > 2.1
     data['NUMOBS_MORE'][sel_highz] = 4
     data['NUMOBS_INIT'][sel_highz] = 4
     print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
 targets = data
-n=len(targets)  ##A Ashley le falta estoo!
 
 del data
 
-targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
-print(len(targets),' in Y5 area')
-selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
-targets = targets[selY3]
-if args.mockname == 'EZmock' and args.nzmask == 'y':
-    y3_nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
-    targets = targets[y3_nz_mask]
+if args.mockname.lower() != 'abacushf':
+#targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
+    print(len(targets),' in Y5 area')
+    selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
+    targets = targets[selY3]
+    if args.mockname == 'EZmock' and args.nzmask == 'y':
+        y3_nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
+        targets = targets[y3_nz_mask]
+else:
+    if type_ != 'ELG':
+
+        status = targets['STATUS'][()]
+        idx = np.arange(len(status))
+        mask_main = mask_abacusHF(nz=1, foot='Y3')
+        idx_main = idx[(status & (mask_main))==mask_main]
+        targets = targets[idx_main]
 
 print(len(targets),' in Y3 area')
 #print('getting nobs and mask bits')
 
-# compare the projected number density between the mock and data (full_HPmap) 
-survey_lss_path = f"/dvs_ro/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/{args.specdata}/LSScats/{args.dataversion}/"
-survey_data_file = survey_lss_path + f"{type_}_full_HPmapcut.dat.fits"
-survey_rand_file = survey_lss_path + f"{type_}_0_full_HPmapcut.ran.fits"
-data_header = fitsio.read_header(survey_data_file, ext=1)
-data_len = data_header['NAXIS2']
 
-rand_header = fitsio.read_header(survey_rand_file, ext=1)
-rand_den = 2500.0         # 2500 deg^-2 is the projected number density of randoms for the catalog
-survey_skyarea = rand_header['NAXIS2']/rand_den
-print("Survey sky area [deg]:", survey_skyarea)
-data_nden = data_len/survey_skyarea
-
-def get_mock_skyarea(tiletab, rand_den=2500.0):
-    survey_randfile = os.path.join(os.path.dirname(args.output_fullpathfn), f"randoms-{args.survey}-{args.specdata}-nden{rand_den}.fits")
-    try: 
-        print("Load the pre-selected randoms.")
-        Nrand = len(Table.read(survey_randfile))
-        
-    except FileNotFoundError:    
-        print("Load the full-sky randoms and select them within survey footprint.")
-        rand_file = "/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-0.fits"
-        allsky_rand = fitsio.read(rand_file, columns=['RA', 'DEC'])
-        survey_mask = is_point_in_desi(tiletab, allsky_rand['RA'], allsky_rand['DEC'])  # select points in the survey footprint
-        Nrand = np.sum(survey_mask)
-        Table(allsky_rand[survey_mask]).write(survey_randfile, overwrite=True)
-    
-    sky_area = Nrand/rand_den
-    print("Mock skey area [deg]:", sky_area)
-    return sky_area
-    
-mock_skyarea = get_mock_skyarea(tiletab)
-mock_nden = len(targets)/mock_skyarea
-
-nden_ratio = mock_nden/data_nden
-print("Mock/Data projected density ratio:", nden_ratio)
-
-#if nden_ratio > 1.01:
-#    print("Downsample the mock.")
-#    random.seed(17)
-#    rand_dist = np.random.rand(len(targets))
-#    downsample_rate = 1.0/nden_ratio
-#    downsample_mask = (rand_dist < downsample_rate) 
-#    targets = targets[downsample_mask]
-    
-#assert nden_ratio > 0.99, "The mock's projected number density is >1% lower than that of data."
+n=len(targets)  ##A Ashley le falta estoo!
+targets['TARGETID'] = (np.arange(1,n+1)+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
 
 def wrapper(bid_index):
 
@@ -207,14 +248,15 @@ targets = common.cutphotmask(targets, bits=mainp.imbits)
 
 print('cut targets based on photometric mask')
 n=len(targets)
-if 'TRUEZ' not in targets.colnames:
+if ('TRUEZ' not in targets.colnames) and (args.ztruecol != None):
     targets.rename_column(args.ztruecol, 'TRUEZ')
-if 'RSDZ' not in targets.colnames:
+if ('RSDZ' not in targets.colnames) and (args.zrsdcol != None):
     targets.rename_column(args.zrsdcol, 'RSDZ')
-if args.tracer == 'BGS':
-    targets['BGS_TARGET'] = 2
-else:	
-    targets['BGS_TARGET'] = np.zeros(n, dtype='i8')
+
+if (type_ == 'BGS') and (args.mockname.lower() == 'uchuu'):
+    targets.rename_column('ABSMAG_R', 'R_MAG_ABS')
+    
+
 targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
 targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
 targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!

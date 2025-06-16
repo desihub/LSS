@@ -105,6 +105,11 @@ if args.mockname == 'ab_secondgen':
         datas.append(Table(dat[mask]))
     data = vstack(datas)
 #elif conditions could be added here to properly process other kinds of inputs
+elif args.mockname == 'uchuu' and args.tracer == 'BGS_ANY':
+    data = Table(fitsio.read(args.input_mockpath+args.input_mockfile,columns=['ra','dec']))
+    data.rename_column('ra','RA')
+    data.rename_column('dec','DEC')
+
 else:
     data = Table.read(args.input_mockpath+args.input_mockfile)
 

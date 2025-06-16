@@ -132,14 +132,43 @@ dirin = dirout
 #lssmapdirout = dirout+'/hpmaps/'
 lssmapdirout = '/pscratch/sd/x/xychen/imsys_tests/unblinded/'+'hpmaps/'
 
+if args.syscol is None:
+    if args.imsys_zbin == 'y':
+        syscol = 'WEIGHT_IMLIN'
+        #if args.usemaps[0] == 'all':
+        #    syscol += '_ALL'
+        #if args.usemaps[0] == 'allebv':
+        #    syscol += '_ALLEBV'
+    if args.imsys_1zbin == 'y':
+        syscol = 'WEIGHT_IMLIN_1ZBIN'
+        #if args.usemaps[0] == 'all':
+        #    syscol += '_ALL'
+        #if args.usemaps[0] == 'allebv':
+        #    syscol += '_ALLEBV'
+
+    if args.imsys_finezbin == 'y':
+        syscol = 'WEIGHT_IMLIN_FINEZBIN'
+        #if args.usemaps[0] == 'allebv':
+        #    syscol += '_ALLEBV'
+
+else:
+    syscol = args.syscol
+
+
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
     if args.imsys_finezbin == 'y':
         mainp.fit_maps_all
 elif args.usemaps[0] == 'all': 
     fit_maps = mainp.fit_maps_all
+    syscol += '_ALL'
 elif args.usemaps[0] == 'allebv':
     fit_maps = mainp.fit_maps_allebv
+    syscol += '_ALLEBV'
+elif args.usemaps[0] == 'allebvcmb':
+    fit_maps = mainp.fit_maps_allebvcmb
+    syscol += '_ALLEBVCMB'
+
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
@@ -151,6 +180,8 @@ tracer_clus = args.type
 tpstr = args.type
 if 'BGS_BRIGHT' in tracer_clus:
     tpstr = 'BGS_BRIGHT'
+if 'LRG' in tracer_clus:
+    tpstr = 'LRG'
 nside = 256
 inds = np.arange(rm,rx)
 
@@ -160,7 +191,7 @@ if type[:3] == 'ELG':
     elif args.imsys_1zbin == 'y':
         zrl = [(0.8,1.6)]
     elif args.imsys_finezbin == 'y':
-        imsys_clus_fb = y
+        imsys_clus_fb = 'y'
     zsysmin = 0.8
     zsysmax = 1.6
 
@@ -171,7 +202,7 @@ if type[:3] == 'QSO':
     elif args.imsys_1zbin == 'y':
         zrl = [(0.8,3.5)]   
     elif args.imsys_finezbin == 'y':
-        imsys_clus_fb = y
+        imsys_clus_fb = 'y'
     zsysmin = 0.8
     zsysmax = 3.5
 if type[:3] == 'LRG':
@@ -180,7 +211,7 @@ if type[:3] == 'LRG':
     elif args.imsys_1zbin == 'y':
         zrl = [(0.4,1.1)]
     elif args.imsys_finezbin == 'y':
-        imsys_clus_fb = y
+        imsys_clus_fb = 'y'
     zsysmin = 0.4
     zsysmax = 1.1
     if args.relax_zbounds == 'y':
@@ -195,32 +226,11 @@ elif type[:3] == 'BGS':
     zmax = 0.5    
 
 
-if args.syscol is None:
-    if args.imsys_zbin == 'y':
-        syscol = 'WEIGHT_IMLIN'
-        if args.usemaps[0] == 'all':
-            syscol += '_ALL'
-        if args.usemaps[0] == 'allebv':
-            syscol += '_ALLEBV'
-    if args.imsys_1zbin == 'y':
-        syscol = 'WEIGHT_IMLIN_1ZBIN'
-        if args.usemaps[0] == 'all':
-            syscol += '_ALL'
-        if args.usemaps[0] == 'allebv':
-            syscol += '_ALLEBV'
-
-    if args.imsys_finezbin == 'y':
-        syscol = 'WEIGHT_IMLIN_FINEZBIN'
-        if args.usemaps[0] == 'allebv':
-            syscol += '_ALLEBV'
-
-else:
-    syscol = args.syscol
 
 common.printlog('the added weight column will be '+syscol,logger)
 
 debv = common.get_debv()
-
+zcmb = common.mk_zcmbmap()
 sky_g,sky_r,sky_z = common.get_skyres()
 
 
@@ -261,12 +271,14 @@ if args.imsys_clus == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        if 'ZCMB' in fit_maps:
+            sys_tab['ZCMB'] = zcmb
         #seld = dat['PHOTSYS'] == reg
         selr = rands['PHOTSYS'] == reg
 
         def _add_sysweight(zm,zx):
             common.printlog('getting weights for region '+reg+' and '+str(zm)+'<z<'+str(zx),logger)
-            wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linclusimsysfit.png',wtmd='clus')
+            wsysl = densvar.get_imweight(dat,rands,zm,zx,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z',modoutname = dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linfitparam.txt',figname=dirout+args.extra_clus_dir+tracer_clus+'_'+reg+'_'+str(zm)+str(zx)+'_linclusimsysfit.png',wtmd='clus',logger=logger)
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
        
@@ -346,15 +358,19 @@ if args.imsys_clus_ran == 'y':
     dat.rename_column('TARGETID','TARGETID_DATA')
     regl = ['NGC','SGC']
     syscolr = syscol
-    if args.replace_syscol == 'y':
-        syscolr = 'WEIGHT_SYS'
+    #if args.replace_syscol == 'y':
+    #    syscolr = 'WEIGHT_SYS'
     def _add2ran(rann):
         for reg in regl:
             ran_fn = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_'+str(rann)+'_clustering.ran.fits')
             ran = Table(fitsio.read(ran_fn))
             if syscolr in ran.colnames:
-                ran.remove_column(syscol)
+                ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
+            if args.replace_syscol == 'y':
+                ran['WEIGHT'] /= ran['WEIGHT_SYS']
+                ran['WEIGHT_SYS'] = ran[syscolr]
+                ran['WEIGHT'] *= ran['WEIGHT_SYS']
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
     if args.par == 'y':
@@ -367,8 +383,8 @@ if args.imsys_clus_ran == 'y':
             
 if args.add_syscol2blind == 'y':
     syscolr = syscol
-    if args.replace_syscol == 'y':
-        syscolr = 'WEIGHT_SYS'
+    #if args.replace_syscol == 'y':
+    #    syscolr = 'WEIGHT_SYS'
 
     dats = []
     for reg in ['NGC','SGC']:
@@ -382,7 +398,10 @@ if args.add_syscol2blind == 'y':
 
         dat_blind = join(dat_blind,dati,keys=['TARGETID'])
         if args.replace_syscol == 'y':
+            dat_blind['WEIGHT'] /= dat_blind['WEIGHT_SYS']
             dat_blind['WEIGHT_SYS'] = dat_blind[syscol]
+            dat_blind['WEIGHT'] *= dat_blind['WEIGHT_SYS']
+
         common.write_LSS_scratchcp(dat_blind,fname_blind,logger=logger)
     dat = vstack(dats)
     dat.rename_column('TARGETID','TARGETID_DATA')
@@ -394,6 +413,11 @@ if args.add_syscol2blind == 'y':
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
+            if args.replace_syscol == 'y':
+                ran['WEIGHT'] /= ran['WEIGHT_SYS']
+                ran['WEIGHT_SYS'] = ran[syscolr]
+                ran['WEIGHT'] *= ran['WEIGHT_SYS']
+
             common.write_LSS_scratchcp(ran,ran_fn,logger=logger)
 
     if args.par == 'y':
