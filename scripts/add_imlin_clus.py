@@ -120,10 +120,17 @@ maindir = basedir +'/'+args.survey+'/LSS/'
 
 ldirspec = maindir+specrel+'/'
     
-dirout = ldirspec+'LSScats/'+version+'/'
+#dirout = ldirspec+'LSScats/'+version+'/'
+#dirout = '/pscratch/sd/x/xychen/imsys_tests/unblinded/'
+dirout = '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl0/kibo-v1/mock0/LSScats/'
+
+
+
+
 
 dirin = dirout
-lssmapdirout = dirout+'/hpmaps/'
+#lssmapdirout = dirout+'/hpmaps/'
+lssmapdirout = '/pscratch/sd/x/xychen/imsys_tests/unblinded/'+'hpmaps/'
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
@@ -243,7 +250,8 @@ if args.imsys_clus == 'y':
         regu = reg
         if reg == 'DES' or reg == 'SnotDES':
             regu = 'S'
-        pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
+       # pwf = lssmapdirout+tpstr+'_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
+        pwf = lssmapdirout+'QSO_mapprops_healpix_nested_nside'+str(nside)+'_'+regu+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
         for col in cols:
