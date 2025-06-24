@@ -11,7 +11,7 @@ from scipy.special import erf
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import time
-
+from astropy.io import fits
 import LSS.common_tools as common
 
 extdict ={'G':3.214,'R':2.165,'Z':1.211}
@@ -252,6 +252,29 @@ class model_ssr:
         if reg is not None:
             mask &= self.cat['PHOTSYS'] == reg
         self.cat = self.cat[mask]
+        if tracer == 'QSO':
+            emline = fits.open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/emlin_catalog.fits')[1].data
+        
+            ss = np.searchsorted(sorted(emline['TARGETID']), self.cat['TARGETID'])
+        
+            ass = np.argsort(emline['TARGETID'])
+        
+            oii_flux = emline['OII_FLUX'][ass][ss]
+            oii_flux_ivar = emline['OII_FLUX_IVAR'][ass][ss]
+        
+            oiii_flux = emline['OIII_FLUX'][ass][ss]
+            oiii_flux_ivar = emline['OIII_FLUX_IVAR'][ass][ss]
+        
+            dchi_cut =40 #was 30
+            o2c_cut = 1.2 #was 0.9
+            oiii_cut = 5
+            selgal = (( ~common.goodz_infull(tracer,self.cat,zcol='Z_not4clus') & (self.cat['Z_RR'] > 0.01) ) & 
+                ((self.cat['DELTACHI2'] > dchi_cut) | (np.log10(oii_flux * oii_flux_ivar**0.5) > o2c_cut - 0.2 * np.log10(self.cat['DELTACHI2']))
+                | (oiii_flux * oiii_flux_ivar**0.5 > oiii_cut))
+                )  #...now 40,1.2,5...earlier 30,0.9,5
+            selstar = ( ~common.goodz_infull(tracer,self.cat,zcol='Z_not4clus') & (self.cat['Z_RR'] < 0.01))     
+            self.cat=self.cat[~selgal & ~selstar]
+        
         print(len(self.cat))
         self.cat['FIBERFLUX_'+band+'_EC'] = self.cat['FIBERFLUX_'+band]*10**(0.4*extdict[band]*self.cat['EBV'])
         self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
