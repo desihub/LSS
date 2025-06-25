@@ -326,7 +326,7 @@ dchi2 = mainp.dchi2
 tsnrcol = mainp.tsnrcol        
 
 ran_out = (args.ran_ind-1)*20+ii
-common.printlog('ran_out is '+str(ran_out))
+common.printlog('ran_out is '+str(ran_out),logger)
 
 def doran(ii):
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
