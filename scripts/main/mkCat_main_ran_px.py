@@ -43,6 +43,26 @@ else:
     print('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
+import logging
+
+# create logger
+logname = 'LSSran'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", help="tracer type to be selected")
