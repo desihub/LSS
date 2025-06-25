@@ -4925,9 +4925,11 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         #nd += 1
         #print(str(nd),len(tiles))
     inds = np.arange(len(tiles))
-    from multiprocessing import Pool
-    with Pool() as pool:
-        res = pool.map(_create_rantile, inds)
+    for ind in inds:
+        _create_rantile(ind)
+    #from multiprocessing import Pool
+    #with Pool() as pool:
+    #    res = pool.map(_create_rantile, inds)
 
 
 def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
