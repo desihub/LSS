@@ -355,7 +355,7 @@ def doran(ii):
     dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
 
     if mkranmtl:
-        print('making random mtl files for each tile')
+        #print('making random mtl files for each tile')
         #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
         
         #ct.randomtiles_allmain_pix_2step(ta,ii=ran_out,dirrt=dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),logger=logger)
@@ -383,22 +383,23 @@ def doran(ii):
         if len(tiles) == 0:
             print('no tiles to process for '+str(ii))
             return True
-        rtall = read_targets_in_tiles(dirrt,tiles)
-        common.printlog('read targets on all tiles',logger)
+        #rtall = read_targets_in_tiles(dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),tiles)
+        #common.printlog('read targets on all tiles',logger)
     
         common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
         #for i in range(0,len(tiles)):
         def _create_rantile(ind):
             fname = dirout+str(ran_out)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
+            rtw = read_targets_in_tiles(dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),tiles[ind])
             #print('creating '+fname)
-            tdec = tiles['DEC'][ind]
-            decmin = tdec - trad
-            decmax = tdec + trad
-            wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
+            #tdec = tiles['DEC'][ind]
+            #decmin = tdec - trad
+            #decmax = tdec + trad
+            #wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
             #print(len(rt[wdec]))
-            inds = desimodel.footprint.find_points_radec(tiles['RA'][ind], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
+            #inds = desimodel.footprint.find_points_radec(tiles['RA'][ind], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
             #print('got indexes')
-            rtw = rtall[wdec][inds]
+            #rtw = rtall[wdec][inds]
             rmtl = Table(rtw)
             #print('made table for '+fname)
             del rtw
