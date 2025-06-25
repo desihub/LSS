@@ -176,7 +176,8 @@ common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
 	#for i in range(0,len(tiles)):
 def _create_rantile(ind):
 	fname = dirout+str(ran_out)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
-	rtw = read_targets_in_tiles(dirrt+'randoms-'+str(args.ran_ind)+'-'+str(args.rann),tiles[ind])
+	sel = tiles['TILEID'] == tiles[ind]['TILEID']
+	rtw = read_targets_in_tiles(dirrt+'randoms-'+str(args.ran_ind)+'-'+str(args.rann),tiles[sel])
 	#print('creating '+fname)
 	#tdec = tiles['DEC'][ind]
 	#decmin = tdec - trad
