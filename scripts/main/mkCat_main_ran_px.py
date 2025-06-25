@@ -359,69 +359,69 @@ def doran(ii):
         #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
         
         #ct.randomtiles_allmain_pix_2step(ta,ii=ran_out,dirrt=dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),logger=logger)
-		from desitarget.io import read_targets_in_tiles
-		import desimodel.focalplane
-		import desimodel.footprint
-		import LSS.common_tools as common
-		common.printlog('making random target files for tiles',logger)
-		trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-		#print(trad)
-	
-		nd = 0
-		sel_tile = np.zeros(len(ta),dtype=bool)
-		for i in range(0,len(ta)):
-	
-			#print('length of tile file is (expected to be 1):'+str(len(tiles)))
-			#tile = tiles[tiles['TILEID']==tiles['TILEID'][i]]
-			fname = dirout+str(ran_out)+'/tilenofa-'+str(ta['TILEID'][i])+'.fits'
-			if os.path.isfile(fname):
-				#print(fname +' already exists')
-				pass
-			else:
-				sel_tile[i] = True
-		tiles = ta[sel_tile]
-		if len(tiles) == 0:
-			print('no tiles to process for '+str(ii))
-			return True
-		rtall = read_targets_in_tiles(dirrt,tiles)
-		common.printlog('read targets on all tiles',logger)
-	
-		common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
-		#for i in range(0,len(tiles)):
-		def _create_rantile(ind):
-			fname = dirout+str(ran_out)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
-			#print('creating '+fname)
-			tdec = tiles['DEC'][ind]
-			decmin = tdec - trad
-			decmax = tdec + trad
-			wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
-			#print(len(rt[wdec]))
-			inds = desimodel.footprint.find_points_radec(tiles['RA'][ind], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
-			#print('got indexes')
-			rtw = rtall[wdec][inds]
-			rmtl = Table(rtw)
-			#print('made table for '+fname)
-			del rtw
-			#rmtl['TARGETID'] = np.arange(len(rmtl))
-			#print(len(rmtl['TARGETID'])) #checking this column is there
-			rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
-			rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
-			rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
-			rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
-			rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
-			rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-			#print('added columns for '+fname)
-			rmtl.write(fname,format='fits', overwrite=True)
-			del rmtl
-			common.printlog('added columns, wrote to '+fname,logger)
-			#nd += 1
-			#print(str(nd),len(tiles))
-		inds = np.arange(len(tiles))
-		#for ind in inds:
-		#	_create_rantile(ind)
-		from multiprocessing import Pool
-		with Pool() as pool:
-		    res = pool.map(_create_rantile, inds)
+        from desitarget.io import read_targets_in_tiles
+        import desimodel.focalplane
+        import desimodel.footprint
+        #import LSS.common_tools as common
+        common.printlog('making random target files for tiles',logger)
+        trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+        #print(trad)
+    
+        nd = 0
+        sel_tile = np.zeros(len(ta),dtype=bool)
+        for i in range(0,len(ta)):
+    
+            #print('length of tile file is (expected to be 1):'+str(len(tiles)))
+            #tile = tiles[tiles['TILEID']==tiles['TILEID'][i]]
+            fname = dirout+str(ran_out)+'/tilenofa-'+str(ta['TILEID'][i])+'.fits'
+            if os.path.isfile(fname):
+                #print(fname +' already exists')
+                pass
+            else:
+                sel_tile[i] = True
+        tiles = ta[sel_tile]
+        if len(tiles) == 0:
+            print('no tiles to process for '+str(ii))
+            return True
+        rtall = read_targets_in_tiles(dirrt,tiles)
+        common.printlog('read targets on all tiles',logger)
+    
+        common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
+        #for i in range(0,len(tiles)):
+        def _create_rantile(ind):
+            fname = dirout+str(ran_out)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
+            #print('creating '+fname)
+            tdec = tiles['DEC'][ind]
+            decmin = tdec - trad
+            decmax = tdec + trad
+            wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
+            #print(len(rt[wdec]))
+            inds = desimodel.footprint.find_points_radec(tiles['RA'][ind], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
+            #print('got indexes')
+            rtw = rtall[wdec][inds]
+            rmtl = Table(rtw)
+            #print('made table for '+fname)
+            del rtw
+            #rmtl['TARGETID'] = np.arange(len(rmtl))
+            #print(len(rmtl['TARGETID'])) #checking this column is there
+            rmtl['DESI_TARGET'] = np.ones(len(rmtl),dtype=int)*2
+            rmtl['NUMOBS_INIT'] = np.zeros(len(rmtl),dtype=int)
+            rmtl['NUMOBS_MORE'] = np.ones(len(rmtl),dtype=int)
+            rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
+            rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
+            rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
+            #print('added columns for '+fname)
+            rmtl.write(fname,format='fits', overwrite=True)
+            del rmtl
+            common.printlog('added columns, wrote to '+fname,logger)
+            #nd += 1
+            #print(str(nd),len(tiles))
+        inds = np.arange(len(tiles))
+        #for ind in inds:
+        #   _create_rantile(ind)
+        from multiprocessing import Pool
+        with Pool() as pool:
+            res = pool.map(_create_rantile, inds)
 
     
     if runrfa:
