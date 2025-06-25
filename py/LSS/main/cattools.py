@@ -4863,7 +4863,7 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
-def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',logger=None ):
     '''
     tiles should be a table containing the relevant info
     '''
@@ -4871,7 +4871,7 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     import desimodel.focalplane
     import desimodel.footprint
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
-    print(trad)
+    #print(trad)
 
     nd = 0
     sel_tile = np.zeros(len(tiles),dtype=bool)
@@ -4890,22 +4890,23 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         print('no tiles to process for '+str(ii))
         return True
     rtall = read_targets_in_tiles(dirrt,tiles)
-    print('read targets on all tiles')
+    common.printlog('read targets on all tiles',logger)
 
-    print('creating files for '+str(len(tiles))+' tiles')
-    for i in range(0,len(tiles)):
-        fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][i])+'.fits'
-        print('creating '+fname)
-        tdec = tiles['DEC'][i]
+    common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
+    #for i in range(0,len(tiles)):
+    def _create_rantile(ind):
+        fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
+        #print('creating '+fname)
+        tdec = tiles['DEC'][ind]
         decmin = tdec - trad
         decmax = tdec + trad
         wdec = (rtall['DEC'] > decmin) & (rtall['DEC'] < decmax)
         #print(len(rt[wdec]))
-        inds = desimodel.footprint.find_points_radec(tiles['RA'][i], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
-        print('got indexes')
+        inds = desimodel.footprint.find_points_radec(tiles['RA'][ind], tdec,rtall[wdec]['RA'], rtall[wdec]['DEC'])
+        #print('got indexes')
         rtw = rtall[wdec][inds]
         rmtl = Table(rtw)
-        print('made table for '+fname)
+        #print('made table for '+fname)
         del rtw
         #rmtl['TARGETID'] = np.arange(len(rmtl))
         #print(len(rmtl['TARGETID'])) #checking this column is there
@@ -4915,12 +4916,16 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         rmtl['PRIORITY'] = np.ones(len(rmtl),dtype=int)*3400
         rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
-        print('added columns for '+fname)
+        #print('added columns for '+fname)
         rmtl.write(fname,format='fits', overwrite=True)
         del rmtl
-        print('added columns, wrote to '+fname)
-        nd += 1
-        print(str(nd),len(tiles))
+        common.printlog('added columns, wrote to '+fname,logger)
+        #nd += 1
+        #print(str(nd),len(tiles))
+    inds = np.arange(len(tiles))
+    from multiprocessing import Pool
+    with Pool() as pool:
+        res = pool.map(_create_rantile, inds)
 
 
 def randomtiles_allmain_pix(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',imin=0,imax=18,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/' ):

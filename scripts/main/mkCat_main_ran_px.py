@@ -63,6 +63,7 @@ parser.add_argument("--faver", help="version of fiberassign code to use for rand
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=18,type=int) 
+parser.add_argument("--ran_ind",help='index for the input randoms, just 1 by default',default=1,type=int)
 parser.add_argument("--redos",help="whether or not to redo match to spec data (e.g., to add in a new column)",default='n')
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 
@@ -324,7 +325,8 @@ tsnrcut = mainp.tsnrcut
 dchi2 = mainp.dchi2
 tsnrcol = mainp.tsnrcol        
 
-
+ran_out = (args.ran_ind-1)*20+ii
+common.printlog('ran_out is '+str(ran_out))
 
 def doran(ii):
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
@@ -334,7 +336,8 @@ def doran(ii):
     if mkranmtl:
         print('making random mtl files for each tile')
         #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
-        ct.randomtiles_allmain_pix_2step(ta,ii=ii,dirrt=dirrt+'randoms-1-'+str(ii))
+        
+        ct.randomtiles_allmain_pix_2step(ta,ii=ran_out,dirrt=dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),logger=logger)
     
     if runrfa:
         print('DID YOU DELETE THE OLD FILES!!!')
