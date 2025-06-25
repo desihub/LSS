@@ -175,7 +175,8 @@ if len(tiles) == 0:
 common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
 	#for i in range(0,len(tiles)):
 def _create_rantile(ind):
-	fname = dirout+str(ran_out)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
+	fname = randir+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
+	common.printlog('will write to '+fname,logger)
 	sel = tiles['TILEID'] == tiles[ind]['TILEID']
 	rtw = read_targets_in_tiles(dirrt+'randoms-'+str(args.ran_ind)+'-'+str(args.rann),tiles[sel])
 	#print('creating '+fname)
