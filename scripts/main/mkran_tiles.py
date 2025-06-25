@@ -157,7 +157,7 @@ print(specrel)
 dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
 
 common.printlog('making random target files for tiles',logger)
-trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
+#trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
 
 nd = 0
 sel_tile = np.zeros(len(ta),dtype=bool)
