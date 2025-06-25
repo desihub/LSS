@@ -345,10 +345,11 @@ tsnrcut = mainp.tsnrcut
 dchi2 = mainp.dchi2
 tsnrcol = mainp.tsnrcol        
 
-ran_out = (args.ran_ind-1)*20+ii
-common.printlog('ran_out is '+str(ran_out),logger)
 
 def doran(ii):
+    ran_out = (args.ran_ind-1)*20+ii
+    common.printlog('ran_out is '+str(ran_out),logger)
+
     #dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
     #dirrt = '/global/cscratch1/sd/adamyers/forashley/dr9/2.3.0.dev5334/randoms/resolve/'  
     dirrt = '/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/'
