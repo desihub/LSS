@@ -253,18 +253,26 @@ class model_ssr:
             mask &= self.cat['PHOTSYS'] == reg
         self.cat = self.cat[mask]
         if tracer == 'QSO':
-            emline = fits.open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/emlin_catalog.fits')[1].data
+            names = list(self.cat.dtype.names)
+            if 'OII_FLUX' not in names:
+                emline = fits.open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/emlin_catalog.fits')[1].data
         
-            ss = np.searchsorted(sorted(emline['TARGETID']), self.cat['TARGETID'])
+                ss = np.searchsorted(sorted(emline['TARGETID']), self.cat['TARGETID'])
         
-            ass = np.argsort(emline['TARGETID'])
+                ass = np.argsort(emline['TARGETID'])
         
-            oii_flux = emline['OII_FLUX'][ass][ss]
-            oii_flux_ivar = emline['OII_FLUX_IVAR'][ass][ss]
+                oii_flux = emline['OII_FLUX'][ass][ss]
+                oii_flux_ivar = emline['OII_FLUX_IVAR'][ass][ss]
         
-            oiii_flux = emline['OIII_FLUX'][ass][ss]
-            oiii_flux_ivar = emline['OIII_FLUX_IVAR'][ass][ss]
+                oiii_flux = emline['OIII_FLUX'][ass][ss]
+                oiii_flux_ivar = emline['OIII_FLUX_IVAR'][ass][ss]
+            else:
+                oii_flux = self.cat['OII_FLUX']
+                oii_flux_ivar = self.cat['OII_FLUX_IVAR']
         
+                oiii_flux = self.cat['OIII_FLUX']
+                oiii_flux_ivar = self.cat['OIII_FLUX_IVAR']
+           
             dchi_cut =40 #was 30
             o2c_cut = 1.2 #was 0.9
             oiii_cut = 5
