@@ -358,6 +358,7 @@ if mkfulld:
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
     else:
+        emlin_fn = mainp.elgzf
         tracer_ts = type
         if type[:3] == 'ELG':
             tracer_ts = 'ELG'
@@ -366,7 +367,7 @@ if mkfulld:
         dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
-            azf = mainp.elgzf
+            azf = emlin_fn
         if type[:3] == 'QSO':
             azf = mainp.qsozf
     #if args.survey == 'main':        
@@ -386,7 +387,7 @@ if mkfulld:
     maskcoll = False
     if args.survey != 'main':
         maskcoll = True
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,emlin_fn=emlin_fn,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
 
 
 if args.add_veto == 'y':

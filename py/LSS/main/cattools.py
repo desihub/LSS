@@ -3094,7 +3094,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -3390,6 +3390,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         dz = join(dz,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
+        if emlin_fn is not None:
+            emcat =  Table(fitsio.read(emlin_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']))
+            emcat['TILEID'] = emcat['TILEID'].astype(int)
+        	dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
     if tp[:3] == 'ELG' and azf != '':
         if logger is not None:
