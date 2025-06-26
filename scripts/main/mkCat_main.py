@@ -837,6 +837,7 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.
     debv = common.get_debv()
     
     sky_g,sky_r,sky_z = common.get_skyres()
+    common.printlog('got extra maps for regressions',logger)
     #ebvn_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/ebv/test/initial_corrected_ebv_map_nside_64.fits'
     #ebvn = fitsio.read(ebvn_fn)
     #debv = ebvn['EBV_NEW'] - ebvn['EBV_SFD']
@@ -847,6 +848,7 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.
     #debv['EBV_DIFFRZ'] = debv256_nest
 
 if args.imsys == 'y':
+    common.printlog('doing linear regression',logger)
     from LSS.imaging import densvar
     #regl = ['_DN','_DS','','_N','_S']
     #wzm = ''
@@ -863,6 +865,7 @@ if args.imsys == 'y':
     for i in range(0,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
+        common.printlog('read random '+str(i),logger)
     rands = np.concatenate(ranl)
     common.printlog('combined randoms',logger)
     syscol = 'WEIGHT_IMLIN'
