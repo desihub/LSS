@@ -3393,7 +3393,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         if emlin_fn is not None:
             emcat =  Table(fitsio.read(emlin_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']))
             emcat['TILEID'] = emcat['TILEID'].astype(int)
-        	dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
     if tp[:3] == 'ELG' and azf != '':
         if logger is not None:
