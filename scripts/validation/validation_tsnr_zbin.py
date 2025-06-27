@@ -98,9 +98,10 @@ for tp in tps:
         dchi_cut =40 #was 30
         o2c_cut = 1.2 #was 0.9
         oiii_cut = 5
-        selgal = (( ~selgz & (df['Z_RR'] > 0.01) ) & 
-            ((df['DELTACHI2'] > dchi_cut) | (np.log10(df['OII_FLUX'] * df['OII_FLUX_IVAR']**0.5) > o2c_cut - 0.2 * np.log10(df['DELTACHI2']))
-            | (np.log10(df['OIII_FLUX'] * df['OIII_FLUX_IVAR'] > oiii_cut))
+        selgal = (\
+        ( ~selgz & (df['Z_RR'] > 0.01) ) &\ 
+            ((df['DELTACHI2'] > dchi_cut) | (np.log10(df['OII_FLUX'] * df['OII_FLUX_IVAR']**0.5) > o2c_cut - 0.2 * np.log10(df['DELTACHI2']))\
+            | (np.log10(df['OIII_FLUX'] * df['OIII_FLUX_IVAR'] > oiii_cut))\
             )  #...now 40,1.2,5...earlier 30,0.9,5
         selstar = ( ~selgz & (df['Z_RR'] < 0.01))     
         selo &= ~selgal 
