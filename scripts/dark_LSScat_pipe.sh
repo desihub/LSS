@@ -3,7 +3,7 @@
 set -e
 
 source /global/common/software/desi/desi_environment.sh main
-export LSSCODE=$HOME
+#export LSSCODE=$HOME
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 verspec=loa-v1
