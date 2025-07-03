@@ -1661,7 +1661,7 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
 
 def read_fitsio_scratchcp(fdir,fname,columns=None,logger=None):
     #because reading from cfs is brutal
-    tempf = os.getenv('SCRATCH')+fname+'.tmp'
+    tempf = os.getenv('SCRATCH')+'/'+fname+'.tmp'
     os.system('cp ' + fdir+'/'+fname + ' ' + tempf)
     if columns is not None:
         dat = fitsio.read(tempf,columns=columns)
