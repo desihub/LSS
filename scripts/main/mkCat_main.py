@@ -859,6 +859,7 @@ if args.imsys == 'y':
     #rcols.append('WEIGHT_SYSEB')   
     fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
     dat = Table(fitsio.read(fname))
+    common.printlog('read '+fname,logger)
     selgood = common.goodz_infull(tp[:3],dat)
     selobs = dat['ZWARN'] != 999999
     dat = dat[selgood&selobs]
