@@ -848,6 +848,14 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.
     #debv = Table()
     #debv['EBV_DIFFRZ'] = debv256_nest
 
+common.printlog('about to read randoms',logger)
+ran = fitsio.read(dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
+common.printlog('read random 0 ',logger)
+del ran
+ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_0_full_HPmapcut.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS'])
+common.printlog('read random, specified path ',logger)
+del ran
+
 if args.imsys == 'y':
     common.printlog('doing linear regression',logger)
     from LSS.imaging import densvar
@@ -859,8 +867,9 @@ if args.imsys == 'y':
     #reads take forever on node for some reason, writing like this to see if for loop is part of issue
     common.printlog('about to read randoms',logger)
     ran = fitsio.read(dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
-    ranl.append(ran)
     common.printlog('read random 0 ',logger)
+    ranl.append(ran)
+    
 
     for i in range(1,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')), columns=['RA', 'DEC','PHOTSYS']) 
