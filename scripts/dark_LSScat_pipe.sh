@@ -91,7 +91,7 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 
 #narrow dz bins take a while
-python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey $survey --verspec $verspec --imsys_zbin y --use_map_veto _HPmapcut --version $1
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --imsys y --survey $survey --verspec $verspec --imsys_zbin y --use_map_veto _HPmapcut --version $1
 
 #~3 minutes
 python $LSSCODE/LSS/scripts/main/patch_HPmapcut.py --tracers LRG --survey $survey --verspec $verspec --version $1
