@@ -863,7 +863,12 @@ if args.imsys == 'y':
     selobs = dat['ZWARN'] != 999999
     dat = dat[selgood&selobs]
     ranl = []
-    for i in range(0,args.nran4imsys):#int(args.maxr)):
+    #reads take forever on node for some reason, writing like this to see if for loop is part of issue
+    ran = fitsio.read(os.path.join(dirout, tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')), columns=['RA', 'DEC','PHOTSYS']) 
+    ranl.append(ran)
+    common.printlog('read random 0 ',logger)
+
+    for i in range(1,args.nran4imsys):#int(args.maxr)):
         ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
         common.printlog('read random '+str(i),logger)
