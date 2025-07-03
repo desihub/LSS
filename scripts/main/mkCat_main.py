@@ -858,7 +858,7 @@ if args.imsys == 'y':
     ranl = []
     #reads take forever on node for some reason, writing like this to see if for loop is part of issue
     common.printlog('about to read randoms',logger)
-    ran = fitsio.read(dirout +'/' tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')), columns=['RA', 'DEC','PHOTSYS']) 
+    ran = fitsio.read(dirout +'/' tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
     ranl.append(ran)
     common.printlog('read random 0 ',logger)
 
