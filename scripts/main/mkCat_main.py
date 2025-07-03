@@ -849,9 +849,9 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.
     #debv['EBV_DIFFRZ'] = debv256_nest
 
 common.printlog('about to read randoms',logger)
-ran = fitsio.read(dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
-common.printlog('read random 0 ',logger)
-del ran
+#ran = fitsio.read(dirout +'/'+ tpstr+'_13_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
+#common.printlog('read random 0 ',logger)
+#del ran
 ran = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_0_full_HPmapcut.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS'])
 common.printlog('read random, specified path ',logger)
 del ran
