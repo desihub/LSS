@@ -848,20 +848,20 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.
     #debv = Table()
     #debv['EBV_DIFFRZ'] = debv256_nest
 
-common.printlog('about to test read randoms',logger)
+#common.printlog('about to test read randoms',logger)
 #ran = fitsio.read(dirout +'/'+ tpstr+'_13_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
 #common.printlog('read random 0 ',logger)
 #del ran
-ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_0_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
-ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
-common.printlog('read random, specified path, not in loop',logger)
-del ran
+#ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_0_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
+#ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
+#common.printlog('read random 0, specified path, not in loop',logger)
+#del ran
 
-for i in range(1,4):
-	ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_'+str(i)+'_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
-	ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
-	common.printlog('read random, specified path, in loop '+str(i),logger)
-	del ran
+#for i in range(1,4):
+#	ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_'+str(i)+'_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
+#	ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
+#	common.printlog('read random, specified path, in loop '+str(i),logger)
+#	del ran
 
 if args.imsys == 'y':
     common.printlog('doing linear regression',logger)
@@ -873,20 +873,26 @@ if args.imsys == 'y':
     ranl = []
     #reads take forever on node for some reason, writing like this to see if for loop is part of issue
     common.printlog('about to read randoms',logger)
-    ranf = dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')
-    ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
-    common.printlog('read random 0 ',logger)
-    ranl.append(ran)
+    ranfl = [] #making a list of file names and then reading all at once, takes forever otherwise for whatever reason
+    for i in range(,args.nran4imsys):#int(args.maxr)):
+        ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
+        ranfl.append(ranf)
+    ranl = [fitsio.read(ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
+    #ranf = dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')
+    #ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
+    #common.printlog('read random 0 ',logger)
+    #ranl.append(ran)
     
 
-    for i in range(1,args.nran4imsys):#int(args.maxr)):
-        ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
-        ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
-        ranl.append(ran)
-        common.printlog('read random '+str(i),logger)
+    #for i in range(1,args.nran4imsys):#int(args.maxr)):
+    #    ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
+    #    ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
+    #    ranl.append(ran)
+    #    common.printlog('read random '+str(i),logger)
+    common.printlog('read randoms '+str(len(ranfl)),logger)
     rands = np.concatenate(ranl)
     common.printlog('combined randoms',logger)
-       
+    del ranl   
     #rcols.append('WEIGHT_SYSEB')   
     fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
     dat = Table(fitsio.read(fname))
