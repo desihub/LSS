@@ -875,9 +875,11 @@ if args.imsys == 'y':
     common.printlog('about to read randoms',logger)
     ranfl = [] #making a list of file names and then reading all at once, takes forever otherwise for whatever reason
     for i in range(0,args.nran4imsys):#int(args.maxr)):
-        ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
+        #ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
+        ranf = tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'
         ranfl.append(ranf)
-    ranl = [fitsio.read(ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
+    
+    ranl = [common.read_fitsio_scratchcp(outdir,ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
     #ranf = dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')
     #ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
     #common.printlog('read random 0 ',logger)
