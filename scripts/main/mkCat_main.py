@@ -852,10 +852,15 @@ common.printlog('about to test read randoms',logger)
 #ran = fitsio.read(dirout +'/'+ tpstr+'_13_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'), columns=['RA', 'DEC','PHOTSYS']) 
 #common.printlog('read random 0 ',logger)
 #del ran
-for i in range(0,3):
+ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_0_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
+ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
+common.printlog('read random, specified path, not in loop',logger)
+del ran
+
+for i in range(1,4):
 	ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_'+str(i)+'_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
 	ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
-	common.printlog('read random, specified path '+str(i),logger)
+	common.printlog('read random, specified path, in loop '+str(i),logger)
 	del ran
 
 if args.imsys == 'y':
