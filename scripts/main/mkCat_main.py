@@ -864,7 +864,7 @@ if args.imsys == 'y':
     dat = dat[selgood&selobs]
     ranl = []
     for i in range(0,args.nran4imsys):#int(args.maxr)):
-        ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+        ran = fitsio.read(os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')), columns=['RA', 'DEC','PHOTSYS']) 
         ranl.append(ran)
         common.printlog('read random '+str(i),logger)
     rands = np.concatenate(ranl)
