@@ -1659,6 +1659,17 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
         os.system('rm '+tmpfn)
     return True
 
+def read_fitsio_scratchcp(fdir,fname,columns=None,logger=None):
+    #because reading from cfs is brutal
+    tempf = os.getenv('SCRATCH')+fname+'.tmp'
+    os.system('cp ' + fdir+'/'_fname + ' ' + tempf)
+    if columns is not None:
+        dat = fitsio.read(tempf,columns=columns)
+    else:
+        dat = fitsio.read(tempf)
+    os.system('rm '+tempf)
+    return dat
+
 
 def create_sky_targets(dirname, columns=None, format_output='fits', release='1.1.1', version='main', program='dark', dr='dr9', nfiles=10, mpicomm=None):
     """
