@@ -855,14 +855,6 @@ if args.imsys == 'y':
     #wzm = ''
     #fit_maps = ['STARDENS','EBV','GALDEPTH_G', 'GALDEPTH_R','GALDEPTH_Z','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z']
     
-       
-    #rcols.append('WEIGHT_SYSEB')   
-    fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
-    dat = Table(fitsio.read(fname))
-    common.printlog('read '+fname,logger)
-    selgood = common.goodz_infull(tp[:3],dat)
-    selobs = dat['ZWARN'] != 999999
-    dat = dat[selgood&selobs]
     ranl = []
     #reads take forever on node for some reason, writing like this to see if for loop is part of issue
     ran = fitsio.read(os.path.join(dirout, tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')), columns=['RA', 'DEC','PHOTSYS']) 
@@ -875,6 +867,14 @@ if args.imsys == 'y':
         common.printlog('read random '+str(i),logger)
     rands = np.concatenate(ranl)
     common.printlog('combined randoms',logger)
+       
+    #rcols.append('WEIGHT_SYSEB')   
+    fname = os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits')
+    dat = Table(fitsio.read(fname))
+    common.printlog('read '+fname,logger)
+    selgood = common.goodz_infull(tp[:3],dat)
+    selobs = dat['ZWARN'] != 999999
+    dat = dat[selgood&selobs]
     syscol = 'WEIGHT_IMLIN'
     regl = ['S','N']
     if args.type == 'QSO':
