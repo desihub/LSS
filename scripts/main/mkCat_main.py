@@ -879,7 +879,7 @@ if args.imsys == 'y':
         ranf = tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'
         ranfl.append(ranf)
     
-    ranl = [common.read_fitsio_scratchcp(outdir,ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
+    ranl = [common.read_fitsio_scratchcp(dirout,ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
     #ranf = dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')
     #ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
     #common.printlog('read random 0 ',logger)
