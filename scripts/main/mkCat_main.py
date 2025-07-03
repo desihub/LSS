@@ -874,7 +874,7 @@ if args.imsys == 'y':
     #reads take forever on node for some reason, writing like this to see if for loop is part of issue
     common.printlog('about to read randoms',logger)
     ranfl = [] #making a list of file names and then reading all at once, takes forever otherwise for whatever reason
-    for i in range(,args.nran4imsys):#int(args.maxr)):
+    for i in range(0,args.nran4imsys):#int(args.maxr)):
         ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
         ranfl.append(ranf)
     ranl = [fitsio.read(ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
