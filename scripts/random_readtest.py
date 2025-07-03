@@ -1,5 +1,6 @@
 import fitsio
 from time import time
+import os
 t0 = time()
 ranfl = [] #making a list of file names and then reading all at once, takes forever otherwise for whatever reason
 tpstr = 'QSO'
