@@ -499,7 +499,7 @@ if args.apply_map_veto == 'y':
         common.printlog('not doing data',logger)
     def _parfun(rn):
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
-        fin = fin = fout.replace('global','dvs_ro')   
+        fin = fout.replace('global','dvs_ro')   
         fout = fout.replace('_full','_full_HPmapcut')          
         common.apply_map_veto(fin,fout,mapn,maps,mapcuts,logger=logger)
         common.printlog('random veto '+str(rn)+' done',logger)
@@ -988,7 +988,7 @@ if args.prepsysnet == 'y':
         
     
     #_HPmapcut'
-    dat = fitsio.read(os.path.join(dirout, tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
+    dat = fitsio.read(os.path.join(dirout.replace('global','dvs_ro'), tracer_clus+'_full'+args.use_map_veto+'.dat.fits'))
     import time
     time_start = time.time()
     print('Loading randoms...')
