@@ -875,11 +875,12 @@ if args.imsys == 'y':
     common.printlog('about to read randoms',logger)
     ranfl = [] #making a list of file names and then reading all at once, takes forever otherwise for whatever reason
     for i in range(0,args.nran4imsys):#int(args.maxr)):
-        #ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro'))
-        ranf = tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'
-        ranfl.append(ranf)
+        ranf = os.path.join(dirout, tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits')
+        #ranf = tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'
+        ranfl.append(ranf.replace('global','dvs_ro'))
     
-    ranl = [common.read_fitsio_scratchcp(dirout,ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
+    #ranl = [common.read_fitsio_scratchcp(dirout,ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
+    ranl = [fitsio.read(dirout,ranfi, columns=['RA', 'DEC','PHOTSYS']) for ranfi in ranfl]
     #ranf = dirout +'/'+ tpstr+'_0_full'+args.use_map_veto+'.ran.fits'.replace('global','dvs_ro')
     #ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS']) 
     #common.printlog('read random 0 ',logger)
@@ -959,7 +960,7 @@ if args.imsys == 'y':
             else:
                 fitmapsbin = fit_maps
             use_maps = fitmapsbin
-            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png',logger=logger)
+            wsysl = densvar.get_imweight(dat,rands,zmin,zmax,reg,fitmapsbin,use_maps,sys_tab=sys_tab,zcol='Z_not4clus',modoutname = dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linfitparam.txt',figname=dirout+tracer_clus+'_'+reg+'_'+str(zmin)+str(zmax)+'_linimsysfit.png',logger=logger)
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
             #dd['WEIGHT'][sel] *= wsysl[sel]
