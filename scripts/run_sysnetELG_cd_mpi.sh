@@ -33,16 +33,18 @@ lr=$learnrate
 model=$model #dnnp
 loss=$loss #pnll
 etamin=0.00001
-    
+
+sysnet_app=$LSSDIR/LSS/py/LSS/imaging/sysnet_app_mpi.py
+
 if [ "${do_LRfinder}" = true ]
 then
    du -h $input_data
-   srun -n 1 sysnet-app -i ${input_data} -o ${output_nn} -ax ${axes[@]} -bs ${bsize} --model $model --loss $loss --nn_structure ${nns[@]} -fl
+   srun -n 1 $sysnet_app -i ${input_data} -o ${output_nn} -ax ${axes[@]} -bs ${bsize} --model $model --loss $loss --nn_structure ${nns[@]} -fl
 fi
 
 if [ "${do_nnrun}" = true ]
 then
    du -h $input_data
    echo using lr ${lr[${ph}]}
-   time srun -n 5 sysnet-app -i ${input_data} -o ${output_nn} -ax ${axes[@]} -bs ${bsize} --model $model --loss $loss --nn_structure ${nns[@]} -lr ${lr[${ph}]} --eta_min $etamin -ne $nepoch -nc $nchain -k 
+   time srun -n 5 $sysnet_app -i ${input_data} -o ${output_nn} -ax ${axes[@]} -bs ${bsize} --model $model --loss $loss --nn_structure ${nns[@]} -lr ${lr[${ph}]} --eta_min $etamin -ne $nepoch -nc $nchain -k 
 fi
