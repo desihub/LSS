@@ -179,7 +179,7 @@ for tp in tps:
     if 'BGS_BRIGHT-' in tp:
         tpr = 'BGS_BRIGHT'
     if 'BGS' in tp:    
-	prog = 'bright'
+        prog = 'bright'
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
         rffh = fitsio.read_header(indir+prog+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
