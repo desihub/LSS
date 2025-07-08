@@ -4,7 +4,7 @@
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
 #export LSSDIR=$HOME use already exported $LSSCODE directory
-export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
+#export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 version=$1
@@ -25,7 +25,7 @@ NCHAIN_S=5    # chains
 NEPOCH_S=100  # number of epochs
 NNS_S=(4 20)  # NN structure (# layers, # units)
 
-BASEDIR=$SCRATCH/DA2/ #$LSSBASE/$survey/LSS/$verspec/LSScats/
+BASEDIR=$2 #$SCRATCH/DA2/ #$LSSBASE/$survey/LSS/$verspec/LSScats/
 echo $BASEDIR
 RUN_SYSNET=$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh
 
