@@ -34,7 +34,7 @@ model=$model #dnnp
 loss=$loss #pnll
 etamin=0.00001
 
-sysnet_app=$LSSDIR/LSS/py/LSS/imaging/sysnet_app_mpi.py
+sysnet_app=$LSSCODE/LSS/py/LSS/imaging/sysnet_app_mpi.py
 
 if [ "${do_LRfinder}" = true ]
 then
