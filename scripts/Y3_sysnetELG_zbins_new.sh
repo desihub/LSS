@@ -26,24 +26,25 @@ NEPOCH_S=100  # number of epochs
 NNS_S=(4 20)  # NN structure (# layers, # units)
 
 BASEDIR=$LSSBASE/$survey/LSS/$verspec/LSScats/
+echo $BASEDIR
 RUN_SYSNET=$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh
 
 # If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job
 python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version --use_allsky_rands y
 
 # Find learning rate for North
-$RUN_SYSNET N ELG_LOPnotqso0.8_1.1 true false $NBATCH_N 0.003 dnnp pnll $VERSION $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
-$RUN_SYSNET N ELG_LOPnotqso1.1_1.6 true false $NBATCH_N 0.003 dnnp pnll $VERSION $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
+$RUN_SYSNET N ELG_LOPnotqso0.8_1.1 true false $NBATCH_N 0.003 dnnp pnll $version $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
+$RUN_SYSNET N ELG_LOPnotqso1.1_1.6 true false $NBATCH_N 0.003 dnnp pnll $version $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
 # Find learning rate for South
-$RUN_SYSNET S ELG_LOPnotqso0.8_1.1 true false $NBATCH_S 0.003 dnnp pnll $VERSION $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
-$RUN_SYSNET S ELG_LOPnotqso1.1_1.6 true false $NBATCH_S 0.003 dnnp pnll $VERSION $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
+$RUN_SYSNET S ELG_LOPnotqso0.8_1.1 true false $NBATCH_S 0.003 dnnp pnll $version $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
+$RUN_SYSNET S ELG_LOPnotqso1.1_1.6 true false $NBATCH_S 0.003 dnnp pnll $version $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
 
 # Run SYSNet for North
-$RUN_SYSNET N ELG_LOPnotqso0.8_1.1 false true $NBATCH_N $LR_N dnnp pnll $VERSION $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
-$RUN_SYSNET N ELG_LOPnotqso1.1_1.6 false true $NBATCH_N $LR_N dnnp pnll $VERSION $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]} 
+$RUN_SYSNET N ELG_LOPnotqso0.8_1.1 false true $NBATCH_N $LR_N dnnp pnll $version $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
+$RUN_SYSNET N ELG_LOPnotqso1.1_1.6 false true $NBATCH_N $LR_N dnnp pnll $version $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]} 
 # Run SYSNet for South
-$RUN_SYSNET S ELG_LOPnotqso0.8_1.1 false true $NBATCH_S $LR_S dnnp pnll $VERSION $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
-$RUN_SYSNET S ELG_LOPnotqso1.1_1.6 false true $NBATCH_S $LR_S dnnp pnll $VERSION $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
+$RUN_SYSNET S ELG_LOPnotqso0.8_1.1 false true $NBATCH_S $LR_S dnnp pnll $version $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
+$RUN_SYSNET S ELG_LOPnotqso1.1_1.6 false true $NBATCH_S $LR_S dnnp pnll $version $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
 
 python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version
 
