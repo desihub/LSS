@@ -3,9 +3,9 @@
 # srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi Y3_sysnetELG_zbins_new.sh test
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
-export LSSDIR=$HOME
+#export LSSDIR=$HOME use already exported $LSSCODE directory
 export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
-PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 version=$1
 verspec=loa-v1
@@ -26,7 +26,7 @@ NEPOCH_S=100  # number of epochs
 NNS_S=(4 20)  # NN structure (# layers, # units)
 
 BASEDIR=$LSSBASE/$survey/LSS/$verspec/LSScats/
-RUN_SYSNET=$LSSDIR/LSS/scripts/run_sysnetELG_cd_mpi.sh
+RUN_SYSNET=$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh
 
 # If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job
 python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version --use_allsky_rands y
