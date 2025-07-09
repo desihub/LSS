@@ -4,7 +4,7 @@
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
 #export LSSDIR=$HOME use already exported $LSSCODE directory
-#export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
+export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 version=$1
@@ -25,12 +25,12 @@ NCHAIN_S=5    # chains
 NEPOCH_S=100  # number of epochs
 NNS_S=(4 20)  # NN structure (# layers, # units)
 
-BASEDIR=$2 #$SCRATCH/DA2/ #$LSSBASE/$survey/LSS/$verspec/LSScats/
+BASEDIR=$LSSBASE/$survey/LSS/$verspec/LSScats/
 echo $BASEDIR
 RUN_SYSNET=$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh
 
 # If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job
-#python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version --use_allsky_rands y
+python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version --use_allsky_rands y
 
 # Find learning rate for North
 $RUN_SYSNET N ELG_LOPnotqso0.8_1.1 true false $NBATCH_N 0.003 dnnp pnll $version $BASEDIR $NCHAIN_N $NEPOCH_N ${NNS_N[@]}
@@ -46,6 +46,6 @@ $RUN_SYSNET N ELG_LOPnotqso1.1_1.6 false true $NBATCH_N $LR_N dnnp pnll $version
 $RUN_SYSNET S ELG_LOPnotqso0.8_1.1 false true $NBATCH_S $LR_S dnnp pnll $version $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
 $RUN_SYSNET S ELG_LOPnotqso1.1_1.6 false true $NBATCH_S $LR_S dnnp pnll $version $BASEDIR $NCHAIN_S $NEPOCH_S ${NNS_S[@]}
 
-#python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version
+python scripts/main/mkCat_main.py --basedir $LSSBASE --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version
 
 #python scripts/validation/validation_improp_full.py --tracers ELG_LOPnotqso --version $version --verspec $verspec --survey $survey --weight_col WEIGHT_SN
