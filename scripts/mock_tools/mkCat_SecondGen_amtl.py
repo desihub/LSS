@@ -656,6 +656,7 @@ if args.apply_veto == 'y':
             lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
             common.printlog('joining to LRG mask info',logger)
             dataf = join(dataf, lrgmask, keys=['TARGETID'])
+            joinmask = 0 #LRGs shouldn't need other mask columns
         if joinmask == 1:                   
             targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d.fits' % mocknum), columns = readcols))
             common.printlog('adding mask column info',logger)
