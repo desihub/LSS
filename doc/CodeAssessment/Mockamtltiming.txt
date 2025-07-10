@@ -3,13 +3,17 @@
 ### Total processing time
 
 combination: 17 minutes
-full data LRG: 10 minutes
+full data LRG: 8.5 minutes
 full data QSO: 6 minutes
 full data ELG: 23 minutes
-clustering catalogs LRG: 12 minutes
-clustering catalogs ELG: 13 minutes
-clustering catalogs QSO: 17 minutes
-Total: 99 minutes; 1.65 node hours
+clustering catalogs LRG: 11 minutes
+clustering catalogs ELG: 12 minutes
+clustering catalogs QSO: 15 minutes
+Total: 92.5 minutes; 1.54 node hours
+
+Total in astropy join/unique: 4.5+1.5+3.5+2+2
+
+Total time doing tile counts ~10 minutes
 
 ### Make all needed combination files (file with all repeats),
  # takes 17 minutes # 
@@ -24,8 +28,8 @@ srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LS
 ### Make full data catalogs, with vetos
 #loading in data takes ~2 minutes (repeated for all types)
 #counting tiles proportional to sample size ~1:20 for LRGs
- # LRG takes 10 minutes total
- # full_noveto takes 6 minutes, 4 minutes on vetoing/completeness calculation
+ # LRG takes 8.5 minutes total
+ # full_noveto takes 6 minutes (0.5 to read in/cut to target type, 1.5 minute join to spec info, 2.0 count tiles, 0.5 cut to unique, 0.5 minutes join to ntile, 20 sec to write noveto), 2.5 minutes on vetoing/completeness calculation (1.5 minute to join to lrg mask info)
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer LRG --fulld y --apply_veto y --par y
 *
@@ -38,7 +42,7 @@ srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LS
 
  # ELG takes 23 minutes total
  # full_noveto takes 17 minutes; 6 minutes on vetoing/completeness calculation
- # 0.5 minutes on cutting to type; 3.5 minutes on join to target info; 6 minutes on tile counts; 2 minutes cutting to unique; 2 minutes joining ntile; 1 minute getting FRACZ_TILELOCID; 1 minute to writeout; 0.5 minutes other
+ # 0.5 minutes on cutting to type; 3.5 minutes on join to mock assignment info; 6 minutes on tile counts; 2 minutes cutting to unique; 2 minutes joining ntile; 1 minute getting FRACZ_TILELOCID; 1 minute to writeout; 0.5 minutes other
  # 2 minutes to join to mask info; 0.5 minutes to mask; 2 minutes on completeness; 1 minute on the healpix mask; 1 minute on writeout
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
@@ -46,15 +50,16 @@ srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LS
 
 ### Make clustering data and random catalogs
  # Read of input randoms (same for all tracers) takes ~ 2 minutes (after change to use dvs_ro)
- # LRG 12 minutes total 4 minutes per 9 for initial clustering catalogs (18 total); 4 minutes to do NGC/SGC and nz 
+ # LRG 11 minutes total 3.5 minutes per 9 for initial clustering catalogs (18 total; 1 minute on read); 4 minutes to do NGC/SGC and nz 
+ #repeating on July 9th (no code changes), initial read much faster, ~1 minute on read and ~1 on processing
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer LRG  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
 *
- # ELG 13 minutes total; 4 minutes per 9 randoms for initial clustering catalogs; 5 minutes to do NGC/SGC and nz
+ # ELG 12 minutes total; 3.5 minutes per 9 randoms for initial clustering catalogs; 5 minutes to do NGC/SGC and nz
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y   --mkclusdat y --mkclusran y --splitGC y --nz y --par y 09:16:10
 *
- # QSO 17 minutes total; require running 6 randoms at a time as OOM with 9; 4.3 minutes per 6 randoms + 4 minutes through n(z) and NGC/SGC split 
+ # QSO 15 minutes total; require running 6 randoms at a time as OOM with 9; 3.5 minutes per 6 randoms + 4 minutes through n(z) and NGC/SGC split 
  # Noted needed environment change to cosmodesi
 *
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --specdata loa-v1 --tracer QSO  --mkclusdat y --mkclusran y --splitGC y --nz y --par y
