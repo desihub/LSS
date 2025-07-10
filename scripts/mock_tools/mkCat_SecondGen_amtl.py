@@ -101,7 +101,8 @@ parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to r
 parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP weights.",default='n')
 
 
-
+import time
+t0 = time.time()
 #--use_map_veto _HPmapcut
 
 import logging
@@ -1089,3 +1090,5 @@ if args.addnbar_ran == 'y':
         fb = dirout+tracer_clus+utlid_sw+reg
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,add_data=False,ran_sw=utlid_sw)
 '''
+tf = time.time()
+common.printlog('total time '+str((tf-t0)/60)+' minutes',logger)
