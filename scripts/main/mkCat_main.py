@@ -1273,7 +1273,8 @@ if args.add_sysnet == 'y':
     comments = []
     comments.append("Using sysnet for WEIGHT_SYS")
 
-    common.write_LSS(dd,fn_full,comments)
+    #common.write_LSS(dd,fn_full,comments)
+    common.write_LSS_scratchcp(dd,fn_full,logger=logger)
         
     
 
