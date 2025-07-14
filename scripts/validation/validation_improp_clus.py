@@ -275,10 +275,12 @@ for tp in tps:
 
     zcol = 'Z'
     tpr = tp
-    if 'BGS_BRIGHT' in tp:
+    if 'BGS' in tp:
         tpr = 'BGS_BRIGHT'
     if 'LRG' in tp:
         tpr = 'LRG'
+    if 'ELG' in tp:
+        tpr = 'ELG_LOPnotqso'
     mf = {'N':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_N.fits'),\
     'S':fitsio.read(indir+'hpmaps/'+tpr+zdw+'_mapprops_healpix_nested_nside256_S.fits')}
     
