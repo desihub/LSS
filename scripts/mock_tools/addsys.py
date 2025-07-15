@@ -54,6 +54,7 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 #parser.add_argument("--mockcatver", help="catalog version",default=None)
 parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
 parser.add_argument("--use_altmtl", help="if yes, use altmtl",default='n')
+parser.add_argument("--add_sysnet_from_data",help="add SN weights for imaging systematics, calculated from data, add_sysnet must be true. Need to provide arguments for survey, verspec and data_version",default='n')
 
 args = parser.parse_args()
 print(args)
@@ -494,7 +495,11 @@ if args.add_sysnet == 'y':
     dats = fitsio.read(os.path.join(dirout.replace('global','dvs_ro') , tp+'_SGC'+'_clustering.dat.fits'))
     dd = Table(np.concatenate((datn,dats)))
     print('concat .dat files len: ',len(dd))
-    dd['WEIGHT_SN'] = np.ones(len(dd))
+    if args.add_sysnet_from_data =='y':
+        weight_colname = 'WEIGHT_SN_DATA'
+    else:
+        weight_colname = 'WEIGHT_SN' 
+    dd[weight_colname] = np.ones(len(dd))
     dth,dphi = densvar.radec2thphi(dd['RA'],dd['DEC'])
     dpix = hp.ang2pix(256,dth,dphi)
 
@@ -503,7 +508,12 @@ if args.add_sysnet == 'y':
             zw = ''
             if args.imsys_zbin == 'y':
                 zw = str(zl[0])+'_'+str(zl[1])
-            sn_weights = fitsio.read(dirout+'/sysnet/'+tp+zw+'_'+reg+'/nn-weights.fits')
+            if args.add_sysnet_from_data =='y':
+                tp_str = tp[:3]+'_LOPnotqso' if tp[:3]=='ELG' else tp[:3]
+                sysfn = datadir+'/sysnet/'+tp_str+zw+'_'+reg+'/nn-weights.fits'
+            else:
+                sysfn = dirout+'/sysnet/'+tp+zw+'_'+reg+'/nn-weights.fits'
+            sn_weights = fitsio.read(sysfn)
             pred_counts = np.mean(sn_weights['weight'],axis=1)
             #pix_weight = np.mean(pred_counts)/pred_counts
             #pix_weight = np.clip(pix_weight,0.5,2.)
@@ -522,7 +532,7 @@ if args.add_sysnet == 'y':
 
             #print(np.sum(sel))
             if len(dd[sel&selz]) > 0:
-                dd['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
+                dd[weight_colname][sel&selz] = hpmap[dpix[sel&selz]]
         #print(np.min(dd['WEIGHT_SYS']),np.max(dd['WEIGHT_SYS']),np.std(dd['WEIGHT_SYS']))
         #comments = []
         #comments.append("Using sysnet for WEIGHT_SYS")
@@ -536,7 +546,10 @@ if args.add_regressis_ran == 'y' or args.add_sysnet_ran == 'y' or args.add_imsys
     if args.add_regressis_ran == 'y':
         wtcol = 'WEIGHT_RF'
     if args.add_sysnet_ran == 'y':
-        wtcol = 'WEIGHT_SN'
+        if args.add_sysnet_from_data =='y':
+            wtcol = 'WEIGHT_SN_DATA'
+        else:
+            wtcol = 'WEIGHT_SN'
     if args.add_imsys_ran == 'y':
         wtcol = 'WEIGHT_IMLIN'
     fb = dirout+tp
