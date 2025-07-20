@@ -462,8 +462,11 @@ if args.mkHPmaps == 'y':
         os.mkdir(lssmapdirout)
         common.printlog('made '+lssmapdirout,logger)
     lssmapdir = '/global/cfs/cdirs/desi/survey/catalogs/external_input_maps/'
-    rancatname = dirout+tracer_clus+'_*_full.ran.fits'
-    rancatlist = sorted(glob.glob(rancatname))
+    rancatlist = []
+    for ii in range(0,18):
+        rancatname = dirout+tracer_clus+'_'+str(ii)+'_full.ran.fits'
+        rancatlist.append(rancatname)
+    #rancatlist = sorted(glob.glob(rancatname))
     #print(dirout)
     #print(rancatlist)
     fieldslist = allmapcols
