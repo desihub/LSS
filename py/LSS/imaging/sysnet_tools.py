@@ -37,6 +37,8 @@ def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=
         #if 'FRAC_TLOBS_TILES' in cols:
         #    print('using FRAC_TLOBS_TILES')
         wts *= 1/data['FRAC_TLOBS_TILES']
+    if wtmd == 'probobs':
+        wts = 129/(data['PROB_OBS']*128+1)
     if wtmd == 'wt_iip':
         wts = data['WEIGHT_IIP']
 
