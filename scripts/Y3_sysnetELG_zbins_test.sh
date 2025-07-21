@@ -1,6 +1,6 @@
 #!/bin/bash
-# bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG
-# bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG_LOP
+# bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG y
+# bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG_LOP y
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 export OMP_NUM_THREADS=2
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
@@ -9,16 +9,22 @@ version=$1
 verspec=loa-v1
 survey=DA2
 type=$2
+notqso=$3
 
-if [ $type = 'ELG_LOP' ] 
+tracer=$type
+if [$notqso = 'y']
 then
-    tracer=ELG_LOPnotqso
+    tracer=${type}notqso
 fi
+#if [ $type = 'ELG_LOP' ] 
+#then
+#    tracer=ELG_LOPnotqso
+#fi
 
-if [ $type = 'ELG' ] 
-then
-    tracer=ELGnotqso
-fi
+#if [ $type = 'ELG' ] 
+#then
+#    tracer=ELGnotqso
+#fi
 
 echo $tracer
 
