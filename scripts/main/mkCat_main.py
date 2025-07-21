@@ -1032,7 +1032,7 @@ if args.prepsysnet == 'y':
             else:
                 fitmapsbin = fit_maps
             tpmap = tpstr
-            if 'ELG' in tpstr:
+            if 'ELG' in tpstr and 'notqso' in tpstr:
                 tpmap = 'ELG_LOPnotqso'
             pwf = lssmapdirout+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
@@ -1058,9 +1058,12 @@ if args.prepsysnet == 'y':
             else:
                 allrands = None
             common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
+            wtmd = 'fracz'
+            if tpstr == 'ELG':
+                wtmd = 'probobs'
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
-                                                  columns=fitmapsbin,wtmd='fracz',tp=args.type[:3])
+                                                  columns=fitmapsbin,wtmd=wtmd,tp=args.type[:3])
             fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
             common.write_LSS(prep_table,fnout)
 
