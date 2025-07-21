@@ -27,6 +27,7 @@ fi
 #fi
 
 echo $tracer
+echo $notqso
 
 # Some NN parameters for North
 LR_N=0.009    # learning rate
@@ -56,7 +57,7 @@ north_flags="-lr $LR_N -bs $NBATCH_N --nn_structure ${NNS_N[@]} -ne $NEPOCH_N -n
 south_flags="-lr $LR_S -bs $NBATCH_S --nn_structure ${NNS_S[@]} -ne $NEPOCH_S -nc $NCHAIN_S"
 
 # If using the allsky randoms option when preparing for sysnet mkCat_main.py might not work without salloc or job
-srun -n 1 -t 20 $srun_flags python scripts/main/mkCat_main.py --basedir $LSSBASE --type $type --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version --use_allsky_rands y
+srun -n 1 -t 20 $srun_flags python scripts/main/mkCat_main.py --basedir $LSSBASE --type $type --notqso $notqso --prepsysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version --use_allsky_rands y
 
 # Get learning rates
     # for North
@@ -74,6 +75,6 @@ srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -i $sy
 srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_S.fits -o $sysnet_dir/${tracer}0.8_1.1_S
 srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_S.fits -o $sysnet_dir/${tracer}1.1_1.6_S
 
-srun -n 1 -t 20 $srun_flags python scripts/main/mkCat_main.py --basedir $LSSBASE --type $type --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version
+srun -n 1 -t 20 $srun_flags python scripts/main/mkCat_main.py --basedir $LSSBASE --type $type --notqso $notqso --add_sysnet y --imsys_zbin y --fulld n --survey $survey --verspec $verspec --version $version
 
 #python scripts/validation/validation_improp_full.py --tracers $type --version $version --verspec $verspec --survey $survey --weight_col WEIGHT_SN
