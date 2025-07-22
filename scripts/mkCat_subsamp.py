@@ -131,7 +131,7 @@ if mkclusran:
     common.printlog('making clustering catalog for randoms, files '+str(rm)+ ' through '+str(rx),logger)
     common.printlog('(if running all, consider doing in parallel)',logger)  
 
-def get_FSF_loa(indata,fsf_cols,fsf_dir='/pscratch/sd/i/ioannis/fastspecfit/data/loa/catalogs/',prog='bright'):
+def get_FSF_loa(indata,fsf_cols,fsf_dir='/dvs_ro/cfs/cdirs/desi/vac/dr2/fastspecfit/loa/v1.0/catalogs/',prog='bright'):
     #add the fsf_cols to the existing data based on a TARGETID match
     #works with the data model that is new as of loa
     fsl = []
