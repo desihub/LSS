@@ -7,7 +7,7 @@ import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--inputdir", help="base directory for input, default is location for official catalogs", default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v1.1/')
+parser.add_argument("--inputdir", help="base directory for input, default is location for official catalogs", default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/')
 
 
 args = parser.parse_args()
