@@ -1061,6 +1061,7 @@ if args.prepsysnet == 'y':
             wtmd = 'fracz'
             if tpstr == 'ELG':
                 wtmd = 'probobs'
+            common.printlog('using 'tpmap +' maps and '+wtmd+' weights')
             prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z_not4clus', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd=wtmd,tp=args.type[:3])
