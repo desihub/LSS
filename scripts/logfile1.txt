@@ -1,0 +1,6 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+5	:	1750139326.178	     0.018	0	0	0	0	
+3	:	1750139326.173	  5325.717	0	0	0	0	python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl19/kibo-v1/mock19/LSScats/' > mock19.log
+4	:	1750139326.175	  5440.493	0	0	0	0	python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl20/kibo-v1/mock20/LSScats/' > mock20.log
+2	:	1750139326.170	  5739.407	0	0	0	0	python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl18/kibo-v1/mock18/LSScats/' > mock18.log
+1	:	1750139326.168	  6222.212	0	0	0	0	python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl11/kibo-v1/mock11/LSScats/' > mock11.log

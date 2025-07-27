@@ -79,6 +79,8 @@ parser.add_argument("--nran4imsys",help="number of random files to using for lin
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
 
+parser.add_argument("--dirout",default=None)
+
 args = parser.parse_args()
 common.printlog(str(args),logger)
 
@@ -122,7 +124,8 @@ ldirspec = maindir+specrel+'/'
     
 #dirout = ldirspec+'LSScats/'+version+'/'
 #dirout = '/pscratch/sd/x/xychen/imsys_tests/unblinded/'
-dirout = '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl0/kibo-v1/mock0/LSScats/'
+#dirout = '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl0/kibo-v1/mock0/LSScats/'
+dirout = args.dirout
 
 
 

@@ -1,0 +1,5 @@
+python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl14/kibo-v1/mock14/LSScats/' > mock14.log
+python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl15/kibo-v1/mock15/LSScats/' > mock15.log
+python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl16/kibo-v1/mock16/LSScats/' > mock16.log
+python add_imlin_clus.py --imsys_finezbin y --usemaps 'allebvcmb' --imsys_clus y --imsys_clus_ran y --type LRG --extra_clus_dir '' --dirout '/pscratch/sd/x/xychen/imsys_tests/altmtl_mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl17/kibo-v1/mock17/LSScats/' > mock17.log
+
