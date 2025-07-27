@@ -730,7 +730,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     specf = fitsio.read(specfo,columns=spec_cols_4tar)
     common.printlog('spec file '+specfo+' has '+str(len(specf))+' rows',logger)
     if '1b' in prog:
-        common.printlog('adding '+specfo.replace('1b','') +' to spec info')
+        common.printlog('adding '+specfo.replace('1b','') +' to spec info',logger)
         specfnb = fitsio.read(specfo.replace('1b',''),columns=spec_cols_4tar)
         specf = np.concatenate([specf,specfnb])
         del specfnb
