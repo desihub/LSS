@@ -525,34 +525,34 @@ if args.survey == 'Y1' and args.counts_only == 'y':
 
 
 if prog == 'dark':
-	if args.tracer == 'all':
-		#tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-		#notqsos = ['','','notqso','','']
-		tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
-		notqsos = ['','','']
-	else:
-		tps = [args.tracer]
-		notqsos = [args.notqso]    
+    if args.tracer == 'all':
+        #tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+        #notqsos = ['','','notqso','','']
+        tps = ['QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
+        notqsos = ['','','']
+    else:
+        tps = [args.tracer]
+        notqsos = [args.notqso]    
 if prog == 'dark1b':
-	if args.tracer == 'all':
-		#tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-		#notqsos = ['','','notqso','','']
-		tps = ['LGE','QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
-		notqsos = ['','','','']
-	else:
-		tps = [args.tracer]
-		notqsos = [args.notqso]    
+    if args.tracer == 'all':
+        #tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+        #notqsos = ['','','notqso','','']
+        tps = ['LGE','QSO','LRG','ELG'] #only do base types because other are subset that can be cut later and this saves i/o
+        notqsos = ['','','','']
+    else:
+        tps = [args.tracer]
+        notqsos = [args.notqso]    
 
 if 'bright' in prog:
-	if args.tracer == 'all':
-		#tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
-		#notqsos = ['',''] 
-		tps = ['BGS_ANY']#,'MWS_ANY']  
-		notqsos = [''] 
+    if args.tracer == 'all':
+        #tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']  
+        #notqsos = ['',''] 
+        tps = ['BGS_ANY']#,'MWS_ANY']  
+        notqsos = [''] 
 
-	else:
-		tps = [args.tracer]
-		notqsos = [args.notqso]    
+    else:
+        tps = [args.tracer]
+        notqsos = [args.notqso]    
 
 
 if specrel == 'daily' and args.dospec == 'y' and args.survey != 'main':
@@ -881,42 +881,42 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             
             #join to spec info; now only do so after updating 1b tiles
             if '1b' in prog:
-				tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
-				print('added TILELOCID, about to do joins')
-				#tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
-	
-				#seems to run out of memory on join
-				tjl = []
-				print(tarfn.dtype.names)
-				selreg = tarfn['DEC'] > 0
-				print(len(tarfn[selreg]))
-				remcol = ['LOCATION','TILEID']
-				for col in remcol:
-					try:
-						specf.remove_columns([col])
-					except:
-						print('column '+col +' was not in stacked spec table') 
-				if np.sum(selreg) > 0:
-					tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-					tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
-					common.printlog('1st join done',logger)
-				if np.sum(~selreg) > 0:
-					tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
-					tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
-					common.printlog('2nd join done',logger)
-				del tarfn
-				if len(tjl) > 1:
-					tj = vstack(tjl)
-				else:
-					tj = tjl[0]
-				del tjl
-				common.printlog('stacked now writing out',logger)
-				#for reg in regl:                
-				#    sel = tarfn['PHOTSYS'] == reg
-				#    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
-				#tj.write(outfs,format='fits', overwrite=True)
-				common.write_LSS_scratchcp(tj,outfs,logger=logger)
-				common.printlog('joined to spec data and wrote out to '+outfs,logger)
+                tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
+                print('added TILELOCID, about to do joins')
+                #tj = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left')
+    
+                #seems to run out of memory on join
+                tjl = []
+                print(tarfn.dtype.names)
+                selreg = tarfn['DEC'] > 0
+                print(len(tarfn[selreg]))
+                remcol = ['LOCATION','TILEID']
+                for col in remcol:
+                    try:
+                        specf.remove_columns([col])
+                    except:
+                        print('column '+col +' was not in stacked spec table') 
+                if np.sum(selreg) > 0:
+                    tjl.append(join(tarfn[selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+                    tjl[0]['ZWARN'] = tjl[0]['ZWARN'].filled(999999)
+                    common.printlog('1st join done',logger)
+                if np.sum(~selreg) > 0:
+                    tjl.append(join(tarfn[~selreg],specf,keys=['TARGETID','TILELOCID'],join_type='left'))
+                    tjl[1]['ZWARN'] = tjl[1]['ZWARN'].filled(999999)
+                    common.printlog('2nd join done',logger)
+                del tarfn
+                if len(tjl) > 1:
+                    tj = vstack(tjl)
+                else:
+                    tj = tjl[0]
+                del tjl
+                common.printlog('stacked now writing out',logger)
+                #for reg in regl:                
+                #    sel = tarfn['PHOTSYS'] == reg
+                #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
+                #tj.write(outfs,format='fits', overwrite=True)
+                common.write_LSS_scratchcp(tj,outfs,logger=logger)
+                common.printlog('joined to spec data and wrote out to '+outfs,logger)
         elif redotarspec or dotarspec:
             common.printlog('joining spec info to target info',logger)
             tarfn = fitsio.read(outf)
