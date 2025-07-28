@@ -70,6 +70,7 @@ class main:
         self.tiles = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv')
         self.ebits = None
         self.badfib = None
+        self.badfib_td = None
         self.badfib_status = None
         self.tsnrcol = 'TSNR2_ELG' 
         #self.tsnrcut = 0 #better to throw an error having this undefined rather than having code use a bad value
