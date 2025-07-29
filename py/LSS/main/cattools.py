@@ -3190,9 +3190,16 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',de
         else:
             print(specf)
         fs = fitsio.read(specf)
-        common.printlog('badfib type is '+str(type(badfib).__name__),logger)
-        common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
+        #common.printlog('badfib type is '+str(type(badfib).__name__),logger)
+        #common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
+<<<<<<< HEAD
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+=======
+        if spever == 'daily':
+            fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+        else:
+            fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+>>>>>>> 1280e41cd1f02571799b48d5fe9928b321531e84
         fs = Table(fs)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
         gtl = np.unique(fs['TILELOCID'])

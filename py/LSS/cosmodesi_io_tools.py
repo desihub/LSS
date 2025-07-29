@@ -156,10 +156,11 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     if rec_type:
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
+#        return os.path.join(cat_dir, '{}{}_{}_w_interp_weights.{}.fits'.format(tracer, region, ctype, dat_or_ran))
         return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
     #print(nrandoms)
+#    return [os.path.join(cat_dir, '{}{}{}_{:d}_{}_w_interp_weights.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
     return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
-
 
 def _format_bitweights(bitweights):
     if bitweights.ndim == 2: return list(bitweights.T)
@@ -235,6 +236,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
         #assumes default already added the rest of the weights and that SN was used as default weight
         weights *=  catalog['WEIGHT_IMLIN'][mask]/catalog['WEIGHT_SYS'][mask]
 
+    if 'IMLIN_FINEZBIN_ALLEBVCMB_INTERP' in weight_type:
+        weights *=  catalog['IMLIN_FINEZBIN_ALLEBVCMB_INTERP'][mask]/catalog['WEIGHT_SYS'][mask]
 
     if 'IMLIN_FINEZBIN_ALLEBVCMB' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_FINEZBIN_ALLEBVCMB'][mask]/catalog['WEIGHT_SYS'][mask]
