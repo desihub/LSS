@@ -676,6 +676,19 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
                 doneFlag.append(False)
             archiveDates.append(update['ARCHIVEDATE'])
             reprocFlag = True
+
+
+    #LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
+    #probably should add an option for this?? only if we will ever not want to run it?? is date hardcoded ok (not like it'll change!)??
+    if max(TimesOfActions) > '2025-07-21T23:36:04+00:00':
+        log.info('Adding QSO NUMOBS Increase Action')
+        TileIDs.append(-1)
+        TypeOfActions.append('lya1b')
+        TimesOfActions.append('2025-07-21T23:36:04+00:00')
+        doneFlag.append(False)
+        archiveDates.append(20250721)
+
+            
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
     t = Table(ActionList,
            names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
