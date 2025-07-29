@@ -27,7 +27,7 @@ from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
-from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date, update_lya_1b
 
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
@@ -1623,9 +1623,14 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 retval = reprocess_alt_ledger(altmtldir, action, obscon=obscon, survey = survey)
                 if debug or verbose:
                     log.info(f'retval = {retval}')
+            
+            #LGN 07/29/25: Adding new LyA1B case
+            elif action['ACTIONTYPE'] == 'lya1b':
+                #run update on the realization
+                update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp='2025-07-21T23:36:04+00:00', donefile=False)
                 
             else:
-                raise ValueError('actiontype must be `fa`, `update`, or `reproc`.')
+                raise ValueError('actiontype must be `fa`, `update`, `reproc` or `lya1b`.')
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
             #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
