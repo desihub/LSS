@@ -149,9 +149,9 @@ else:
 pd = pdir
 
 globtype = args.type
-if args.type == 'dark':
+if 'dark' in args.type:
     globtype = 'LRG'
-if args.type == 'bright':
+if 'bright' in args.type:
     globtype == 'BGS'
 mainp = main(globtype,args.verspec)
 
