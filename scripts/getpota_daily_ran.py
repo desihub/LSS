@@ -47,16 +47,16 @@ mainp = main(args.prog.lower(),'daily')
 
 mt = mainp.mtld
 tiles = mainp.tiles
-imbits = mainp.imbits #mask bits applied to targeting
-ebits = mainp.ebits #extra mask bits we think should be applied
+#imbits = mainp.imbits #mask bits applied to targeting
+#ebits = mainp.ebits #extra mask bits we think should be applied
 
 
-tsnrcut = mainp.tsnrcut
-dchi2 = mainp.dchi2
-tnsrcol = mainp.tsnrcol        
-zmin = mainp.zmin
-zmax = mainp.zmax
-badfib = mainp.badfib
+#tsnrcut = mainp.tsnrcut
+#dchi2 = mainp.dchi2
+#tnsrcol = mainp.tsnrcol        
+#zmin = mainp.zmin
+#zmax = mainp.zmax
+#badfib = mainp.badfib
 
 
 wd = mt['SURVEY'] == 'main'
