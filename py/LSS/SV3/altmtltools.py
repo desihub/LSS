@@ -1628,6 +1628,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             elif action['ACTIONTYPE'] == 'lya1b':
                 #run update on the realization
                 update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp='2025-07-21T23:36:04+00:00', donefile=False)
+                #record succesful update in ledger
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
                 
             else:
                 raise ValueError('actiontype must be `fa`, `update`, `reproc` or `lya1b`.')
