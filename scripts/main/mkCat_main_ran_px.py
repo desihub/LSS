@@ -153,6 +153,7 @@ if 'dark' in args.type:
     globtype = 'LRG'
 if 'bright' in args.type:
     globtype == 'BGS'
+print(globtype)
 mainp = main(globtype,args.verspec)
 
 mt = mainp.mtld
