@@ -152,6 +152,7 @@ globtype = args.type
 if 'dark' in args.type:
     globtype = 'LRG'
 if 'bright' in args.type:
+    print('changing globtype to BGS')
     globtype == 'BGS'
 print(globtype)
 mainp = main(globtype,args.verspec)
