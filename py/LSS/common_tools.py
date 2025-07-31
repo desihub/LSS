@@ -25,62 +25,62 @@ def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
     
 def mask_bad_fibers_time_dependent(dz, badfibers_td,logger=None):
-	# Use the time-dependent bad fiber file to remove data
-	# dz is the input data file, which must have FIBER and LASTNIGHT columns
+    # Use the time-dependent bad fiber file to remove data
+    # dz is the input data file, which must have FIBER and LASTNIGHT columns
 
-	#badfibers_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt','r').readlines()
+    #badfibers_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt','r').readlines()
 
-	inds_to_remove = np.array([])
-	for i in range(len(badfibers_td)):
-		#print(i)
-	
-		if len(badfibers_td[i].split()) == 1:
-			inds_to_remove = np.concatenate((inds_to_remove, (np.where(dz['FIBER'] == int(badfibers_td[i]))[-1])))
-		elif len(badfibers_td[i].split()) == 2:
-			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))
-				)[-1])))
-			#print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-			#	& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))))
-			#print(5/0)
-		elif len(badfibers_td[i].split()) == 3:
-			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
-				)[-1])))
-			#print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-			#	& (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
-			#	)))
-		elif len(badfibers_td[i].split()) == 4:
-			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
-				| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
-				))[-1])))
-			#print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-			#	& ((((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
-			#	| (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))))
-			#	))
-		elif len(badfibers_td[i].split()) == 5:
-			inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-				& (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-				(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
-				| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
-				& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
-				))[-1])))
-			#print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
-			#	& ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
-			#	(dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
-			#	| ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
-			#	& (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
-			#	)))
-	dz_inds = np.ones(len(dz)).astype('int')
-	dz_inds[inds_to_remove.astype('int')] = 0
-	nremove = len(dz_inds)-np.sum(dz_inds)
-	printlog('number removed from time dependent mask is '+str(nremove),logger)
-	return dz[dz_inds == 1]
+    inds_to_remove = np.array([])
+    for i in range(len(badfibers_td)):
+        #print(i)
+    
+        if len(badfibers_td[i].split()) == 1:
+            inds_to_remove = np.concatenate((inds_to_remove, (np.where(dz['FIBER'] == int(badfibers_td[i]))[-1])))
+        elif len(badfibers_td[i].split()) == 2:
+            inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+                & (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))
+                )[-1])))
+            #print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+            #   & (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1]))))
+            #print(5/0)
+        elif len(badfibers_td[i].split()) == 3:
+            inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+                & (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+                (dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
+                )[-1])))
+            #print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+            #   & (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+            #   (dz['LASTNIGHT'] < int(badfibers_td[i].split()[2]))
+            #   )))
+        elif len(badfibers_td[i].split()) == 4:
+            inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+                & (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+                (dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+                | (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+                ))[-1])))
+            #print(np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+            #   & ((((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+            #   (dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+            #   | (dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))))
+            #   ))
+        elif len(badfibers_td[i].split()) == 5:
+            inds_to_remove = np.concatenate((inds_to_remove, (np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+                & (((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+                (dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+                | ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+                & (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
+                ))[-1])))
+            #print((np.where((dz['FIBER'] == int(badfibers_td[i].split()[0]))
+            #   & ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[1])) & 
+            #   (dz['LASTNIGHT'] < int(badfibers_td[i].split()[2])))
+            #   | ((dz['LASTNIGHT'] >= int(badfibers_td[i].split()[3]))
+            #   & (dz['LASTNIGHT'] < int(badfibers_td[i].split()[4])))
+            #   )))
+    dz_inds = np.ones(len(dz)).astype('int')
+    dz_inds[inds_to_remove.astype('int')] = 0
+    nremove = len(dz_inds)-np.sum(dz_inds)
+    printlog('number removed from time dependent mask is '+str(nremove),logger)
+    return dz[dz_inds == 1]
 
 
 
@@ -138,27 +138,27 @@ def cut_specdat(dz,badfib=None,tsnr_min=0,tsnr_col='TSNR2_ELG',logger=None,fibst
     return cat_out
     
 def mask_bad_petal_nights(dz, prog='dark',logger=None):
-	if prog == 'dark':
-		bad_petal_night_file = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt','r')
-	elif prog == 'bright':
-		bad_petal_night_file = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt','r')
+    if prog == 'dark':
+        bad_petal_night_file = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt','r')
+    elif prog == 'bright':
+        bad_petal_night_file = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt','r')
 
-	inds_to_remove = np.array([])
-	for line in bad_petal_night_file:
-		night = int(line.split()[0])
-		for petal in line.split()[1:]:
-			inds_to_remove = np.concatenate(
-			(inds_to_remove, np.where( 
-			(dz['LASTNIGHT'] == night) 
-			& (dz['FIBER'] >= 500 * int(petal))
-			 & (dz['FIBER'] < 500 * (int(petal)+1)))[-1]))
-	
-	dz_inds = np.ones(len(dz)).astype('int')
-	dz_inds[inds_to_remove.astype('int')] = 0
-	nremove = len(dz_inds)-np.sum(dz_inds)
-	printlog('number removed from petal night mask is '+str(nremove),logger)
+    inds_to_remove = np.array([])
+    for line in bad_petal_night_file:
+        night = int(line.split()[0])
+        for petal in line.split()[1:]:
+            inds_to_remove = np.concatenate(
+            (inds_to_remove, np.where( 
+            (dz['LASTNIGHT'] == night) 
+            & (dz['FIBER'] >= 500 * int(petal))
+             & (dz['FIBER'] < 500 * (int(petal)+1)))[-1]))
+    
+    dz_inds = np.ones(len(dz)).astype('int')
+    dz_inds[inds_to_remove.astype('int')] = 0
+    nremove = len(dz_inds)-np.sum(dz_inds)
+    printlog('number removed from petal night mask is '+str(nremove),logger)
 
-	return dz[dz_inds == 1]
+    return dz[dz_inds == 1]
 
 
 def goodz_infull(tp,dz,zcol='Z_not4clus'):
@@ -838,26 +838,26 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
             logger.info('added NTILE = 1 column because column did not exist')
         nont = 1
     if comp_ntl is None:
-		ntl = np.unique(fd['NTILE'])
-		comp_ntl = np.ones(len(ntl))
-		weight_ntl = np.ones(len(ntl))
-		for i in range(0,len(ntl)):
-			sel = fd['NTILE'] == ntl[i]
-			mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
-			weight_ntl[i] = mean_ntweight
-			comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-		
-		if compmd == 'ran':
-			fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
-			fttl = np.zeros(len(ntl))
-			for i in range(0,len(ntl)): 
-				sel = fran['NTILE'] == ntl[i]
-				mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-				fttl[i] = mean_fracobs_tiles
-		else:
-			fttl = np.ones(len(ntl))
-		print(comp_ntl,fttl)
-		comp_ntl = comp_ntl*fttl
+        ntl = np.unique(fd['NTILE'])
+        comp_ntl = np.ones(len(ntl))
+        weight_ntl = np.ones(len(ntl))
+        for i in range(0,len(ntl)):
+            sel = fd['NTILE'] == ntl[i]
+            mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
+            weight_ntl[i] = mean_ntweight
+            comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+        
+        if compmd == 'ran':
+            fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+            fttl = np.zeros(len(ntl))
+            for i in range(0,len(ntl)): 
+                sel = fran['NTILE'] == ntl[i]
+                mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+                fttl[i] = mean_fracobs_tiles
+        else:
+            fttl = np.ones(len(ntl))
+        print(comp_ntl,fttl)
+        comp_ntl = comp_ntl*fttl
     
     printlog('completeness per ntile:',logger)
     printlog(str(comp_ntl),logger)
