@@ -811,7 +811,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     '''
 
     from desitarget.internal import sharedmem
-    nzd = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()[3] #column with nbar values
+    nzf = np.loadtxt(fb.replace(ran_sw,'')+'_nz.txt').transpose()
+    bsold = bs
+    bs = nzf[2][0]-nzf[1][0]
+    common.printlog('nz bin size is actually '+str(bs))
+    nzd = nzf[3] #column with nbar values
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
     #ff = fitsio.FITS(fn,'rw')
     #fd = Table(ff['LSS'].read())
