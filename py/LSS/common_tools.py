@@ -801,7 +801,7 @@ def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n',extradir='',tp='',n
     
 
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18,logger=None):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18,comp_ntl=None,weight_ntl=None,logger=None):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -837,28 +837,31 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         else:
             logger.info('added NTILE = 1 column because column did not exist')
         nont = 1
-    ntl = np.unique(fd['NTILE'])
-    comp_ntl = np.ones(len(ntl))
-    weight_ntl = np.ones(len(ntl))
-    for i in range(0,len(ntl)):
-        sel = fd['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
-        weight_ntl[i] = mean_ntweight
-        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+    if comp_ntl is None:
+		ntl = np.unique(fd['NTILE'])
+		comp_ntl = np.ones(len(ntl))
+		weight_ntl = np.ones(len(ntl))
+		for i in range(0,len(ntl)):
+			sel = fd['NTILE'] == ntl[i]
+			mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
+			weight_ntl[i] = mean_ntweight
+			comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+		
+		if compmd == 'ran':
+			fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+			fttl = np.zeros(len(ntl))
+			for i in range(0,len(ntl)): 
+				sel = fran['NTILE'] == ntl[i]
+				mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
+				fttl[i] = mean_fracobs_tiles
+		else:
+			fttl = np.ones(len(ntl))
+		print(comp_ntl,fttl)
+		comp_ntl = comp_ntl*fttl
     
-    if compmd == 'ran':
-        fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
-        fttl = np.zeros(len(ntl))
-        for i in range(0,len(ntl)): 
-            sel = fran['NTILE'] == ntl[i]
-            mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-            fttl[i] = mean_fracobs_tiles
-    else:
-        fttl = np.ones(len(ntl))
-    print(comp_ntl,fttl)
-    comp_ntl = comp_ntl*fttl
-    print('completeness per ntile:')
-    print(comp_ntl)
+    printlog('completeness per ntile:',logger)
+    printlog(str(comp_ntl),logger)
+    printlog(str(weight_ntl),logger)
     #del fd
     #ft = Table.read(fn)
     #ft['NZ'] = nl
