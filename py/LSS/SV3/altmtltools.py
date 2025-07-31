@@ -533,7 +533,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True, update_only = False):
+    endDate = None, overwrite = True, update_only = False, lya1b = True):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -550,6 +550,16 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         Used to look up the correct ledger, in combination with `obscon`.
         Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
         for the main survey and different iterations of SV, respectively.
+    update_only : :class:`bool`, optional, defaults to False
+        Used when only actions since the startdate are needed, for example
+        in the updateTileTracker function. 
+    lya1b : :class:`bool`, optional, defaults to True
+        Used to determine if an action should be created to mimic the lya1b
+        numobs increase. (see: https://github.com/desihub/desitarget/pull/845/
+        for details.) Only runs for obscon = dark and if there are actions
+        at dates > 2025-07-21. Should be set to false in only extremely specific
+        scenarios, when one is not trying to mimic real survey decisions.
+        
     
 
     Returns
@@ -679,8 +689,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
 
 
     #LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
-    #probably should add an option for this?? only if we will ever not want to run it?? is date hardcoded ok (not like it'll change!)??
-    if (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
+    #LGN This runs for all dark time surveys with actions at times later than 2025-07-21
+    #LGN unless the lya1b flag is set to false. Only change this flag if you are certain
+    #LGN you don't want to mimic real survey decisions.
+    if (lya1b) and (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
         log.info('Adding QSO NUMOBS Increase Action')
         TileIDs.append(-1)
         TypeOfActions.append('lya1b')
@@ -1627,7 +1639,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             #LGN 07/29/25: Adding new LyA1B case
             elif action['ACTIONTYPE'] == 'lya1b':
                 #run update on the realization
-                update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp='2025-07-21T23:36:04+00:00', donefile=False)
+                update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp=action['ACTIONTIME'], donefile=False)
                 #record succesful update in ledger
                 retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
                 
