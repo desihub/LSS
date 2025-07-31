@@ -291,6 +291,28 @@ if args.splitGC == 'y':
 #3) calculates the FKP weights based on NX
 #4) refactors the weights (section 8.2 of the KP3 paper arXiv:2411.12020)
 #5) writes the NGC/SGC clustering catalogs back out for data and randoms
+#It needs to take inputs for completeness and mean weight as a function of NTILE, of the non-subsampled catalog, so that the angular upweighting option can remain consistent
+def get_ntile_info(fd):
+    ntl = np.unique(fd['NTILE'])
+	comp_ntl = np.ones(len(ntl))
+	weight_ntl = np.ones(len(ntl))
+	for i in range(0,len(ntl)):
+		sel = fd['NTILE'] == ntl[i]
+		mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
+		weight_ntl[i] = mean_ntweight
+		comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+		
+		if compmd != 'altmtl':
+			fttl = np.zeros(len(ntl))
+			for i in range(0,len(ntl)): 
+				sel = fd['NTILE'] == ntl[i]
+				mean_fracobs_tiles = np.mean(fd[sel]['FRAC_TLOBS_TILES'])
+				fttl[i] = mean_fracobs_tiles
+		else:
+			fttl = np.ones(len(ntl))
+	comp_ntl = comp_ntl*fttl
+    return comp_ntl,weight_ntl
+ 
 if args.nz == 'y':
     for reg in regions:#allreg:
         #file names
@@ -301,7 +323,12 @@ if args.nz == 'y':
         #make n(z)
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
         #do steps 2-5 above
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
+        extra_dir = 'nonKP'
+        if compmd == 'altmtl':
+            extra_dir = 'PIP'
+        clus_orig = fitsio.read(dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits')
+        comp_ntl,weight_ntl = get_ntile_info(clus_orig)                        
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
 
 # determine linear weights for imaging systematics
 # this is new for doing after the fact based on clustering catalogs
