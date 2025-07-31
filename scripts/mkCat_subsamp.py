@@ -302,7 +302,7 @@ def get_ntile_info(fd):
         weight_ntl[i] = mean_ntweight
         comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
         
-        if compmd != 'altmtl':
+        if args.compmd != 'altmtl':
             fttl = np.zeros(len(ntl))
             for i in range(0,len(ntl)): 
                 sel = fd['NTILE'] == ntl[i]
