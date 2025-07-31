@@ -324,7 +324,7 @@ if args.nz == 'y':
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
         #do steps 2-5 above
         extra_dir = 'nonKP'
-        if compmd == 'altmtl':
+        if args.compmd == 'altmtl':
             extra_dir = 'PIP'
         clus_orig = fitsio.read(dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits')
         comp_ntl,weight_ntl = get_ntile_info(clus_orig)                        
