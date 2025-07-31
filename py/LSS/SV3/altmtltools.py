@@ -1406,7 +1406,14 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         msg = "Update state for {} targets".format(ntargs)
         msg += " (the zcats also contain {} skies with +ve TARGETIDs)".format(nsky)
         log.info(msg)
+
+        # setting up update info
         didUpdateHappen = False
+        if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
+            log.info('setting 1B/ext flag for update')
+            is_ext = True
+        else:
+            is_ext = False
         # ADM update the appropriate ledger.
         if mock:
 
@@ -1414,17 +1421,17 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
                 raise ValueError('If processing mocks, you MUST specify a target file')
             log.info('update loc a')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv')#, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext)#, targets = targets)
             didUpdateHappen = True
         elif targets is None:
             log.info('update loc b')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)
+                      numobs_from_ledger=numobs_from_ledger, ext=is_ext)
             didUpdateHappen = True
         else:
             log.info('update loc c')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, targets = targets, ext=is_ext)
             didUpdateHappen = True
         assert(didUpdateHappen)
         if verbose or debug:
