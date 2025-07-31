@@ -582,6 +582,12 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
+        #LGN: Adding handling for ext tiles
+        if np.any(tileIDs > 100000):
+            log.info('Running with maketwostyle=True')
+            is_ext = True
+        else:
+            is_ext = False
     
         d = io.read_targets_in_tiles(
             mtldir,
@@ -591,7 +597,8 @@ def altcreate_mtl(
             unique=True,
             isodate=mtltime,
             verbose=verbose,
-            tabform='ascii.ecsv'
+            tabform='ascii.ecsv',
+            maketwostyle = is_ext
         )
         
     
