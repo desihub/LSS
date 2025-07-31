@@ -294,23 +294,23 @@ if args.splitGC == 'y':
 #It needs to take inputs for completeness and mean weight as a function of NTILE, of the non-subsampled catalog, so that the angular upweighting option can remain consistent
 def get_ntile_info(fd):
     ntl = np.unique(fd['NTILE'])
-	comp_ntl = np.ones(len(ntl))
-	weight_ntl = np.ones(len(ntl))
-	for i in range(0,len(ntl)):
-		sel = fd['NTILE'] == ntl[i]
-		mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
-		weight_ntl[i] = mean_ntweight
-		comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-		
-		if compmd != 'altmtl':
-			fttl = np.zeros(len(ntl))
-			for i in range(0,len(ntl)): 
-				sel = fd['NTILE'] == ntl[i]
-				mean_fracobs_tiles = np.mean(fd[sel]['FRAC_TLOBS_TILES'])
-				fttl[i] = mean_fracobs_tiles
-		else:
-			fttl = np.ones(len(ntl))
-	comp_ntl = comp_ntl*fttl
+    comp_ntl = np.ones(len(ntl))
+    weight_ntl = np.ones(len(ntl))
+    for i in range(0,len(ntl)):
+        sel = fd['NTILE'] == ntl[i]
+        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
+        weight_ntl[i] = mean_ntweight
+        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
+        
+        if compmd != 'altmtl':
+            fttl = np.zeros(len(ntl))
+            for i in range(0,len(ntl)): 
+                sel = fd['NTILE'] == ntl[i]
+                mean_fracobs_tiles = np.mean(fd[sel]['FRAC_TLOBS_TILES'])
+                fttl[i] = mean_fracobs_tiles
+        else:
+            fttl = np.ones(len(ntl))
+    comp_ntl = comp_ntl*fttl
     return comp_ntl,weight_ntl
  
 if args.nz == 'y':
