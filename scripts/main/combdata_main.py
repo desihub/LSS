@@ -912,7 +912,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 else:
                     tj = tjl[0]
                 del tjl
-                common.printlog('stacked now writing out',logger)
+                common.printlog('stacked now writing out has '+str(len(tj))+ ' rows',logger)
                 #for reg in regl:                
                 #    sel = tarfn['PHOTSYS'] == reg
                 #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
