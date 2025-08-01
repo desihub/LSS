@@ -785,6 +785,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
         s = 0
         if os.path.isfile(outf):
             fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
+            common.printlog(outf +' has '+str(len(fo))+ ' rows',logger)
             nstid = len(tiles4comb['TILEID'])
             notid = len(np.unique(fo['TILEID']))
             test_tid = np.isin(tiles4comb['TILEID'],np.unique(fo['TILEID']))
@@ -873,7 +874,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
 
             common.write_LSS_scratchcp(tarfn,outf,logger=logger)
             #tarfn.write(outf,format='fits', overwrite=True)
-            common.printlog('wrote out '+outf,logger)
+            common.printlog('wrote out '+outf+' '+len(tarfn)+' rows',logger)
             
             #try:
             #    specf.remove_columns(['PRIORITY'])
