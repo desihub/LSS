@@ -774,7 +774,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
         common.printlog('now doing '+tp+notqso,logger)
-        print(len(tiles4comb['TILEID']))
+        #print(len(tiles4comb['TILEID']))
         outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
@@ -792,12 +792,12 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             common.printlog('there are '+str(nstid-np.sum(test_tid))+ ' tiles that need to be added to '+outf,logger)
             if nstid == np.sum(test_tid):
                 update = False
-                print('we will not update '+outf+' because there are no new tiles')
+                common.printlog('we will not update '+outf+' because there are no new tiles',logger)
             else:
                 
                 tidc = ~np.isin(tiles4comb['TILEID'],np.unique(fo['TILEID']))
                 #print('the new tileids are '+str(tiles4comb['TILEID'][tidc]))
-                print(len(tiles4comb[tidc]))
+                #print(len(tiles4comb[tidc]))
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
             del fo
         if os.path.isfile(outfs):
@@ -822,7 +822,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 tarfn = fitsio.read(outf)
                 cols = tarfn.dtype.names
                 if np.isin('TILELOCID',tarfn.dtype.names):
-                    print('reloading '+outf+' without reading TILELOCID column')
+                    common.printlog('reloading '+outf+' without reading TILELOCID column',logger)
                     #sel = cols != 'TILELOCID'
                     #cols = cols[sel]
                     cols = []
@@ -830,7 +830,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                         if col != 'TILELOCID':
                             cols.append(col)
                     tarfn = fitsio.read(outf,columns=cols)
-                    print(tarfn.dtype.names)
+                    #print(tarfn.dtype.names)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
                 pin = np.isin(tpix,hpxsn)
@@ -870,7 +870,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 try:
                     tarfn.remove_columns([col] )#we get this where relevant from spec file
                 except:
-                    print('column '+col +' was not in stacked tarwdup table')    
+                    common.printlog('column '+col +' was not in stacked tarwdup table',logger)    
 
             common.write_LSS_scratchcp(tarfn,outf,logger=logger)
             #tarfn.write(outf,format='fits', overwrite=True)
