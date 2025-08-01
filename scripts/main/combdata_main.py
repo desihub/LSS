@@ -874,7 +874,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
 
             common.write_LSS_scratchcp(tarfn,outf,logger=logger)
             #tarfn.write(outf,format='fits', overwrite=True)
-            common.printlog('wrote out '+outf+' '+len(tarfn)+' rows',logger)
+            common.printlog('wrote out '+outf+' '+str(len(tarfn))+' rows',logger)
             
             #try:
             #    specf.remove_columns(['PRIORITY'])
