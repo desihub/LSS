@@ -1425,6 +1425,15 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             didUpdateHappen = True
         elif targets is None:
             log.info('update loc b')
+
+            #LGN 20250801 Adding handling for dark ledger updates with dark1b tiles
+            #LGN I think this is only necessary in this portion of conditional?
+            if obscon.lower() == 'dark1b':
+                #LGN replacing just the last instance of 'dark1b' with 'dark' in directory path
+                althpdirname_dark = althpdirname[::-1].replace('b1krad','krad',1)[::-1]
+                update_ledger(althpdirname_dark, altZCat, obscon=obscon.split("1B")[0].upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
+            
+            
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
                       numobs_from_ledger=numobs_from_ledger, ext=is_ext)
             didUpdateHappen = True
