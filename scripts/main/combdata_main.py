@@ -735,10 +735,10 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
     
     if newspec:
-        common.printlog('new tiles were found for spec dataso there were updates to '+specfo,logger)
+        common.printlog('new tiles were found for spec data so there were updates to '+specfo,logger)
     else:
         common.printlog('no new tiles were found for spec data, so no updates to '+specfo,logger)
-    specf = fitsio.read(specfo,columns=spec_cols_4tar)
+    specf = fitsio.read(specfo.replace('global','dvs_ro'),columns=spec_cols_4tar)
     common.printlog('spec file '+specfo+' has '+str(len(specf))+' rows',logger)
     if '1b' in prog:
         common.printlog('adding '+specfo.replace('1b','') +' to spec info',logger)
@@ -795,7 +795,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
         hpxsn = hpxs
         s = 0
         if os.path.isfile(outf):
-            fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
+            fo = fitsio.read(outf.replace('global','dvs_ro'),columns=['TARGETID','TILEID'])
             common.printlog(outf +' has '+str(len(fo))+ ' rows',logger)
             nstid = len(tiles4comb['TILEID'])
             notid = len(np.unique(fo['TILEID']))
@@ -812,12 +812,12 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
             del fo
         if os.path.isfile(outfs):
-            fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
+            fo = fitsio.read(outfs.replace('global','dvs_ro'),columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
             stids = np.unique(fo['TILEID'])
             if len(stids) == notid:      
                 dotarspec = False   
             if os.path.isfile(outtc) and update == False and redotarspec == False and dotarspec == False:
-                ftc = fitsio.read(outtc,columns=['TARGETID'])
+                ftc = fitsio.read(outtc.replace('global','dvs_ro'),columns=['TARGETID'])
                 fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
                 if len(ctid) == sum(ctid):
@@ -830,17 +830,17 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             common.printlog('updating '+outf,logger)
             cols = None
             if os.path.isfile(outf):
-                tarfn = fitsio.read(outf)
+                tarfn = fitsio.read(outf.replace('global','dvs_ro'),rows=1)
                 cols = tarfn.dtype.names
-                if np.isin('TILELOCID',tarfn.dtype.names):
-                    common.printlog('reloading '+outf+' without reading TILELOCID column',logger)
+                #if np.isin('TILELOCID',tarfn.dtype.names):
+                    #common.printlog('reloading '+outf+' without reading TILELOCID column',logger)
                     #sel = cols != 'TILELOCID'
                     #cols = cols[sel]
-                    cols = []
-                    for col in tarfn.dtype.names:
-                        if col != 'TILELOCID':
-                            cols.append(col)
-                    tarfn = fitsio.read(outf,columns=cols)
+                cols = []
+                for col in tarfn.dtype.names:
+                    if col != 'TILELOCID':
+                        cols.append(col)
+                tarfn = fitsio.read(outf.replace('global','dvs_ro'),columns=cols)
                     #print(tarfn.dtype.names)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
@@ -851,18 +851,21 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             npx =0 
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                tarfl = []
+                if s == 1:
+                    tarfl = [tarfn]
                 if '1b' in prog:
                     tarfonb = tarfo.replace('1b','')
                     
                 if os.path.isfile(tarfo):
                     if cols is not None:
-                        tarf = fitsio.read(tarfo,columns=cols)
+                        tarf = fitsio.read(tarfo.replace('global','dvs_ro'),columns=cols)
                         if '1b' in prog and os.path.isfile(tarfonb):
-                            tarfnb = fitsio.read(tarfonb,columns=cols)
+                            tarfnb = fitsio.read(tarfonb.replace('global','dvs_ro'),columns=cols)
                     else:
-                        tarf = fitsio.read(tarfo)
+                        tarf = fitsio.read(tarfo.replace('global','dvs_ro'))
                         if '1b' in prog and os.path.isfile(tarfonb):
-                            tarfnb = fitsio.read(tarfonb)
+                            tarfnb = fitsio.read(tarfonb.replace('global','dvs_ro'))
                     if '1b' in prog and os.path.isfile(tarfonb):
                         tarf = np.hstack((tarf,tarfnb))
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
@@ -872,18 +875,21 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                         sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
                     if notqso == 'notqso':
                         sel &= (tarf['DESI_TARGET'] & 4) == 0
-                    if s == 0:
-                        tarfn = tarf[sel]
-                        s = 1
-                    else:
+                    tarfl.append(tarf[sel])
+                    #if s == 0:
+                    #    tarfn = tarf[sel]
+                    #    s = 1
+                    #else:
                         #tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-                        common.printlog(tarfn.dtype.names,logger)
-                        common.printlog(tarf.dtype.names,logger)
-                        tarfn = np.hstack((tarfn,tarf[sel]))
+                        #common.printlog(tarfn.dtype.names,logger)
+                        #common.printlog(tarf.dtype.names,logger)
+                    #    tarfn = np.hstack((tarfn,tarf[sel]))
                     common.printlog(str(len(tarfn))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
                 else:
                     common.printlog('file '+tarfo+' not found',logger)
                 npx += 1    
+            common.printlog('concatenating',logger)
+            tarfn = np.hstack(tarfl)
             tarfn = Table(tarfn)           
             remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
             for col in remcol:
@@ -941,7 +947,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 common.printlog('joined to spec data and wrote out to '+outfs,logger)
         elif redotarspec or dotarspec:
             common.printlog('joining spec info to target info',logger)
-            tarfn = fitsio.read(outf)
+            tarfn = fitsio.read(outf.replace('global','dvs_ro'))
             tarfn = Table(tarfn)
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             remcol = ['LOCATION','TILEID']
