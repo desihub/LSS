@@ -947,7 +947,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 #tj.write(outfs,format='fits', overwrite=True)
                 common.write_LSS_scratchcp(tj,outfs,logger=logger)
                 common.printlog('joined to spec data and wrote out to '+outfs,logger)
-        elif redotarspec or dotarspec:
+        elif (redotarspec or dotarspec) and '1b' in prog:
             common.printlog('joining spec info to target info',logger)
             tarfn = fitsio.read(outf.replace('global','dvs_ro'))
             tarfn = Table(tarfn)
