@@ -297,11 +297,22 @@ if specrel == 'daily' and args.survey == 'main':
     
         common.printlog('will combine pixels for '+str(len(tiles4hp))+' new tiles',logger)
         if len(tiles4hp) > 0:
-            for px in hpxs:
-                common.printlog('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)),logger)
-                tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-                ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
-                npx += 1
+            if args.par == 'y':
+                def _process_hpx_tar(px):
+                    common.printlog('combining target data for pixel '+str(px),logger)
+                    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                    ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+                from multiprocessing import Pool
+                with Pool(processes=int(args.nproc)) as pool:
+
+                    pool.map(_process_hpx_tar,hpx)#,reduce=reduce)
+
+            else:
+                for px in hpxs:
+                    common.printlog('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)),logger)
+                    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                    ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+                    npx += 1
             tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
 if specrel == 'daily' and args.survey == 'DA2':
