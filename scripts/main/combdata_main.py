@@ -847,13 +847,14 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 pin = np.isin(tpix,hpxsn)
                 tarfn = tarfn[~pin] #remove the rows for the healpix that will updated
                 s = 1
-            
+            common.printlog('after removing healpix to update, has '+str(len(tarfn)),logger)
             npx =0 
+            tarfl = []
+            if s == 1:
+                tarfl = [tarfn]
+
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-                tarfl = []
-                if s == 1:
-                    tarfl = [tarfn]
                 if '1b' in prog:
                     tarfonb = tarfo.replace('1b','')
                     
@@ -884,7 +885,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                         #common.printlog(tarfn.dtype.names,logger)
                         #common.printlog(tarf.dtype.names,logger)
                     #    tarfn = np.hstack((tarfn,tarf[sel]))
-                    common.printlog(str(len(tarfn))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
+                    common.printlog(str(len(tarf[sel]))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
                 else:
                     common.printlog('file '+tarfo+' not found',logger)
                 npx += 1    
