@@ -891,6 +891,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 npx += 1    
             common.printlog('concatenating',logger)
             tarfn = np.hstack(tarfl)
+            common.printlog('now length '+str(len(tarfn)),logger)
             tarfn = Table(tarfn)           
             remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
             for col in remcol:
