@@ -305,7 +305,7 @@ if specrel == 'daily' and args.survey == 'main':
                 from multiprocessing import Pool
                 with Pool() as pool:
 
-                    pool.map(_process_hpx_tar,hpx)#,reduce=reduce)
+                    pool.map(_process_hpx_tar,hpxs)#,reduce=reduce)
 
             else:
                 for px in hpxs:
