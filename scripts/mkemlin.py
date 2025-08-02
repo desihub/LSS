@@ -47,7 +47,7 @@ tiles = mainp.tiles
 
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
-wd &= mt['FAPRGRM'] == prog
+wd &= (mt['FAPRGRM'] == prog | mt['FAPRGRM'] == prog+'1b')
 mtd = mt[wd]
 print('found '+str(len(mtd))+' '+prog+' time main survey tiles with zdone true for '+specrel+' version of reduced spectra')
 
