@@ -840,11 +840,20 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             npx =0 
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                if '1b' in prog:
+                    tarfonb = tarfo.replace('1b','')
+                    
                 if os.path.isfile(tarfo):
                     if cols is not None:
                         tarf = fitsio.read(tarfo,columns=cols)
+                        if '1b' in prog and os.path.isfile(tarfonb):
+                            tarfnb = fitsio.read(tarfonb,columns=cols)
                     else:
                         tarf = fitsio.read(tarfo)
+                        if '1b' in prog and os.path.isfile(tarfonb):
+                            tarfnb = fitsio.read(tarfonb)
+                    if '1b' in prog and os.path.isfile(tarfonb):
+                        tarf = np.hstack((tarf,tarfnb))
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     if tp == 'BGS_BRIGHT':
                         sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
