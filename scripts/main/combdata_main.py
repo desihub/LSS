@@ -123,7 +123,7 @@ logger.info('number of tiles with zdone true '+str(len(mt[wd])))
 wd &= mt['ARCHIVEDATE'] > 0
 logger.info('and with archivedate > 0 '+str(len(mt[wd])))
 if args.doqso == 'y' or args.mkemlin == 'y':
-    wd &=  (mt['FAPRGRM'] == prog or mt['FAPRGRM'] == prog+'1b')
+    wd &=  ((mt['FAPRGRM'] == prog) or (mt['FAPRGRM'] == prog+'1b'))
     common.printlog('tiles being considered from fa programs '+str(np.unique(mt[wd]['FAPRGRM'])),logger)
 else:
     wd &= mt['FAPRGRM'] == prog
