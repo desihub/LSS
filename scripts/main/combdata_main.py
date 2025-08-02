@@ -122,7 +122,11 @@ wd &= mt['ZDONE'] == 'true'
 logger.info('number of tiles with zdone true '+str(len(mt[wd])))
 wd &= mt['ARCHIVEDATE'] > 0
 logger.info('and with archivedate > 0 '+str(len(mt[wd])))
-wd &= mt['FAPRGRM'] == prog
+if args.doqso == 'y' or args.mkemlin == 'y':
+    wd &= prog in mt['FAPRGRM']
+    common.printlog('tiles being considered from fa programs '+str(np.unique(mt[wd]['FAPRGRM'])),logger)
+else:
+    wd &= mt['FAPRGRM'] == prog
 logger.info('and in '+prog+' '+str(len(mt[wd])))
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
