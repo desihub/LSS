@@ -303,7 +303,7 @@ if specrel == 'daily' and args.survey == 'main':
                     tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
                     ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
                 from multiprocessing import Pool
-                with Pool(processes=int(args.nproc)) as pool:
+                with Pool() as pool:
 
                     pool.map(_process_hpx_tar,hpx)#,reduce=reduce)
 
