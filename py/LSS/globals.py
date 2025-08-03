@@ -114,7 +114,7 @@ class main:
             self.zmax = 3.5
             self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
-        if tp[:3] == 'LRG':
+        if tp[:3] == 'LRG' or tp[:3] == 'LGE':
             self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1'] #used up until v0.6
             self.fit_maps_allebv = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ']
             self.fit_maps_allebvcmb = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
