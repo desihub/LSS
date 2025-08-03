@@ -255,7 +255,7 @@ del specfc
 
 if mkfullr and args.fullr_mode != 'prog':
     logger.info('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-    specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    specft = fitsio.read(ldirspec.replace('global','dvs_ro')+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
     wg = np.isin(specft['TILELOCID'],gtl)
     specft = Table(specft[wg])
