@@ -3175,6 +3175,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     prog = 'dark'
     if tp[:3] == 'BGS':
         prog = 'bright'
+    if 'LGE' in tp:
+        prog = 'dark1b'
 
 
     if mockz:
