@@ -217,6 +217,9 @@ if args.notqso == 'y':
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
 
+elif type[:3] == 'LGE':
+    prog = 'DARK1B'
+
 else:
     prog = 'DARK'
 
