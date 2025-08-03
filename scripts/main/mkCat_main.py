@@ -309,7 +309,7 @@ tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+ta
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False or len(type.split('-'))>1:
-    common.printlog('making '+tarf,logger)
+    
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
@@ -322,6 +322,7 @@ mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
 if os.path.isfile(etarf) and redotar == False: 
+    common.printlog('making '+tarf,logger)
     mketar = False
 
 if args.survey != 'main':
