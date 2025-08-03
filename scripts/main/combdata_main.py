@@ -897,7 +897,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             tarfn = np.hstack(tarfl)
             common.printlog('now length '+str(len(tarfn)),logger)
             tarfn = Table(tarfn)           
-            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL','PRIORITY']
             for col in remcol:
                 try:
                     tarfn.remove_columns([col] )#we get this where relevant from spec file
@@ -955,6 +955,13 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             common.printlog('joining spec info to target info',logger)
             tarfn = fitsio.read(outf.replace('global','dvs_ro'))
             tarfn = Table(tarfn)
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL','PRIORITY']
+            for col in remcol:
+                try:
+                    tarfn.remove_columns([col] )#we get this where relevant from spec file
+                except:
+                    common.printlog('column '+col +' was not in stacked tarwdup table',logger)    
+
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             remcol = ['LOCATION','TILEID']
             for col in remcol:
