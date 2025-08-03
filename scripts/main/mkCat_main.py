@@ -309,6 +309,7 @@ tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+ta
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False or len(type.split('-'))>1:
+    common.printlog('making '+targ,logger)
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
@@ -317,7 +318,7 @@ if mktar: #concatenate target files for given type, with column selection hardco
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
 
-mketar = True
+mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
 if os.path.isfile(etarf) and redotar == False: 
