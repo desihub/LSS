@@ -309,7 +309,7 @@ tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+ta
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False or len(type.split('-'))>1:
-    common.printlog('making '+targ,logger)
+    common.printlog('making '+tarf,logger)
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
