@@ -582,46 +582,29 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-        #LGN: Adding handling for dark1b tiles (and just dark1b?)
-        if 'dark1b' in mtldir:
+        # LGN: Adding handling for bright1b/dark1b tiles
+        if 'dark1b' or 'bright1b' in mtldir:
             log.info('Running with maketwostyle=True')
             is_ext = True
-            # LGN Formatting the path to dark ledgers. Note that in order to
-            # LGN avoid replacing all instances of "dark1b" with "dark" we
-            # LGN first reverse the string, replace only the first instance
-            # LGN and reverse the string again. This unfortunately requires
-            # LGN the substrings to also be reversed, which is a bit abstruse.
-            mtldir_dark = mtldir[::-1].replace('b1krad','krad',1)[::-1]
-
-            dark1b_targets = io.read_targets_in_tiles(
-                mtldir,
-                tiles,
-                quick=False,
-                mtl=True,
-                unique=True,
-                isodate=mtltime,
-                verbose=verbose,
-                tabform='ascii.ecsv',
-                maketwostyle = is_ext
+            # LGN Formatting the path to bright or dark ledgers
+            # LGN Passing list of directories to read_targets_in_tiles
+            mtldir_short = os.path.join(
+                os.path.dirname(mtldir), 
+                os.path.basename(mtldir).replace('1b', '')
             )
-
-            dark_targets =  io.read_targets_in_tiles(
-                mtldir_dark,
-                tiles,
-                quick=False,
-                mtl=True,
-                unique=True,
-                isodate=mtltime,
-                verbose=verbose,
-                tabform='ascii.ecsv',
-                maketwostyle = is_ext
-            )
-            log.info('Merging dark and dark1b targets')
-            # LGN Concatenating dark and dark1b targs to get full target list
-            # LGN If TARGETID in both sets of targets, prefer dark1b.
-            dark_in_dark1b = np.isin(dark_targets['TARGETID'],dark1b_targets['TARGETID'])
-            d = np.concatenate((dark_targets[~dark_in_dark1b], dark1b_targets))
+            mtldirs = [mtldir_short, mtldir]
             
+            d = io.read_targets_in_tiles(
+                mtldirs,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
         
         else:
             is_ext = False
