@@ -24,6 +24,7 @@ from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsamp
 
 from LSS.tabulated_cosmo import TabulatedDESI
 import LSS.cosmodesi_io_tools as io
+import sys
 
 
 
@@ -602,6 +603,7 @@ if __name__ == '__main__':
     #only relevant for reconstruction
     parser.add_argument('--rec_type', help='reconstruction algorithm + reconstruction convention, but only if included in the catalog filename between dots, otherwise leave blank', choices=['IFTPrecsym', 'IFTPreciso','IFTrecsym', 'IFTreciso', 'MGrecsym', 'MGreciso'], type=str, default=None)
     parser.add_argument('--recon_dir', help='if recon catalogs are in a subdirectory, put that here', type=str, default='n')
+    parser.add_argument('--cosmo', help='e.g., AbacusSummit cosmology', type=int, default=0)
 
     parser.add_argument('--rpcut', help='apply the rp-cut', type=float, default=None)
     parser.add_argument('--thetacut', help='apply the theta-cut (more up-to-date fibre collision correction), standard: 0.05', type=float, default=None)
@@ -682,7 +684,12 @@ if __name__ == '__main__':
             tracer2 = None # otherwise counting of self-pairs
         catalog_kwargs = dict(tracer=tracer, tracer2=tracer2, survey=args.survey, cat_dir=cat_dir, recon_dir=args.recon_dir,rec_type=args.rec_type) # survey required for zdone
         
-    distance = TabulatedDESI().comoving_radial_distance
+    if args.cosmo == 0:
+        distance = TabulatedDESI().comoving_radial_distance
+    else:
+        from cosmoprimo.fiducial import AbacusSummit
+        cosmo = AbacusSummit(args.cosmo)
+        distance = cosmo.comoving_radial_distance
 
     regions = args.region
     if regions is None:
