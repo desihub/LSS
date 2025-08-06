@@ -211,7 +211,7 @@ if args.mkfulldat == 'y':
         selz |= z2use > 2
         z2use[selz] = 2
         dm = 5.*np.log10(dis_dc(z2use)*(1.+z2use)) + 25.
-        cfluxr = fin['FLUX_R']/fin['MW_TRANSMISSION_R']
+        cfluxr = fulldat['FLUX_R']/fulldat['MW_TRANSMISSION_R']
         r_dered = 22.5 - 2.5*np.log10(cfluxr)
         abr = r_dered -dm
         sel = abr < -21.35
