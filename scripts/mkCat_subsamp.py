@@ -226,7 +226,7 @@ if args.mkfulldat == 'y':
         dis_dc = cosmo.comoving_radial_distance
         fulldat = Table(fulldat)
         zcmb = common.get_zcmbdipole(fulldat['RA'],fulldat['DEC'])
-        newz = (1+ff['Z_not4clus'])*(1+zcmb)-1
+        newz = (1+fulldat['Z_not4clus'])*(1+zcmb)-1
         fulldat['Z_not4clus'] = newz
 
         z2use = np.copy(fulldat['Z_not4clus'])
