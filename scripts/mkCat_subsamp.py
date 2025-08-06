@@ -51,7 +51,7 @@ parser.add_argument("--ccut",help="a string that is used define your subsample",
 parser.add_argument("--input_tracer", help="tracer type that subsample will come from")
 parser.add_argument("--basedir", help="base directory for input, default is SCRATCH",default='/global/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--outdir", help="directory for out, default is SCRATCH",default=os.environ['SCRATCH'])
-parser.add_argument("--version", help="catalog version for input",default='v1.1')
+parser.add_argument("--version", help="catalog version for input",default='v2')
 parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
 parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
 parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='_HPmapcut')
@@ -200,6 +200,24 @@ if args.mkfulldat == 'y':
         #add any additional selections here
         
         #write output to new "full" catalog at your defined location
+        if args.ccut == '-21.35': #the sample used in DR2 BAO analysis
+            #don't use any k-correction at all, yields ~constant density
+            common.printlog('applying the -21.35 selection',logger)
+            from LSS.tabulated_cosmo import TabulatedDESI
+            cosmo = TabulatedDESI()
+            dis_dc = cosmo.comoving_radial_distance
+            z2use = np.copy(fulldat['Z_not4clus'])
+            selz = z2use <= 0
+            selz |= z2use > 2
+            z2use[selz] = 2
+            dm = 5.*np.log10(dis_dc(z2use)*(1.+z2use)) + 25.
+            cfluxr = fin['FLUX_R']/fin['MW_TRANSMISSION_R']
+            r_dered = 22.5 - 2.5*np.log10(cfluxr)
+            abr = r_dered -dm
+            sel = abr < -21.35
+            sel &= z2use < 2
+        
+
     else:
         sys.exit('should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
     fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
