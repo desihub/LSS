@@ -216,6 +216,28 @@ if args.mkfulldat == 'y':
         abr = r_dered -dm
         sel = abr < -21.35
         sel &= z2use < 2
+
+    if args.ccut == '-21.35_zcmb': #the sample used in DR2 BAO analysis
+        #don't use any k-correction at all, yields ~constant density
+        common.printlog('applying the -21.35 selection and correcting redshifts to the cmb frame',logger)
+        from LSS.tabulated_cosmo import TabulatedDESI
+        cosmo = TabulatedDESI()
+        dis_dc = cosmo.comoving_radial_distance
+        fulldat = Table(fulldat)
+        zcmb = common.get_zcmbdipole(fulldat['RA'],fulldat['DEC'])
+        newz = (1+ff['Z_not4clus'])*(1+zcmb)-1
+        fulldat['Z_not4clus'] = newz
+
+        z2use = np.copy(fulldat['Z_not4clus'])
+        selz = z2use <= 0
+        selz |= z2use > 2
+        z2use[selz] = 2
+        dm = 5.*np.log10(dis_dc(z2use)*(1.+z2use)) + 25.
+        cfluxr = fulldat['FLUX_R']/fulldat['MW_TRANSMISSION_R']
+        r_dered = 22.5 - 2.5*np.log10(cfluxr)
+        abr = r_dered -dm
+        sel = abr < -21.35
+        sel &= z2use < 2
         
 
     else:
