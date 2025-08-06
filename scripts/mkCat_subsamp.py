@@ -217,9 +217,10 @@ if args.mkfulldat == 'y':
         sel = abr < -21.35
         sel &= z2use < 2
 
-    if args.ccut == '-21.35_zcmb': #the sample used in DR2 BAO analysis
+    if args.ccut == '-21.35zcmb': #the sample used in DR2 BAO analysis
         #don't use any k-correction at all, yields ~constant density
         common.printlog('applying the -21.35 selection and correcting redshifts to the cmb frame',logger)
+        tracer_out = tracer_out.replace('zcmb','_zcmb')
         from LSS.tabulated_cosmo import TabulatedDESI
         cosmo = TabulatedDESI()
         dis_dc = cosmo.comoving_radial_distance
