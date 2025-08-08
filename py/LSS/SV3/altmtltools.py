@@ -27,7 +27,7 @@ from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
-from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date, update_lya_1b
 
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
@@ -533,7 +533,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True, update_only = False):
+    endDate = None, overwrite = True, update_only = False, lya1b = True):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -550,6 +550,16 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         Used to look up the correct ledger, in combination with `obscon`.
         Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
         for the main survey and different iterations of SV, respectively.
+    update_only : :class:`bool`, optional, defaults to False
+        Used when only actions since the startdate are needed, for example
+        in the updateTileTracker function. 
+    lya1b : :class:`bool`, optional, defaults to True
+        Used to determine if an action should be created to mimic the lya1b
+        numobs increase. (see: https://github.com/desihub/desitarget/pull/845/
+        for details.) Only runs for obscon = dark and if there are actions
+        at dates > 2025-07-21. Should be set to false in only extremely specific
+        scenarios, when one is not trying to mimic real survey decisions.
+        
     
 
     Returns
@@ -676,6 +686,21 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
                 doneFlag.append(False)
             archiveDates.append(update['ARCHIVEDATE'])
             reprocFlag = True
+
+
+    #LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
+    #LGN This runs for all dark time surveys with actions at times later than 2025-07-21
+    #LGN unless the lya1b flag is set to false. Only change this flag if you are certain
+    #LGN you don't want to mimic real survey decisions.
+    if (lya1b) and (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
+        log.info('Adding QSO NUMOBS Increase Action')
+        TileIDs.append(-1)
+        TypeOfActions.append('lya1b')
+        TimesOfActions.append('2025-07-21T23:36:04+00:00')
+        doneFlag.append(False)
+        archiveDates.append(20250721)
+
+            
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
     t = Table(ActionList,
            names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
@@ -1381,7 +1406,14 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         msg = "Update state for {} targets".format(ntargs)
         msg += " (the zcats also contain {} skies with +ve TARGETIDs)".format(nsky)
         log.info(msg)
+
+        # setting up update info
         didUpdateHappen = False
+        if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
+            log.info('setting 1B/ext flag for update')
+            is_ext = True
+        else:
+            is_ext = False
         # ADM update the appropriate ledger.
         if mock:
 
@@ -1389,17 +1421,28 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
                 raise ValueError('If processing mocks, you MUST specify a target file')
             log.info('update loc a')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv')#, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext)#, targets = targets)
             didUpdateHappen = True
         elif targets is None:
             log.info('update loc b')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)
+
+            # LGN 20250801 Adding handling for dark1b/brigh1b ledgers
+            # LGN I think this is only necessary in this portion of conditional? (i.e. targets is always None in current alt mtl work flow?)
+            if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
+                
+                # LGN replacing just the last instance of '1b' with '' in directory path
+                althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
+                obscon_short = obscon.replace('1b','')
+                #Updating the non-1b ledger
+                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
+            
+            
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
             didUpdateHappen = True
         else:
             log.info('update loc c')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, targets = targets, ext=is_ext)
             didUpdateHappen = True
         assert(didUpdateHappen)
         if verbose or debug:
@@ -1610,9 +1653,16 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 retval = reprocess_alt_ledger(altmtldir, action, obscon=obscon, survey = survey)
                 if debug or verbose:
                     log.info(f'retval = {retval}')
+            
+            #LGN 07/29/25: Adding new LyA1B case
+            elif action['ACTIONTYPE'] == 'lya1b':
+                #run update on the realization
+                update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp=action['ACTIONTIME'], donefile=False)
+                #record succesful update in ledger
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
                 
             else:
-                raise ValueError('actiontype must be `fa`, `update`, or `reproc`.')
+                raise ValueError('actiontype must be `fa`, `update`, `reproc` or `lya1b`.')
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
             #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 

@@ -388,6 +388,9 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                     log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
                     log.info(f'targver  = {targver}')
                     log.info(f'reproducing = {reproducing}')
+                if not os.path.exists(outdir):
+                    log.info('running makedirs. making {0}'.format(outdir))
+                    os.makedirs(outdir)
                     
                 shutil.copyfile(indir+ts+'-targ.fits', tarfn)
 
@@ -395,11 +398,6 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
 
-
-    #LGN 06/11/25: Moving this outside of loop to work with DARK1B program
-    if not os.path.exists(outdir):
-        log.info('running makedirs. making {0}'.format(outdir))
-        os.makedirs(outdir)
     
     if getosubp:
         if tileid == 315:
@@ -582,17 +580,44 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-    
-        d = io.read_targets_in_tiles(
-            mtldir,
-            tiles,
-            quick=False,
-            mtl=True,
-            unique=True,
-            isodate=mtltime,
-            verbose=verbose,
-            tabform='ascii.ecsv'
-        )
+        # LGN: Adding handling for bright1b/dark1b tiles
+        if 'dark1b' or 'bright1b' in mtldir:
+            log.info('Running with maketwostyle=True')
+            is_ext = True
+            # LGN Formatting the path to bright or dark ledgers
+            # LGN Passing list of directories to read_targets_in_tiles
+            mtldir_short = os.path.join(
+                os.path.dirname(mtldir), 
+                os.path.basename(mtldir).replace('1b', '')
+            )
+            mtldirs = [mtldir_short, mtldir]
+            
+            d = io.read_targets_in_tiles(
+                mtldirs,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
+        
+        else:
+            is_ext = False
+        
+            d = io.read_targets_in_tiles(
+                mtldir,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
         
     
     try:
