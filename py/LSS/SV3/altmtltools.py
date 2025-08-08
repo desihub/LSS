@@ -1426,16 +1426,18 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         elif targets is None:
             log.info('update loc b')
 
-            #LGN 20250801 Adding handling for dark ledger updates with dark1b tiles
-            #LGN I think this is only necessary in this portion of conditional?
-            if obscon.lower() == 'dark1b':
-                #LGN replacing just the last instance of 'dark1b' with 'dark' in directory path
-                althpdirname_dark = althpdirname[::-1].replace('b1krad','krad',1)[::-1]
-                update_ledger(althpdirname_dark, altZCat, obscon=obscon.split("1B")[0].upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
+            # LGN 20250801 Adding handling for dark1b/brigh1b ledgers
+            # LGN I think this is only necessary in this portion of conditional? (i.e. targets is always None in current alt mtl work flow?)
+            if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
+                
+                # LGN replacing just the last instance of '1b' with '' in directory path
+                althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
+                obscon_short = obscon.replace('1b','')
+                #Updating the non-1b ledger
+                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
             
             
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, ext=is_ext)
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
             didUpdateHappen = True
         else:
             log.info('update loc c')
