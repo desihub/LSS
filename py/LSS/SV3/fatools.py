@@ -387,20 +387,18 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 if verbose:
                     log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
                     log.info(f'targver  = {targver}')
-                    log.info(f'reproducing = {reproducing}')
-                    
+                    log.info(f'reproducing = {reproducing}') 
+            
+                if not os.path.exists(outdir):
+                    log.info('running makedirs. making {0}'.format(outdir))
+                    os.makedirs(outdir)
+                  
                 shutil.copyfile(indir+ts+'-targ.fits', tarfn)
 
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
-
-
-    #LGN 06/11/25: Moving this outside of loop to work with DARK1B program
-    if not os.path.exists(outdir):
-        log.info('running makedirs. making {0}'.format(outdir))
-        os.makedirs(outdir)
-    
+            
     if getosubp:
         if tileid == 315:
             log.info('special tile 315 case triggered')
