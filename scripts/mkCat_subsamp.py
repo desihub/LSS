@@ -242,7 +242,7 @@ if args.mkfulldat == 'y':
         
 
     else:
-        sys.exit('should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
+        sys.exit(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
     fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
     common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
     
