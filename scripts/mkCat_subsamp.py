@@ -200,7 +200,7 @@ if args.mkfulldat == 'y':
         #add any additional selections here
         
         #write output to new "full" catalog at your defined location
-    if args.ccut == '-21.35': #the sample used in DR2 BAO analysis
+    elif args.ccut == '-21.35': #the sample used in DR2 BAO analysis
         #don't use any k-correction at all, yields ~constant density
         common.printlog('applying the -21.35 selection',logger)
         from LSS.tabulated_cosmo import TabulatedDESI
@@ -217,7 +217,7 @@ if args.mkfulldat == 'y':
         sel = abr < -21.35
         sel &= z2use < 2
 
-    if args.ccut == 'zcmb-21.35': #the sample used in DR2 BAO analysis
+    elif args.ccut == 'zcmb-21.35': #the sample used in DR2 BAO analysis
         #don't use any k-correction at all, yields ~constant density
         common.printlog('applying the -21.35 selection and correcting redshifts to the cmb frame',logger)
         tracer_out = tracer_out.replace('zcmb-21.35','-21.35_zcmb')
