@@ -817,29 +817,18 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     printlog('nz bin size is actually '+str(bs),logger)
     nzd = nzf[3] #column with nbar values
     fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
-    #ff = fitsio.FITS(fn,'rw')
-    #fd = Table(ff['LSS'].read())
-    #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
     fd = Table(fitsio.read(fn.replace('global','dvs_ro')))
     zl = fd['Z']
     nl = np.zeros(len(zl))
-    for ii in range(0,len(zl)):
-        z = zl[ii]
-        zind = int((z-zmin)/bs)
-        if z > zmin and z < zmax:
-            nl[ii] = nzd[zind]
+    zind = ((zl - zmin) / bs).astype(int)
+    valid = (zl > zmin) & (zl < zmax) & (zind >= 0) & (zind < len(nzd))
+    nl[valid] = nzd[zind[valid]]
     mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
-    if logger is None:
-        print('mean completeness '+str(mean_comp))
-    else:
-        logger.info('mean completeness '+str(mean_comp))
+    printlog('mean completeness '+str(mean_comp),logger=logger)
     nont = 0
     if 'NTILE' not in list(fd.dtype.names):
         fd['NTILE'] = np.ones(len(fd),dtype=int)
-        if logger is None:
-            print('added NTILE = 1 column because column did not exist')
-        else:
-            logger.info('added NTILE = 1 column because column did not exist')
+        printlog('added NTILE = 1 column because column did not exist',logger=logger)
         nont = 1
     if comp_ntl is None:
         ntl = np.unique(fd['NTILE'])
@@ -877,7 +866,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     if 'WEIGHT_BLIND' in cols:
         fd['WEIGHT'] *= fd['WEIGHT_BLIND']
     #ff['LSS'].insert_column('NZ',nl)
-    print(np.min(nl),np.max(nl))
+    printlog(f'min/max NZ: {np.min(nl)}/{np.max(nl)}',logger=logger)
 
     #fkpl = 1./(1+nl*P0*mean_comp)
     #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
@@ -892,29 +881,24 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ff['LSS'].write_history("added NZ and WEIGHT_FKP columns on "+datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
     #ff.close()
     #ft.write(fn,format='fits',overwrite=True)
-    print('done with data')
+    printlog('Done with data.',logger=logger)
     def _parfun(rann):
         fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-        #ff = fitsio.FITS(fn,'rw')
-        #fd = ff['LSS'].read()
         fd = Table(fitsio.read(fn.replace('global','dvs_ro') ))
-        #fd = fitsio.read(fn) #reading in data with fitsio because it is much faster to loop through than table
         zl = fd['Z']
         nl = np.zeros(len(zl))
-        for ii in range(0,len(zl)):
-            z = zl[ii]
-            zind = int((z-zmin)/bs)
-            if z > zmin and z < zmax:
-                nl[ii] = nzd[zind]
+        zind = ((zl - zmin) / bs).astype(int)
+        valid = (zl > zmin) & (zl < zmax) & (zind >= 0) & (zind < len(nzd))
+        nl[valid] = nzd[zind[valid]]
         #del fd
         #ft = Table.read(fn)
         #ft['NZ'] = nl
         #ff['LSS'].insert_column('NZ',nl)
         #fd['NZ'] = nl
-        print('mean completeness '+str(mean_comp))
+        printlog('mean completeness '+str(mean_comp),logger=logger)
         if nont == 1:
             fd['NTILE'] = np.ones(len(fd),dtype=int)
-            print('added NTILE = 1 column because column did not exist')
+            printlog('added NTILE = 1 column because column did not exist',logger=logger)
 
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
         #the following lines should keep the relative weighting and the region normalization in place
@@ -928,7 +912,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         wtfac = np.ones(len(fd))
         sel = wt > 0
         wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
-        print(np.mean(wtfac))
+        printlog(f"Mean wtfac {np.mean(wtfac)}",logger=logger)
         fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1] #this should keep, e.g., N/S normalization in place
         #fkpl = 1./(1+nl*P0*mean_comp)
         #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
@@ -1634,33 +1618,21 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     try:
         fitsio.read(tmpfn,columns=(testcol))
     except:
-        if logger is None:
-            print('read failed, output corrupted?! '+tmpfn)
-        else:
-            logger.info('read failed, output corrupted?! '+tmpfn)
+        printwarn('read failed, output corrupted?! '+tmpfn, logger)
         return 'FAILED'    
     os.system('cp ' + tmpfn + ' ' + outf) 
     os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    if logger is None:
-        print('moved output to ' + outf)
-    else:
-        logger.info('moved output to ' + outf)
+    printlog('moved output to ' + outf, logger)
     df = 0
-    if logger is None:
-        print('checking read of column ' + testcol)
-    else:
-        logger.info('checking read of column ' + testcol)
+    #printlog('checking read of column ' + testcol, logger)
 
     try:
         fitsio.read(outf.replace('global','dvs_ro'),columns=(testcol))
         df = 1
     except:
-        print('read failed, copy failed?! check temporary file '+tmpfn)
+        printwarn('read failed, copy failed?! check temporary file '+tmpfn, logger)
         return 'FAILED'    
-    if logger is None:
-        print('removing temp file')
-    else:
-        logger.info('removing temp file')
+    #printlog('removing temp file', logger)
 
     if df == 1:
         os.system('rm '+tmpfn)
@@ -1912,6 +1884,11 @@ def printlog(message,logger):
     else:
         print(message)
 
+def printwarn(message,logger):
+    if logger is not None:
+        logger.warning(message)
+    else:
+        print(message)
 
 def compute_wntmp(bw, prob_obs, loc_assgn, ntile, ntile_range=[0,15]):
     """
