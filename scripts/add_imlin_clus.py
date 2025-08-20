@@ -53,6 +53,8 @@ parser.add_argument("--version", help="catalog version; use 'test' unless you kn
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
 parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
+parser.add_argument("--exclude_debv", help="exclude EBV_DIFF_* maps from fit_maps", default='n')
+
 parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='fNL/')
 
 parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='n')
@@ -78,7 +80,6 @@ parser.add_argument("--nran4imsys",help="number of random files to using for lin
 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
-
 args = parser.parse_args()
 common.printlog(str(args),logger)
 
@@ -89,10 +90,6 @@ version = args.version
 specrel = args.verspec
 rm = int(args.minr)
 rx = int(args.maxr)
-
-
-
-    
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
@@ -165,6 +162,11 @@ elif args.usemaps[0] == 'allebvcmb':
 else:
     fit_maps = [mapn for mapn in args.usemaps]
 
+# Remove EBV_DIFF_* if exclude_debv is set
+if args.exclude_debv == 'y':
+    fit_maps = [m for m in fit_maps if not m.startswith('EBV_DIFF_')]
+    syscol = (syscol or '_WEIGHT_IMLIN') + '_NODEBV'
+
 common.printlog('using '+str(fit_maps),logger)
 
 zl = (zmin,zmax)
@@ -217,8 +219,6 @@ elif type[:3] == 'BGS':
     zrl = [(0.01,0.5)]
     zmin = 0.01
     zmax = 0.5    
-
-
 
 common.printlog('the added weight column will be '+syscol,logger)
 
