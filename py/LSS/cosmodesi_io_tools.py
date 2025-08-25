@@ -136,15 +136,19 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     #if ctype == 'clustering':
     #    cat_dir += '/unblinded/'           
     if 'full' in ctype:# == 'full':
+        # For subsamples, the tracer name is augmented with details about the subsample
+        # That will be needed in most places, but for angular upweighting we use the parent sample, not the subsample to find the angular weights.
+        # So strip it off just here
+        # You may need to adjust this
         region = ''
         cat_dir = cat_dir.replace('/unblinded','')
         cat_dir = cat_dir.replace('/blinded','')
         if 'BGS_BRIGHT' in tracer:
             tracer = 'BGS_BRIGHT'
-            logger.info('reset tracer name to BGS_BRIGHT for reading full file')
+            #logger.info('reset tracer name to BGS_BRIGHT for reading full file')
         if 'LRG' in tracer:
             tracer = 'LRG'
-            logger.info('reset tracer name to LRG for reading full file')
+            #logger.info('reset tracer name to LRG for reading full file')
         
     dat_or_ran = name[:3]
     if name == 'randoms' and tracer == 'LRG_main' and ctype == 'full':
@@ -167,7 +171,7 @@ def _format_bitweights(bitweights):
 
 
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_ntmp=None,maglim=None, weight_type='default', name='data', return_mask=False, option=None,P0=None):
-    logger.info('get pos P0 is '+str(P0))
+    #logger.info('get pos P0 is '+str(P0))
     if maglim is None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
@@ -536,10 +540,9 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
             positions.append(p)
             weights.append(w)
             if fibered:
-                logger.info('loaded fibered full for '+name + ' for region '+reg)
+                logger.info('loaded fibered full for '+name + ' for region '+reg + ' with '+str(len(p))+' entries')
             else:
-                logger.info('loaded parent full for '+name+ ' for region '+reg)    
-            logger.info(str(len(p))+' entries')
+                logger.info('loaded parent full for '+name+ ' for region '+reg + ' with '+str(len(p))+' entries')    
         return positions, weights
 
     if isinstance(name, (tuple, list)):
