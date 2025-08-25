@@ -47,36 +47,34 @@ else:
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--type", help="tracer type to be selected")
-parser.add_argument("--basedir", help="base directory for output, default is SCRATCH",default=os.environ[scratch])
-parser.add_argument("--version", help="catalog version; use 'test' unless you know what you are doing!",default='test')
-parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
-parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
-parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
-parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='fNL/')
 
-parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='n')
-parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
-parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
+parser.add_argument("--type", help="Tracer type to be selected")
+parser.add_argument("--basedir", help="Base directory for output, default is SCRATCH", default=os.environ["SCRATCH"])
+parser.add_argument("--version", help="Catalog version; use 'test' unless you know what you are doing!", default='test')
+parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA", default='DA2')
+parser.add_argument("--verspec", help="Version for redshifts", default='loa-v1')
+parser.add_argument("--usemaps", help="List of maps to use; defaults to what is set by globals", type=str, nargs='*', default=None)
 
+# Updated flags
+parser.add_argument("--exclude_debv", help="Exclude EBV_DIFF_* maps from fit_maps", action='store_true')
+parser.add_argument("--relax_zbounds", help="Use less restricted redshift bounds", action='store_true')
+parser.add_argument("--imsys_finezbin", help="Perform imaging regressions in dz=0.1 bins", action='store_true')
+parser.add_argument("--imsys_1zbin", help="Perform imaging regressions in just 1 z bin", action='store_true')
+parser.add_argument("--imsys_clus", help="Add weights for imaging systematics using eboss method, applied to clustering catalogs", action='store_true')
+parser.add_argument("--imsys_clus_ran", help="Add imaging weights to random catalogs", action='store_true')
+parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
+parser.add_argument("--add_syscol2blind", help="Add the new weight column to the blinded catalogs", action='store_true')
+# parser.add_argument("--imsys_zbin", help="Perform imaging systematic regressions in z bins", action='store_true')
+# parser.add_argument("--par", help="Run different randoms in parallel", action='store_true')
+
+# Other arguments
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
-parser.add_argument("--imsys_finezbin",help="if yes, do imaging systematic regressions in dz=0.1 bins",default='n')
-parser.add_argument("--imsys_1zbin",help="if yes, do imaging systematic regressions in just 1 z bin",default='n')
-#parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
-parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
-
-parser.add_argument("--syscol",help="name for new systematic column (automatically determined based on other choices if None)",default=None)
-
-parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
-
-#parser.add_argument("--imsys_clus_fb_ran",help="add linear weight fits in fine redshift bins to randoms",default='n')
-
-parser.add_argument("--replace_syscol",help="whether to replace any existing weight_sys with new",default='n')
-parser.add_argument("--add_syscol2blind",help="whether to add the new weight column to the blinded catalogs",default='n')
-
-parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
-
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
+parser.add_argument("--extra_clus_dir", help="Optional extra directory structure for clustering catalog", default='fNL/')
+parser.add_argument("--minr", help="Minimum random file index", default=0, type=int)
+parser.add_argument("--maxr", help="Maximum random file index (18 available)", default=18, type=int)
+parser.add_argument("--syscol", help="Name for new systematic column; determined automatically if None", default=None)
+parser.add_argument("--nran4imsys", help="Number of random files to use for linear regression", default=10, type=int)
 
 
 args = parser.parse_args()
@@ -89,10 +87,6 @@ version = args.version
 specrel = args.verspec
 rm = int(args.minr)
 rx = int(args.maxr)
-
-
-
-    
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
@@ -132,14 +126,14 @@ if args.syscol is None:
         #    syscol += '_ALL'
         #if args.usemaps[0] == 'allebv':
         #    syscol += '_ALLEBV'
-    if args.imsys_1zbin == 'y':
+    if args.imsys_1zbin:
         syscol = 'WEIGHT_IMLIN_1ZBIN'
         #if args.usemaps[0] == 'all':
         #    syscol += '_ALL'
         #if args.usemaps[0] == 'allebv':
         #    syscol += '_ALLEBV'
 
-    if args.imsys_finezbin == 'y':
+    if args.imsys_finezbin:
         syscol = 'WEIGHT_IMLIN_FINEZBIN'
         #if args.usemaps[0] == 'allebv':
         #    syscol += '_ALLEBV'
@@ -150,7 +144,7 @@ else:
 
 if args.usemaps == None:
     fit_maps = mainp.fit_maps
-    if args.imsys_finezbin == 'y':
+    if args.imsys_finezbin:
         mainp.fit_maps_all
 elif args.usemaps[0] == 'all': 
     fit_maps = mainp.fit_maps_all
@@ -164,6 +158,11 @@ elif args.usemaps[0] == 'allebvcmb':
 
 else:
     fit_maps = [mapn for mapn in args.usemaps]
+
+# Remove EBV_DIFF_* if exclude_debv is set
+if args.exclude_debv:
+    fit_maps = [m for m in fit_maps if not m.startswith('EBV_DIFF_')]
+    syscol = (syscol or '_WEIGHT_IMLIN') + '_NODEBV'
 
 common.printlog('using '+str(fit_maps),logger)
 
@@ -181,9 +180,9 @@ inds = np.arange(rm,rx)
 if type[:3] == 'ELG':
     if args.imsys_zbin == 'y':
         zrl = [(0.8,1.1),(1.1,1.6)]
-    elif args.imsys_1zbin == 'y':
+    elif args.imsys_1zbin:
         zrl = [(0.8,1.6)]
-    elif args.imsys_finezbin == 'y':
+    elif args.imsys_finezbin:
         imsys_clus_fb = 'y'
     zsysmin = 0.8
     zsysmax = 1.6
@@ -192,22 +191,22 @@ if type[:3] == 'ELG':
 if type[:3] == 'QSO':
     if args.imsys_zbin == 'y':
         zrl = [(0.8,1.3),(1.3,2.1),(2.1,3.5)] 
-    elif args.imsys_1zbin == 'y':
+    elif args.imsys_1zbin:
         zrl = [(0.8,3.5)]   
-    elif args.imsys_finezbin == 'y':
+    elif args.imsys_finezbin:
         imsys_clus_fb = 'y'
     zsysmin = 0.8
     zsysmax = 3.5
 if type[:3] == 'LRG':
     if args.imsys_zbin == 'y':
         zrl = [(0.4,0.6),(0.6,0.8),(0.8,1.1)] 
-    elif args.imsys_1zbin == 'y':
+    elif args.imsys_1zbin:
         zrl = [(0.4,1.1)]
-    elif args.imsys_finezbin == 'y':
+    elif args.imsys_finezbin:
         imsys_clus_fb = 'y'
     zsysmin = 0.4
     zsysmax = 1.1
-    if args.relax_zbounds == 'y':
+    if args.relax_zbounds:
         zsysmax = 1.2
         zsysmin = 0.3      
 
@@ -218,8 +217,6 @@ elif type[:3] == 'BGS':
     zmin = 0.01
     zmax = 0.5    
 
-
-
 common.printlog('the added weight column will be '+syscol,logger)
 
 debv = common.get_debv()
@@ -227,7 +224,7 @@ zcmb = common.mk_zcmbmap()
 sky_g,sky_r,sky_z = common.get_skyres()
 
 
-if args.imsys_clus == 'y':
+if args.imsys_clus:
     from LSS.imaging import densvar
     
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
@@ -274,7 +271,7 @@ if args.imsys_clus == 'y':
             sel = wsysl != 1
             dat[syscol][sel] = wsysl[sel]
        
-        if args.imsys_finezbin == 'y':
+        if args.imsys_finezbin:
             dz = 0.1
             zm = zsysmin
             zx = zm + dz
@@ -290,7 +287,7 @@ if args.imsys_clus == 'y':
                 use_maps = fitmapsbin
                 _add_sysweight(zm,zx)
                 zm = zx
-        elif args.imsys_1zbin == 'y':
+        elif args.imsys_1zbin:
             zm = zmin
             zx = zmax
             if type == 'LRG':
@@ -326,7 +323,7 @@ if args.imsys_clus == 'y':
     if syscol in list(dat_ngc.colnames):
         dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])    
-    if args.replace_syscol == 'y':
+    if args.replace_syscol:
         dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
         dat_ngc['WEIGHT_SYS'] = dat_ngc[syscol]
         dat_ngc['WEIGHT'] *= dat_ngc['WEIGHT_SYS']
@@ -334,14 +331,14 @@ if args.imsys_clus == 'y':
     if syscol in list(dat_sgc.colnames):
         dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
-    if args.replace_syscol == 'y':
+    if args.replace_syscol:
         dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
         dat_sgc['WEIGHT_SYS'] = dat_sgc[syscol]
         dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
 
 
-if args.imsys_clus_ran == 'y':
+if args.imsys_clus_ran:
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
     dat_ngc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits')
@@ -359,7 +356,7 @@ if args.imsys_clus_ran == 'y':
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
-            if args.replace_syscol == 'y':
+            if args.replace_syscol:
                 ran['WEIGHT'] /= ran['WEIGHT_SYS']
                 ran['WEIGHT_SYS'] = ran[syscolr]
                 ran['WEIGHT'] *= ran['WEIGHT_SYS']
@@ -373,7 +370,7 @@ if args.imsys_clus_ran == 'y':
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
             
-if args.add_syscol2blind == 'y':
+if args.add_syscol2blind:
     syscolr = syscol
     #if args.replace_syscol == 'y':
     #    syscolr = 'WEIGHT_SYS'
@@ -389,7 +386,7 @@ if args.add_syscol2blind == 'y':
             dat_blind.remove_column(syscol)
 
         dat_blind = join(dat_blind,dati,keys=['TARGETID'])
-        if args.replace_syscol == 'y':
+        if args.replace_syscol:
             dat_blind['WEIGHT'] /= dat_blind['WEIGHT_SYS']
             dat_blind['WEIGHT_SYS'] = dat_blind[syscol]
             dat_blind['WEIGHT'] *= dat_blind['WEIGHT_SYS']
@@ -405,7 +402,7 @@ if args.add_syscol2blind == 'y':
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             ran = join(ran,dat,keys=['TARGETID_DATA'])
-            if args.replace_syscol == 'y':
+            if args.replace_syscol:
                 ran['WEIGHT'] /= ran['WEIGHT_SYS']
                 ran['WEIGHT_SYS'] = ran[syscolr]
                 ran['WEIGHT'] *= ran['WEIGHT_SYS']
