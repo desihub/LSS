@@ -132,26 +132,26 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
 
         if mpicomm is None or mpicomm.rank == mpiroot:
 
-            all_positions = [p[2] for p in randoms_positions1 if p is not None]
-            all_positions.append(data_positions1[2])
-            min_val = min([np.min(pos) for pos in all_positions])
-            max_val = max([np.max(pos) for pos in all_positions])
-            dedges = np.linspace(min_val * 0.99, max_val * 1.01, nradjack + 1)
             if nradjack > 1:
-                logger.info(f'dedges: {dedges}')
+                # Define radial jack-knife bins to be approx. equal number in each bin, ignoring angular regions
+                radial_edges = np.percentile(data_positions1[2], np.linspace(0, 100, nradjack + 1))
+                # Ensure randoms fit into same bins by widening edges
+                all_positions = [p[2] for p in randoms_positions1 if p is not None]
+                all_positions.append(data_positions1[2])
+                min_val = min([np.min(pos) for pos in all_positions])
+                max_val = max([np.max(pos) for pos in all_positions])
+                #dedges = np.linspace(min_val * 0.99, max_val * 1.01, nradjack + 1)
+                radial_edges[0] = min_val*0.99
+                radial_edges[-1] = max_val*1.01
+                logger.info(f'radial jack-knife edges: {radial_edges}')
                 
             def get_label(positions):
-                # Labels for angular patch
                 ang_labels = subsampler.label(positions)
                 if nradjack < 2:
                     return ang_labels
-                # Labels for radial bin
                 ra, dec, d = positions
-                dlabels = np.digitize(d, dedges) - 1
-                # Combined labels
+                dlabels = np.digitize(d, radial_edges) - 1
                 return ang_labels*nradjack + dlabels
-
-            logger.info(f'data_positions1 shape: {np.shape(data_positions1)}')
 
             data_samples1 = get_label(data_positions1)
             randoms_samples1 = [get_label(p) for p in randoms_positions1]
