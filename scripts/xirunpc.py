@@ -87,7 +87,7 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
     return wang
 
 
-def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, njack=120, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, thetacut=None,nreal=129, **kwargs):
+def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, njack=120, nradjack=1, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, thetacut=None,nreal=129, **kwargs):
 
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
@@ -131,16 +131,38 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
                                       dtype=dtype, mpicomm=mpicomm, mpiroot=mpiroot)
 
         if mpicomm is None or mpicomm.rank == mpiroot:
- 
-            data_samples1 = subsampler.label(data_positions1)
-            randoms_samples1 = [subsampler.label(p) for p in randoms_positions1]
+
+            all_positions = [p[2] for p in randoms_positions1 if p is not None]
+            all_positions.append(data_positions1[2])
+            min_val = min([np.min(pos) for pos in all_positions])
+            max_val = max([np.max(pos) for pos in all_positions])
+            dedges = np.linspace(min_val * 0.99, max_val * 1.01, nradjack + 1)
+            if nradjack > 1:
+                logger.info(f'dedges: {dedges}')
+                
+            def get_label(positions):
+                # Labels for angular patch
+                ang_labels = subsampler.label(positions)
+                if nradjack < 2:
+                    return ang_labels
+                # Labels for radial bin
+                ra, dec, d = positions
+                dlabels = np.digitize(d, dedges) - 1
+                # Combined labels
+                return ang_labels*nradjack + dlabels
+
+            logger.info(f'data_positions1 shape: {np.shape(data_positions1)}')
+
+            data_samples1 = get_label(data_positions1)
+            randoms_samples1 = [get_label(p) for p in randoms_positions1]
             if with_shifted:
-                shifted_samples1 = [subsampler.label(p) for p in shifted_positions1]
+                shifted_samples1 = [get_label(p) for p in shifted_positions1]
             if not autocorr:
-                data_samples2 = subsampler.label(data_positions2)
-                randoms_samples2 = [subsampler.label(p) for p in randoms_positions2]
+                data_samples2 = get_label(data_positions2)
+                randoms_samples2 = [get_label(p) for p in randoms_positions2]
                 if with_shifted:
-                    shifted_samples2 = [subsampler.label(p) for p in shifted_positions2]
+                    shifted_samples2 = [get_label(p) for p in shifted_positions2]
+
 
     # These keyword arguments are where the 'angular' upweighting gets threaded through to corrfunc
     kwargs = {}
@@ -244,7 +266,7 @@ def get_edges(corr_type='smu', bin_type='lin'):
     raise ValueError('corr_type must be one of ["smu", "rppi", "theta"]')
 
 
-def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n',rec_type=False, weight_type='default', bin_type='lin', njack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None, wang=None, rpcut=None, thetacut=None):
+def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax=np.inf, recon_dir='n',rec_type=False, weight_type='default', bin_type='lin', njack=0, nradjack=0, nrandoms=8, split_randoms_above=10, out_dir='.', option=None, wang=None, rpcut=None, thetacut=None):
     if tracer2: tracer += '_' + tracer2
     if rec_type: tracer += '_' + rec_type
     if region: tracer += '_' + region
@@ -254,7 +276,8 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
     #    out_dir += recon_dir+'/'
     split = '_split{:.0f}'.format(split_randoms_above) if split_randoms_above < np.inf else ''
     wang = '{}_'.format(wang) if wang is not None else ''
-    root = '{}{}_{}_{}_{}_{}_njack{:d}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, nrandoms, split)
+    radjack = 'x{:d}'.format(nradjack) if nradjack > 1 else ''
+    root = '{}{}_{}_{}_{}_{}_njack{:d}{}_nran{:d}{}'.format(wang, tracer, zmin, zmax, weight_type, bin_type, njack, radjack, nrandoms, split)
     if rpcut is not None:
         root += '_rpcut{}'.format(rpcut)
     if thetacut is not None:
@@ -285,7 +308,8 @@ if __name__ == '__main__':
     parser.add_argument('--split_ran_above', help='separation scale above which RR are summed over each random file;\
                                                    typically, most efficient for xi < 1, i.e. sep > 10 Mpc/h;\
                                                    see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=20)
-    parser.add_argument('--njack', help='number of jack-knife subsamples; 0 for no jack-knife error estimates', type=int, default=0)
+    parser.add_argument('--njack', help='number of angular jack-knife subsamples; < 2 for no jack-knife error estimates', type=int, default=0)
+    parser.add_argument('--nradjack', help='number of radial jack-knife subsamples; total jack-knives are njack*nradjack', type=int, default=1)
     parser.add_argument('--gpu', help='whether to run on the GPU', action='store_true')
     parser.add_argument('--nthreads', help='number of threads (defaults to 4 if --gpu else 128)', type=int, default=None)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
@@ -407,6 +431,7 @@ if __name__ == '__main__':
         magmax = float(args.maglim[1])
         maglims = (magmin,magmax)
         logger.info('Using magnitude limits: {} < r < {}'.format(magmin, magmax))
+        logger.warning('Consider defining a subsample with mkCat_subsamp where the magnitude cut is made instead. You can reprocess imaging systematics and increase the number of randoms available by doing so.')
     else:
         maglims = None
 
@@ -429,7 +454,7 @@ if __name__ == '__main__':
         logger.info('Computing correlation functions {} in regions {} in redshift ranges {}.'.format(args.corr_type, regions, zlims))
 
     for zmin, zmax in zlims:
-        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir,rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bintype_str, njack=args.njack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut, thetacut=args.thetacut)
+        base_file_kwargs = dict(tracer=tracer, tracer2=tracer2, zmin=zmin, zmax=zmax, recon_dir=args.recon_dir,rec_type=args.rec_type, weight_type=args.weight_type, bin_type=bintype_str, njack=args.njack, nradjack=args.nradjack, nrandoms=args.nran, split_randoms_above=args.split_ran_above, option=option, rpcut=args.rpcut, thetacut=args.thetacut)
         for region in regions:
             if args.use_arrays == 'y':
                 if region == "N":
@@ -443,7 +468,7 @@ if __name__ == '__main__':
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, thetacut=args.thetacut,nreal=args.nreal, **catalog_kwargs)
+                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, nradjack=args.nradjack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, thetacut=args.thetacut,nreal=args.nreal, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
