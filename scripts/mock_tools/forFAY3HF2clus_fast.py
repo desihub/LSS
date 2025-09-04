@@ -246,7 +246,7 @@ if args.mkdat == 'y':
 	place to add imaging systematic weights and redshift failure weights would be here
 	'''
 	mock_data['WEIGHT'] = mock_data['WEIGHT_SYS']*mock_data['WEIGHT_COMP']*mock_data['WEIGHT_ZFAIL']
-	common.write_LSS_scratchcp(mock_data_tr,out_data_fn,logger=logger)
+	common.write_LSS_scratchcp(mock_data,out_data_fn,logger=logger)
 
 	#splitGC(out_data_froot,'.dat')
 
@@ -274,7 +274,7 @@ if args.mkran == 'y':
 		del ranin
 		logger.info(str(len(ran))+' in tiles area')
 
-		ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer)
+		ran = ran_col_assign(ran,mock_data,ran_samp_cols,tracer)
 		common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
 		del ran
 		return True
