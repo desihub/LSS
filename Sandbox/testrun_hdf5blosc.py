@@ -36,7 +36,7 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
-tracer = 'QSO' #these are the largest size because of their footprint size
+tracer = 'LRG' 
 ddir = '/pscratch/sd/a/ajross/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl5/loa-v1/mock5/LSScats/'
 inds = np.arange(18) #18 random files
 regions = ['NGC','SGC']
