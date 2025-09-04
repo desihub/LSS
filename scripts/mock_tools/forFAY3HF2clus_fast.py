@@ -266,13 +266,15 @@ if args.mkran == 'y':
         in_ran_fn = ran_fname_base+str(rann)+'.fits' 
         out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
         rcols = ['RA','DEC']#,'PHOTSYS','TARGETID']
+        common.printlog('reading random '+str(rann),logger)
         ranin = Table(fitsio.read(in_ran_fn,columns=rcols))
+        common.print('cutting randoms '+str(rann)+' to tile area',logger)
         selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
         ran = ranin[selY1]
         del ranin
         logger.info(str(len(ran))+' in tiles area')
         ran = common.addNS(ran)
-        ran = ran_col_assign(ran,mock_data,ran_samp_cols,tracer)
+        ran = ran_col_assign(ran,mock_data,ran_samp_cols,args.tracer)
         common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
         del ran
         return True
@@ -289,18 +291,18 @@ if args.mkran == 'y':
 
 
 
-if tracer == 'QSO':
+if args.tracer == 'QSO':
     dz = 0.02
     P0 = 6000
 
 else:    
     dz = 0.01
 
-if tracer == 'LRG':
+if args.tracer == 'LRG':
     P0 = 10000
-if tracer[:3] == 'ELG':
+if args.tracer[:3] == 'ELG':
     P0 = 4000
-if tracer[:3] == 'BGS':
+if args.tracer[:3] == 'BGS':
     P0 = 7000
 
 
