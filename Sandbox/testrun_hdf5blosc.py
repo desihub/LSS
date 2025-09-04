@@ -35,7 +35,7 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
-
+common.printlog('starting script',logger)
 tracer = 'LRG' 
 ddir = '/pscratch/sd/a/ajross/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl5/loa-v1/mock5/LSScats/'
 inds = np.arange(18) #18 random files
