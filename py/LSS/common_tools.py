@@ -1640,7 +1640,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     import shutil
     printlog('will write to '+outf,logger)
     ff = reduce_column_precision(Table(ff)) #convert data types to save storage space
-    common.printlog('reduced precision of input',logger)
+    printlog('reduced precision of input',logger)
     rng = np.random.default_rng()#seed=rann)
     ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
