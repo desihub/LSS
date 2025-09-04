@@ -1553,6 +1553,46 @@ def get_tlcomp(fin):
     tlobs['FRAC_TLOBS_TILES'] = fractl
     write_LSS(tlobs,tlobs_fn)
 
+def reduce_column_precision(table):
+    """
+    Returns output table with same columns but reduced precision optimized for BLOSC compression
+    """
+    result = Table()
+    result.meta.update(table.meta)
+    for col in table.colnames:
+        if col in ('RA', 'DEC'):
+            #- float64 -> float32 -> float64
+            result[col] = table[col].astype(np.float32).astype(np.float64)
+        elif col in ('FRAC_TLOBS_TILES', 'NX') or col.startswith('WEIGHT'):
+            #- float64 -> float16 -> float64
+            result[col] = table[col].astype(np.float16).astype(np.float64)
+        elif col in ('NTILE',):
+            #- intXX -> int8
+            result[col] = table[col].astype(np.int8)
+        else:
+            #- default unchanged type
+            result[col] = table[col]
+
+    assert result.colnames == table.colnames
+    return result
+
+def write_hdf5_blosc(filename, table):
+    """Write table to filename using hdf5 blosc compression; code adapted from Joe DeRose"""
+    if os.path.exists(filename):
+        print(f'Replacing {filename}')
+        os.remove(filename)
+
+    for k in table.dtype.names:
+        data = table[k]
+        dt = table.dtype[k]
+        if dt == '<U1':
+            dt = 'S1'  
+            data = np.array(data, dtype=dt)
+            
+        with h5py.File(filename, 'a') as fn:
+            # Using Blosc with default settings
+            fn.create_dataset(k, data=data, dtype=dt,
+                                compression=hdf5plugin.Blosc(cname='zstd', clevel=5))
 
 
 def write_LSS(ff, outf, comments=None,extname='LSS'):
@@ -1586,6 +1626,67 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     #os.system('chmod 775 ' + outf) #this should fix permissions for the group
     print('moved output to ' + outf)
     return True
+
+def write_LSShdf5_scratchcp(ff, outf,logger=None):
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+
+    '''
+    ff is the structured array/Table to be written out as an LSS catalog
+    outf is the full path to write out
+    comments is a list of comments to include in the header
+    this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
+    '''
+    import shutil
+    printlog('will write to '+outf,logger)
+    ff = reduce_column_precision(Table(ff)) #convert data types to save storage space
+    common.printlog('reduced precision of input',logger)
+    rng = np.random.default_rng()#seed=rann)
+    ranstring = int(rng.random()*1e10)
+    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
+    if os.path.isfile(tmpfn):
+        os.system('rm ' + tmpfn)
+    write_hdf5_blosc(tmpfn, ff)
+    if logger is None:
+        print('closed fits file '+tmpfn)
+    else:
+        logger.info('closed fits file '+tmpfn)
+    #shutil.move(tmpfn, outf)
+    #os.rename(tmpfn, outf)
+    testcol = list(ff.dtype.names)[0]
+    try:
+        fitsio.read(tmpfn,columns=(testcol))
+    except:
+        printwarn('read failed, output corrupted?! '+tmpfn, logger)
+        return 'FAILED'    
+    os.system('cp ' + tmpfn + ' ' + outf) 
+    os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    printlog('moved output to ' + outf, logger)
+    df = 0
+    #printlog('checking read of column ' + testcol, logger)
+
+    try:
+        fitsio.read(outf.replace('global','dvs_ro'),columns=(testcol))
+        df = 1
+    except:
+        printwarn('read failed, copy failed?! check temporary file '+tmpfn, logger)
+        return 'FAILED'    
+    #printlog('removing temp file', logger)
+
+    if df == 1:
+        os.system('rm '+tmpfn)
+    return True
+
+def read_hdf5_blosc(filename):
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+    data = Table()
+    with h5py.File(filename) as fn:
+        for col in fn.keys():
+            data[col] = fn[col][:]
+
+    return data
+
 
 def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     '''
