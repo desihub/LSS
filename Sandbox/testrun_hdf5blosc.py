@@ -51,3 +51,4 @@ for reg in regions:
 	from multiprocessing import Pool
 	with Pool() as pool:
 		res = pool.map(_parfun, inds)
+common.printlog('finished script',logger)
