@@ -217,38 +217,38 @@ out_data_froot = outdir+tracerd+'_forFA_'
 
 
 if args.tracer == 'LRG':
-	zmin = 0.4
-	zmax = 1.1
+    zmin = 0.4
+    zmax = 1.1
 
 elif (argstracer == 'ELG_LOP') or (args.tracer == 'ELG'):
-	zmin = 0.8
-	zmax = 1.6
+    zmin = 0.8
+    zmax = 1.6
 
 elif args.tracer == 'QSO':
-	zmin = 0.8
-	zmax = 2.1
+    zmin = 0.8
+    zmax = 2.1
 elif args.tracer == 'BGS_BRIGHT-21.5':
-	zmin = 0.1
-	zmax = 0.4
+    zmin = 0.1
+    zmax = 0.4
 
 if args.mkdat == 'y':
 
 
 
-	selz = mock_data['Z'] > zmin
-	selz &= mock_data['Z'] < zmax
-	mock_data = mock_data[selz]
-	logger.info('length after cutting to redshift range:'+str(len(mock_data)))
-	mock_data['WEIGHT_SYS'] = np.ones(len(mock_data))
-	mock_data['WEIGHT_COMP'] = np.ones(len(mock_data))
-	mock_data['WEIGHT_ZFAIL'] = np.ones(len(mock_data))
-	'''
-	place to add imaging systematic weights and redshift failure weights would be here
-	'''
-	mock_data['WEIGHT'] = mock_data['WEIGHT_SYS']*mock_data['WEIGHT_COMP']*mock_data['WEIGHT_ZFAIL']
-	common.write_LSS_scratchcp(mock_data,out_data_fn,logger=logger)
+    selz = mock_data['Z'] > zmin
+    selz &= mock_data['Z'] < zmax
+    mock_data = mock_data[selz]
+    logger.info('length after cutting to redshift range:'+str(len(mock_data)))
+    mock_data['WEIGHT_SYS'] = np.ones(len(mock_data))
+    mock_data['WEIGHT_COMP'] = np.ones(len(mock_data))
+    mock_data['WEIGHT_ZFAIL'] = np.ones(len(mock_data))
+    '''
+    place to add imaging systematic weights and redshift failure weights would be here
+    '''
+    mock_data['WEIGHT'] = mock_data['WEIGHT_SYS']*mock_data['WEIGHT_COMP']*mock_data['WEIGHT_ZFAIL']
+    common.write_LSS_scratchcp(mock_data,out_data_fn,logger=logger)
 
-	#splitGC(out_data_froot,'.dat')
+    #splitGC(out_data_froot,'.dat')
 
 ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL','TARGETID_DATA']
 
@@ -258,76 +258,76 @@ randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ran_fname_base = randir.replace('global','dvs_ro') +'randoms-allsky-1-'
 
 if args.mkran == 'y':
-	if args.mkdat == 'n':
-		mock_data = Table(fitsio.read(out_data_fn))
-	def _mkran(rann):
-		
-		
-		in_ran_fn = ran_fname_base+str(rann)+'.fits' 
-		out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-		rcols = ['RA','DEC']#,'PHOTSYS','TARGETID']
-		ranin = Table(fitsio.read(in_ran_fn,columns=rcols))
-		selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
-		ran = ranin[selY1]
-		del ranin
-		logger.info(str(len(ran))+' in tiles area')
+    if args.mkdat == 'n':
+        mock_data = Table(fitsio.read(out_data_fn))
+    def _mkran(rann):
+        
+        
+        in_ran_fn = ran_fname_base+str(rann)+'.fits' 
+        out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
+        rcols = ['RA','DEC']#,'PHOTSYS','TARGETID']
+        ranin = Table(fitsio.read(in_ran_fn,columns=rcols))
+        selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
+        ran = ranin[selY1]
+        del ranin
+        logger.info(str(len(ran))+' in tiles area')
         ran = common.addNS(ran)
-		ran = ran_col_assign(ran,mock_data,ran_samp_cols,tracer)
-		common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
-		del ran
-		return True
-		#splitGC(out_data_froot,'.ran',rann)
+        ran = ran_col_assign(ran,mock_data,ran_samp_cols,tracer)
+        common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
+        del ran
+        return True
+        #splitGC(out_data_froot,'.ran',rann)
 
-	inds = np.arange(nran)
-	if args.par == 'y':
-		from multiprocessing import Pool
-		with Pool(processes=nproc) as pool:
-			res = pool.map(_mkran, inds)
-	else:
-		for rn in inds:#range(rm,rx):
-			 _mkran(rn)
+    inds = np.arange(nran)
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_mkran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _mkran(rn)
 
 
 
 if tracer == 'QSO':
-	dz = 0.02
-	P0 = 6000
+    dz = 0.02
+    P0 = 6000
 
 else:    
-	dz = 0.01
+    dz = 0.01
 
 if tracer == 'LRG':
-	P0 = 10000
+    P0 = 10000
 if tracer[:3] == 'ELG':
-	P0 = 4000
+    P0 = 4000
 if tracer[:3] == 'BGS':
-	P0 = 7000
+    P0 = 7000
 
 
 regions = ['NGC', 'SGC']
 
 if args.nz == 'y':
-	#this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
-	#for reg in allreg:
-	fb = out_data_froot[:-1]
-	fcr = fb+'_0_clustering.ran.fits'
-	fcd = fb+'_clustering.dat.fits'
-	fout = fb+'_nz.txt'
-	common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-	common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
+    #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
+    #for reg in allreg:
+    fb = out_data_froot[:-1]
+    fcr = fb+'_0_clustering.ran.fits'
+    fcd = fb+'_clustering.dat.fits'
+    fout = fb+'_nz.txt'
+    common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
+    common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
 
 if args.splitGC == 'y':
-	splitGC(out_data_froot,'.dat')
-	def _spran(rann):
-		splitGC(out_data_froot,'.ran',rann)
-	inds = np.arange(nran)
-	if args.par == 'y':
-		from multiprocessing import Pool
-		with Pool(processes=nproc) as pool:
-			res = pool.map(_spran, inds)
-	else:
-		for rn in inds:#range(rm,rx):
-			 _spran(rn)
+    splitGC(out_data_froot,'.dat')
+    def _spran(rann):
+        splitGC(out_data_froot,'.ran',rann)
+    inds = np.arange(nran)
+    if args.par == 'y':
+        from multiprocessing import Pool
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_spran, inds)
+    else:
+        for rn in inds:#range(rm,rx):
+             _spran(rn)
 
 
 
