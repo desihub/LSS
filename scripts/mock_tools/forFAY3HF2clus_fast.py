@@ -268,7 +268,7 @@ if args.mkran == 'y':
         rcols = ['RA','DEC']#,'PHOTSYS','TARGETID']
         common.printlog('reading random '+str(rann),logger)
         ranin = Table(fitsio.read(in_ran_fn,columns=rcols))
-        common.print('cutting randoms '+str(rann)+' to tile area',logger)
+        common.printlog('cutting randoms '+str(rann)+' to tile area',logger)
         selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
         ran = ranin[selY1]
         del ranin
