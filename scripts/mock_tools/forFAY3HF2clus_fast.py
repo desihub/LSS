@@ -205,7 +205,7 @@ ndattot = len(mock_data)
 mock_data.rename_column('RSDZ', 'Z')
 
 mock_data = common.addNS(mock_data)
-logger.info(print(np.unique(mock_data['PHOTSYS'],return_counts=True)))
+logger.info(str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
 
 
     
