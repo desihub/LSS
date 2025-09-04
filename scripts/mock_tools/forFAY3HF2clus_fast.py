@@ -265,13 +265,13 @@ if args.mkran == 'y':
 		
 		in_ran_fn = ran_fname_base+str(rann)+'.fits' 
 		out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
-		rcols = ['RA','DEC','PHOTSYS','TARGETID']
+		rcols = ['RA','DEC']#,'PHOTSYS','TARGETID']
 		ranin = Table(fitsio.read(in_ran_fn,columns=rcols))
 		selY1 = is_point_in_desi(tiletab,ranin['RA'],ranin['DEC'])
 		ran = ranin[selY1]
 		del ranin
 		logger.info(str(len(ran))+' in tiles area')
-
+        ran = common.addNS(ran)
 		ran = ran_col_assign(ran,mock_data,ran_samp_cols,tracer)
 		common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
 		del ran
