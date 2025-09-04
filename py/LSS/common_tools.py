@@ -1659,7 +1659,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     testcol = list(ff.dtype.names)[0]
     printlog(str(testcol),logger)
     try:
-        read_hdf5_blosc(tmpfn,columns=(testcol))
+        read_hdf5_blosc(tmpfn,columns=[testcol])
     except:
         printwarn('read failed, output corrupted?! '+tmpfn, logger)
         return 'FAILED'    
@@ -1670,7 +1670,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     #printlog('checking read of column ' + testcol, logger)
 
     try:
-        read_hdf5_blosc(outf.replace('global','dvs_ro'),columns=(testcol))
+        read_hdf5_blosc(outf.replace('global','dvs_ro'),columns=[testcol])
         df = 1
     except:
         printwarn('read failed, copy failed?! check temporary file '+tmpfn, logger)
