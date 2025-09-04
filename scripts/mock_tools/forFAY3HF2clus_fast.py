@@ -174,7 +174,11 @@ def ran_col_assign(randoms,data,sample_columns,tracer):
 nproc = 18
 
 mockdir = args.base_dir+str(args.realization).zfill(2)+'/CutSky/'+args.tracer+'/'+args.snapshot+'/'
+
 if args.outloc == None:
+    outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
+
+else: 
     outdir = args.outloc+'/'+args.mockver+'/mock'+str(args.realization)+'/'
 
 
