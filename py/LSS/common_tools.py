@@ -1657,7 +1657,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     #shutil.move(tmpfn, outf)
     #os.rename(tmpfn, outf)
     testcol = list(ff.dtype.names)[0]
-    printlog(str(testcol),logger)
+    #printlog(str(testcol),logger)
     try:
         read_hdf5_blosc(tmpfn,columns=[testcol])
     except:
