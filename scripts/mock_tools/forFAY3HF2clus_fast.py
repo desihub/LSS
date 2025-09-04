@@ -238,7 +238,7 @@ if args.mkdat == 'y':
 	selz = mock_data['Z'] > zmin
 	selz &= mock_data['Z'] < zmax
 	mock_data = mock_data[selz]
-	logger.info('length after cutting to redshift range:'+str(len(mock_data_)))
+	logger.info('length after cutting to redshift range:'+str(len(mock_data)))
 	mock_data['WEIGHT_SYS'] = np.ones(len(mock_data))
 	mock_data['WEIGHT_COMP'] = np.ones(len(mock_data))
 	mock_data['WEIGHT_ZFAIL'] = np.ones(len(mock_data))
