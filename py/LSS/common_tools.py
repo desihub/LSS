@@ -1673,7 +1673,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     shutil.copy2(tmpfn,outftmp)
     os.rename(outftmp,outf)
     #os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    os.chmod(outf,755)
+    os.chmod(outf,775)
     printlog('moved output to ' + outf, logger)
     df = 0
     #printlog('checking read of column ' + testcol, logger)
