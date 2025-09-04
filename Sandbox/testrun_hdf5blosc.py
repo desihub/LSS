@@ -17,6 +17,7 @@ import LSS.common_tools as common
 
 
 # create logger
+import logging
 logname = 'LSSran'
 logger = logging.getLogger(logname)
 logger.setLevel(logging.INFO)
