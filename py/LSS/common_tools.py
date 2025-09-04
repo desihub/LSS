@@ -1586,7 +1586,7 @@ def write_hdf5_blosc(filename, table, extname='LSS',logger=None):
         os.remove(filename)
     tempfilename = filename+'.tmp'
     with h5py.File(tempfilename, 'a') as fn:
-
+        ext = fn.create_group(extname)
         for k in table.dtype.names:
             data = table[k]
             dt = table.dtype[k]
@@ -1594,7 +1594,7 @@ def write_hdf5_blosc(filename, table, extname='LSS',logger=None):
                 dt = 'S1'  
             data = np.array(data, dtype=dt)
             
-            ext = fn.create_group(extname)
+            
             # Using Blosc with default settings
             ext.create_dataset(k, data=data, dtype=dt,
                                 compression=hdf5plugin.Blosc(cname='zstd', clevel=5))
