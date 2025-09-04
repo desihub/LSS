@@ -45,7 +45,7 @@ for reg in regions:
 	def _parfun(rannum):
 		indat = fitsio.read(flin+'_'+str(rannum)+'_clustering.ran.fits')
 		out_fn = flin+'_'+str(rannum)+'_clustering.ran.h5'
-		common.write_LSShdf5_scratchcp(indat, outf,logger=None)
+		common.write_LSShdf5_scratchcp(indat, out_fn,logger=logger)
 
 
 	from multiprocessing import Pool
