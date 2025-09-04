@@ -253,9 +253,7 @@ if args.mkdat == 'y':
 ran_samp_cols = ['Z','WEIGHT','WEIGHT_COMP','WEIGHT_SYS','WEIGHT_ZFAIL','TARGETID_DATA']
 
 nran = rx-rm
-tracerr = tracer
-if tracer[:3] == 'BGS':
-	tracerr = 'BGS_BRIGHT'
+
 randir = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
 ran_fname_base = randir.replace('global','dvs_ro') +'randoms-allsky-1-'
 
@@ -264,7 +262,7 @@ if args.mkran == 'y':
 		mock_data = Table(fitsio.read(out_data_fn))
 	def _mkran(rann):
 		
-		tracerr = tracer
+		
 		in_ran_fn = ran_fname_base+str(rann)+'.fits' 
 		out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
 		rcols = ['RA','DEC','PHOTSYS','TARGETID']
