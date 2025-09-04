@@ -1576,26 +1576,29 @@ def reduce_column_precision(table):
     assert result.colnames == table.colnames
     return result
 
-def write_hdf5_blosc(filename, table):
+def write_hdf5_blosc(filename, table, extname='LSS',logger=None):
     import h5py
     import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
 
     """Write table to filename using hdf5 blosc compression; code adapted from Joe DeRose"""
     if os.path.exists(filename):
-        print(f'Replacing {filename}')
+        printlog(f'Replacing {filename}',logger)
         os.remove(filename)
+    tempfilename = filename+'.tmp'
+    with h5py.File(tempfilename, 'a') as fn:
 
-    for k in table.dtype.names:
-        data = table[k]
-        dt = table.dtype[k]
-        if dt == '<U1':
-            dt = 'S1'  
+        for k in table.dtype.names:
+            data = table[k]
+            dt = table.dtype[k]
+            if dt == '<U1':
+                dt = 'S1'  
             data = np.array(data, dtype=dt)
             
-        with h5py.File(filename, 'a') as fn:
+            ext = fn.create_group(extname)
             # Using Blosc with default settings
-            fn.create_dataset(k, data=data, dtype=dt,
+            ext.create_dataset(k, data=data, dtype=dt,
                                 compression=hdf5plugin.Blosc(cname='zstd', clevel=5))
+    os.rename(tempfilename, filename)
 
 
 def write_LSS(ff, outf, comments=None,extname='LSS'):
@@ -1639,6 +1642,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     outf is the full path to write out
     comments is a list of comments to include in the header
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
+    will return 'FAIL' or 'SUCCESS'
     '''
     import shutil
     printlog('will write to '+outf,logger)
@@ -1648,23 +1652,28 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
-        os.system('rm ' + tmpfn)
+        #os.system('rm ' + tmpfn)
+        os.remove(tmpfn)
     write_hdf5_blosc(tmpfn, ff)
     if logger is None:
-        print('closed fits file '+tmpfn)
+        print('closed file '+tmpfn)
     else:
-        logger.info('closed fits file '+tmpfn)
+        logger.info('closed file '+tmpfn)
     #shutil.move(tmpfn, outf)
     #os.rename(tmpfn, outf)
-    testcol = list(ff.dtype.names)[0]
+    testcol = list(ff.dtype.names)[-1]
     #printlog(str(testcol),logger)
     try:
         read_hdf5_blosc(tmpfn,columns=[testcol])
     except:
         printwarn('read failed, output corrupted?! '+tmpfn, logger)
         return 'FAILED'    
-    os.system('cp ' + tmpfn + ' ' + outf) 
-    os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    #os.system('cp ' + tmpfn + ' ' + outf) 
+    outftmp = outf+'.tmp'
+    shutil.copy2(tmpfn,outftmp)
+    os.rename(outftmp,outf
+    #os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    os.chmod(outf,755)
     printlog('moved output to ' + outf, logger)
     df = 0
     #printlog('checking read of column ' + testcol, logger)
@@ -1679,17 +1688,23 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
 
     if df == 1:
         os.system('rm '+tmpfn)
-    return True
+    return 'SUCCESS'
 
-def read_hdf5_blosc(filename,columns=None):
+def read_hdf5_blosc(filename,columns=None,extname='LSS'):
+    '''
+    read an extension from a hdf5 file that has been blosc compressed
+    filename is the full path to the file to read
+    columns is the list of columns to read; if None, all will be read
+    extname is the extension to read
+    '''
     import h5py
     import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
     data = Table()
     with h5py.File(filename) as fn:
         if columns is None:
-            columns = fn.keys()
+            columns = fn[extname].keys()
         for col in columns:
-            data[col] = fn[col][:]
+            data[col] = fn[extname][col][:]
 
     return data
 
