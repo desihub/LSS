@@ -39,7 +39,7 @@ logger.addHandler(ch)
 tracer = 'QSO' #these are the largest size because of their footprint size
 ddir = '/pscratch/sd/a/ajross/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/altmtl5/loa-v1/mock5/LSScats/'
 inds = np.arange(18) #18 random files
-regsions = ['NGC','SGC']
+regions = ['NGC','SGC']
 for reg in regions:
 	flin = ddir + tracer + '_'+reg
 	def _parfun(rannum):
