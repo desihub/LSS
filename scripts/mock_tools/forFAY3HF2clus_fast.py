@@ -85,8 +85,6 @@ notqso = ''
 
 
 
-logger.info(tracers)
-
 
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
