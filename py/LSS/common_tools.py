@@ -1577,6 +1577,9 @@ def reduce_column_precision(table):
     return result
 
 def write_hdf5_blosc(filename, table):
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+
     """Write table to filename using hdf5 blosc compression; code adapted from Joe DeRose"""
     if os.path.exists(filename):
         print(f'Replacing {filename}')
