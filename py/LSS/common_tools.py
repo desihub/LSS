@@ -1658,7 +1658,7 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
     #os.rename(tmpfn, outf)
     testcol = list(ff.dtype.names)[0]
     try:
-        fitsio.read(tmpfn,columns=(testcol))
+        read_hdf5_blosc(tmpfn,columns=(testcol))
     except:
         printwarn('read failed, output corrupted?! '+tmpfn, logger)
         return 'FAILED'    
@@ -1680,12 +1680,14 @@ def write_LSShdf5_scratchcp(ff, outf,logger=None):
         os.system('rm '+tmpfn)
     return True
 
-def read_hdf5_blosc(filename):
+def read_hdf5_blosc(filename,columns=None):
     import h5py
     import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
     data = Table()
     with h5py.File(filename) as fn:
-        for col in fn.keys():
+        if columns is None:
+            columns = fn.keys()
+        for col in columns:
             data[col] = fn[col][:]
 
     return data
