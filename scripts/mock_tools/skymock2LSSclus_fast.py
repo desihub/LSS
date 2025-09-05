@@ -105,7 +105,7 @@ if args.mockver == 'AbY3HF':
         sys.exit('TARGETID are not unique!')
     selfoot = is_point_in_desi(tiletab,mock_data['RA'],mock_data['DEC'])
     mock_data = mock_data[selfoot]
-    logger.info('length before/after cut to footprint ')+str(nin)+'/'+str(len(mock_data))
+    logger.info('length before/after cut to footprint '+str(nin)+'/'+str(len(mock_data)))
     mock_data = common.addNS(mock_data)
     logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
     tracerd = args.tracer+args.snapshot
