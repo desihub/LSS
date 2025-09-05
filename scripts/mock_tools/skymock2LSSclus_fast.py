@@ -370,7 +370,7 @@ if args.nz == 'y':
     fcd = fb+'_clustering.dat.fits'
     fout = fb+'_nz.txt'
     common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-    common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc)
+    common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc,logger=logger)
 
 if args.splitGC == 'y':
     splitGC(out_data_froot,'.dat')
