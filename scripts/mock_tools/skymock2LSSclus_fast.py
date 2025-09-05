@@ -156,6 +156,7 @@ if args.mockver == 'holiv2':
         mock_data = mock_data[selfoot]
         logger.info('length before/after cut to footprint '+str(nin)+'/'+str(len(mock_data)))
         mock_data = common.addNS(mock_data)
+        mock_data.rename_column('Z_RSD', 'Z')
         logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
     tracerd = args.tracer
 
