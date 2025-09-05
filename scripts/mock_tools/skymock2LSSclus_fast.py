@@ -134,7 +134,7 @@ if args.mockver == 'Uchuu-SHAM_Y3':
     tracerd = args.tracer
 
 if args.mockver == 'holiv2':
-    basedir = '/global/cfs/cdirs/desi/mocks/cai/holi/v2.0/
+    basedir = '/global/cfs/cdirs/desi/mocks/cai/holi/v2.0/'
     mockdir = base_dir +'/seed'+str(args.realization).zfill(4)
     if args.mkdat == 'y':
         import h5py
