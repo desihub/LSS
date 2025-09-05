@@ -133,6 +133,33 @@ if args.mockver == 'Uchuu-SHAM_Y3':
         logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
     tracerd = args.tracer
 
+if args.mockver == 'holiv2':
+    basedir = '/global/cfs/cdirs/desi/mocks/cai/holi/v2.0/
+    mockdir = base_dir +'/seed'+str(args.realization).zfill(4)
+    if args.mkdat == 'y':
+        import h5py
+        import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+        in_data_fn = mockdir+'/holi_'+args.tracer+'_v2.0_GCcomb_clustering.dat.h5'
+        mock_data = Table()
+        with h5py.File(in_data_fn) as fn:
+            if columns is None:
+                columns = fn.keys()
+            for col in columns:
+                mock_data[col.upper()] = fn[col][:]
+        nin = len(mock_data)
+        mock_data['TARGETID'] = np.arange(nin).astype(int)
+    
+        nuid = len(np.unique(mock_data['TARGETID'])) #check that we really have unique targetid; I think a type of int should always be large enough
+        if nuid != nin:
+            sys.exit('TARGETID are not unique!')
+        selfoot = is_point_in_desi(tiletab,mock_data['RA'],mock_data['DEC'])
+        mock_data = mock_data[selfoot]
+        logger.info('length before/after cut to footprint '+str(nin)+'/'+str(len(mock_data)))
+        mock_data = common.addNS(mock_data)
+        logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
+    tracerd = args.tracer
+
+
 
 if args.outloc == None:
     outdir = os.getenv(scratch)+'/'+args.mockver+'/mock'+str(args.realization)+'/'
