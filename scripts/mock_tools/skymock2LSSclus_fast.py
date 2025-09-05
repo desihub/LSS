@@ -2,6 +2,9 @@
 This script is meant to take a mock with coordinates RA,DEC,Z (but with arbitrary names in inputs)
 and convert it to occupy the footprint of some set of tiles (one of the input variables)
 and match the data model of LSS catalogs
+
+example run
+srun -N 1 -C cpu -t 01:00:00 --qos interactive --account desi python scripts/mock_tools/skymock2LSSclus_fast.py --realization 0 
 '''
 
 #standard python
@@ -94,7 +97,7 @@ if args.mockver == 'AbY3HF':
     logger.info(in_data_fn)
     cols = ['RA','DEC','Z']
     mock_data = Table(fitsio.read(in_data_fn,columns=cols))
-    nin = len(mockdata)
+    nin = len(mock_data)
     mock_data['TARGETID'] = np.arange(nin).astype(int)
     
     nuid = len(np.unique(mock_data['TARGETID'])) #check that we really have unique targetid; I think a type of int should always be large enough
