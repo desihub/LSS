@@ -164,7 +164,9 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
                 randoms_samples2 = [get_label(p) for p in randoms_positions2]
                 if with_shifted:
                     shifted_samples2 = [get_label(p) for p in shifted_positions2]
-
+    
+        if args.ndens_cov:
+            density_realizations = calculate_density_realizations(data_samples1, data_weights1, randoms_samples1, randoms_weights1, args.njack*args.nradjack)
 
     # These keyword arguments are where the 'angular' upweighting gets threaded through to corrfunc
     kwargs = {}
@@ -214,23 +216,10 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
                         array = np.concatenate(arrays, axis=0)
                     tmp_randoms_kwargs[name] = array
 
-            logger.info(f'Computing {corr_type} correlation function for random set {iran+1} of {nran} with edges {edges}')
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
                                               engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
                                               D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs,weight_attrs={'normalization': 'counter','nrealizations':nreal}) 
-            
-            # TODO SHOULD I ADD IN NUMBER DENSITY STUFF HERE? 
-            # All info is available but where will it get saved? TwoPointCorrelationFunction would need modifications to save it with that.
-            # Save it in a different file?
-            # If I don't do it here, and it's an extra method you can call totalyl outside all this, then you have to reproduce the labelling of data for the jackknives 
-            # IN order to correctly count the number of objects in each jackknife region. 
-            # Speaking of: Arnaud's code for counting objects does it in each jackknife region, not in everything else MINUS that region, which seems wrong to me?
-            # As in, Realization 1: excludes region 1 when pair counting (effectively), so should exclude region 1 when counting objects too, right? Confusing.
-            if args.ndens_cov:
-                # TODO understand and deal with i_split_randoms
-                #density_realizations = calculate_density_realizations(data_samples1, data_weights1, randoms_samples1 if not i_split_randoms else tmp_randoms_kwargs['randoms_samples1'], randoms_weights1 if not i_split_randoms else tmp_randoms_kwargs['randoms_weights1'], n_jack * nradjack if data_samples1 is not None else 1)
-                density_realizations = calculate_density_realizations(data_samples1, data_weights1, randoms_samples1, randoms_weights1, args.njack*args.nradjack)
             
             D1D2 = tmp.D1D2
             result += tmp

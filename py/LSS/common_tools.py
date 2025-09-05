@@ -1965,21 +1965,28 @@ def apply_wntmp(ntile, f_ntmisspw, f_ntzp, ntile_range=[0,15], randoms=True):
         
     return w_ntmisspw, w_ntzp
 
-
 def calculate_density_realizations(data_labels, data_weights, randoms_labels, randoms_weights, n_jack):
     """
     Calculate density realizations from jackknife samples.
+
+    randoms_labels and randoms_weights can be either a single array or a list of arrays.
     """
     def weighted_sum_per_subsample(samples, weights):
-        # For each region k, we want the weighted count NOT in region k
-        wt = get_inverse_probability_weight(weights) # If you use bitwise weights, compute IIP. TODO alternatives?
+        wt = get_inverse_probability_weight(weights)
         total = np.sum(wt)
         bincount = np.bincount(samples, weights=wt, minlength=n_jack)
         not_in_k = total - bincount
         return not_in_k
 
     wsum_data = weighted_sum_per_subsample(data_labels, data_weights)
-    wsum_randoms = weighted_sum_per_subsample(randoms_labels, randoms_weights)
+
+    if isinstance(randoms_labels, (list, tuple)):
+        wsum_randoms = np.zeros(n_jack)
+        for r_labels, r_weights in zip(randoms_labels, randoms_weights):
+            wsum_randoms += weighted_sum_per_subsample(r_labels, r_weights)
+    else:
+        wsum_randoms = weighted_sum_per_subsample(randoms_labels, randoms_weights)
+
     density_realizations = wsum_data / wsum_randoms
 
     return density_realizations
