@@ -92,22 +92,23 @@ notqso = ''
 if args.mockver == 'AbY3HF':
     base_dir = '/dvs_ro/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph0'
     mockdir = base_dir+str(args.realization).zfill(2)+'/CutSky/'+args.tracer+'/'+args.snapshot+'/'
-    in_data_fn = mockdir+'/'+'cutsky_'+args.tracer+'_'+args.snapshot+'_AbacusSummit_base_c000_ph0'+str(args.realization).zfill(2)+'.fits'
-    in_data_fn = in_data_fn.replace('global','dvs_ro')
-    logger.info(in_data_fn)
-    cols = ['RA','DEC','Z']
-    mock_data = Table(fitsio.read(in_data_fn,columns=cols))
-    nin = len(mock_data)
-    mock_data['TARGETID'] = np.arange(nin).astype(int)
+    if args.mkdat == 'y':
+        in_data_fn = mockdir+'/'+'cutsky_'+args.tracer+'_'+args.snapshot+'_AbacusSummit_base_c000_ph0'+str(args.realization).zfill(2)+'.fits'
+        in_data_fn = in_data_fn.replace('global','dvs_ro')
+        logger.info(in_data_fn)
+        cols = ['RA','DEC','Z']
+        mock_data = Table(fitsio.read(in_data_fn,columns=cols))
+        nin = len(mock_data)
+        mock_data['TARGETID'] = np.arange(nin).astype(int)
     
-    nuid = len(np.unique(mock_data['TARGETID'])) #check that we really have unique targetid; I think a type of int should always be large enough
-    if nuid != nin:
-        sys.exit('TARGETID are not unique!')
-    selfoot = is_point_in_desi(tiletab,mock_data['RA'],mock_data['DEC'])
-    mock_data = mock_data[selfoot]
-    logger.info('length before/after cut to footprint '+str(nin)+'/'+str(len(mock_data)))
-    mock_data = common.addNS(mock_data)
-    logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
+        nuid = len(np.unique(mock_data['TARGETID'])) #check that we really have unique targetid; I think a type of int should always be large enough
+        if nuid != nin:
+            sys.exit('TARGETID are not unique!')
+        selfoot = is_point_in_desi(tiletab,mock_data['RA'],mock_data['DEC'])
+        mock_data = mock_data[selfoot]
+        logger.info('length before/after cut to footprint '+str(nin)+'/'+str(len(mock_data)))
+        mock_data = common.addNS(mock_data)
+        logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
     tracerd = args.tracer+args.snapshot
 
 if args.outloc == None:
