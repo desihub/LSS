@@ -142,8 +142,8 @@ if args.mockver == 'holiv2':
         in_data_fn = mockdir+'/holi_'+args.tracer+'_v2.0_GCcomb_clustering.dat.h5'
         mock_data = Table()
         with h5py.File(in_data_fn) as fn:
-            if columns is None:
-                columns = fn.keys()
+            
+            columns = fn.keys()
             for col in columns:
                 mock_data[col.upper()] = fn[col][:]
         nin = len(mock_data)
