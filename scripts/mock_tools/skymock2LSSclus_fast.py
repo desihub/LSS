@@ -111,6 +111,28 @@ if args.mockver == 'AbY3HF':
         logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
     tracerd = args.tracer+args.snapshot
 
+if args.mockver == 'Glam-Uchuu_Y3':
+    base_dir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/GLAM-Uchuu/cut_skies/'
+    mockdir = base_dir+args.tracer+args.snapshot+'/' 
+    if args.mkdat == 'y':
+        in_data_fn = mockdir+'/'+'GLAM-Uchuu_'+args.tracer+args.snapshot+'_'+str(args.realization).zfill(2)+'_Y3_cut_sky_clustering.dat.fits'
+        in_data_fn = in_data_fn.replace('global','dvs_ro')
+        logger.info(in_data_fn)
+        cols = ['RA','DEC','Z']
+        mock_data = Table(fitsio.read(in_data_fn,columns=cols))
+        nin = len(mock_data)
+        mock_data['TARGETID'] = np.arange(nin).astype(int)
+    
+        nuid = len(np.unique(mock_data['TARGETID'])) #check that we really have unique targetid; I think a type of int should always be large enough
+        if nuid != nin:
+            sys.exit('TARGETID are not unique!')
+        selfoot = is_point_in_desi(tiletab,mock_data['RA'],mock_data['DEC'])
+        mock_data = mock_data[selfoot]
+        logger.info('length before/after cut to footprint '+str(nin)+'/'+str(len(mock_data)))
+        mock_data = common.addNS(mock_data)
+        logger.info('numbers in different photometric regions '+str(np.unique(mock_data['PHOTSYS'],return_counts=True)))
+    tracerd = args.tracer+args.snapshot
+
 if args.mockver == 'Uchuu-SHAM_Y3':
     base_dir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v2.0/0000/complete/'
     mockdir = base_dir
