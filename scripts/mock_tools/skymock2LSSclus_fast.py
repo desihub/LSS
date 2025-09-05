@@ -89,7 +89,7 @@ notqso = ''
 if args.mockver == 'AbY3HF':
     base_dir = '/dvs_ro/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph0'
     mockdir = base_dir+str(args.realization).zfill(2)+'/CutSky/'+args.tracer+'/'+args.snapshot+'/'
-    in_data_fn = mockdir+'/forFA'+str(args.realization)+'_Y3_noimagingmask_applied.fits'
+    in_data_fn = mockdir+'/'+'cutsky_'+args.tracer+'_'+args.snapshot+'_AbacusSummit_base_c000_ph0'+str(args.realization).zfill(2)+'.fits'
     in_data_fn = in_data_fn.replace('global','dvs_ro')
     logger.info(in_data_fn)
     cols = ['RA','DEC','Z']
