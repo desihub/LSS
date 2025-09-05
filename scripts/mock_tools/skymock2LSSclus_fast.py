@@ -139,8 +139,8 @@ def splitGC(flroot,datran='.dat',rann=0):
         app = str(rann)+'_clustering'+datran+'.fits'
 
     fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
-    if datran == '.ran':
-        fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA'])
+    #if datran == '.ran':
+    #    fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA'])
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0

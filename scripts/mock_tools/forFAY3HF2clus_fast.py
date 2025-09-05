@@ -48,7 +48,7 @@ logger.info('run started')
 if os.environ['NERSC_HOST'] == 'perlmutter':
     scratch = 'PSCRATCH'
 else:
-    logger.info('NERSC_HOST is not cori or permutter but is '+os.environ['NERSC_HOST'])
+    logger.info('NERSC_HOST is not permutter but is '+os.environ['NERSC_HOST'])
     sys.exit('NERSC_HOST not known (code only works on NERSC), not proceeding') 
 
 
@@ -95,8 +95,8 @@ def splitGC(flroot,datran='.dat',rann=0):
         app = str(rann)+'_clustering'+datran+'.fits'
 
     fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
-    if datran == '.ran':
-        fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA'])
+    #if datran == '.ran':
+    #    fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA'])
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
