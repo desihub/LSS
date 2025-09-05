@@ -115,7 +115,7 @@ if args.mockver == 'Glam-Uchuu_Y3':
     base_dir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/GLAM-Uchuu/cut_skies/'
     mockdir = base_dir+args.tracer+args.snapshot+'/' 
     if args.mkdat == 'y':
-        in_data_fn = mockdir+'/'+'GLAM-Uchuu_'+args.tracer+args.snapshot+'_'+str(args.realization).zfill(2)+'_Y3_cut_sky_clustering.dat.fits'
+        in_data_fn = mockdir+'/'+'GLAM-Uchuu_'+args.tracer+'_'+str(args.realization).zfill(2)+'_Y3_cut_sky_clustering.dat.fits'
         in_data_fn = in_data_fn.replace('global','dvs_ro')
         logger.info(in_data_fn)
         cols = ['RA','DEC','Z']
