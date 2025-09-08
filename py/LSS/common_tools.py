@@ -1556,6 +1556,52 @@ def get_tlcomp(fin):
     tlobs['FRAC_TLOBS_TILES'] = fractl
     write_LSS(tlobs,tlobs_fn)
 
+def reduce_column_precision(table):
+    """
+    Returns output table with same columns but reduced precision optimized for BLOSC compression
+    """
+    result = Table()
+    result.meta.update(table.meta)
+    for col in table.colnames:
+        if col in ('RA', 'DEC'):
+            #- float64 -> float32 -> float64
+            result[col] = table[col].astype(np.float32).astype(np.float64)
+        elif col in ('FRAC_TLOBS_TILES', 'NX') or col.startswith('WEIGHT'):
+            #- float64 -> float16 -> float64
+            result[col] = table[col].astype(np.float16).astype(np.float64)
+        elif col in ('NTILE',):
+            #- intXX -> int8
+            result[col] = table[col].astype(np.int8)
+        else:
+            #- default unchanged type
+            result[col] = table[col]
+
+    assert result.colnames == table.colnames
+    return result
+
+def write_hdf5_blosc(filename, table, extname='LSS',logger=None):
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+
+    """Write table to filename using hdf5 blosc compression; code adapted from Joe DeRose"""
+    if os.path.exists(filename):
+        printlog(f'Replacing {filename}',logger)
+        os.remove(filename)
+    tempfilename = filename+'.tmp'
+    with h5py.File(tempfilename, 'a') as fn:
+        ext = fn.create_group(extname)
+        for k in table.dtype.names:
+            data = table[k]
+            dt = table.dtype[k]
+            if dt == '<U1':
+                dt = 'S1'  
+            data = np.array(data, dtype=dt)
+            
+            
+            # Using Blosc with default settings
+            ext.create_dataset(k, data=data, dtype=dt,
+                                compression=hdf5plugin.Blosc(cname='zstd', clevel=5))
+    os.rename(tempfilename, filename)
 
 
 def write_LSS(ff, outf, comments=None,extname='LSS'):
@@ -1590,6 +1636,82 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     print('moved output to ' + outf)
     return True
 
+def write_LSShdf5_scratchcp(ff, outf,logger=None):
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+
+    '''
+    ff is the structured array/Table to be written out as an LSS catalog
+    outf is the full path to write out
+    comments is a list of comments to include in the header
+    this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
+    will return 'FAIL' or 'SUCCESS'
+    '''
+    import shutil
+    printlog('will write to '+outf,logger)
+    ff = reduce_column_precision(Table(ff)) #convert data types to save storage space
+    printlog('reduced precision of input',logger)
+    rng = np.random.default_rng()#seed=rann)
+    ranstring = int(rng.random()*1e10)
+    tmpfn = os.getenv('SCRATCH')+'/'+outf.split('/')[-1] + '.tmp'+str(ranstring)
+    if os.path.isfile(tmpfn):
+        #os.system('rm ' + tmpfn)
+        os.remove(tmpfn)
+    write_hdf5_blosc(tmpfn, ff)
+    if logger is None:
+        print('closed file '+tmpfn)
+    else:
+        logger.info('closed file '+tmpfn)
+    #shutil.move(tmpfn, outf)
+    #os.rename(tmpfn, outf)
+    testcol = list(ff.dtype.names)[-1]
+    #printlog(str(testcol),logger)
+    try:
+        read_hdf5_blosc(tmpfn,columns=[testcol])
+    except:
+        printwarn('read failed, output corrupted?! '+tmpfn, logger)
+        return 'FAILED'    
+    #os.system('cp ' + tmpfn + ' ' + outf) 
+    outftmp = outf+'.tmp'
+    shutil.copy2(tmpfn,outftmp)
+    os.rename(outftmp,outf)
+    #os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    os.chmod(outf,0o775)
+    printlog('moved output to ' + outf, logger)
+    df = 0
+    #printlog('checking read of column ' + testcol, logger)
+
+    try:
+        read_hdf5_blosc(outf.replace('global','dvs_ro'),columns=[testcol])
+        df = 1
+    except:
+        printwarn('read failed, copy failed?! check temporary file '+tmpfn, logger)
+        return 'FAILED'    
+    #printlog('removing temp file', logger)
+
+    if df == 1:
+        os.system('rm '+tmpfn)
+    return 'SUCCESS'
+
+def read_hdf5_blosc(filename,columns=None,extname='LSS'):
+    '''
+    read an extension from a hdf5 file that has been blosc compressed
+    filename is the full path to the file to read
+    columns is the list of columns to read; if None, all will be read
+    extname is the extension to read
+    '''
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+    data = Table()
+    with h5py.File(filename) as fn:
+        if columns is None:
+            columns = fn[extname].keys()
+        for col in columns:
+            data[col] = fn[extname][col][:]
+
+    return data
+
+
 def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
@@ -1623,8 +1745,14 @@ def write_LSS_scratchcp(ff, outf, comments=None,extname='LSS',logger=None):
     except:
         printwarn('read failed, output corrupted?! '+tmpfn, logger)
         return 'FAILED'    
-    os.system('cp ' + tmpfn + ' ' + outf) 
-    os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    outftmp = outf+'.tmp'
+    shutil.copy2(tmpfn,outftmp)
+    os.rename(outftmp,outf)
+    #os.system('chmod 775 ' + outf) #this should fix permissions for the group
+    os.chmod(outf,0o775)
+
+    #os.system('cp ' + tmpfn + ' ' + outf) 
+    #os.system('chmod 775 ' + outf) #this should fix permissions for the group
     printlog('moved output to ' + outf, logger)
     df = 0
     #printlog('checking read of column ' + testcol, logger)

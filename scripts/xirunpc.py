@@ -137,15 +137,22 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
             if nradjack > 1:
                 # Define radial jack-knife bins to be approx. equal number in each bin, ignoring angular regions
                 radial_edges = np.percentile(data_positions1[2], np.linspace(0, 100, nradjack + 1))
-                # Ensure randoms fit into same bins by widening edges
+                # Ensure randoms and everything else is within the radial edges
                 all_positions = [p[2] for p in randoms_positions1 if p is not None]
                 all_positions.append(data_positions1[2])
+                if shifted_positions1 is not None:
+                    all_positions.append(shifted_positions1[2])
+                if data_positions2 is not None:
+                    all_positions.append(data_positions2[2])
+                if randoms_positions2 is not None:
+                    all_positions.extend([p[2] for p in randoms_positions2 if p is not None])
+                if shifted_positions2 is not None:
+                    all_positions.append(shifted_positions2[2])
                 min_val = min([np.min(pos) for pos in all_positions])
                 max_val = max([np.max(pos) for pos in all_positions])
-                #dedges = np.linspace(min_val * 0.99, max_val * 1.01, nradjack + 1)
                 radial_edges[0] = min_val*0.99
                 radial_edges[-1] = max_val*1.01
-                logger.info(f'radial jack-knife edges: {radial_edges}')
+                logger.info(f'Using radial jack-knife edges: {radial_edges}')
                 
             def get_label(positions):
                 ang_labels = subsampler.label(positions)

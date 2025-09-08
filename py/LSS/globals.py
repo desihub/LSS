@@ -104,6 +104,7 @@ class main:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
             self.fit_maps = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
+            self.fit_maps_allebvcmb = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI','ZCMB']
             self.fit_maps_all = self.fit_maps
             self.ebits = [8,9,11]    
             self.tsnrcut = 80
