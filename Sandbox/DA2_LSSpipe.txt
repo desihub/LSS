@@ -1,6 +1,7 @@
 #steps for DA2
 source /global/common/software/desi/desi_environment.sh main
-export LSSCODE=$HOME
+#export LSSCODE=$HOME
+export LSSCODE=$HOME/LSScode #on desica
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 #comb of spec and tar files (dark then bright)
@@ -258,3 +259,235 @@ srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LS
 combined LRG+ELG catalogs
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/combined_catalog.py --base_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --save_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --cap NGC
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/combined_catalog.py --base_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --save_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/$version/BAO/blinded/ --cap SGC
+
+#for fiberassign, the following is needed for the correct environment
+export PATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/bin:$PATH
+export PYTHONPATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/py:$PYTHONPATH
+export SKYHEALPIXS_DIR=$DESI_ROOT/target/skyhealpixs/v1
+
+#collisions files do not change when testing; they were originally created on April 22nd, 2024
+#collisions are indeed different if I run again just sourcing main
+
+#get randoms for "complete" mocks
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mock_tools/pota2clus_fast.py --base_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/ --data_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/kibo-v1/LSScats/v1/ --realization 0 --mk_inputran y --mockver AbacusSummit_v4_1 --mkdat n --mkran n --nz n --splitGC n
+
+#loa
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/combdata_main.py --verspec loa-v1 --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/ --mkemlin y --dospec n --par y
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/combdata_main.py --verspec loa-v1 --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/ --redo_zmtl y
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/combdata_main.py --verspec loa-v1 --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/ --redo_zmtl y --prog BRIGHT
+
+#QSO catalogs
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkQSO.py --version 0 --verspec loa --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+#full pipeline for standard catalogs was run for v1 with
+$LSSCODE/LSS/scripts/dark_LSS_pipe.sh v1
+
+$LSSCODE/LSS/scripts/bright_LSS_pipe.sh v1
+
+#validation
+python scripts/validation/validation_sky.py --version v1 --survey DA2 --tracers BGS_BRIGHT-21.35 --verspec loa-v1 --weight_col WEIGHT_IMLIN
+
+#v2 QSO catalog (proper propagation of ZWARN)
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkQSO.py --version 2 --verspec loa --survey DA2 --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+#v1.1 was run for all tracers, to fix the FRAC_TLOBS_TILES bug. All of the full files were copied from v1. FRAC_TLOBS_TILES was added to the randoms and the imaging systematic weights re-calculated (the main effect of the bug showed up as imaging systematic trends looking different when data or random are weighted with FRAC_TLOBS_TILES). Then, all of the clustering catalogs were re-generated. 
+
+#get bitweights from alt MTL
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog DARK --amtl_version Y3Run2  --cat_version v1.1 --specrel loa-v1
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog BRIGHT --amtl_version Y3Run2  --cat_version v1.1 --specrel loa-v1
+
+python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v1.1
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v1.1 #--tracers ELG_LOPnotqso
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v1.1 --prog BRIGHT
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec loa-v1 --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey DA2 --verspec loa-v1 --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --fulld n --survey DA2 --verspec loa-v1 --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT --fulld n --survey DA2 --verspec loa-v1 --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_ANY --fulld n --survey DA2 --verspec loa-v1 --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+#make randoms for mocks
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec loa-v1 --type LRG --version v1.1 --survey DA2 --mkdupranmasked y --maxr 18
+
+#make LRG fNL catalog with expanded z range, use all imaging systematic maps in regressions, use fine z bins in regresions
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_clus_fb_ran y --imsys_clus_fb y --relax_zbounds y --replace_syscol y --extra_clus_dir fNL/
+
+srun -n 64 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/apply_fnl_blinding.py --type LRG --basedir_out /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1 --version test
+
+srun -N 1 -n 128 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/pkrun.py --tracer LRG --survey DA2 --verspec loa-v1 --version test/fNL/blinded --region NGC SGC --weight_type default_FKP --zlim 0.4 1.1 --rebinning y
+
+#running first case with z cmb correction
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_colname WEIGHT_IMLIN --extra_clus_dir nonKP/
+#some crazy WEIGHT_SYS values, so will need to run add sys script after
+
+run -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_imlin_clus.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/ --extra_clus_dir nonKP --imsys_clus y --imsys_clus_ran y --replace_syscol y
+
+#that didn't use new binning, should have been
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_imlin_clus.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/ --extra_clus_dir fNL/ --imsys_clus y --imsys_clus_ran y --replace_syscol y --imsys_finezbin y --usemaps allebv --add_syscol2blind y
+
+#weights got all messed up, rerunning
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_colname WEIGHT_IMLIN --extra_clus_dir fNL/
+
+
+#running with updated bad fiber mask
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --apply_veto n --verspec loa-v1 --survey DA2 --maxr 0
+
+#rerunning without z cmb correction
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_colname WEIGHT_IMLIN --extra_clus_dir fNL/
+
+#rerun using explicit argument for cmb correction and '_zcmb' in the output catalog names
+
+#adding previous sysnet weights to ELGs rather than re-running (solution run in text before but then full got re-copied from v1.1)
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_colname WEIGHT_SN --extra_clus_dir fNL/
+python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --add_sysnet y --imsys_zbin y --fulld n --survey DA2 --verspec loa-v1
+
+#run linear regressions, using clustering catalogs as inputs, e.g., to test including Delta EBV or not
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_imlin_clus.py --type BGS_BRIGHT-21.35 --basedir /global/cfs/cdirs/desi/survey/catalogs/ --usemaps allebv --imsys_clus y --imsys_clus_ran y
+
+#make more randoms
+
+#takes slightly over an hour
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkran_tiles.py  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --type dark --rann 18
+
+#take a few minutes
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/getpota_ran.py  --prog DARK --survey DA2 --minr 18 --maxr 19
+
+#new zfail weights for QSO
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey DA2 --verspec loa-v1 --version test --add_weight_zfail y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_colname WEIGHT_IMLIN --extra_clus_dir fNL/ --imsys y --imsys_zbin y
+
+python $LSSCODE/LSS/scripts/main/patch_HPmapcut.py --tracers QSO --survey DA2 --verspec loa-v1
+
+#zrange not correctly applied to clustering catalogs, rerun
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey DA2 --verspec loa-v1 --version test --clusd y --clusran y --splitGC y --nz y --par y --basedir /global/cfs/cdirs/desi/survey/catalogs/ --imsys_colname WEIGHT_IMLIN --extra_clus_dir fNL/
+
+srun -n 64 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/apply_fnl_blinding.py --type QSO --basedir_out /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1 --version test
+
+#v2 catalogs
+
+#run from desica ./sshproxy.sh -c desica -u ajross
+
+source /global/common/software/desi/desi_environment.sh main
+export LSSCODE=$HOME/LSScode
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+cd $LSSCODE/LSS/bin
+
+required chmod 775 /global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/ from my login
+
+scripts/dark_LSScat_pipe.sh v2 (no ELG sysnet)
+
+scripts/bright_LSScat_pipe.sh v2 (no subsamples)
+
+#get bitweights from alt MTL
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog DARK --amtl_version Y3Run2  --cat_version v2 --specrel loa-v1
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/get_DR2_bitweights.py --prog BRIGHT --amtl_version Y3Run2  --cat_version v2 --specrel loa-v1
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v2 --prog BRIGHT
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_ANY --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+#validation 
+
+python scripts/validation/validation_sky.py --version v2 --survey DA2 --tracers LRG --verspec loa-v1 --weight_col WEIGHT_IMLIN
+
+python scripts/validation/validation_sky.py --version v2 --survey DA2 --tracers BGS_BRIGHT --verspec loa-v1 --weight_col WEIGHT_SYS
+
+python scripts/validation/validation_sky.py --version v2 --survey DA2 --tracers BGS_ANY --verspec loa-v1 --weight_col WEIGHT_SYS
+
+python scripts/validation/validation_sky.py --version v2 --survey DA2 --tracers QSO --verspec loa-v1 --weight_col WEIGHT_IMLIN
+
+python scripts/validation/validation_tsnr_zbin.py --version v2 --survey DA2 --tracers QSO --verspec loa-v1
+
+#ELG sysnet, first enter interactive session *on jupyter, something weird going on
+salloc -N 1 -C cpu -t 04:00:00 --qos interactive --account desi
+bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_new.sh v2
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y  --fulld n --survey DA2 --verspec loa-v1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v2 --extra_clus_dir 'nonKP/'
+
+#dark PIP (delayed because of permissions error)
+
+python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v2
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v2 --tracers ELG_LOPnotqso
+
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v2 --tracers ELGnotqso
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type LRG --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type QSO --fulld n --survey DA2 --verspec loa-v1 --version v1.1 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_IMLIN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG_LOP --notqso y --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+#didn't run clustering catalogs for BGS, apparently 
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_ANY  --fulld n --survey DA2 --verspec loa-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v2 --extra_clus_dir 'nonKP/'
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT  --fulld n --survey DA2 --verspec loa-v1 --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version v2 --extra_clus_dir 'nonKP/'
+
+#run sysnet for ELGnotqso
+bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG --notqso y --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG --notqso y --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/  --extra_clus_dir nonKP/
+
+python /global/homes/d/desica/LSScode/LSS/scripts/validation/validation_improp_clus.py --version v2
+
+#run ELG without removing QSO
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec loa-v1 --survey DA2 --version v2
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type ELG  --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec loa-v1 --survey DA2 --apply_veto y --maxr 18 --version v2
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive  python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec loa-v1 --survey DA2  --mkHPmaps y --version v2
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --apply_veto y --verspec loa-v1 --survey DA2 --maxr 0 --version v2
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec loa-v1 --add_weight_zfail y --survey DA2  --use_map_veto _HPmapcut --version v2
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/add_bitweights_2full.py --specrel loa-v1 --cat_version v2 --tracers ELG
+
+bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG n
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main_ran.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/   --verspec loav-v1 --survey DA2 --add_tl y --maxr 18 --version v2
+
+for i in range(0,18):
+    fhp = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/ELG_'+str(i)+'_full_HPmapcut.ran.fits')
+    ftl = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/ELG_'+str(i)+'_full.ran.fits',columns=['TARGETID','FRAC_TLOBS_TILES'])
+    l1 = len(fhp)
+    fhp = join(fhp,ftl,keys=['TARGETID'])
+    if l1 == len(fhp):
+        common.write_LSS_scratchcp(fhp,'/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/ELG_'+str(i)+'_full_HPmapcut.ran.fits')
+    else:
+        print('mismatched lengths',l1,len(fhp))
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG --fulld n --survey DA2 --verspec loa-v1 --version v2 --clusd y --clusran y --splitGC y --nz y --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+#needed to stop the job before the ntileweight processed
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type ELG --fulld n --survey DA2 --verspec loa-v1 --version v2  --par y --imsys_colname WEIGHT_SN --basedir /global/cfs/cdirs/desi/survey/catalogs/ --compmd altmtl --addNtileweight2full y --extra_clus_dir PIP/
+
+cp -r /global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/nonKP /global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/fNL
+
+srun -n 64 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/apply_fnl_blinding.py --type ELGnotqso --basedir_out /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1 --version v2
+
+#make full_nz files
+python scripts/mk_nzfull.py --tracer ELGnotqso
+python scripts/mk_nzfull.py --tracer ELG_LOPnotqso
+python scripts/mk_nzfull.py --tracer LRG
+python scripts/mk_nzfull.py --tracer QSO
+python scripts/mk_nzfull.py --tracer BGS_BRIGHT
+python scripts/mk_nzfull.py --tracer BGS_ANY
