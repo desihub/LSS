@@ -7,7 +7,6 @@ import sys
 import logging
 
 from pycorr.twopoint_counter import get_inverse_probability_weight
-from pycorr.twopoint_estimator import _get_project_mode, project_to_poles, project_to_wp, project_to_wedges, TwoPointEstimatorError
 
 ext_coeff = {'G':3.214, 'R':2.165,'Z':1.211,'W1':0.184,'W2':0.113}
 
@@ -2096,6 +2095,7 @@ def apply_wntmp(ntile, f_ntmisspw, f_ntzp, ntile_range=[0,15], randoms=True):
 def calculate_density_realizations(data_labels, data_weights, randoms_labels, randoms_weights, n_jack):
     """
     Calculate density realizations from jackknife samples.
+    An array of weighted data counts and an array of weighted random counts are returned
 
     randoms_labels and randoms_weights can be either a single array or a list of arrays.
     """
@@ -2115,82 +2115,4 @@ def calculate_density_realizations(data_labels, data_weights, randoms_labels, ra
     else:
         wsum_randoms = weighted_sum_per_subsample(randoms_labels, randoms_weights)
 
-    density_realizations = wsum_data / wsum_randoms
-
-    return density_realizations
-
-
-def get_cov_with_ndens(estimator, density_realizations, return_sep=True, mode='auto', **kwargs):
-    """
-    Returns correlation function and covariance matrix extended with number density.
-
-    This function is a modified version of the BaseTwoPointEstimator.get_corr()
-    method. It calculates the covariance matrix from jackknife realizations,
-    adding an extra row/column for the number density fluctuations.
-
-    Parameters
-    ----------
-    estimator : BaseTwoPointEstimator
-        The estimator object, which must contain jackknife realizations.
-    density_realizations : array
-        An array of number density values for each jackknife realization.
-    return_sep : bool, default=True
-        Whether to return the separation bins.
-    mode : str, default='auto'
-        The projection mode ('poles', 'wp', 'wedges', etc.).
-    kwargs : dict
-        Arguments to be passed to the projection function. Provide ells, a list of multipoles, for 'poles' mode;
-        pimax for 'wp' mode; or mu_bins for 'wedges' mode. See the documentation of the projection functions for details.
-
-    Returns
-    -------
-    sep : array
-        Separation values (if return_sep=True).
-    corr : array
-        The mean correlation function.
-    cov : array
-        The extended covariance matrix including number density.
-    """
-
-    # Determine projection mode from arguments
-    mode, kwargs_proj = _get_project_mode(mode=mode, **kwargs)
-
-    # Define the projection function based on the mode
-    if mode == 'poles':
-        proj_func = project_to_poles
-    elif mode == 'wedges':
-        proj_func = project_to_wedges
-    elif mode == 'wp':
-        proj_func = project_to_wp
-    else:
-        raise TwoPointEstimatorError(f"Mode '{mode}' is not supported for covariance calculation with ndens.")
-
-    # 1. Get the mean correlation function and separation bins
-    toret = proj_func(estimator, return_sep=return_sep, return_cov=False, **kwargs_proj)
-    if return_sep:
-        sep, corr = toret
-    else:
-        sep, corr = None, toret
-
-    # 2. Build the extended realizations for covariance calculation
-    if not hasattr(estimator, 'realizations'):
-        raise TwoPointEstimatorError('Input estimator has no jackknife realizations to compute covariance.')
-
-    extended_realizations = []
-    nbar = np.mean(density_realizations)
-
-    for i in estimator.realizations:
-        # Project the correlation function for this jackknife realization
-        corr_real = proj_func(estimator.realization(i), return_sep=False, return_cov=False, **kwargs_proj).ravel()
-
-        # Append the normalized density to the correlation function vector
-        extended_real = np.append(corr_real, density_realizations[i] / nbar)
-        extended_realizations.append(extended_real)
-
-    # 3. Calculate the full covariance matrix from the extended realizations
-    cov = (len(extended_realizations) - 1) * np.cov(extended_realizations, rowvar=False, ddof=0)
-
-    # 4. Format the return tuple
-    if return_sep:
-        return sep, corr, cov
-    return corr, cov
+    return wsum_data, wsum_randoms
