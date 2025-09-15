@@ -22,6 +22,7 @@ from matplotlib import pyplot as plt
 
 from pycorr import TwoPointCorrelationFunction, TwoPointEstimator, KMeansSubsampler, utils, setup_logging
 
+from LSS.common_tools import calculate_density_realizations
 from LSS.tabulated_cosmo import TabulatedDESI
 import LSS.cosmodesi_io_tools as io
 import sys
@@ -89,6 +90,8 @@ def compute_angular_weights(nthreads=8, gpu=False, dtype='f8', tracer='ELG', tra
 
 def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=False, dtype='f8', wang=None, split_randoms_above=30., weight_type='default', tracer='ELG', tracer2=None, recon_dir=None, rec_type=None, njack=120, nradjack=1, option=None, mpicomm=None, mpiroot=None, cat_read=None, dat_cat=None, ran_cat=None, rpcut=None, thetacut=None,nreal=129, **kwargs):
 
+    wsum_data = None
+    wsum_randoms = None
     autocorr = tracer2 is None
     catalog_kwargs = kwargs.copy()
     catalog_kwargs['weight_type'] = weight_type
@@ -169,7 +172,9 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
                 randoms_samples2 = [get_label(p) for p in randoms_positions2]
                 if with_shifted:
                     shifted_samples2 = [get_label(p) for p in shifted_positions2]
-
+    
+        if args.ndens_cov:
+            wsum_data, wsum_randoms = calculate_density_realizations(data_samples1, data_weights1, randoms_samples1, randoms_weights1, args.njack*args.nradjack)
 
     # These keyword arguments are where the 'angular' upweighting gets threaded through to corrfunc
     kwargs = {}
@@ -218,14 +223,16 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
                     else:
                         array = np.concatenate(arrays, axis=0)
                     tmp_randoms_kwargs[name] = array
+
             tmp = TwoPointCorrelationFunction(corr_type, edges, data_positions1=data_positions1, data_weights1=data_weights1, data_samples1=data_samples1,
                                               data_positions2=data_positions2, data_weights2=data_weights2, data_samples2=data_samples2,
                                               engine='corrfunc', position_type='rdd', nthreads=nthreads, gpu=gpu, dtype=dtype, **tmp_randoms_kwargs, **kwargs,
                                               D1D2=D1D2, mpicomm=mpicomm, mpiroot=mpiroot, selection_attrs=selection_attrs,weight_attrs={'normalization': 'counter','nrealizations':nreal}) 
+            
             D1D2 = tmp.D1D2
             result += tmp
         results.append(result)
-    return results[0].concatenate_x(*results), wang
+    return results[0].concatenate_x(*results), wang, wsum_data, wsum_randoms
 
 
 def get_edges(corr_type='smu', bin_type='lin'):
@@ -291,6 +298,8 @@ def corr_fn(file_type='npy', region='', tracer='ELG', tracer2=None, zmin=0, zmax
         root += '_thetacut{}'.format(thetacut)
     if file_type == 'npy':
         return os.path.join(out_dir, 'allcounts_{}.npy'.format(root))
+    if file_type == 'ndens':
+        return os.path.join(out_dir, 'ndens_{}.npy'.format(root))
     return os.path.join(out_dir, '{}_{}.txt'.format(file_type, root))
 
 
@@ -317,6 +326,7 @@ if __name__ == '__main__':
                                                    see https://arxiv.org/pdf/1905.01133.pdf', type=float, default=20)
     parser.add_argument('--njack', help='number of angular jack-knife subsamples; < 2 for no jack-knife error estimates', type=int, default=0)
     parser.add_argument('--nradjack', help='number of radial jack-knife subsamples; total jack-knives are njack*nradjack', type=int, default=1)
+    parser.add_argument('--ndens_cov', help='whether to add in a number density column to the covariance matrix (use with njack)', default='n')
     parser.add_argument('--gpu', help='whether to run on the GPU', action='store_true')
     parser.add_argument('--nthreads', help='number of threads (defaults to 4 if --gpu else 128)', type=int, default=None)
     parser.add_argument('--outdir', help='base directory for output (default: SCRATCH)', type=str, default=None)
@@ -347,6 +357,13 @@ if __name__ == '__main__':
         args.rebinning = False
     if args.rebinning == 'y':
         args.rebinning = True
+
+    if args.ndens_cov == 'y' and args.njack > 1:
+        args.ndens_cov = True
+    elif args.ndens_cov == 'n':
+        args.ndens_cov = False
+    else:
+        raise ValueError('ndens_cov must be y or n')
 
     mpicomm, mpiroot = None, None
     if True:#args.mpi:
@@ -475,15 +492,19 @@ if __name__ == '__main__':
                     logger.info('Computing correlation function {} in region {} in redshift range {}.'.format(corr_type, region, (zmin, zmax)))
                 edges = get_edges(corr_type=corr_type, bin_type=args.bin_type)
             
-                result, wang = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, nradjack=args.nradjack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, thetacut=args.thetacut,nreal=args.nreal, **catalog_kwargs)
+                result, wang, wsum_data, wsum_randoms = compute_correlation_function(corr_type, edges=edges, distance=distance, nrandoms=args.nran, split_randoms_above=args.split_ran_above, nthreads=nthreads, gpu=gpu, region=region, zlim=(zmin, zmax), maglim=maglims, weight_type=args.weight_type, njack=args.njack, nradjack=args.nradjack, wang=wang, mpicomm=mpicomm, mpiroot=mpiroot, option=option, rpcut=args.rpcut, thetacut=args.thetacut,nreal=args.nreal, **catalog_kwargs)
                 # Save pair counts
                 if mpicomm is None or mpicomm.rank == mpiroot:
                     result.save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
+                    # Save density realizations
+                    if wsum_data is not None and wsum_randoms is not None:
+                        np.save(corr_fn(file_type='ndens', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs), (wsum_data, wsum_randoms))
+
             if mpicomm is None or mpicomm.rank == mpiroot:
-                 if wang is not None:
-                        for name in wang:
-                            if wang[name] is not None:
-                                wang[name].save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, 'wang'), **base_file_kwargs, wang=name))
+                if wang is not None:
+                    for name in wang:
+                        if wang[name] is not None:
+                            wang[name].save(corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, 'wang'), **base_file_kwargs, wang=name))
 
         # Save combination and .txt files
         for corr_type in args.corr_type:
@@ -499,6 +520,9 @@ if __name__ == '__main__':
                                   corr_fn(file_type='npy', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)).normalize() for region in ['NGC', 'SGC']])
                     result.save(corr_fn(file_type='npy', region='GCcomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs))
                     all_regions.append('GCcomb')
+                    if args.ndens_cov:
+                        (wsum_data, wsum_randoms) = sum([np.load(corr_fn(file_type='ndens', region=region, out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs)) for region in ['NGC', 'SGC']])
+                        np.save(corr_fn(file_type='ndens', region='GCcomb', out_dir=os.path.join(out_dir, corr_type), **base_file_kwargs), (wsum_data, wsum_randoms))
 
                 if args.rebinning:
                     for region in all_regions:

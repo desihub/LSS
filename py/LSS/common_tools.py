@@ -6,6 +6,8 @@ import os
 import sys
 import logging
 
+from pycorr.twopoint_counter import get_inverse_probability_weight
+
 ext_coeff = {'G':3.214, 'R':2.165,'Z':1.211,'W1':0.184,'W2':0.113}
 
 from LSS.tabulated_cosmo import TabulatedDESI
@@ -2089,3 +2091,28 @@ def apply_wntmp(ntile, f_ntmisspw, f_ntzp, ntile_range=[0,15], randoms=True):
             if 1-f_ntmisspw[n] > 0: w_ntmisspw[idx_nt[n][0]] = 1/(1-f_ntmisspw[n])
         
     return w_ntmisspw, w_ntzp
+
+def calculate_density_realizations(data_labels, data_weights, randoms_labels, randoms_weights, n_jack):
+    """
+    Calculate density realizations from jackknife samples.
+    An array of weighted data counts and an array of weighted random counts are returned
+
+    randoms_labels and randoms_weights can be either a single array or a list of arrays.
+    """
+    def weighted_sum_per_subsample(samples, weights):
+        wt = get_inverse_probability_weight(weights)
+        total = np.sum(wt)
+        bincount = np.bincount(samples, weights=wt, minlength=n_jack)
+        not_in_k = total - bincount
+        return not_in_k
+
+    wsum_data = weighted_sum_per_subsample(data_labels, data_weights)
+
+    if isinstance(randoms_labels, (list, tuple)):
+        wsum_randoms = np.zeros(n_jack)
+        for r_labels, r_weights in zip(randoms_labels, randoms_weights):
+            wsum_randoms += weighted_sum_per_subsample(r_labels, r_weights)
+    else:
+        wsum_randoms = weighted_sum_per_subsample(randoms_labels, randoms_weights)
+
+    return wsum_data, wsum_randoms
