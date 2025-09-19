@@ -19,7 +19,7 @@ import LSS.common_tools as common
 from LSS.globals import main
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prog", choices=['DARK','BRIGHT'])
+parser.add_argument("--prog", choices=['DARK','BRIGHT','DARK1B','BRIGHT1B'])
 parser.add_argument("--getcoll", choices=['n','y'],default='y')
 parser.add_argument("--minr",default=0,type=int)
 parser.add_argument("--maxr",default=4,type=int)
@@ -40,6 +40,7 @@ margins = dict(pos=0.05,
     # getfatiles()
     # return
 log = Logger.get()
+common.printlog('script starting',logger=log)
 rann = 0
 n = 0
 
@@ -160,9 +161,9 @@ def getcoll(ind):
         locs = kl[0]
         ids = kl[1]
         locids = ids*10000+locs
-        print('N collisions:', len(coll))
+        common.printlog('N collisions:'+str( len(coll)),logger=log)
         locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-        print('N collisions original:',np.sum(locidsin),len(fdata))
+        common.printlog('N collisions original:'+str(np.sum(locidsin))+' '+str(len(fdata)),logger=log)
         fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
@@ -178,6 +179,6 @@ if __name__ == '__main__':
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
         if args.getcoll == 'y':
-            print(len(colltot),np.sum(colltot['COLLISION']))
-        common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
+            common.printlog(str(len(colltot))+' '+str(np.sum(colltot['COLLISION'])),logger=log)
+        common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits',logger=log)
 
