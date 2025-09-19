@@ -179,6 +179,6 @@ if __name__ == '__main__':
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
         if args.getcoll == 'y':
-            print(len(colltot),np.sum(colltot['COLLISION']))
-        common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits')
+            common.printlog(len(colltot),np.sum(colltot['COLLISION']),logger=log)
+        common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits',logger=log)
 
