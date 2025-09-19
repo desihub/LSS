@@ -139,7 +139,7 @@ if args.notqso == 'y':
     notqso = 'notqso'
 
 
-if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
+if type[:3] == 'BGS' or (bright in type) or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
@@ -148,7 +148,9 @@ else:
 
 pd = pdir
 
-
+if '1b' in type:
+    pr += '1B'
+    pdir += '1b'
 
 
 # tiles4comb = Table()
@@ -192,9 +194,9 @@ if not os.path.exists(dirout):
     logger.info('made '+dirout)
 
 globtype = args.type
-if args.type == 'dark':
+if 'dark' in args.type:
     globtype = 'LRG'
-if args.type == 'bright':
+if 'bright' in args.type:
     #print('changing globtype')
     globtype = 'BGS'
 #print(globtype,args.type)
