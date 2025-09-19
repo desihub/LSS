@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-from pycorr.twopoint_counter import get_inverse_probability_weight
+
 
 ext_coeff = {'G':3.214, 'R':2.165,'Z':1.211,'W1':0.184,'W2':0.113}
 
@@ -2099,6 +2099,8 @@ def calculate_density_realizations(data_labels, data_weights, randoms_labels, ra
 
     randoms_labels and randoms_weights can be either a single array or a list of arrays.
     """
+    from pycorr.twopoint_counter import get_inverse_probability_weight #import goes here so that pycorr is a dependency only for this function; think about moving this somewhere else
+    
     def weighted_sum_per_subsample(samples, weights):
         wt = get_inverse_probability_weight(weights)
         total = np.sum(wt)
