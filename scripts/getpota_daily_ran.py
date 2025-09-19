@@ -19,7 +19,7 @@ import LSS.common_tools as common
 from LSS.globals import main
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prog", choices=['DARK','BRIGHT'])
+parser.add_argument("--prog", choices=['DARK','BRIGHT','DARK1B','BRIGHT1B'])
 parser.add_argument("--getcoll", choices=['n','y'],default='y')
 parser.add_argument("--minr",default=0,type=int)
 parser.add_argument("--maxr",default=4,type=int)
