@@ -40,6 +40,7 @@ margins = dict(pos=0.05,
     # getfatiles()
     # return
 log = Logger.get()
+common.printlog('script starting',logger=log)
 rann = 0
 n = 0
 
