@@ -4936,7 +4936,7 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     inds = np.arange(len(tiles))
     for ind in inds:
         _create_rantile(ind)
-        common.printlog('done with '+str(ii)+' tile '+str(ind)+' out of '+str(lens(inds)))
+        common.printlog('done with '+str(ii)+' tile '+str(ind)+' out of '+str(len(inds)))
     #from multiprocessing import Pool
     #with Pool() as pool:
     #    res = pool.map(_create_rantile, inds)
