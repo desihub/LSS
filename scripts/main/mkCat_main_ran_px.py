@@ -146,6 +146,10 @@ else:
     pr = 'DARK'
     pdir = 'dark'
 
+if '1b' in args.type:
+    pr += '1B'
+    pdir += '1b'
+
 pd = pdir
 
 globtype = args.type
