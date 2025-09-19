@@ -161,9 +161,9 @@ def getcoll(ind):
         locs = kl[0]
         ids = kl[1]
         locids = ids*10000+locs
-        print('N collisions:', len(coll))
+        common.printlog('N collisions:'+str( len(coll)),logger=log)
         locidsin = np.isin(fdata['LOCATION']+10000*fdata['TARGETID'],locids)
-        print('N collisions original:',np.sum(locidsin),len(fdata))
+        common.printlog('N collisions original:'+str(np.sum(locidsin))+' '+str(len(fdata)),logger=log)
         fdata['COLLISION'] = locidsin
     #colltab = Table(forig[locidsin])
     fdata['TILEID'] = tile
@@ -179,6 +179,6 @@ if __name__ == '__main__':
             res = pool.map(getcoll, inds)
         colltot = np.concatenate(res)
         if args.getcoll == 'y':
-            common.printlog(len(colltot),np.sum(colltot['COLLISION']),logger=log)
+            common.printlog(str(len(colltot))+' '+str(np.sum(colltot['COLLISION'])),logger=log)
         common.write_LSS_scratchcp(colltot,'/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random'+str(rann)+'/pota-'+args.prog+'.fits',logger=log)
 
