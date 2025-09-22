@@ -65,7 +65,7 @@ for tp in tps:
     if tp == 'LGE':
         wg = dt['ZWARN'] == 0
         wg &= dt['DELTACHI2']>10
-        print(np.sum(wz),np.sum(wg))
+        #print(np.sum(wz),np.sum(wg))
     
     if tp == 'LRG':
         # Custom DELTACHI2 vs z cut from Rongpu
