@@ -164,7 +164,7 @@ def mask_bad_petal_nights(dz, prog='dark',logger=None):
 
 
 def goodz_infull(tp,dz,zcol='Z_not4clus'):
-    if tp == 'LRG':
+    if tp == 'LRG' or tp == 'LGE':
         z_suc= dz['ZWARN']==0
         z_suc &= dz['DELTACHI2']>15
         z_suc &= dz[zcol]<1.5
