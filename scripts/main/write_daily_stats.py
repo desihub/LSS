@@ -32,6 +32,8 @@ for tp in tps:
     prog='dark'
     if 'BGS' in tp:
         prog = 'bright'
+    if 'LGE' in tp:
+        prog = 'dark1b'
     rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+prog+'_0_full_noveto.ran.fits',ext=1)
     areanv = rtnv['NAXIS2']/2500
     dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full_noveto.dat.fits',ext=1)
@@ -60,7 +62,7 @@ for tp in tps:
     if tp[:3] == 'ELG':
         wg = dt['o2c'] > 0.9
 
-    if tp == 'LRG':
+    if tp == 'LRG' or tp == 'LGE':
         # Custom DELTACHI2 vs z cut from Rongpu
         wg = dt['ZWARN'] == 0
         drz = (10**(3 - 3.5*dt[zcol]))
