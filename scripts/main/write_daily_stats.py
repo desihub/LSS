@@ -24,7 +24,7 @@ fo.write('#####################\n')
 fo.write('as of '+today.strftime("%B %d, %Y")+'\n')
 fo.write('#####################\n')
 
-tps = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
+tps = ['LGE','QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 
 zcol = 'Z_not4clus'
 for tp in tps:
