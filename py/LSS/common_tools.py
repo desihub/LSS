@@ -166,11 +166,11 @@ def mask_bad_petal_nights(dz, prog='dark',logger=None):
 def goodz_infull(tp,dz,zcol='Z_not4clus'):
     if (tp == 'LRG') or (tp == 'LGE'):
         z_suc= dz['ZWARN']==0
-        print(np.sum(z_suc))
+        #print(np.sum(z_suc))
         z_suc &= dz['DELTACHI2']>15
-        print(np.sum(z_suc))
+        #print(np.sum(z_suc))
         z_suc &= dz[zcol]<1.5
-        print(np.sum(z_suc))
+        #print(np.sum(z_suc))
 
     if tp == 'ELG':
         z_suc = dz['o2c'] > 0.9
