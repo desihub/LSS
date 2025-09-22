@@ -3361,7 +3361,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         prog = 'dark'
         if tp[:3] == 'BGS':
             prog = 'bright'
-
+        if tp == 'LGE':
+            prog = 'dark1b'
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
         dz = join(dz,specdat,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
     
