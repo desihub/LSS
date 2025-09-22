@@ -1157,8 +1157,8 @@ def add_map_cols(fn,rann,logger=None,new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_
     printlog('wrote to '+fn,logger)
     return
 
-def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False,logger=None,return_array=False):
-    mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer_mask.upper()+tarver+'_'+tracer_mask+'imask.fits'
+def add_veto_col(fn,tracer,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1',redo=False,logger=None,return_array=False):
+    mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/'+tracer+tarver+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-'+str(rann)+tracer_mask+'imask.fits'
     maskf = fitsio.read(mask_fn)
