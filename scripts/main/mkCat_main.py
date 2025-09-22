@@ -398,10 +398,13 @@ if mkfulld:
 if args.add_veto == 'y':
     logf.write('added veto columns to data catalogs for '+tp+' '+str(datetime.now()))
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
-    common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
+    mask_type = type[:3].lower()
+    if type == 'LGE':
+        mask_type = 'LRG'
+    common.add_veto_col(fin,ran=False,tracer_mask=mask_type,redo=True)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
+        common.add_veto_col(fin,ran=True,tracer_mask=mask_type,rann=rn)
         
 if args.join_etar == 'y':
     logf.write('added extra target columns to data catalogs for '+tp+' '+str(datetime.now()))
