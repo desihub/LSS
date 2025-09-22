@@ -400,7 +400,7 @@ if args.add_veto == 'y':
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
     mask_type = type[:3].lower()
     if type == 'LGE':
-        mask_type = 'LRG'
+        mask_type = 'lrg'
     common.add_veto_col(fin,ran=False,tracer_mask=mask_type,redo=True)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
