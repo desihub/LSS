@@ -62,7 +62,12 @@ for tp in tps:
     if tp[:3] == 'ELG':
         wg = dt['o2c'] > 0.9
 
-    if tp == 'LRG' or tp == 'LGE':
+    if tp == 'LGE':
+        wg = dt['ZWARN'] == 0
+        wg &= dt['DELTACHI2']>10
+        print(np.sum(wz),np.sum(wg))
+    
+    if tp == 'LRG':
         # Custom DELTACHI2 vs z cut from Rongpu
         wg = dt['ZWARN'] == 0
         drz = (10**(3 - 3.5*dt[zcol]))
