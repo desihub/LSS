@@ -1186,7 +1186,7 @@ def add_veto_col(fn,ran=False,tracer_mask='lrg',rann=0,tarver='targetsDR9v1.1.1'
     if np.array_equal(df['TARGETID'],maskf['TARGETID']):
         df[tracer_mask+'_mask'] = maskf[tracer_mask+'_mask']
     else:
-        common.printlog('TARGETIDs do not match! exiting',logger)
+        printlog('TARGETIDs do not match! exiting',logger)
         return('TARGETIDs do not match! exiting')
     #df = join(df,maskf,keys=['TARGETID'])
     #print(len(df),'should match above')
