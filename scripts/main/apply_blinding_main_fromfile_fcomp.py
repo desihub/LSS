@@ -11,7 +11,7 @@ PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 EXAMPLE USE
 ===========
 
-srun -n 128 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG --basedir_out /global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron --version v0.1 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y
+srun -n 128 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/apply_blinding_main_fromfile_fcomp.py --type LRG  --version v1.2 --baoblind y --mkclusdat y --mkclusran y --maxr 18 --dorecon y --rsdblind y --fnlblind y --getFKP y --resamp y
 
 
 NOTES FOR TESTING AND VALIDATION
