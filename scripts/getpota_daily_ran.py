@@ -63,6 +63,8 @@ tiles = mainp.tiles
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == args.prog.lower()
+if args.prog == 'BRIGHT1B':
+    wd &= mt['PASS'] != 8 #these are the M31 program, outside of the legacy survey footprint with no BGS targets  
 
 dspec = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+args.prog.lower()+'_spec_zdone.fits',columns=['TILEID']) 
 wd &= np.isin(mt['TILEID'],dspec['TILEID'])
