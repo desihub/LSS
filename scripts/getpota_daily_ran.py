@@ -59,12 +59,16 @@ tiles = mainp.tiles
 #zmax = mainp.zmax
 #badfib = mainp.badfib
 
-
-wd = mt['SURVEY'] == 'main'
+#don't consider tiles in the M31 set from BRIGHT1B
+wd = mt['TILEID'] < 122907
+wd |= mt['TILEID'] > 123221
+#cut to the correct program
+wd &= mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == args.prog.lower()
-if args.prog == 'BRIGHT1B':
-    wd &= mt['PASS'] != 8 #these are the M31 program, outside of the legacy survey footprint with no BGS targets  
+#if args.prog == 'BRIGHT1B':
+    
+    #wd &= mt['PASS'] != 8 #these are the M31 program, outside of the legacy survey footprint with no BGS targets  
 
 dspec = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/datcomb_'+args.prog.lower()+'_spec_zdone.fits',columns=['TILEID']) 
 wd &= np.isin(mt['TILEID'],dspec['TILEID'])
