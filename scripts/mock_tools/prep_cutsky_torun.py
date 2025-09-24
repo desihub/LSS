@@ -57,6 +57,10 @@ if args.output_fullpathfn is None:
 else:
     output_path = os.path.join(args.output_fullpathfn, f'AbacusSummit_base_c000_ph{abacus_realization}/CutSky/{tracer}/{args.snapshot}/forclustering')
 
+#if os.path.isdir(output_path):
+#    print(output_path, 'exist')
+#    exit()
+
 create_dirs(output_path)
 
 if args.nrans is not None:
@@ -93,7 +97,8 @@ type_ = args.tracer
 if type_ == 'ELG_LOP':
     byte_selection = mask_abacusHF(nz = 1, foot = 'Y3', nz_lop = 1)
 else:
-    byte_selection = mask_abacusHF(nz = 1, foot = 'Y3')
+    byte_selection = mask_abacusHF(foot = 'Y3')
+    #TEMPbyte_selection = mask_abacusHF(nz = 1, foot = 'Y3')
 
 mask_selection = (data['STATUS'] & byte_selection) == byte_selection
 
@@ -106,7 +111,7 @@ else:
 targets = data[mask_selection]
 
 snap = args.snapshot.replace('.','p')
-name_output = f'cutsky_abacusHF_DR2_{type_}_{snap}_{redshift_tag}_clustering.dat.fits'
+name_output = f'cutsky_allzs_abacusHF_DR2_{type_}_{snap}_{redshift_tag}_clustering.dat.fits'
 output_file = os.path.join(output_path, name_output)
 print('will save to', output_file)
 
@@ -116,6 +121,10 @@ common.write_LSS_scratchcp(targets, output_file, extname = 'TARGETS')
 fits.setval(output_file, 'EXTNAME', value = 'TARGETS', ext = 1)
 fits.setval(output_file, 'OBSCON', value = 'DARK', ext = 1)
 
+
+
+
+'''
 if args.nrans is not None:
     fits.setval(output_file, 'RANDOMS', value = ranlist, ext = 1)
     fits.setval(output_file, 'RANSEED', value = str(args.ran_seed), ext = 1)
@@ -139,106 +148,5 @@ if args.nrans is not None:
         random_file['WEIGHT'] = weight[inds_z]
         common.write_LSS_scratchcp(random_file, output_ran, extname = 'RANDOMS')
         fits.setval(output_ran, 'RANID', value = str(rannum), ext = 1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-
-
-
-
-
-
-
-
-
-n=len(targets)  ##A Ashley le falta estoo!
-targets['TARGETID'] = (np.arange(1,n+1)+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
-
-def wrapper(bid_index):
-
-    idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
-    brickid = bid_unique[bid_index]
-
-    ra, dec = targets['RA'][idx], targets['DEC'][idx]
-    tid = targets['TARGETID'][idx]
-    bitmask2,nobsg,nobsr,nobsz = bitmask.bitmask_radec(brickid, ra, dec)
-
-    data = Table()
-    data['idx'] = idx
-    data['MASKBITS'] = bitmask2
-    data['NOBS_G'] = nobsg
-    data['NOBS_R'] = nobsr
-    data['NOBS_Z'] = nobsz
-    data['TARGETID'] = tid
-
-    return data
-
-dophot = False
-out_file_name = args.output_fullpathfn
-if dophot:
-
-    if 'MASKBITS' not in targets.colnames:
-        if 'BRICKID' not in targets.colnames:
-            from desiutil import brick
-            tmp = brick.Bricks(bricksize=0.25)
-            targets['BRICKID'] = tmp.brickid(targets['RA'], targets['DEC'])
-        # Just some tricks to speed up things
-        bid_unique, bidcnts = np.unique(targets['BRICKID'], return_counts=True)
-        bidcnts = np.insert(bidcnts, 0, 0)
-        bidcnts = np.cumsum(bidcnts)
-        bidorder = np.argsort(targets['BRICKID'])
-        
-        # start multiple worker processes
-        with Pool(processes=int(args.nproc)) as pool: ##hay que poner un int para que funcione!
-            res = pool.map(wrapper, np.arange(len(bid_unique)))
-        
-        res = vstack(res)
-        res.sort('idx')
-        res.remove_column('idx')
-        print('mask columns added')
-        
-        maskcols = ['NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
-        if np.array_equal(res['TARGETID'],targets['TARGETID']):
-            for col in maskcols:
-                targets[col] = res[col]
-            del res
-
-    mainp = main(tp = type_, specver = args.specdata)
-    targets = common.cutphotmask(targets, bits=mainp.imbits)
-else:
-    out_file_name = out_file_name.split('.fits')[0] + '_noimagingmask_applied.fits'
-
-
-print('cut targets based on photometric mask')
-n=len(targets)
-if ('TRUEZ' not in targets.colnames) and (args.ztruecol != None):
-    targets.rename_column(args.ztruecol, 'TRUEZ')
-if ('RSDZ' not in targets.colnames) and (args.zrsdcol != None):
-    targets.rename_column(args.zrsdcol, 'RSDZ')
-    
-
-
-targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
-targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
-targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
-targets['OBSCONDITIONS'] = obsconditions.mask(tile) #np.zeros(n, dtype='i8')+int(3) 
-targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
-targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
-
-#change the name of the output ...
-common.write_LSS_scratchcp(targets, out_file_name, extname='TARGETS')
-fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
 
 '''

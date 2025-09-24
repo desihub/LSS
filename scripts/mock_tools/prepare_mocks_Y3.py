@@ -8,26 +8,30 @@ import argparse
 import random
 import json
 from desitarget.targetmask import desi_mask, bgs_mask, obsconditions
-from desimodel.footprint import is_point_in_desi
-from multiprocessing import Pool
-import time
+#from multiprocessing import Pool
+#import time
 import LSS.common_tools as common
 from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
-from LSS.main.cattools import count_tiles_better
+#from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
+
+
+
+from numpy.random import Generator, PCG64
+rng = Generator(PCG64())
+
 
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
-parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
-parser.add_argument("--mockname", help="name of mocks", default='EZmock')
+parser.add_argument("--mockname", help="name of mocks: holimock, EZmock, abacushf, uchuu") #, default='EZmock')
 parser.add_argument("--input_mockpath", help="full directory path to input mocks",default='')
 parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
-parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
-parser.add_argument("--tracer", help="LRG, ELG or QSO",default='LRG')
+#parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
+parser.add_argument("--tracer", help="LRG, ELG or QSO") #,default='LRG')
 parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog")
 parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD")
 parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 'n', assuming all LOP",default='y')
@@ -38,61 +42,245 @@ parser.add_argument("--immask", help="apply imaging mask to targets?",default='n
 
 args = parser.parse_args()
 
-rng = np.random.default_rng(seed=int(args.ran_seed))
 
 if args.tracer in ['LRG', 'QSO', 'ELG']:
     tile = 'DARK'
 elif args.tracer == 'BGS':
     tile = 'BRIGHT'
 
-tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
 
-def mask_abacusHF(nz=0, foot=None, nz_lop=0):
-    if foot == 'Y1':
-        Y5 = 0
-        Y1 = 1
-        Y3 = 0
-    elif foot == 'Y3':
-        Y5 = 0
-        Y1 = 0
-        Y3 = 1
+def read_parent_mock(mockname, filename):
+
+    if mockname == 'holimock':
+        import h5py
+        
+        data = Table(h5py.File(filename, 'r+'))
+
+
+#        data = np.load(filename)
+
+#        data_dict = dict(data)
+#        data_dict['RA'] = data_dict.pop('ra')  # Rename key
+#        data_dict['DEC'] = data_dict.pop('dec')  # Rename key
+#        data = Table(data_dict)
+#        del data_dict
     else:
-        Y5 = 1
-        Y1 = 0
-        Y3 = 0
+        data = Table.read(filename)
 
-    return nz * (2**0) + Y5 * (2**1) + nz_lop * (2**2) + Y1 * (2**3) + Y3 * (2**5) 
+    return data
 
-data = Table.read(args.input_mockpath+args.input_mockfile)
 
-# Adding the WEIGHT column
-if 'WEIGHT' not in data.colnames:
-    data['WEIGHT'] = np.ones(data['RA'].shape[0])
+if args.mockname == 'abacushf':
+    args.need_footprint = 'n'
+    args.need_nz_calib = 'n'
 
-desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG + desi_mask.ELG_LOP, 'BGS': desi_mask.BGS_ANY}
-#priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
+desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG, 'BGS': desi_mask.BGS_ANY}
+
+#AURE PRIORITY for BGS, is BRIGHT or what??? BGS_ANY? Shall we make same as ELG?
+
 priority = {'LRG': desi_mask.LRG.priorities['UNOBS'],
             'QSO': desi_mask.QSO.priorities['UNOBS'],
-            'ELG': desi_mask.ELG_LOP.priorities['UNOBS'],
-            'ELG_VOL': desi_mask.ELG.priorities['UNOBS'],
-            'ELG_HIP': desi_mask.LRG.priorities['UNOBS'], # same priority as LRG
-            'BGS': bgs_mask.BGS_BRIGHT.priorities['UNOBS']}
+            'ELG': desi_mask.ELG.priorities['UNOBS'],
+            'BGS': bgs_mask.BGS_FAINT.priorities['UNOBS']}
+
+#AURE            'ELG_VLO': desi_mask.ELG.priorities['UNOBS'],
+#    AURE        'ELG_LOP': desi_mask.ELG_LOP.priorities['UNOBS'],
+#    AURE        'ELG_HIP': desi_mask.LRG.priorities['UNOBS'], # same priority as LRG
+#    AURE        'BGS': bgs_mask.BGS_FAINT.priorities['UNOBS']}  #AURE change this to FAINT instead of bright
 
 numobs = {'LRG': desi_mask.LRG.numobs,
-          'ELG': desi_mask.ELG_LOP.numobs,
+          'ELG': desi_mask.ELG.numobs,
           'QSO': desi_mask.QSO.numobs,
           'BGS': bgs_mask.BGS_BRIGHT.numobs}
-norm = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':2**60}
 
-type_ = args.tracer
-                
-data['DESI_TARGET'] = desitar[type_]
-data['PRIORITY_INIT'] = priority[type_]
-data['PRIORITY'] = priority[type_]
-data['NUMOBS_MORE'] = numobs[type_]
-data['NUMOBS_INIT'] = numobs[type_]
+norm = {'LRG':1, 'ELG':1, 'QSO':1, 'BGS':2**60}   #AURE CONFIRM IS CORRECT
 
-if type_ == 'BGS':
+
+def add_basic_columns(input_data, tracercol):
+    print('Adding basic columns')
+    # Adding the WEIGHT column
+    if 'WEIGHT' not in input_data.colnames:
+        input_data['WEIGHT'] = np.ones(input_data['RA'].shape[0])
+
+    input_data['DESI_TARGET'] = desitar[tracercol]
+    input_data['PRIORITY_INIT'] = priority[tracercol]
+    input_data['PRIORITY'] = priority[tracercol]
+    input_data['NUMOBS_MORE'] = numobs[tracercol]
+    input_data['NUMOBS_INIT'] = numobs[tracercol]
+
+    if ('TRUEZ' not in input_data.colnames) and (args.ztruecol != None):
+        input_data.rename_column(args.ztruecol, 'TRUEZ')
+    if ('RSDZ' not in input_data.colnames) and (args.zrsdcol != None):
+        input_data.rename_column(args.zrsdcol, 'RSDZ')
+
+
+    n = len(input_data)
+    
+    input_data['MWS_TARGET'] = np.zeros(n, dtype='i8')
+    input_data['SUBPRIORITY'] = np.random.uniform(0, 1, n)
+    input_data['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
+    input_data['OBSCONDITIONS'] = obsconditions.mask(tile) #np.zeros(n, dtype='i8')+int(3) 
+    input_data['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
+    input_data['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
+    input_data['BGS_TARGET'] = np.zeros(n, dtype='i8')
+
+    return input_data, n
+
+
+def select_footprint(input_data, todo):
+
+    if todo == 'n':
+        size = len(input_data)
+        print('no footprint selection')
+    elif todo == 'y':
+        print('imposing approximate tile footprint', args.survey)
+        from desimodel.footprint import is_point_in_desi
+        tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
+
+        selFOOT = is_point_in_desi(tiletab, input_data['RA'], input_data['DEC'])
+        input_data = input_data[selFOOT]
+        size = len(input_data)
+    else:
+        raise Exception('You should tell me if I need to apply footprint or not')
+
+    return input_data, size
+
+
+tracer = args.tracer
+
+
+print('STARTING PREPATION')
+print('tracer type', tracer)
+print('mock flavour is ', args.mockname)
+print('it will read the file', os.path.join(args.input_mockpath, args.input_mockfile))
+
+data = read_parent_mock(args.mockname, os.path.join(args.input_mockpath, args.input_mockfile))
+data, initial_size = add_basic_columns(data, tracer)
+
+print('size of sample at start of the pipeline', initial_size)
+
+data, after_footprint_size = select_footprint(data, args.need_footprint)
+
+print('size of sample after footprint pruning (if needed)', after_footprint_size)
+
+if args.need_nz_calib == 'y':
+    print('Start nz calibration to match density and nz to the data adding STATUS columns')
+    from calibrate_nz_prep import calibrate_nz
+    data = calibrate_nz(data, redshift_column = 'RSDZ', tracer_type=tracer, survey=args.survey)
+    
+if tracer == 'LRG':
+    print('start specific LRG preparation')
+    if args.mockname == 'abacushf':
+        sel = (data['STATUS'] & 33 == 33)
+    elif args.mockname == 'EZmock':
+        sel = (data['STATUS'] & 2 == 2)
+    else:
+        if 'STATUS' not in data.colnames:
+            data['STATUS'] = np.ones(len(data), dtype=np.int32)
+        sel = (data['STATUS'] & 1 == 1)
+    
+    idx = np.arange(len(data))
+    
+    data = data[idx[sel]]
+    size_final = len(data)
+    print('After selecting LRG according to nz matching, size =', size_final)
+    del data['STATUS']
+
+if tracer == 'QSO':
+    print('start specific QSO preparation')
+    if args.mockname == 'abacushf':
+        sel = (data['STATUS'] & 33 == 33)
+
+    elif args.mockname == 'EZmock':
+        sel = (data['STATUS'] & 2 == 2)
+
+    else:
+        if 'STATUS' not in data.colnames:
+            data['STATUS'] = np.ones(len(data), dtype=np.int32)
+
+        sel = (data['STATUS'] & 1 == 1)
+
+    idx = np.arange(len(data))
+    
+    data = data[idx[sel]]
+    size_final = len(data)
+
+    print('After selecting LRG according to nz matching, size =', size_final)
+    sel_highz = data['RSDZ'] > 2.1
+    data['NUMOBS_MORE'][sel_highz] = 4
+    data['NUMOBS_INIT'][sel_highz] = 4
+    del data['STATUS']
+
+if tracer == 'ELG':
+    print('start specific ELG preparation')
+    datat = []
+    idx = np.arange(len(data))
+    if args.mockname == 'abacushf':
+
+        from calibrate_nz_prep import mask_abacusHF
+        status = data['STATUS'][()]
+        mask_main = mask_abacusHF(nz=1, foot=args.survey)
+        idx_main = idx[(status & (mask_main))==mask_main]
+
+        mask_LOP = mask_abacusHF(nz=1, foot=args.survey, nz_lop=1)
+        idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
+            
+        idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+        data_lop = Table(data[idx_LOP])
+        data_vlo = Table(data[idx_VLO])
+
+
+    elif args.mockname == 'EZmock':
+        import sample_elg_ezmock as se
+        lop, vlo = se.create_subsample(data)
+        
+        data_lop = Table.from_pandas(lop)
+        data_vlo = Table.from_pandas(vlo)
+
+
+    else:
+        if 'STATUS' not in data.colnames:
+            idx_LOP = idx[data[args.ELGtpcol] == 1]
+            idx_VLO = np.setdiff1d(idx, idx_LOP)
+
+        else:
+            status = data['STATUS'][()]
+            idx_main = idx[(status & 1)==1]
+            idx_LOP = idx[(status & 4)==4]
+            idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+    
+        data_lop = Table(data[idx_LOP])
+        data_vlo = Table(data[idx_VLO])
+
+
+    data_lop['DESI_TARGET'] += 2**5
+
+    data_vlo['PRIORITY_INIT'] = 3000
+    data_vlo['PRIORITY'] = 3000
+    data_vlo['DESI_TARGET'] += 2**7 
+    
+    datat.append(data_lop)
+    datat.append(data_vlo)
+    data = vstack(datat)
+    size_lop = len(data_lop)
+    size_vlo = len(data_vlo)
+
+    rans = rng.random(len(data))
+    sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
+    data['DESI_TARGET'][sel_HIP] += 2**6
+    data['PRIORITY_INIT'][sel_HIP] = 3200
+    data['PRIORITY'][sel_HIP] = 3200
+
+    size_final = len(data)
+
+    print('After selecting ELG according to nz matching, size =', size_final)
+    print('By subtypes, LOP =', size_lop, 'VLO =', size_vlo)
+    del data_lop
+    del data_vlo
+    del data['STATUS']
+
+#FALTA ESTO
+if tracer == 'BGS':
 
     if args.mockname.lower() == 'uchuu':
         mask_bright = (data['BGS_TYPE'] == 'BRIGHT')
@@ -120,84 +308,31 @@ if type_ == 'BGS':
         print("Unique PRIORITY: ", np.unique(data['PRIORITY']))
         print("Unique BGS_TARGET: ", np.unique(data['BGS_TARGET']))
         print("High_priority_BGS_faint/BGS_faint: ", np.sum(dat_faint['BGS_TARGET']==9)/len(dat_faint))
-else:	
-    data['BGS_TARGET'] = np.zeros(len(data), dtype='i8') 
-
-if type_ == 'ELG':
-    if args.ELGsplit == 'y':
-        if args.mockname.lower() == 'abacushf':
-            datat = []
-            status = data['STATUS'][()]
-            idx = np.arange(len(status))
-            
-            mask_main = mask_abacusHF(nz=1, foot='Y3')
-            idx_main = idx[(status & (mask_main))==mask_main]
-
-            mask_LOP = mask_abacusHF(nz=1, foot='Y3', nz_lop=1)
-            idx_LOP = idx[(status & (mask_LOP))==mask_LOP]
-            
-            idx_VLO = np.setdiff1d(idx_main, idx_LOP)
-
-            data_lop = Table(data[idx_LOP])
-            data_vlo = Table(data[idx_VLO])
-
-            data_lop['DESI_TARGET'] += 2**5
-
-            data_vlo['PRIORITY_INIT'] = 3000
-            data_vlo['PRIORITY'] = 3000
-            data_vlo['DESI_TARGET'] += 2**7 
 
 
-            datat.append(data_lop)
-            datat.append(data_vlo)
-            data = vstack(datat)
-        else:
-            sel_LOP = data[args.ELGtpcol] == 1
-            data['DESI_TARGET'][~sel_LOP] = 2+2**7
-            data['PRIORITY_INIT'][~sel_LOP] = 3000
-            data['PRIORITY'][~sel_LOP] = 3000
+#FALTA ESTO!
+    if args.mockname == 'EZmock' and args.EZnzmask == 'y':
+        nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
+        targets = targets[nz_mask]
+
+
+
+
+n=len(data)  ##A Ashley le falta estoo!
+data['TARGETID'] = (np.arange(1,n+1)+1e8*desitar[tracer]/norm[tracer]).astype(int) #different tracer types need to have different targetids
+print('creating TARGETID', np.min(data['TARGETID']), np.max(data['TARGETID']))
+if (tracer == 'BGS') and (args.mockname.lower() == 'uchuu'):
+    targets.rename_column('ABSMAG_R', 'R_MAG_ABS')
     
-    rans = rng.random(len(data))
-    sel_HIP = rans < 0.1 #10% of ELG get promoted to HIP
-    data['DESI_TARGET'][sel_HIP] += 2**6
-    data['PRIORITY_INIT'][sel_HIP] = 3200
-    data['PRIORITY'][sel_HIP] = 3200
-    print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
-	
+out_file_name = args.output_fullpathfn
 
-if type_ == 'QSO':
-    sel_highz = data[args.zrsdcol] > 2.1
-    data['NUMOBS_MORE'][sel_highz] = 4
-    data['NUMOBS_INIT'][sel_highz] = 4
-    print('numobs counts',str(np.unique(data['NUMOBS_MORE'],return_counts=True)))
-targets = data
-
-del data
-
-if args.mockname.lower() != 'abacushf':
-#targets['TARGETID'] = (np.random.permutation(np.arange(1,n+1))+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
-    print(len(targets),' in Y5 area')
-    selY3 = is_point_in_desi(tiletab,targets['RA'],targets['DEC'])
-    targets = targets[selY3]
-    if args.mockname == 'EZmock' and args.nzmask == 'y':
-        y3_nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
-        targets = targets[y3_nz_mask]
-else:
-    if type_ != 'ELG':
-
-        status = targets['STATUS'][()]
-        idx = np.arange(len(status))
-        mask_main = mask_abacusHF(nz=1, foot='Y3')
-        idx_main = idx[(status & (mask_main))==mask_main]
-        targets = targets[idx_main]
-
-print(len(targets),' in Y3 area')
-#print('getting nobs and mask bits')
+#change the name of the output ...
+common.write_LSS_scratchcp(data, out_file_name, extname='TARGETS')
+fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
+fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
 
 
-n=len(targets)  ##A Ashley le falta estoo!
-targets['TARGETID'] = (np.arange(1,n+1)+1e8*desitar[type_]/norm[type_]).astype(int) #different tracer types need to have different targetids
-
+'''
 def wrapper(bid_index):
 
     idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
@@ -243,33 +378,12 @@ if 'MASKBITS' not in targets.colnames and args.immask == 'y':
             targets[col] = res[col]
         del res
 
-    mainp = main(tp = type_, specver = args.specdata)
+    mainp = main(tp = tracer, specver = args.specdata)
     targets = common.cutphotmask(targets, bits=mainp.imbits)
 else:
-    out_file_name = out_file_name.split('.fits')[0] + '_noimagingmask_applied.fits'
 
-
-print('cut targets based on photometric mask')
-n=len(targets)
-if ('TRUEZ' not in targets.colnames) and (args.ztruecol != None):
-    targets.rename_column(args.ztruecol, 'TRUEZ')
-if ('RSDZ' not in targets.colnames) and (args.zrsdcol != None):
-    targets.rename_column(args.zrsdcol, 'RSDZ')
-
-if (type_ == 'BGS') and (args.mockname.lower() == 'uchuu'):
-    targets.rename_column('ABSMAG_R', 'R_MAG_ABS')
-    
-
-targets['MWS_TARGET'] = np.zeros(n, dtype='i8')
-targets['SUBPRIORITY'] = np.random.uniform(0, 1, n)
-targets['BRICKNAME'] = np.full(n, '000p0000')    #- required !?!
-targets['OBSCONDITIONS'] = obsconditions.mask(tile) #np.zeros(n, dtype='i8')+int(3) 
-targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
-targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
-
-#change the name of the output ...
-common.write_LSS_scratchcp(targets, out_file_name, extname='TARGETS')
-fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
+    ending = out_file_name.split('.')[-1]
+    out_file_name = out_file_name.split('.' + ending)[0] + '_noimagingmask_applied.fits'
+'''
 
 

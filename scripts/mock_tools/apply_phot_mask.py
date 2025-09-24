@@ -72,7 +72,9 @@ elif prog=='BRIGHT':
     tag = 'AbacusSummitBGS_v2'
     global_type = 'BGS'
 
-file_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum, TAG=tag) 
+#file_ = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forclustering/cutsky_abacusHF_DR2_ELG_z0p950_zcut_0p8to1p6_clustering.dat.fits'
+file_ = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_nomask_%d_v2.fits' % int(mocknum)
+##TMEPfile_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum, TAG=tag) 
 
 #file_ = '/pscratch/sd/e/efdez/Uchuu/LSS/scripts/mock_tools/DA2/LRG_NGC_12_clustering.ran.fits'
 #/pscratch/sd/z/zxzhai/DESI/PreMocks/SecondGenMocks/AbacusSummit_v4_1/forFA'+str(mocknum)+'_nomasking.fits'
@@ -82,12 +84,17 @@ cat = Table.read(file_)
 print('size before cutting photmask is', len(cat))
 cat = get_maskbit_nobs(cat)
 
-mainp = main(tp = global_type, specver = 'kibo-v1')
+print('size after matching photmask is', len(cat))
+
+mainp = main(tp = global_type, specver = 'loa-v1')
 cat = ct.cutphotmask(cat, bits=mainp.imbits)
 
 st=time.time()
 print('size after cutting photmask is', len(cat))
-out_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}.fits'.format(MOCK=mocknum, TAG=tag)
+#TEMPout_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}.fits'.format(MOCK=mocknum, TAG=tag)
+out_file_name='/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_%d_v2.fits' % int(mocknum)
+#out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forclustering/masked_cutsky_abacusHF_DR2_ELG_z0p950_zcut_0p8to1p6_clustering.dat.fits'
+
 ct.write_LSS_scratchcp(cat, out_file_name, extname='TARGETS')
 print('Done writing in {} sec'.format(time.time()-st), flush=True)
 

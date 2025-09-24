@@ -1,1 +1,0 @@
-/pscratch/sd/a/acarnero/dr1_datamodel3/desi/survey/catalogs/dr1/QSO/iron/QSO_cat_iron_cumulative_v0.fits XTENSION BITPIX NAXIS NAXIS1 NAXIS2 PCOUNT GCOUNT TFIELDS EXTNAME DESIDR COMMENT COMMENT
