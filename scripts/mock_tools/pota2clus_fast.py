@@ -253,7 +253,7 @@ if args.prog == 'BRIGHT':
     mainp = main('BGS_BRIGHT',args.specrel,args.survey)
 logger.info('reading '+in_data_fn)
 mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
-logger.info('read '+in_data_fn)
+logger.info('read '+in_data_fn.replace('global','dvs_ro'))
 selcoll = mock_data['COLLISION'] == False
 mock_data = mock_data[selcoll]
 ndattot = len(mock_data)
@@ -269,7 +269,7 @@ tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
 
 tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-specfo =  '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
 specf = Table(fitsio.read(specfo))
 logger.info(len(np.unique(specf['TILEID'])))
