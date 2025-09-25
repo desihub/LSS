@@ -147,7 +147,7 @@ if do_lrgmask == 'y':
     ranpix = hp.ang2pix(256,th,phi,nest=True)
     for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
         ranmap[pix] += 1
-        if mvalue > 1:
+        if mvalue > 0:
             ranmap_lmask[pix] += 1
     sel = ranmap > 0
     lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
@@ -164,7 +164,7 @@ if do_elgmask == 'y':
     ranpix = hp.ang2pix(256,th,phi,nest=True)
     for pix,mvalue in zip(ranpix,ran_lrgmask['elg_mask']):
         ranmap[pix] += 1
-        if mvalue > 1:
+        if mvalue > 0:
             ranmap_lmask[pix] += 1
     sel = ranmap > 0
     elg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
