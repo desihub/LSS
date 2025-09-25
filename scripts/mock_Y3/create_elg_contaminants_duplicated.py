@@ -30,8 +30,8 @@ tp = 'ELGnotqso'
 isotropic_number_density = 97. # Density of isotropic component, already accounted for
 np.random.seed(42)
 
-zmin = 1.1
-zmax = 1.6
+zmin = 0.0
+zmax = 5.0
 
 def cut_to_region_and_zrange(fname_NGC, fname_SGC):
 	
@@ -133,6 +133,8 @@ coords_ran = coords_ran.transform_to(astropy.coordinates.Galactic())
 weight = 1/data['FRACZ_TILELOCID'] * 1/data['FRAC_TLOBS_TILES']
 weight[np.isinf(weight)] = 0
 
+nside = 32
+
 data_pix = hp.ang2pix(nside, coords_data.l.deg, coords_data.b.deg, lonlat=True)
 data_map = np.bincount(data_pix, minlength=12*nside**2, weights=weight)
 
@@ -146,7 +148,7 @@ number_density = data_map / (ran_comp * 41253./(12*nside**2.))
 
 sel_fraction = isotropic_number_density / number_density
 
-random_number = np.random.uniform(len(data))
+random_number = np.random.uniform(size=len(data))
 non_isotropic_sel = np.where(random_number > sel_fraction[data_pix])
 
 unclassified = data[non_isotropic_sel]
