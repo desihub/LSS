@@ -64,6 +64,7 @@ parser.add_argument("--imsys_clus", help="Add weights for imaging systematics us
 parser.add_argument("--imsys_clus_ran", help="Add imaging weights to random catalogs", action='store_true')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
 parser.add_argument("--add_syscol2blind", help="Add the new weight column to the blinded catalogs", action='store_true')
+parser.add_argument("--Y1_mode", help="use this with LRGs to reproduce the Y1/DR2 BAO behavior", action='store_true')
 # parser.add_argument("--imsys_zbin", help="Perform imaging systematic regressions in z bins", action='store_true')
 # parser.add_argument("--par", help="Run different randoms in parallel", action='store_true')
 
@@ -158,11 +159,14 @@ elif args.usemaps[0] == 'allebvcmb':
 
 else:
     fit_maps = [mapn for mapn in args.usemaps]
-
 # Remove EBV_DIFF_* if exclude_debv is set
 if args.exclude_debv:
     fit_maps = [m for m in fit_maps if not m.startswith('EBV_DIFF_')]
     syscol = (syscol or '_WEIGHT_IMLIN') + '_NODEBV'
+if args.Y1_mode:
+    syscol = args.syscol
+    fit_maps = mainp.fit_maps
+    common.printlog('fit maps get set to Y1 choices; weight column will be '+args.syscol)
 
 common.printlog('using '+str(fit_maps),logger)
 
@@ -290,11 +294,11 @@ if args.imsys_clus:
         elif args.imsys_1zbin:
             zm = zmin
             zx = zmax
-            if type == 'LRG':
-                fitmapsbin = mainp.fit_maps_all
-            else:
-                fitmapsbin = fit_maps
-            use_maps = fitmapsbin
+            #if type == 'LRG':
+            #    fitmapsbin = mainp.fit_maps_all
+            #else:
+            #    fitmapsbin = fit_maps
+            use_maps = fit_maps#fitmapsbin ; should all be controlled above if this is ever again desired
             _add_sysweight(zm,zx)
             
         elif args.imsys_zbin == 'y':
@@ -302,7 +306,7 @@ if args.imsys_clus:
             for zr in zrl:
                 zm = zr[0]
                 zx = zr[1]
-                if type == 'LRG':
+                if type == 'LRG' and args.Y1_mode:
                     if reg == 'N':
                         fitmapsbin = fit_maps
                     else:
