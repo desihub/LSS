@@ -214,6 +214,7 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     plt.title(titl+' '+args.weight_col)
     plt.grid()
     plt.ylim(yl[0],yl[1])
+    print(np.sum(parv[wp]*pixlr[wp])/np.sum(pixlr[wp]))
     print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
     fname = outdir_txt + 'ngalvs_'+xlab+titl.replace(' ','')+'.txt'
     fname = fname.replace(' - ','')
