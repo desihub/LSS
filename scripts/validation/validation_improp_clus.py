@@ -136,6 +136,7 @@ if args.mapmd == 'all':
     
 
 if do_lrgmask == 'y':
+    print('making LRG mask map')
     lrg_mask_frac = np.zeros(256*256*12)
     ranmap = np.zeros(256*256*12)
     ranmap_lmask = np.zeros(256*256*12)
@@ -152,6 +153,7 @@ if do_lrgmask == 'y':
     lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
 
 if do_elgmask == 'y':
+    print('making ELG mask map')
     elg_mask_frac = np.zeros(256*256*12)
     ranmap = np.zeros(256*256*12)
     ranmap_lmask = np.zeros(256*256*12)
@@ -160,7 +162,7 @@ if do_elgmask == 'y':
     ran_lrgmask = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0elgimask.fits')
     th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
     ranpix = hp.ang2pix(256,th,phi,nest=True)
-    for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
+    for pix,mvalue in zip(ranpix,ran_lrgmask['elg_mask']):
         ranmap[pix] += 1
         if mvalue > 1:
             ranmap_lmask[pix] += 1
