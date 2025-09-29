@@ -261,7 +261,7 @@ mapcuts = mainp.mapcuts
 tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
 
-if mkdat == 'y' or mkran == 'y':
+if args.mkdat == 'y' or args.mkran == 'y':
     tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
     specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
     logger.info('loading specf file '+specfo)
@@ -275,7 +275,7 @@ if mkdat == 'y' or mkran == 'y':
     goodtl = np.isin(tilelocid,gtl)
 
 
-if mkdat == 'y':
+if args.mkdat == 'y':
     logger.info('reading '+in_data_fn)
     mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
     logger.info('read '+in_data_fn.replace('global','dvs_ro'))
