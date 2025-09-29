@@ -97,7 +97,10 @@ else:
 
 progl = prog.lower()
 
-mainp = main(args.type,args.verspec,survey=args.survey,relax_zbounds=args.relax_zbounds)
+pzb = 'n'
+if args.relax_zbounds:
+    pzb = 'y'
+mainp = main(args.type,args.verspec,survey=args.survey,relax_zbounds=pzb)
 mdir = mainp.mdir+progl+'/' #location of ledgers
 tdir = mainp.tdir+progl+'/' #location of targets
 #mtld = mainp.mtld
