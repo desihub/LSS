@@ -169,7 +169,7 @@ if args.exclude_debv:
 if args.Y1_mode:
     syscol = args.syscol
     fit_maps = mainp.fit_maps
-    common.printlog('fit maps get set to Y1 choices; weight column will be '+args.syscol)
+    common.printlog('fit maps get set to Y1 choices; weight column will be '+args.syscol,logger)
 
 common.printlog('using '+str(fit_maps),logger)
 
@@ -301,6 +301,7 @@ if args.imsys_clus:
             #    fitmapsbin = mainp.fit_maps_all
             #else:
             #    fitmapsbin = fit_maps
+            fitmapsbin = fit_maps
             use_maps = fit_maps#fitmapsbin ; should all be controlled above if this is ever again desired
             _add_sysweight(zm,zx)
             
