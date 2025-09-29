@@ -251,13 +251,6 @@ cols = ['LOCATION',
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
     mainp = main('BGS_BRIGHT',args.specrel,args.survey)
-logger.info('reading '+in_data_fn)
-mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
-logger.info('read '+in_data_fn.replace('global','dvs_ro'))
-selcoll = mock_data['COLLISION'] == False
-mock_data = mock_data[selcoll]
-ndattot = len(mock_data)
-lmockdat_noveto = len(mock_data)
 
 if args.prog == 'DARK':
     bittest = targetmask.desi_mask
@@ -268,38 +261,40 @@ mapcuts = mainp.mapcuts
 tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
 
-tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
-logger.info('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo))
-logger.info(len(np.unique(specf['TILEID'])))
-specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-logger.info('loaded specf file '+specfo)
+if mkdat == 'y' or mkran == 'y':
+    tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
+    specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+    logger.info('loading specf file '+specfo)
+    specf = Table(fitsio.read(specfo))
+    logger.info(len(np.unique(specf['TILEID'])))
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    logger.info('loaded specf file '+specfo)
 
-specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
-gtl = np.unique(specfc['TILELOCID'])
-goodtl = np.isin(tilelocid,gtl)
-mock_data = mock_data[goodtl]
-logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
+    gtl = np.unique(specfc['TILELOCID'])
+    goodtl = np.isin(tilelocid,gtl)
 
-mock_data = Table(mock_data)
-mock_data = unique(mock_data,keys=['TARGETID'])
-mock_data.rename_column('RSDZ', 'Z')
+
+if mkdat == 'y':
+    logger.info('reading '+in_data_fn)
+    mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
+    logger.info('read '+in_data_fn.replace('global','dvs_ro'))
+    selcoll = mock_data['COLLISION'] == False
+    mock_data = mock_data[selcoll]
+    ndattot = len(mock_data)
+    lmockdat_noveto = len(mock_data)
+
+    mock_data = mock_data[goodtl]
+    logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
+
+    mock_data = Table(mock_data)
+    mock_data = unique(mock_data,keys=['TARGETID'])
+    mock_data.rename_column('RSDZ', 'Z')
 
 
     
 for tracer in tracers:
     mainp = main(tracer,args.specrel,args.survey)
-    if args.prog == 'DARK':
-        
-        bit = bittest[tracer]#targetmask.desi_mask[tracer]
-        seltar = mock_data[desitarg] & bit > 0
-        mock_data_tr = mock_data[seltar]
-        lmockdat_noveto = len(mock_data_tr)
-        logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
-        logger.info(str(ndattot)+','+str(len(mock_data_tr)))
-    else:
-        mock_data_tr = mock_data
    
     tracerd = tracer
     #if tracer == 'BGS_BRIGHT-21.5':
@@ -325,6 +320,16 @@ for tracer in tracers:
         zmax = 0.4
     ebits = mainp.ebits
     if args.mkdat == 'y':
+        if args.prog == 'DARK':
+        
+            bit = bittest[tracer]#targetmask.desi_mask[tracer]
+            seltar = mock_data[desitarg] & bit > 0
+            mock_data_tr = mock_data[seltar]
+            lmockdat_noveto = len(mock_data_tr)
+            logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
+            logger.info(str(ndattot)+','+str(len(mock_data_tr)))
+        else:
+            mock_data_tr = mock_data
     
         if tracer == 'BGS_BRIGHT-21.5':
             if args.mockver == 'AbacusSummitBGS_v2':
