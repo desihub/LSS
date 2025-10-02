@@ -109,7 +109,14 @@ elif args.mockname == 'uchuu' and args.tracer == 'BGS_ANY':
     data = Table(fitsio.read(args.input_mockpath+args.input_mockfile,columns=['ra','dec']))
     data.rename_column('ra','RA')
     data.rename_column('dec','DEC')
-
+elif args.input_mockfile[:-2] == 'h5':
+    import h5py
+    import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+    data = Table()
+    with h5py.File(args.input_mockpath+args.input_mockfile) as fn:
+        columns = fn.keys()
+        for col in columns:
+            data[col] = fn[col][:]
 else:
     data = Table.read(args.input_mockpath+args.input_mockfile)
 
