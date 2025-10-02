@@ -261,24 +261,24 @@ if args.imsys_clus:
 
     # define the paths for the input files (loading is deferred to ``produce_imweights``)
     fname_ngc = os.path.join(
-        dirout.replace('global','dvs_ro'), args.extra_clus_dir, f"{tracer_type}_NGC_clustering.dat.fits"
+        dirout, args.extra_clus_dir, f"{tracer_type}_NGC_clustering.dat.fits"
     )
 
     fname_sgc = os.path.join(
-        dirout.replace('global','dvs_ro'), args.extra_clus_dir, f"{tracer_type}_SGC_clustering.dat.fits"
+        dirout, args.extra_clus_dir, f"{tracer_type}_SGC_clustering.dat.fits"
     )
 
     # get paths for random catalogs (loading is deferred to ``produce_imweights``)
     randoms_fnames = [
         os.path.join(
-            dirout.replace('global','dvs_ro'),
+            dirout,
             args.extra_clus_dir,
             f"{tracer_type}_NGC_{i}_clustering.ran.fits",
         )
         for i in range(args.nran4imsys)
     ] + [
         os.path.join(
-            dirout.replace('global','dvs_ro'),
+            dirout,
             args.extra_clus_dir,
             f"{tracer_type}_SGC_{i}_clustering.ran.fits",
         )
