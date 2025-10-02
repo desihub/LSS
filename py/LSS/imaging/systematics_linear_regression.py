@@ -700,7 +700,7 @@ def read_catalog(file_path: str, columns: list[str] | None = None) -> np.ndarray
     -----
     This function uses fitsio under the hood, but avoids asking it to load certain columns only due to performance issues.
     """
-    whole_catalog = fitsio.read(file_path)  # load ALL columns
+    whole_catalog = fitsio.read(file_path.replace('global','dvs_ro')  # load ALL columns
     if columns:
         return whole_catalog[columns]
     else:
