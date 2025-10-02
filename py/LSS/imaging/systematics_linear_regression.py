@@ -241,7 +241,7 @@ class LinearRegressor:
         Self
             ``LinearRegressor`` instance loaded from disk.
         """
-        from_disk = jnp.load(filepath)
+        from_disk = jnp.load(filepath.replace('global','dvs_rs'))
         return cls.from_stacked_templates(
             data_weights=from_disk["data_weights"],
             random_weights=from_disk["random_weights"],
