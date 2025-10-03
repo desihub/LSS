@@ -68,13 +68,13 @@ version_dict = {'lrg': 'v1.1', 'elg': 'v1'}
 if version=='none':
     version = version_dict[tracer]
 
-bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/{}/{}'.format(tracer.upper(), version)
+bitmask_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/brickmasks/{}/{}'.format(tracer.upper(), version)
 
 # input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
 
-if os.path.isfile(output_path):
-    raise ValueError(output_path+' already exists!')
+###if os.path.isfile(output_path):
+###    raise ValueError(output_path+' already exists!')
 
 
 def bitmask_radec(brickid, ra, dec):
@@ -126,12 +126,16 @@ def wrapper(bid_index):
 
 
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
-bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
+bricks = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
 #try:
 #    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'BRICKID', 'TARGETID']))
 #except ValueError:
 #    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
+
+
+input_path = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_withQSOcont.fits'
+output_path = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_withQSOcont_matched_input_full_lrg_imask.fits'
 
 if args.cat_type == 'obielg':
     cat = Table(fitsio.read(input_path,columns=['input_ra','input_dec']))
