@@ -1701,16 +1701,23 @@ def read_hdf5_blosc(filename,columns=None,extname='LSS'):
     read an extension from a hdf5 file that has been blosc compressed
     filename is the full path to the file to read
     columns is the list of columns to read; if None, all will be read
-    extname is the extension to read
+    extname is the extension to read; if None, assumes no separate extensions
     '''
     import h5py
     import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
     data = Table()
     with h5py.File(filename) as fn:
-        if columns is None:
-            columns = fn[extname].keys()
-        for col in columns:
-            data[col] = fn[extname][col][:]
+        if extname is None:
+            if columns is None:
+                columns = fn.keys()
+            for col in columns:
+                data[col] = fn[col][:]
+
+        else:
+            if columns is None:
+                columns = fn[extname].keys()
+            for col in columns:
+                data[col] = fn[extname][col][:]
 
     return data
 
