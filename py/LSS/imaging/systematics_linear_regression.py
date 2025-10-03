@@ -241,7 +241,7 @@ class LinearRegressor:
         Self
             ``LinearRegressor`` instance loaded from disk.
         """
-        from_disk = jnp.load(filepath.replace('global','dvs_rs'))
+        from_disk = jnp.load(filepath)
         return cls.from_stacked_templates(
             data_weights=from_disk["data_weights"],
             random_weights=from_disk["random_weights"],
@@ -700,7 +700,7 @@ def read_catalog(file_path: str, columns: list[str] | None = None) -> np.ndarray
     -----
     This function uses fitsio under the hood, but avoids asking it to load certain columns only due to performance issues.
     """
-    whole_catalog = fitsio.read(file_path.replace('global','dvs_ro'))  # load ALL columns
+    whole_catalog = fitsio.read(file_path)  # load ALL columns
     if columns:
         return whole_catalog[columns]
     else:
