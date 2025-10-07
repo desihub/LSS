@@ -44,8 +44,9 @@ elif args.tracer[:3] == 'BGS':
 
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
 
+ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_0_withimagingmask_withz.fits'
 #just using 1 random file for now
-ranf = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/rands_intiles_{tile}_nomask_0.fits'
+###ranf = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/rands_intiles_{tile}_nomask_0.fits'
 if not os.path.isfile(ranf):
     print('did not find '+ranf+', will make it')
     input_ran = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-0.fits',columns=['RA','DEC'])

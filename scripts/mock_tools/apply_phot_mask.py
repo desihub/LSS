@@ -75,12 +75,24 @@ elif prog=='BRIGHT':
 #file_ = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forclustering/cutsky_abacusHF_DR2_ELG_z0p950_zcut_0p8to1p6_clustering.dat.fits'
 ##file_ = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_nomask_%d_v2.fits' % int(mocknum)
 ##TMEPfile_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum, TAG=tag) 
-file_ = '/dvs_ro/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/testcontaminants.fits'
+###file_ = '/dvs_ro/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/testcontaminants.fits'
 
+file_ = '/pscratch/sd/e/efdez/Uchuu-GLAM/GLAM/mocks_altmtl/LRG/GLAM-Uchuu_LRG_100_Y3_cut_sky_clustering.h5'
 #file_ = '/pscratch/sd/e/efdez/Uchuu/LSS/scripts/mock_tools/DA2/LRG_NGC_12_clustering.ran.fits'
 #/pscratch/sd/z/zxzhai/DESI/PreMocks/SecondGenMocks/AbacusSummit_v4_1/forFA'+str(mocknum)+'_nomasking.fits'
 
-cat = Table.read(file_)
+
+import h5py
+import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25
+cat = Table()
+with h5py.File(file_) as fn:
+    columns = fn.keys()
+    for col in columns:
+        cat[col] = fn[col][:]
+
+#cat = Table.read(file_)
+
+
 
 print('size before cutting photmask is', len(cat))
 cat = get_maskbit_nobs(cat)
@@ -95,7 +107,8 @@ print('size after cutting photmask is', len(cat))
 #TEMPout_file_name='/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}.fits'.format(MOCK=mocknum, TAG=tag)
 #out_file_name='/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_%d_v2.fits' % int(mocknum)
 #out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forclustering/masked_cutsky_abacusHF_DR2_ELG_z0p950_zcut_0p8to1p6_clustering.dat.fits'
-out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/forFA_QSO.fits'
+out_file_name = 'test_glam_lrg.fits'
+##out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/forFA_QSO.fits'
 ct.write_LSS_scratchcp(cat, out_file_name, extname='TARGETS')
 print('Done writing in {} sec'.format(time.time()-st), flush=True)
 

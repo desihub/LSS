@@ -20,6 +20,8 @@ try:
     import desiutil.setup as ds
 except ImportError:
     have_desiutil = False
+
+have_desiutil = False
 #
 # Begin setup
 #
