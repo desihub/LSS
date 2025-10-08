@@ -258,9 +258,13 @@ sky_g, sky_r, sky_z = common.get_skyres()
 
 # Do the regression
 if args.imsys_clus:
-    from LSS.imaging.systematics_linear_regression import make_fit_maps_dictionary, produce_imweights
+    from LSS.imaging.systematics_linear_regression import (
+        make_fit_maps_dictionary,
+        produce_imweights,
+        read_catalog,
+    )
 
-    # define the paths for the input files (loading is deferred to ``produce_imweights``)
+    # define the paths for the input files
     fname_ngc_out = os.path.join(
         dirout, args.extra_clus_dir, f"{tracer_type}_NGC_clustering.dat.fits"
     )
@@ -269,7 +273,7 @@ if args.imsys_clus:
         dirout, args.extra_clus_dir, f"{tracer_type}_SGC_clustering.dat.fits"
     )
 
-    # get paths for random catalogs (loading is deferred to ``produce_imweights``)
+    # get paths for random catalogs
     randoms_fnames_out = [
         os.path.join(
             dirout,
@@ -317,6 +321,17 @@ if args.imsys_clus:
         global_to_dvs_ro(randoms_fname) for randoms_fname in randoms_fnames_out
     ]
 
+    # Load the data and randoms
+    # Get all columns since they will be used for writing later
+    data_sgc = read_catalog(fname_sgc_in, columns=None)
+    data_ngc = read_catalog(fname_ngc_in, columns=None)
+
+    data_catalogs = np.concatenate([data_sgc, data_ngc])
+
+    randoms_catalogs = np.concatenate(
+        [read_catalog(fname, columns=None) for fname in randoms_fnames_in]
+    )
+
     # Get redshift ranges
     if args.imsys_finezbin:
         dz = 0.1
@@ -354,8 +369,8 @@ if args.imsys_clus:
 
     # perform regression
     weights = produce_imweights(
-        data_catalog_paths=[fname_sgc_in, fname_ngc_in],
-        random_catalogs_paths=randoms_fnames_in,
+        data_catalogs=data_catalogs,
+        randoms_catalogs=randoms_catalogs,
         is_clustering_catalog=True,
         weight_scheme=None,
         tracer_type=tracer_type,
@@ -381,9 +396,9 @@ if args.imsys_clus:
 
     ## attach data to NGC/SGC catalogs, write those out
 
-    # Need to load the data individual data catalogs again
-    data_sgc = Table.read(fname_sgc_in)
-    data_ngc = Table.read(fname_ngc_in)
+    # Data catalogs are already loaded, just recast them to astropy Tables
+    data_sgc = Table(data_sgc)
+    data_ngc = Table(data_ngc)
     # Catalogs are just concatenated in the order SGC, NGC
     # so this is enough to assign weights to the correct one
     transition_index = len(data_sgc)
