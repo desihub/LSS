@@ -128,7 +128,7 @@ def catalog_dir(survey='Y1', verspec='iron', version='v1.2', base_dir='/global/c
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',recon_dir='n',rec_type=False, nrandoms=4, cat_dir=None, survey='Y1', **kwargs):
     #print(kwargs)
     if cat_dir is None:
-        cat_dir = catalog_dir(survey=survey, **kwargs)
+        cat_dir = catalog_dir(survey=survey, **kwargs).replace('global','dvs_ro')
     #if survey in ['main', 'DA02']:
     #    tracer += 'zdone'
     if 'edav1' in cat_dir:
