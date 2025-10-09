@@ -414,7 +414,7 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
             if name != 'data' and 'NTMP' in weight_type:
                 getntmp = 'getntmp'
                 logger.info('getting NTMP info')
-                ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
+                ff = fitsio.read(cat_full.replace('PIP/',''),columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
                 fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
                 del ff
             else:
