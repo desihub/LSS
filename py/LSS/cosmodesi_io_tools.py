@@ -343,13 +343,6 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
     if name == 'randoms':
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
-        if 'NTMP' in weight_type:
-            if fac_ntmp is not None:
-                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
-                weights *= wts[0]
-                logger.info('multiplied randoms by NTMP weights')
-            else:
-                logger.info('fac_ntmp was None, so nothing happening with it')
         if 'bitwise' in weight_type:# and 'default' in weight_type:
             if 'default' in weight_type:
                 weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
@@ -369,6 +362,14 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
 
             #weights /= catalog['FRAC_TLOBS_TILES'][mask]
             #print('dividing weights by FRAC_TLOBS_TILES')
+        if 'NTMP' in weight_type:
+            if fac_ntmp is not None:
+                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
+                weights *= wts[0]
+                logger.info('multiplied randoms by NTMP weights')
+            else:
+                logger.info('fac_ntmp was None, so nothing happening with it')
+
 #         if 'RF' in weight_type:
 #             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
 #         if 'zfail' in weight_type:
