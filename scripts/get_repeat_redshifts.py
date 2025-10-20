@@ -153,7 +153,7 @@ print('fraction of repeat LRG measurements with (Z1-Z2)/(1+Z1) > 0.003:')
 print(np.sum(sel)/len(lrgr))
 
 #do QSO
-qsof = fitsio.read(mainp..qsozf,columns=['TARGETID','LOCATION','TILEID','Z'])
+qsof = fitsio.read(mainp.qsozf,columns=['TARGETID','LOCATION','TILEID','Z'])
 specf = join(specf,qsof,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
 selqso = specf['Z_QF']!=999999
 selqso &= (specf['DESI_TARGET'] & 4) > 0
