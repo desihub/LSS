@@ -83,7 +83,7 @@ if args.survey == 'DA2':
     wd &= mt['ZDATE'] < 20240410
 mtld = mt[wd]
 
-ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specver+'/'
+ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.verspec+'/'
 specfo = ldirspec+'datcomb_bright_spec_zdone.fits'
 specf = Table(fitsio.read(specfo.replace('global','dvs_ro')))
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
