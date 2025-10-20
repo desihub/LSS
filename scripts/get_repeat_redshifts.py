@@ -89,7 +89,7 @@ specf = Table(fitsio.read(specfo.replace('global','dvs_ro')))
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
 specf = Table(specf)
-specf.keep_columns(['TARGETID','Z','ZWARN','DELTACHI2','LOCATION','BGS_TARGET','TILEID','TSNR2_LRG','TSNR2_ELG','ZWARN_MTL','COADD_FIBERSTATUS','FIBER','LASTNIGHT'])
+specf.keep_columns(['TARGETID','Z','ZWARN','DELTACHI2','LOCATION','BGS_TARGET','TILEID','TSNR2_BGS','TSNR2_ELG','ZWARN_MTL','COADD_FIBERSTATUS','FIBER','LASTNIGHT'])
 specf = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True)
 
 #do BGS
