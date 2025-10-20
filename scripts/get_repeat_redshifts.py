@@ -55,6 +55,55 @@ def get_repeats(indat,zcol='Z'):
     res['Z1'] = zl1
     res['Z2'] = zl2
     return res
+    
+#do BGS
+
+mainp = main('BGS',args.verspec)#get settings for dark time
+
+mt = mainp.mtld
+tiles = mainp.tiles
+imbits = mainp.imbits #mask bits applied to targeting
+ebits = mainp.ebits #extra mask bits we think should be applied
+
+
+tsnrcut = mainp.tsnrcut
+dchi2 = mainp.dchi2
+tnsrcol = mainp.tsnrcol        
+zmin = mainp.zmin
+zmax = mainp.zmax
+badfib = mainp.badfib
+
+#get set of tiles
+wd = mt['SURVEY'] == 'main'
+wd &= mt['ZDONE'] == 'true'
+wd &= mt['FAPRGRM'] == 'bright'
+if args.survey == 'Y1':
+    wd &= mt['ZDATE'] < 20220900
+if args.survey == 'DA2':
+    wd &= mt['ZDATE'] < 20240410
+mtld = mt[wd]
+
+ldirspec = '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specver+'/'
+specfo = ldirspec+'datcomb_bright_spec_zdone.fits'
+specf = Table(fitsio.read(specfo.replace('global','dvs_ro')))
+sel = np.isin(specf['TILEID'],mtld['TILEID'])
+specf = specf[sel]
+specf = Table(specf)
+specf.keep_columns(['TARGETID','Z','ZWARN','DELTACHI2','LOCATION','BGS_TARGET','TILEID','TSNR2_LRG','TSNR2_ELG','ZWARN_MTL','COADD_FIBERSTATUS','FIBER','LASTNIGHT'])
+specf = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True)
+
+#do BGS
+sel_BGS = specf['BGS_TARGET'] > 0
+sel_gz = common.goodz_infull('BGS',specf,zcol='Z')
+specfl = specf[sel_BGS&sel_gz]
+
+bgsr = get_repeats(specfl)
+bgsr.write(args.outdir+'/BGSrepeats.fits',overwrite=True)
+
+sel = abs((bgsr['Z1']-bgsr['Z2'])/(1+bgsr['Z1'])) > 0.003
+print('fraction of repeat BGS measurements with (Z1-Z2)/(1+Z1) > 0.003:')
+print(np.sum(sel)/len(bgsr))
+    
 #do dark time tracers
 
 mainp = main('LRG',args.verspec)#get settings for dark time
