@@ -176,7 +176,7 @@ sel_gz = common.goodz_infull('ELG',specf,zcol='Z')
 specfe = specf[sel_ELG&sel_gz]
 
 elgr = get_repeats(specfe)
-elgr.write(args.outdir+'/QSOrepeats.fits',overwrite=True)
+elgr.write(args.outdir+'/ELGrepeats.fits',overwrite=True)
 sel = abs((elgr['Z1']-elgr['Z2'])/(1+elgr['Z1'])) > 0.001
 print('fraction of repeat ELG measurements with (Z1-Z2)/(1+Z1) > 0.001:')
 print(np.sum(sel)/len(elgr))
