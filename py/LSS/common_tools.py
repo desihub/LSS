@@ -1639,6 +1639,15 @@ def write_LSS(ff, outf, comments=None,extname='LSS'):
     print('moved output to ' + outf)
     return True
 
+def convert_fits2h5(filename):
+    '''
+    read an input fits file and write it out as h5
+    filename should be the full path of the file to read
+    '''
+
+    ff = fitsio.read(filename.replace('global','dvs_ro'))
+    write_LSShdf5_scratchcp(ff,filename.replace('.fits','.h5'))
+
 def write_LSShdf5_scratchcp(ff, outf,logger=None):
     import h5py
     import hdf5plugin #need to be in the cosmodesi test environment, as of Sep 4th 25

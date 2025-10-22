@@ -2474,7 +2474,12 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
-    common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if '.fits' in outf:
+        common.write_LSS_scratchcp(dz,outf,logger=logger)
+    elif '.h5' in outf:
+        common.write_LSShdf5_scratchcp(dz,outf,logger=logger)
+    else:
+        common.printwarn('UNSUPPORTED EXTENSION IN OUTPUT FILE NAME, NOT WRITING!!!',logger=logger)
     del dz
     return True    
 
