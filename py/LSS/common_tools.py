@@ -1599,7 +1599,7 @@ def write_hdf5_blosc(filename, table, extname='LSS',logger=None):
             if dt == '<U1':
                 dt = 'S1'
             if '<U' in str(dt):
-                dt = 'S'+dt.strip('<U')  
+                dt = 'S'+str(dt).strip('<U')  
             data = np.array(data, dtype=dt)
             
             
