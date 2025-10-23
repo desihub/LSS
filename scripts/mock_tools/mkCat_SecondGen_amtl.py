@@ -434,6 +434,9 @@ if args.joindspec == 'y':
         common.printlog('length after masking collisions '+str(len(tj)),logger)
 
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
+    if args.outmd == 'scratch':
+        outfs = outfs.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+
     common.write_LSS_scratchcp(tj,outfs,logger=logger)
     #tj.write(outfs, format = 'fits', overwrite = True)
     #common.print('wrote ' + outfs)
@@ -461,6 +464,9 @@ if args.fulld == 'y':
 
     ftar = None
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
+    if args.outmd == 'scratch':
+        dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
