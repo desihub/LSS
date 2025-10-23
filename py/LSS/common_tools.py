@@ -537,18 +537,37 @@ def mknz(fcd,fcr,fout,bs=0.01,zmin=0.01,zmax=1.6,randens=2500.,compmd='ran',wtmd
     zmax is the upper edge of the last bin
     '''
     #cd = distance(om,1-om)
-    ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
-    area = ranf['NAXIS2']/randens
-    print('area is '+str(area))
-    outf = open(fout,'w')
-    outf.write('#area is '+str(area)+'square degrees\n')
+    if '.fits' in fcr:
+        ranf = fitsio.read_header(fcr,ext=1) #should have originally had 2500/deg2 density, so can convert to area
+        area = ranf['NAXIS2']/randens
     
-    if compmd == 'ran':
-        ranf = fitsio.read(fcr)
-        area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
-        outf.write('#effective area is '+str(area)+'square degrees\n')
+        print('area is '+str(area))
+        outf = open(fout,'w')
+        outf.write('#area is '+str(area)+'square degrees\n')
+    
+        if compmd == 'ran':
+            ranf = fitsio.read(fcr)
+            area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
+            outf.write('#effective area is '+str(area)+'square degrees\n')
+        
+        
+    if '.h5' in fcr:
+        ranf = read_hdf5_blosc(fcr) #should have originally had 2500/deg2 density, so can convert to area
+        area = len(ranf)/randens
+    
+        print('area is '+str(area))
+        outf = open(fout,'w')
+        outf.write('#area is '+str(area)+'square degrees\n')
+    
+        if compmd == 'ran':
+            area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
+            outf.write('#effective area is '+str(area)+'square degrees\n')
 
-    df = fitsio.read(fcd)
+    del ranf
+    if '.fits' in fcd:
+        df = fitsio.read(fcd)
+    if '.h5' in fcd:
+        df = read_hdf5_blosc(fcd)
 
     nbin = int((zmax-zmin)*(1+bs/10)/bs)
     if wtmd == 'clus':
@@ -806,7 +825,7 @@ def add_weight_ntile(fb,logger=None,ranmin=0,nran=18,par='n',extradir='',tp='',n
     
 
 
-def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18,comp_ntl=None,weight_ntl=None,logger=None):
+def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw='',ranmin=0,compmd='ran',par='n',nproc=18,comp_ntl=None,weight_ntl=None,logger=None,exttp='.fits'):
     '''
     fb is the root of the file name, including the path
     nran is the number of random files to add the nz to
@@ -821,8 +840,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     bs = nzf[2][0]-nzf[1][0]
     printlog('nz bin size is actually '+str(bs),logger)
     nzd = nzf[3] #column with nbar values
-    fn = fb.replace(ran_sw,'')+'_clustering.dat.fits'
-    fd = Table(fitsio.read(fn.replace('global','dvs_ro')))
+    fn = fb.replace(ran_sw,'')+'_clustering.dat'+exttp
+    if exttp == '.fits':
+        fd = Table(fitsio.read(fn.replace('global','dvs_ro')))
+    if exttp == '.h5':
+        fd = read_hdf5_blosc(fn.replace('global','dvs_ro'))
     zl = fd['Z']
     nl = np.zeros(len(zl))
     zind = ((zl - zmin) / bs).astype(int)
@@ -846,7 +868,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
             comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
         
         if compmd == 'ran':
-            fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
+            if exttp == '.fits':
+                fran = fitsio.read(fb.replace('global','dvs_ro')+'_0_clustering.ran'+exttp,columns=['NTILE','FRAC_TLOBS_TILES'])
+            if exttp == '.h5':
+                fran = read_hdf5_blosc(fb.replace('global','dvs_ro')+'_0_clustering.ran'+exttp,columns=['NTILE','FRAC_TLOBS_TILES'])
+
             fttl = np.zeros(len(ntl))
             for i in range(0,len(ntl)): 
                 sel = fran['NTILE'] == ntl[i]
@@ -879,7 +905,10 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ft['WEIGHT_FKP'] = 1./(1+ft['NZ']*P0)
     if add_data:
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS_scratchcp(fd,fn,logger=logger)
+        if exttp == '.fits':
+            write_LSS_scratchcp(fd,fn,logger=logger)
+        if exttp == '.h5':
+            write_LSShdf5_scratchcp(fd,fn,logger=logger)
     #fd = np.array(fd)
     #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
     #ff['LSS'].write(fd)
@@ -888,8 +917,11 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
     #ft.write(fn,format='fits',overwrite=True)
     printlog('Done with data.',logger=logger)
     def _parfun(rann):
-        fn = fb+'_'+str(rann)+'_clustering.ran.fits'
-        fd = Table(fitsio.read(fn.replace('global','dvs_ro') ))
+        fn = fb+'_'+str(rann)+'_clustering.ran'+exttp
+        if exttp == '.fits':
+            fd = Table(fitsio.read(fn.replace('global','dvs_ro') ))
+        if exttp == '.h5':
+            fd = read_hdf5_blosc(fn.replace('global','dvs_ro') ))
         zl = fd['Z']
         nl = np.zeros(len(zl))
         zind = ((zl - zmin) / bs).astype(int)
@@ -923,7 +955,10 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         #fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fkpl = 1/(1+fd['NX']*P0)
         fd['WEIGHT_FKP'] = fkpl
-        write_LSS_scratchcp(fd,fn,logger=logger)
+        if exttp == '.fits':
+            write_LSS_scratchcp(fd,fn,logger=logger)
+        if exttp == '.h5':
+            write_LSShdf5_scratchcp(fd,fn,logger=logger)
         #ff['LSS'].insert_column('WEIGHT_FKP',fkpl)
         #fd = np.array(fd)
         #ff['LSS'].write(fd)
