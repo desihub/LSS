@@ -58,7 +58,7 @@ parser.add_argument("--pota", help="base directory for target file",default=None
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
-parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
+parser.add_argument("--dataversion", help="version of LSS catalogs",default='v2')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--usepota", help="use the already calculated potential assignments file instead of combining fiberassign files",default='n')
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
