@@ -4493,7 +4493,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             #common.write_LSS(ffcn,outfn)#,comments)
             #common.printlog(str(ffcn.dtype),logger)
             for col in kc:
-                common.printlog(col+' '+str(ffcn[col].shape))
+                common.printlog(col+' '+str(ffcn[col].shape),logger)
             common.write_LSS_scratchcp(ffcn,outfn,logger=logger)
         tabl.append(ffcn)
     #outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
