@@ -920,7 +920,7 @@ if args.mkclusran == 'y':
         common.printlog('about to read input random for '+str(rann),logger)        
         ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
         if not os.path.isfile(ranf):
-            ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
+            ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
