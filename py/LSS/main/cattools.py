@@ -3896,7 +3896,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None,exttp='.fits'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -4218,8 +4218,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             ffs = ff[~wn]
             common.write_LSS_scratchp(ffs,outfn.replace(tp,extradir+tp),logger=logger)
         else:
-            outfn = fl+wzm+'clustering.dat.fits'
-            common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp),logger=logger)
+            outfn = fl+wzm+'clustering.dat'+exttp
+            if exttp == '.fits':
+                common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp),logger=logger)
+            if exttp == '.h5':
+                common.write_LSShdf5_scratchcp(ff,outfn.replace(tp,extradir+tp),logger=logger)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]

@@ -852,7 +852,7 @@ if args.mkclusdat == 'y':
 
        #readdir = dirout
     
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger) #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5') #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
@@ -898,7 +898,8 @@ if args.mkclusran == 'y':
     
     fl = os.path.join(readdir, finaltracer) + '_'
     common.printlog('adding tlobs to randoms with '+ fl,logger)
-    clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
+    #clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
+    clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
     tlf = fitsio.read(fl+'frac_tlobs.fits')
@@ -992,7 +993,7 @@ def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
 if args.splitGC == 'y':
     fb_split = os.path.join(dirout,tracer_clus+'_')
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
-    splitGC(fb_split, '.dat',ftp='.fits')
+    splitGC(fb_split, '.dat',ftp='.h5')
     
     def _spran(rann):
         splitGC(fb_split,'.ran',rann,ftp='.h5')
@@ -1031,10 +1032,10 @@ if args.nz == 'y':
     for reg in regions:#allreg:
         fb_nz = os.path.join(dirout,tracer_clus+'_'+reg)
         fcr = fb_nz+'_0_clustering.ran.h5'#.fits'
-        fcd = fb_nz+'_clustering.dat.fits'
+        fcd = fb_nz+'_clustering.dat.h5'
         fout = fb_nz+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,compmd=nzcompmd)
-        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
+        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger,exttp='.h5')
 
 
 
