@@ -976,8 +976,10 @@ def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
     app = 'clustering'+datran+ftp
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+ftp
-
-    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    if '.fits' in app:
+        fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    if '.h5' in app:
+        fn = common.read_hdf5_blosc(flroot.replace('global','dvs_ro') +app)
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
     if '.fits' in outf_ngc:
