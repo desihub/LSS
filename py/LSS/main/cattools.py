@@ -4211,15 +4211,15 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         if splitNS == 'y':
             outfn = fl+wzm+'N_clustering.dat.fits'
             comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
-            common.write_LSS(ff[wn],outfn.replace(tp,extradir+tp),comments)
+            common.write_LSS_scratchp(ff[wn],outfn.replace(tp,extradir+tp),logger=logger)
 
             outfn = fl+wzm+'S_clustering.dat.fits'
             comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
             ffs = ff[~wn]
-            common.write_LSS(ffs,outfn.replace(tp,extradir+tp),comments)
+            common.write_LSS_scratchp(ffs,outfn.replace(tp,extradir+tp),logger=logger)
         else:
             outfn = fl+wzm+'clustering.dat.fits'
-            common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp))
+            common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp),logger=logger)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
