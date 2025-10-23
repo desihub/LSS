@@ -918,10 +918,10 @@ if args.mkclusran == 'y':
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         common.printlog('about to read input random for '+str(rann),logger)        
-        ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
+        data_dir.replace('global','dvs_ro')+'/'+ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
         if not os.path.isfile(ranf):
             ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
-            datain = fitsio.read(data_dir.replace('global','dvs_ro')+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
+            datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
