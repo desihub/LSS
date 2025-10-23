@@ -921,7 +921,7 @@ def addnbar(fb,nran=18,bs=0.01,zmin=0.01,zmax=1.6,P0=10000,add_data=True,ran_sw=
         if exttp == '.fits':
             fd = Table(fitsio.read(fn.replace('global','dvs_ro') ))
         if exttp == '.h5':
-            fd = read_hdf5_blosc(fn.replace('global','dvs_ro') ))
+            fd = read_hdf5_blosc(fn.replace('global','dvs_ro') )
         zl = fd['Z']
         nl = np.zeros(len(zl))
         zind = ((zl - zmin) / bs).astype(int)
