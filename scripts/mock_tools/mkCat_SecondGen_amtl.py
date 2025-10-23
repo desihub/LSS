@@ -968,28 +968,34 @@ regions = ['NGC', 'SGC']
 
 
 
-def splitGC(flroot,datran='.dat',rann=0):
+def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    app = 'clustering'+datran+'.fits'
+    app = 'clustering'+datran+ftp
     if datran == '.ran':
-        app = str(rann)+'_clustering'+datran+'.fits'
+        app = str(rann)+'_clustering'+datran+ftp
 
     fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    if '.fits' in outf_ngc:
+        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    if '.h5' in outf_ngc:
+        common.write_LSShdf5_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+    if '.fits' in outf_sgc:
+        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+    if '.h5' in outf_sgc:
+        common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 if args.splitGC == 'y':
     fb_split = os.path.join(dirout,tracer_clus+'_')
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
-    splitGC(fb_split, '.dat')
+    splitGC(fb_split, '.dat',ftp='.fits')
     
     def _spran(rann):
-        splitGC(fb_split,'.ran',rann)
+        splitGC(fb_split,'.ran',rann,ftp='.h5')
     inds = np.arange(nran)
     try:
         if args.par == 'y':
@@ -1024,7 +1030,7 @@ if args.resamp == 'y':
 if args.nz == 'y':
     for reg in regions:#allreg:
         fb_nz = os.path.join(dirout,tracer_clus+'_'+reg)
-        fcr = fb_nz+'_0_clustering.ran.fits'
+        fcr = fb_nz+'_0_clustering.ran.h5'#.fits'
         fcd = fb_nz+'_clustering.dat.fits'
         fout = fb_nz+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,compmd=nzcompmd)
