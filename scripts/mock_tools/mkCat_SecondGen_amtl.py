@@ -180,7 +180,8 @@ if args.add_gtl == 'y':
     specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
     specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
+    #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
     gtl = np.unique(specfc['TILELOCID'])
 
