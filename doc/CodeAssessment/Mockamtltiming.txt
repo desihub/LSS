@@ -6,9 +6,9 @@ combination: 17 minutes
 full data LRG: 8.5 minutes
 full data QSO: 6 minutes
 full data ELG: 23 minutes
-clustering catalogs LRG: 11 minutes
+clustering catalogs LRG: 11 minutes; h5 3.7
 clustering catalogs ELG: 12 minutes
-clustering catalogs QSO: 15 minutes
+clustering catalogs QSO: 15 minutes;  h5 4.8
 Total: 92.5 minutes; 1.54 node hours
 
 Total in astropy join/unique: 4.5+1.5+3.5+2+2
