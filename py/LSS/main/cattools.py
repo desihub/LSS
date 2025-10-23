@@ -4302,7 +4302,7 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp=''):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',extout='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -4438,7 +4438,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits'#).replace(tp,extradir+tp)  
+        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran'+extout#).replace(tp,extradir+tp)  
         
         des_resamp = False
         if 'QSO' in tp:
@@ -4492,12 +4492,17 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             #comments = ["'clustering' LSS catalog for random number "+str(rann)+", "+reg+" region","entries are only for data with good redshifts"]
             #common.write_LSS(ffcn,outfn)#,comments)
             #common.printlog(str(ffcn.dtype),logger)
-            for col in kc:
+            #for col in kc:
                 #common.printlog(col+' '+str(ffcn[col].shape),logger)
-                if str(ffcn[col].dtype) == 'S1':
-                    ffcn[col] == np.array(ffcn[col],dtype='<U1')
+            #    if str(ffcn[col].dtype) == 'S1':
+            #        ffcn[col] == np.array(ffcn[col],dtype='<U1')
 
-            common.write_LSS_scratchcp(ffcn,outfn,logger=logger)
+            if outext == '.fits':
+                common.write_LSS_scratchcp(ffcn,outfn,logger=logger)
+            elif outext == '.h5':
+                common.write_LSShdf5_scratchcp(ffcn,outfn,logger=logger)
+            else:
+                common.printwarn('nothing will be written out, invalid extension')
         tabl.append(ffcn)
     #outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
     #if clus_arrays is None:
