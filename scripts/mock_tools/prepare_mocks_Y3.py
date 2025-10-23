@@ -34,6 +34,7 @@ parser.add_argument("--ELGsplit", help="Are the ELGs split into LOP and VLO? If 
 parser.add_argument("--ELGtpcol", help="column distinguishing the ELG type; assumed boolean with True being LOP",default='LOP')
 parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
 parser.add_argument("--nzmask", help="apply mask on galaxy number density n(z)",default='n')
+parser.add_argument("--immask", help="apply imaging mask to targets?",default='n')
 
 args = parser.parse_args()
 
@@ -216,7 +217,7 @@ def wrapper(bid_index):
 
     return data
 
-if 'MASKBITS' not in targets.colnames:
+if 'MASKBITS' not in targets.colnames and args.immask == 'y':
     if 'BRICKID' not in targets.colnames:
         from desiutil import brick
         tmp = brick.Bricks(bricksize=0.25)
