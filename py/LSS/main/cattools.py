@@ -4438,7 +4438,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran'+extout#).replace(tp,extradir+tp)  
+        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran'+outext#).replace(tp,extradir+tp)  
         
         des_resamp = False
         if 'QSO' in tp:
