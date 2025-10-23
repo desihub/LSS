@@ -4491,7 +4491,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             #comments seem to cause I/O issues
             #comments = ["'clustering' LSS catalog for random number "+str(rann)+", "+reg+" region","entries are only for data with good redshifts"]
             #common.write_LSS(ffcn,outfn)#,comments)
-            common.printlog(str(ffcn.dtype),logger)
+            #common.printlog(str(ffcn.dtype),logger)
+            for col in kc:
+                common.printlog(col+' '+str(ffcn[col].shape))
             common.write_LSS_scratchcp(ffcn,outfn,logger=logger)
         tabl.append(ffcn)
     #outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
