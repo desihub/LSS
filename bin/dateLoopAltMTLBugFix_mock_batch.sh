@@ -41,14 +41,14 @@ echo "$argstring"
 if [ $QVal = 'interactive' ]; 
 then
 
-    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 03:00:00 python $path2LSS/runAltMTLRealizations.py $argstring
+    srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 04:00:00 --dependency=afterany:43968097  python $path2LSS/runAltMTLRealizations.py $argstring
     #srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 03:00:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
 fi
 if [ $QVal = 'regular' ]; 
 then
     #echo "srun -c 1 -n 1 -C $CVal --qos=shared -A desi -t 48:00:00 --mem=128G python $path2LSS/runAltMTLRealizations.py $argstring"
 	echo "srun --nodes=1 -n 1 -C $CVal --qos=regular -A desi -t 48:00:00 python $path2LSS/runAltMTLRealizations.py $argstring"
-	srun --nodes=1 -n 1 -C $CVal --qos=regular -A desi -t 48:00:00 python $path2LSS/runAltMTLRealizations.py $argstring
+	srun --nodes=1 -n 1 -C $CVal --qos=regular -A desi -t 48:00:00 --dependency=afterany:43759480 python $path2LSS/runAltMTLRealizations.py $argstring
     ##srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:22562205 $path2LSS/runAltMTLRealizations.py $argstring
     #srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 12:00:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
 fi

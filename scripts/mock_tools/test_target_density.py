@@ -16,7 +16,26 @@ from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
+def mknz(df, area, bs = 0.01, zmin = 0.01, zmax = 1.6, randens = 2500.):
+    from LSS.tabulated_cosmo import TabulatedDESI
+    cosmo = TabulatedDESI()
+    dis_dc = cosmo.comoving_radial_distance
+    print('area is '+str(area))
 
+
+    nbin = int((zmax-zmin)*(1+bs/10)/bs)
+    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax)) #,weights=wts)
+    
+    zreturn, nzreturn = [], []
+    for i in range(0,nbin):
+        zl = zhist[1][i]
+        zh = zhist[1][i+1]
+        zm = (zh+zl)/2.
+        voli = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
+        nbarz =  zhist[0][i]/voli
+        zreturn.append(zm)
+        nzreturn.append(nbarz)
+    return zreturn, nzreturn
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
@@ -44,9 +63,9 @@ elif args.tracer[:3] == 'BGS':
 
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{tile}.fits')
 
-ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_0_withimagingmask_withz.fits'
+###ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_0_withimagingmask_withz.fits'
 #just using 1 random file for now
-###ranf = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/rands_intiles_{tile}_nomask_0.fits'
+ranf = f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/rands_intiles_{tile}_nomask_0.fits'
 if not os.path.isfile(ranf):
     print('did not find '+ranf+', will make it')
     input_ran = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-0.fits',columns=['RA','DEC'])
@@ -125,6 +144,9 @@ else:
 sel_tiles = is_point_in_desi(tiletab,data['RA'],data['DEC'])
 data = data[sel_tiles]
 print(len(data),' in tiles area')
+
+
+data.write('HOMe_LRG_zrsd_in_DR2.fits')
 
 #downsampling needed for abacus
 if args.mockname == 'ab_secondgen':
@@ -260,3 +282,70 @@ if type_ == 'ELG' and args.ELGsplit == 'y':
     print('The data target density for ELG_LOP is '+str(round(obsdens,3)))
 
 #put in something to make plots as function of z
+
+
+import plotext as plt
+#do plot n(z)
+if type_ == 'LRG' or type_ == 'QSO':
+    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/NZ_%s_v3.txt' % type_, unpack = True)
+    ztarget, nztarget = mknz(data, area)
+
+    plt.plot(z, nz, color='red')
+    plt.plot(ztarget, nztarget, color='blue')
+    plt.title(type_)
+    plt.show()
+    print("\nLegend:")
+    print("  red  Reference")
+    print("  blue Comparison")
+
+def return_north(ra, dec):
+    '''
+    given a table that already includes RA,DEC, add PHOTSYS column denoting whether
+    the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(ra* u.deg, dec* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+
+    seln = dec > 32.375
+
+    sel = seln&sel_ngc
+    return sel
+
+
+if type_ == 'ELG':
+
+    masknorth = return_north(data['RA'], data['DEC'])
+    datanorth = data[masknorth]
+    datasouth = data[~masknorth]
+
+    zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_N_v5.txt', unpack = True, usecols=([0,1]))
+    zS, nzS = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_S_v5.txt', unpack = True, usecols=([0,1]))
+
+
+    random = Table.read(ranf)
+    masknorth = return_north(random['RA'], random['DEC'])
+    randomnorth = random[masknorth]
+    randomsouth = random[~masknorth]
+
+    ztargetN, nztargetN = mknz(datanorth, len(randomnorth)/2500.)
+    ztargetS, nztargetS = mknz(datasouth, len(randomsouth)/2500.)
+
+    plt.plot(zS, nzS, color='red')
+    plt.plot(ztargetS, nztargetS, color='blue')
+    plt.title(type_ + ' SOUTH')
+    plt.show()
+    print("\nLegend SOUTH:")
+    print("  red  Reference")
+    print("  blue Comparison")
+    plt.clear_figure()
+    plt.plot(zN, nzN, color='red')
+    plt.plot(ztargetN, nztargetN, color='blue')
+    plt.title(type_ + ' NORTH')
+    plt.show()
+    print("\nLegend NORTH:")
+    print("  red  Reference")
+    print("  blue Comparison")
+

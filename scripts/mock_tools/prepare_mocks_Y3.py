@@ -75,7 +75,8 @@ if args.mockname == 'abacushf':
     args.need_nz_calib = 'n'
 
 desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG, 'BGS': desi_mask.BGS_ANY}
-
+print(desitar)
+exit()
 #AURE PRIORITY for BGS, is BRIGHT or what??? BGS_ANY? Shall we make same as ELG?
 
 priority = {'LRG': desi_mask.LRG.priorities['UNOBS'],

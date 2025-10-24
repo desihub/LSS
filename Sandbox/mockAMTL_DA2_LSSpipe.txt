@@ -66,4 +66,9 @@ See ...
 
 # LSS pipeline bright
 
-See ...
+srun -N 1 -C cpu --cpus-per-task=1 -t 04:00:00 --ntasks=1 --qos interactive --account desi python mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/altmtl0 --mockver ab_secondgen --mocknum 0 --add_gtl y --tracer bright --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/ --combd y --joindspec y --simName SecondGenMocks/AbacusSummitBGS_v2
+
+(failed becasue there is no healpix maps for BGS_ANY) srun -C cpu --cpus-per-task=18 -t 04:00:00 --ntasks=1 --qos interactive --account desi python mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/altmtl0 --mockver ab_secondgen --mocknum 0 --survey DA2 --add_gtl n --tracer BGS_ANY --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2 --fulld y --apply_veto y --apply_veto_ran y --add_tlcomp y --par y --minr 0 --maxr 18 --outmd 'noscratch'
+
+srun -C cpu --cpus-per-task=18 -t 04:00:00 --ntasks=1 --qos interactive --account desi python mkCat_SecondGen_amtl.py --base_output /global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2/altmtl0 --mockver ab_secondgen --mocknum 0 --survey DA2 --add_gtl n --tracer BGS_BRIGHT --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummitBGS_v2 --fulld y --apply_veto y --apply_veto_ran y --add_tlcomp y --par y --minr 0 --maxr 18 --outmd 'noscratch' --fullr y
+

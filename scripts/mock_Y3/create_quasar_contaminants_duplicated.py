@@ -294,9 +294,9 @@ if append_galaxies:
                                                    # name_out)
 savefits=True
 if savefits:
-    col1 = fits.Column(name='RA', array=sim_ra, format='K')
-    col2 = fits.Column(name='DEC', array=sim_dec, format='K')
-    col3 = fits.Column(name='Z', array=sim_z, format='J')
+    col1 = fits.Column(name='RA', array=sim_ra, format='D')
+    col2 = fits.Column(name='DEC', array=sim_dec, format='D')
+    col3 = fits.Column(name='Z', array=sim_z, format='E')
     cols = fits.ColDefs([col1, col2, col3])
     tbhdu = fits.BinTableHDU.from_columns(cols)
     tbhdu.writeto(path_out + name_out, overwrite=True)

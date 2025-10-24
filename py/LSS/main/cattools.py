@@ -3932,11 +3932,13 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     else:
         ff['Z_not4clus'].name = 'Z'
     if tp[:3] == 'QSO':
+
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = ff['Z']*0 == 0
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
+        wz &= ff['TARGETID'] < 419430400000000
         #if not ismock:
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
 
@@ -3949,6 +3951,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             wz &= ff['o2c'] > dchi2
             common.printlog('length after oII cut '+str(len(ff[wz])),logger)
         wz &= ff['LOCATION_ASSIGNED'] == 1
+        wz &= ff['TARGETID'] < 838860800000000
         common.printlog('length after also making sure location assigned '+str(len(ff[wz])),logger)
         #if not ismock:
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
@@ -3993,7 +3996,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         wzm += 'zcmb_'
         common.printlog('corrected redshifts to cmb frame',logger)
 
-
+    '''
     if subfrac != 1:
         subfracl = np.ones(len(ff))
         sub_array = np.random.random(len(ff))
@@ -4007,7 +4010,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             subfracl *= subfrac
         keep = sub_array < subfracl
         wz &= keep
-        
+    '''
+    common.printlog('ignoring subfrac',logger)
     ff = ff[wz]
     common.printlog('length after cutting to good z '+str(len(ff)),logger)
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']

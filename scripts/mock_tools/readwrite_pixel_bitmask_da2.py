@@ -134,8 +134,8 @@ bricks = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/random
 #    cat = Table(fitsio.read(input_path, rows=None, columns=['RA', 'DEC', 'TARGETID']))
 
 
-input_path = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_withQSOcont.fits'
-output_path = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_withQSOcont_matched_input_full_lrg_imask.fits'
+input_path = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_withQSOELGcont.fits'
+output_path = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_withQSOELGcont_matched_input_full_lrg_imask.fits'
 
 if args.cat_type == 'obielg':
     cat = Table(fitsio.read(input_path,columns=['input_ra','input_dec']))

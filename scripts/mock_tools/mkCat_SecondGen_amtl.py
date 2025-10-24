@@ -265,14 +265,16 @@ test_dir(outdir)
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
     common.printlog('entering altmtl',logger)
-    tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
+    tarf = os.path.join(args.targDir, 'forFA%d_withQSOELGcont.fits' % mocknum)
+    #TEMP tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    fbadir = os.path.join(maindir, 'Univ000/fa/MAIN') #TEMPargs.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
+    
     common.printlog('entering common.combtiles_wdup_altmtl for FASSIGN',logger)
 
     #asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],logger=logger)
@@ -336,6 +338,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
+    common.printlog('size of tiles '+ str(len(tiles)),logger)
     if args.usepota == 'n':
         pa_hdu = 'FAVAIL'
         addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
@@ -347,6 +350,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         #pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
         tl = []    
         tls = tiles['TILEID']
+        
         if args.par == 'n':
             for tile in tiles['TILEID']:
                 fa = _get_fa(tile)
@@ -489,7 +493,7 @@ if tracer == 'QSO':
     if args.survey == 'Y1':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
     if args.survey == 'DA2':
-        subfrac = 0.675
+        subfrac = 1 #0.675
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
 #        maxp = 3200
     P0 = 10000
@@ -509,7 +513,7 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
-        subfrac = [0.7,0.545]
+        subfrac = 1 #[0.7,0.545]
     zsplit=1.5
 if args.tracer[:3] == 'BGS':
     P0 = 7000
@@ -658,12 +662,12 @@ if args.apply_veto == 'y':
             common.printlog('reading '+fin,logger)
             dataf = Table(fitsio.read(fin))
         if addlrg == 1:
-            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
+            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_withQSOELGcont_matched_input_full_lrg_imask.fits' % mocknum)) 
             common.printlog('joining to LRG mask info',logger)
             dataf = join(dataf, lrgmask, keys=['TARGETID'])
             joinmask = 0 #LRGs shouldn't need other mask columns
         if joinmask == 1:                   
-            targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d.fits' % mocknum), columns = readcols))
+            targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_withQSOELGcont.fits' % mocknum), columns = readcols))
             common.printlog('adding mask column info',logger)
             dataf = join(dataf, targf, keys=['TARGETID'])
         if 'PHOTSYS' not in colnames:
