@@ -5,9 +5,9 @@
 combination: 17 minutes
 full data LRG: 8.5 minutes
 full data QSO: 6 minutes
-full data ELG: 23 minutes
+full data ELG: 23 minutes; took 18.9 in 10/24/25 test, code should have been the same
 clustering catalogs LRG: 11 minutes; h5 3.7
-clustering catalogs ELG: 12 minutes
+clustering catalogs ELG: 12 minutes; h5 5.5
 clustering catalogs QSO: 15 minutes;  h5 4.8
 Total: 92.5 minutes; 1.54 node hours
 
@@ -21,7 +21,8 @@ Total time doing tile counts ~10 minutes
 srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum 5 --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
 *
 # breakdown
-# 2.5 for getting bad hardware mask (could read from file instead), 3.5 for gathering/writing assignment info (16 seconds in write),
+# 2.5 for getting bad hardware mask (could read from file instead)
+# 3.5 for gathering/writing assignment info (16 seconds in write),
 # 3.5 minutes to load/mask/write potential assignments (1:45 in wrting; necessary?) 
 # 4.5 minutes to join potential assignments and assignments, then 3 minutes to write out
 
