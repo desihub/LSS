@@ -75,7 +75,7 @@ elif prog=='BRIGHT':
 #file_ = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forclustering/cutsky_abacusHF_DR2_ELG_z0p950_zcut_0p8to1p6_clustering.dat.fits'
 ##file_ = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_nomask_%d_v2.fits' % int(mocknum)
 ##TMEPfile_ = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/{TAG}/forFA{MOCK}_nomask.fits'.format(MOCK=mocknum, TAG=tag) 
-file_ = '/dvs_ro/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/testcontaminants.fits'
+file_ = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA202_noimagingmask.fits'
 #file_ = '/dvs_ro/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/testcontaminants.fits'
 
 #file_ = '/pscratch/sd/e/efdez/Uchuu-GLAM/GLAM/mocks_altmtl/LRG/GLAM-Uchuu_LRG_100_Y3_cut_sky_clustering.h5'
@@ -109,10 +109,9 @@ print('size after cutting photmask is', len(cat))
 #out_file_name='/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_%d_v2.fits' % int(mocknum)
 #out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forclustering/masked_cutsky_abacusHF_DR2_ELG_z0p950_zcut_0p8to1p6_clustering.dat.fits'
 ##out_file_name = 'test_glam_lrg.fits'
-out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forFA_ELG.fits'
+out_file_name = '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA202.fits'
 #out_file_name = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/forFA_QSO.fits'
 ct.write_LSS_scratchcp(cat, out_file_name, extname='TARGETS')
 print('Done writing in {} sec'.format(time.time()-st), flush=True)
-
 fits.setval(out_file_name, 'OBSCON', value=prog, ext=1)
 

@@ -78,6 +78,7 @@ if args.getosubp:
 
 #Get information about environment for multiprocessing
 ##TEMP
+'''
 NodeID = int(os.getenv('SLURM_NODEID'))
 SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
 try:
@@ -93,10 +94,10 @@ if args.ProcPerNode is None:
         args.ProcPerNode = 128
     else:
         raise ValueError('Code is only supported on NERSC Cori and NERSC perlmutter.')
-
-NProc = int(NNodes*args.ProcPerNode)
-log.info('NProc = {0:d}'.format(NProc))
-log.info('NNodes = {0:d}'.format(NNodes))
+'''
+###TEMPNProc = int(NNodes*args.ProcPerNode)
+###TEMPlog.info('NProc = {0:d}'.format(NProc))
+###TEMPlog.info('NNodes = {0:d}'.format(NNodes))
 
 
 
@@ -144,9 +145,9 @@ def procFunc(nproc):
 inds = []
 #start = int(NodeID*NProc/SlurmNProcs)
 #end = int((NodeID + 1)*NProc/SlurmNProcs)
-log.info('NodeID = {0:d}'.format(NodeID))
-log.info('StartProc = {0:d}'.format(args.mockmin))
-log.info('EndProc = {0:d}'.format(args.mockmax))
+##TEMPlog.info('NodeID = {0:d}'.format(NodeID))
+##TEMPlog.info('StartProc = {0:d}'.format(args.mockmin))
+##TEMPlog.info('EndProc = {0:d}'.format(args.mockmax))
 
 if len(args.mocklist) > 0:
     int_list = list(map(int, args.mocklist.split(',')))
@@ -173,9 +174,14 @@ else:
 
 ###assert(len(inds))
 ##p = Pool(1)
-p = Pool(NProc)
-atexit.register(p.close)
-result = p.map(procFunc,inds)
+
+
+
+###TEMPp = Pool(NProc)
+###TEMPatexit.register(p.close)
+for i in inds:
+    procFunc(i)
+###TEMPresult = p.map(procFunc,inds)
 
 
 if args.profile:

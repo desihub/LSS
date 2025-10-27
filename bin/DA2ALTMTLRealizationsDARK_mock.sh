@@ -5,7 +5,7 @@ start=`date +%s.%N`
 
 #simName is the subdirectory within ALTMTLHOME where this specific set of alt MTLs will be written
 #simName=JL_DebugReprocReprod2
-simName="altmtl{mock_number}_withQSOELGcont"
+simName="altmtl{mock_number}"
 #Location where you have cloned the LSS Repo
 path2LSS=/pscratch/sd/a/acarnero/codes/LSS/bin/
 
@@ -46,7 +46,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -87,8 +87,8 @@ seed=14126579
 
 #If mocklist is not equals to "", then it will supercede ndir=$mockend-$mockinit
 #Mock realization
-mockinit=0
-mockend=1
+mockinit=202
+mockend=203
 
 let ndir=$mockend-$mockinit 
 
@@ -208,7 +208,7 @@ secondary=''
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA{mock_number}_withQSOELGcont.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger

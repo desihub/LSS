@@ -16,7 +16,7 @@ from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 
-def mknz(df, area, bs = 0.01, zmin = 0.01, zmax = 1.6, randens = 2500.):
+def mknz(df, area, bs = 0.01, zmin = 0.01, zmax = 1.6, randens = 2500., zcol='Z'):
     from LSS.tabulated_cosmo import TabulatedDESI
     cosmo = TabulatedDESI()
     dis_dc = cosmo.comoving_radial_distance
@@ -24,7 +24,7 @@ def mknz(df, area, bs = 0.01, zmin = 0.01, zmax = 1.6, randens = 2500.):
 
 
     nbin = int((zmax-zmin)*(1+bs/10)/bs)
-    zhist = np.histogram(df['Z'],bins=nbin,range=(zmin,zmax)) #,weights=wts)
+    zhist = np.histogram(df[zcol],bins=nbin,range=(zmin,zmax)) #,weights=wts)
     
     zreturn, nzreturn = [], []
     for i in range(0,nbin):
@@ -76,7 +76,30 @@ if not os.path.isfile(ranf):
 nran = fitsio.read_header(ranf,ext=1)['NAXIS2']
 area = nran/2500
 print('the area is '+str(area))
+'''
+def return_north(ra, dec):
+    #given a table that already includes RA,DEC, add PHOTSYS column denoting whether
+    #the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(ra* u.deg, dec* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+            
+    seln = dec > 32.375
 
+    sel = seln&sel_ngc
+    return sel
+
+
+randata = Table.read(ranf)
+maskN = return_north(randata['RA'], randata['DEC'])
+
+area_N = len(randata[maskN])/2500.
+
+area_S = len(randata[~maskN])/2500.
+print(area_N, area_S)
+'''
 desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG + desi_mask.ELG_LOP, 'BGS': desi_mask.BGS_ANY}
 #priority = {'LRG':3200, 'QSO':3400, 'ELG':3100,'ELG_VOL':3000,'ELG_HIP':3200,'BGS':2100}
 priority = {'LRG': desi_mask.LRG.priorities['UNOBS'],
@@ -144,10 +167,14 @@ else:
 sel_tiles = is_point_in_desi(tiletab,data['RA'],data['DEC'])
 data = data[sel_tiles]
 print(len(data),' in tiles area')
+print(data.columns)
+for name, col in data.columns.items():
+    print(f"{name}: {col.dtype}")
+#print(data.columns.dtypes)
 
 
-data.write('HOMe_LRG_zrsd_in_DR2.fits')
-
+#data.write('HOMe_%s_zrsd_in_DR2.fits')
+'''
 #downsampling needed for abacus
 if args.mockname == 'ab_secondgen':
     status = data['STATUS'][()]
@@ -251,7 +278,7 @@ else:
         data['PRIORITY'][sel_HIP] = 3200
         print('ELG priorities',str(np.unique(data['PRIORITY'],return_counts=True)))
     
-
+'''
 
 obstype = type_
 if type_ == 'ELG':
@@ -286,12 +313,26 @@ if type_ == 'ELG' and args.ELGsplit == 'y':
 
 import plotext as plt
 #do plot n(z)
-if type_ == 'LRG' or type_ == 'QSO':
-    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/NZ_%s_v3.txt' % type_, unpack = True)
-    ztarget, nztarget = mknz(data, area)
-
+if type_ == 'LRG':
+    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_%s_v4.txt' % type_.lower(), unpack = True)
+    
+    ztarget, nztarget = mknz(data, area, zmax=1.6, zcol=args.zrsdcol)
     plt.plot(z, nz, color='red')
     plt.plot(ztarget, nztarget, color='blue')
+    np.savetxt('nz_lrg_mockComparing.txt', np.array([ztarget, nztarget]).T)
+    plt.title(type_)
+    plt.show()
+    print("\nLegend:")
+    print("  red  Reference")
+    print("  blue Comparison")
+
+if type_ == 'QSO':
+
+    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/NZ_%s_v3.txt' % type_, unpack = True)
+    ztarget, nztarget = mknz(data, area, zmax=4, zcol=args.zrsdcol)
+    plt.plot(z, nz, color='red')
+    plt.plot(ztarget, nztarget, color='blue')
+    np.savetxt('nz_qso_mockComparing.txt', np.array([ztarget, nztarget]).T)
     plt.title(type_)
     plt.show()
     print("\nLegend:")
@@ -316,36 +357,58 @@ def return_north(ra, dec):
 
 
 if type_ == 'ELG':
+    divide = True
+    if divide:
+        masknorth = return_north(data['RA'], data['DEC'])
+        datanorth = data[masknorth]
+        datasouth = data[~masknorth]
 
-    masknorth = return_north(data['RA'], data['DEC'])
-    datanorth = data[masknorth]
-    datasouth = data[~masknorth]
+        zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_N_v5.txt', unpack = True, usecols=([0,1]))
+        zS, nzS = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_S_v5.txt', unpack = True, usecols=([0,1]))
 
-    zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_N_v5.txt', unpack = True, usecols=([0,1]))
-    zS, nzS = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_S_v5.txt', unpack = True, usecols=([0,1]))
+#        maskS = (zS>=0.4)
+#        zS = zS[maskS]
+#        nzS = nzS[maskS]
+        
+#        maskN = (zN>=0.4)
+#        zN = zN[maskN]
+#        nzN = nzN[maskN]
 
+        random = Table.read(ranf)
+        masknorth = return_north(random['RA'], random['DEC'])
+        randomnorth = random[masknorth]
+        randomsouth = random[~masknorth]
 
-    random = Table.read(ranf)
-    masknorth = return_north(random['RA'], random['DEC'])
-    randomnorth = random[masknorth]
-    randomsouth = random[~masknorth]
+        ztargetN, nztargetN = mknz(datanorth, len(randomnorth)/2500., zmax=2., zmin=0.,zcol=args.zrsdcol)
+        ztargetS, nztargetS = mknz(datasouth, len(randomsouth)/2500., zmax=2., zmin=0.,zcol=args.zrsdcol)
 
-    ztargetN, nztargetN = mknz(datanorth, len(randomnorth)/2500.)
-    ztargetS, nztargetS = mknz(datasouth, len(randomsouth)/2500.)
+        plt.plot(zS, nzS, color='red')
+        plt.plot(ztargetS, nztargetS, color='blue')
+        np.savetxt('nz_elgS_mockComparing.txt', np.array([ztargetS, nztargetS]).T)
+        plt.title(type_ + ' SOUTH')
+        plt.show()
+        print("\nLegend SOUTH:")
+        print("  red  Reference")
+        print("  blue Comparison")
+        plt.clear_figure()
+        plt.plot(zN, nzN, color='red')
+        plt.plot(ztargetN, nztargetN, color='blue')
+        np.savetxt('nz_elgN_mockComparing.txt', np.array([ztargetS, nztargetS]).T)
+        plt.title(type_ + ' NORTH')
+        plt.show()
+        print("\nLegend NORTH:")
+        print("  red  Reference")
+        print("  blue Comparison")
 
-    plt.plot(zS, nzS, color='red')
-    plt.plot(ztargetS, nztargetS, color='blue')
-    plt.title(type_ + ' SOUTH')
-    plt.show()
-    print("\nLegend SOUTH:")
-    print("  red  Reference")
-    print("  blue Comparison")
-    plt.clear_figure()
-    plt.plot(zN, nzN, color='red')
-    plt.plot(ztargetN, nztargetN, color='blue')
-    plt.title(type_ + ' NORTH')
-    plt.show()
-    print("\nLegend NORTH:")
-    print("  red  Reference")
-    print("  blue Comparison")
+    else:
+        print('')
+        zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_highfidel_max.txt', unpack = True, usecols=([0,1]))
+        ztargetS, nztargetS = mknz(data, len(ranf)/2500., zmax=2., zcol=args.zrsdcol)#, zmin=0.4)
+        plt.plot(zN, nzN, color='red')
+        plt.plot(ztargetS, nztargetS, color='blue')
+        plt.title(type_ + ' COMBINED')
+        plt.show()
+        print("\nLegend SOUTH:")
+        print("  red  Reference")
+        print("  blue Comparison")
 
