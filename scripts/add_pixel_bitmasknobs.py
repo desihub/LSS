@@ -107,7 +107,7 @@ def wrapper(bid_index):
 bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
 
-cat = Table(fitsio.read(input_path.replace('global','dvs_ro'))#,columns=[args.RA_col,args.DEC_col]))
+cat = Table(fitsio.read(input_path.replace('global','dvs_ro')))#,columns=[args.RA_col,args.DEC_col]))
 
 if args.RA_col != 'RA':
     cat.rename_columns([args.RA_col],['RA'])
