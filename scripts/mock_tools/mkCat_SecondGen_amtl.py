@@ -172,19 +172,23 @@ gtl = None
 if args.add_gtl == 'y':
 
 
+    if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
+        filena = f'unique_TILELOCID_{survey}_{args.specdata}.txt'
+        common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
+        gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    else:
+        common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
+        tsnrcut = mainp.tsnrcut
+        tnsrcol = mainp.tsnrcol        
 
-    common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
-    tsnrcut = mainp.tsnrcut
-    tnsrcol = mainp.tsnrcol        
-
-    specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
-    specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
+        specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
-    gtl = np.unique(specfc['TILELOCID'])
-
+        gtl = np.unique(specfc['TILELOCID'])
+        np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
 
 #    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 #logger.info('loading specf file '+specfo)
@@ -208,8 +212,8 @@ if args.add_gtl == 'y':
 #    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
 #    del specdat
 #    print('*** DONE WITH ADD_GTL ***')
-
-
+print('this is lssdir')
+print(maindir, args.specdata, 'mock'+str(mocknum))
 lssdir = os.path.join(maindir,args.specdata, 'mock'+str(mocknum))#.format(MOCKNUM=mocknum)
 test_dir(lssdir)
 #if not os.path.exists(lssdir):
@@ -265,7 +269,7 @@ test_dir(outdir)
 if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
     common.printlog('entering altmtl',logger)
-    tarf = os.path.join(args.targDir, 'forFA%d_withQSOELGcont.fits' % mocknum)
+    tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     #TEMP tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
@@ -312,7 +316,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         fa['TILEID'] = int(tile)
         return fa
     pa_hdu = 'FASSIGN'
-    addcols=['TARGETID','RSDZ','TRUEZ','ZWARN']
+    addcols=['TARGETID','RSDZ','ZWARN']
     tl = []    
     tls = tiles['TILEID']
     if args.par == 'n':
@@ -493,7 +497,7 @@ if tracer == 'QSO':
     if args.survey == 'Y1':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
     if args.survey == 'DA2':
-        subfrac = 1 #0.675
+        subfrac = 0.675 #1
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
 #        maxp = 3200
     P0 = 10000
@@ -662,12 +666,12 @@ if args.apply_veto == 'y':
             common.printlog('reading '+fin,logger)
             dataf = Table(fitsio.read(fin))
         if addlrg == 1:
-            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_withQSOELGcont_matched_input_full_lrg_imask.fits' % mocknum)) 
+            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum)) 
             common.printlog('joining to LRG mask info',logger)
             dataf = join(dataf, lrgmask, keys=['TARGETID'])
             joinmask = 0 #LRGs shouldn't need other mask columns
         if joinmask == 1:                   
-            targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_withQSOELGcont.fits' % mocknum), columns = readcols))
+            targf = Table(fitsio.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d.fits' % mocknum), columns = readcols))
             common.printlog('adding mask column info',logger)
             dataf = join(dataf, targf, keys=['TARGETID'])
         if 'PHOTSYS' not in colnames:
