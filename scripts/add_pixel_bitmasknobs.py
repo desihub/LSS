@@ -34,7 +34,7 @@ n_processes = args.n_processes
 
 
 input_path = args.input_path
-output_path = args.input_path
+output_path = args.input_path.replace('.fits','_maskbitsnobs.fits')
     
     
 
