@@ -1,4 +1,4 @@
-"""Taken from https://github.com/domichbt/alaeboss/tree/dc1a3b28ca8b0e08a4061949fcb4dc0e52032aee/src/alaeboss by fusing `linear_regressor.py` and `produce_imweights.py`."""
+"""Taken from https://github.com/domichbt/alaeboss/tree/d14124894cf6738ae6ec11a948e2e14b3a3e0a28/src/alaeboss by fusing `linear_regressor.py` and `produce_imweights.py`."""
 
 try:
     from typing import Self
@@ -115,9 +115,7 @@ class LinearRegressor:
         self._template_name_to_idx = {
             name: idx for idx, name in enumerate(self.template_names)
         }
-        self._idx_to_template_name = {
-            idx: name for idx, name in enumerate(self.template_names)
-        }
+        self._idx_to_template_name = dict(enumerate(self.template_names))
 
         # Find bad values and build mask with the shape of the data/the randoms
         self.good_values_data = jnp.invert(
@@ -380,16 +378,9 @@ class LinearRegressor:
         )
         self.logger.debug("Computed error on histogram ratio")
         self.initial_chi2 = jnp.sum(
-            (
-                (
-                    self.normalization
-                    * self.data_binned_noweights
-                    / self.randoms_binned
-                    - 1
-                )
-                ** 2
-                / self.error**2
-            )
+            (self.normalization * self.data_binned_noweights / self.randoms_binned - 1)
+            ** 2
+            / self.error**2
         )
         self.logger.debug("Computed initial, correction-less chi2")
 
@@ -436,10 +427,8 @@ class LinearRegressor:
         #     jnp.sqrt(data_binned / self.randoms_binned**2 + data_binned**2 / self.randoms_binned**3) # model dependent error
         # Compute the chisquare over actual imaging templates (not the constant, which is mostly useful for the weight model)
         return jnp.sum(
-            (
-                (self.normalization * data_binned / self.randoms_binned - 1) ** 2
-                / self.error**2
-            )
+            (self.normalization * data_binned / self.randoms_binned - 1) ** 2
+            / self.error**2
         )
 
     def regress(self, guess: ArrayLike | None = None) -> dict[str, float] | None:
@@ -471,7 +460,7 @@ class LinearRegressor:
         else:
             self.logger.info("Minimization succeeded, chisquare = %f", self.chi2(res.x))
             self.coefficients = res.x
-            return dict(zip([self.constant] + self.template_names, res.x, strict=True))
+            return dict(zip([self.constant, *self.template_names], res.x, strict=True))
 
     def regress_minuit(self, guess: ArrayLike | None = None) -> dict[str, float] | None:
         """
@@ -512,7 +501,7 @@ class LinearRegressor:
             )
             self.coefficients = jnp.array(m.values)
             return dict(
-                zip([self.constant] + self.template_names, list(m.values), strict=True)
+                zip([self.constant, *self.template_names], list(m.values), strict=True)
             )
 
     def export_weights(self) -> ArrayLike:
@@ -588,7 +577,7 @@ class LinearRegressor:
         coefficients: ArrayLike | None = None,
         ylim: tuple[float, float] = [0.75, 1.25],
         nbinsh: int = 50,
-        title: str = None,
+        title: str | None = None,
     ):
         """
         Create a subplot for each template, and plot the normalized histogram values before and after the regression. The initial distribution of the template on the data is overlaid on the bottom of the plot.
@@ -841,7 +830,7 @@ def make_fit_maps_dictionary(
     {'N': {(0.4, 0.6): ['map1'], (0.6, 0.8): ['map2'], (0.8, 1.1): ['map1', 'map2'], (0.8, 1.3): ['map3']}, 'S': {(0.4, 0.6): ['map1', 'map2'], (0.6, 0.8): ['map1', 'map2'], (0.8, 1.1): ['map1', 'map2']}}
     """
     fit_maps_dictionary = {
-        region: {zrange: default for zrange in redshift_range} for region in regions
+        region: dict.fromkeys(redshift_range, default) for region in regions
     }
     if except_when is not None:
         for region, zrange, alternative_maps in except_when:
@@ -852,13 +841,13 @@ def make_fit_maps_dictionary(
 
 def produce_imweights(
     # Input and output control
-    data_catalog_paths: list[str],
-    random_catalogs_paths: list[str],
+    data_catalogs: np.ndarray,
+    randoms_catalogs: np.ndarray,
     is_clustering_catalog: bool,
     tracer_type: str,
     redshift_range: list[(float, float)],
-    templates_maps_path_S: str,
-    templates_maps_path_N: str,
+    templates_maps_path_S: str,  # noqa: N803
+    templates_maps_path_N: str,  # noqa: N803
     fit_maps: list[str] | dict[str, dict[str, list[str]]],
     output_directory: str | None,
     output_catalog_path: str | None,
@@ -869,7 +858,7 @@ def produce_imweights(
     nbins: int = 10,
     tail: float = 0.5,
     # Miscellaneous
-    logger: logging.Logger = None,
+    logger: logging.Logger | None = None,
     loglevel: str = "INFO",
     templates_maps_nside: int = 256,
     templates_maps_nested: bool = True,
@@ -881,10 +870,10 @@ def produce_imweights(
 
     Parameters
     ----------
-    data_catalog_path : list[str]
-        Path to the input data catalogs FITS files.
-    random_catalogs_paths : list[str]
-        List of paths to random catalogs FITS files.
+    data_catalogs : np.ndarray
+        Concatenated input data catalogs.
+    randoms_catalogs : np.ndarray
+        Concatenated input randoms catalogs.
     tracer_type : str
         Type of tracer (e.g., 'LRG', 'ELG_LOP', 'QSO').
     redshift_range : list of tuple of float
@@ -1002,7 +991,7 @@ def produce_imweights(
     jax.config.update("jax_enable_x64", True)
     logger.info("Enabled 64-bit mode for JAX")
 
-    # define which columns will need to be loaded for the data and the randoms
+    # define which columns need to be present for the data and the randoms
     data_colnames, random_colnames = columns_for_weight_scheme(
         weight_scheme=weight_scheme,
         redshift_colname=redshift_colname,
@@ -1010,32 +999,20 @@ def produce_imweights(
     )
     data_colnames = list(data_colnames)
     random_colnames = list(random_colnames)
-    logger.debug("Columns to load for the data: %s", data_colnames)
-    logger.debug("Columns to load for the randoms: %s", random_colnames)
+    logger.debug("Columns necessary for the data: %s", data_colnames)
+    logger.debug("Columns necessary for the randoms: %s", random_colnames)
 
     debv = common.get_debv()  # for later
     sky_g, sky_r, sky_z = common.get_skyres()
     if output_directory is not None:
         output_directory = Path(output_directory)
 
-    # read data catalogs
-    logger.info("Reading data catalogs")
-    all_data = Table(
-        np.concatenate(
-            [
-                read_catalog(data_catalog_path, columns=data_colnames)
-                for data_catalog_path in data_catalog_paths
-            ]
-        )
-    )
-    # read randoms catalogs (note that since we are reading a subset of columns, this can take a lot on time from a job, no idea why)
-    logger.info("Reading %i randoms catalogs", len(random_catalogs_paths))
-    rands = np.concatenate(
-        [
-            read_catalog(random_catalog_path, columns=random_colnames)
-            for random_catalog_path in random_catalogs_paths
-        ]
-    )
+    # copy data/randoms to avoid modifying in place
+    # and check that necessary columns are present
+    logger.info("There are %i rows of data", data_catalogs.size)
+    all_data = Table(data_catalogs[data_colnames], copy=True)
+    logger.info("There are %i rows of data", randoms_catalogs.size)
+    rands = randoms_catalogs[random_colnames].copy()
 
     # select good data that has been observed
     if not is_clustering_catalog:
@@ -1119,12 +1096,16 @@ def produce_imweights(
             nest=templates_maps_nested,
         )
         logger.info(
-            f"Preparation for region {region} is done. Starting regressions per redshift slice."
+            "Preparation for region %s is done. Starting regressions per redshift slice.",
+            region,
         )
 
         for z_range in redshift_range:
             logger.info(
-                f"Getting weights for region {region} and redshift bin {z_range[0]} < z < {z_range[1]}"
+                "Getting weights for region %s and redshift bin %f < z < %f",
+                region,
+                z_range[0],
+                z_range[1],
             )
             local_fit_maps = fit_maps[region][z_range]
             local_fit_maps.sort()  # force same order as all_fit_maps
@@ -1171,7 +1152,7 @@ def produce_imweights(
 
             # add weights
             datacols = list(selected_data.dtype.names)
-            logger.info(f"Found columns {datacols}")
+            logger.info("Found columns %s", datacols)
 
             match weight_scheme:
                 case None:
@@ -1238,7 +1219,7 @@ def produce_imweights(
             optimized_parameters = regressor.regress_minuit()
 
             logger.info("Regression done!")
-            logger.info(f"Optimized parameters are {optimized_parameters}")
+            logger.info("Optimized parameters are %s", optimized_parameters)
 
             if output_directory is not None:
                 output_directory.mkdir(parents=True, exist_ok=True)
@@ -1246,18 +1227,18 @@ def produce_imweights(
                     output_directory
                     / f"{tracer_type}_{region}_{z_range[0]:.1f}_{z_range[1]:.1f}_linfitparam_jax.txt"
                 )
-                logger.info(f"Writing to {output_loc}")
+                logger.info("Writing to %s", output_loc)
                 with open(output_loc, "w") as fo:
                     for par_name, par_value in optimized_parameters.items():
-                        fo.write(str(par_name) + " " + str(par_value) + "\n")
+                        fo.write(f"{par_name} {par_value}\n")
 
                 if save_summary_plots:
                     figname = (
                         output_directory
                         / f"{tracer_type}_{region}_{z_range[0]:.1f}_{z_range[1]:.1f}_linimsysfit_jax.png"
                     )
-                    logger.info(f"Saving figure to {figname}")
-                    fig, axes = regressor.plot_overdensity(ylim=[0.7, 1.3])
+                    logger.info("Saving figure to %s", figname)
+                    fig, _ = regressor.plot_overdensity(ylim=[0.7, 1.3])
                     fig.savefig(figname)
             else:
                 logger.info(
@@ -1267,7 +1248,11 @@ def produce_imweights(
             weights_imlin[selection_data] = regressor.export_weights()
             t2 = time()
             logger.info(
-                f"Done with region {region} and redshift bin {z_range[0]} < z < {z_range[1]}, took {t2 - t1} seconds"
+                "Done with region %s and redshift bin %f < z < %s, took %f seconds",
+                region,
+                z_range[0],
+                z_range[1],
+                t2 - t1,
             )
 
     time_end = time()
