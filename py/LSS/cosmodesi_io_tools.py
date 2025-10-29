@@ -128,7 +128,7 @@ def catalog_dir(survey='Y1', verspec='iron', version='v1.2', base_dir='/global/c
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',recon_dir='n',rec_type=False, nrandoms=4, cat_dir=None, survey='Y1', **kwargs):
     #print(kwargs)
     if cat_dir is None:
-        cat_dir = catalog_dir(survey=survey, **kwargs)
+        cat_dir = catalog_dir(survey=survey, **kwargs).replace('global','dvs_ro')
     #if survey in ['main', 'DA02']:
     #    tracer += 'zdone'
     if 'edav1' in cat_dir:
@@ -343,13 +343,6 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
     if name == 'randoms':
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
-        if 'NTMP' in weight_type:
-            if fac_ntmp is not None:
-                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
-                weights *= wts[0]
-                logger.info('multiplied randoms by NTMP weights')
-            else:
-                logger.info('fac_ntmp was None, so nothing happening with it')
         if 'bitwise' in weight_type:# and 'default' in weight_type:
             if 'default' in weight_type:
                 weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
@@ -369,6 +362,14 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
 
             #weights /= catalog['FRAC_TLOBS_TILES'][mask]
             #print('dividing weights by FRAC_TLOBS_TILES')
+        if 'NTMP' in weight_type:
+            if fac_ntmp is not None:
+                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
+                weights *= wts[0]
+                logger.info('multiplied randoms by NTMP weights')
+            else:
+                logger.info('fac_ntmp was None, so nothing happening with it')
+
 #         if 'RF' in weight_type:
 #             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
 #         if 'zfail' in weight_type:
@@ -407,18 +408,19 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
     
     if cat_read == None:
 
-        cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
-#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
-        fac_ntmp =  None
-        if name != 'data' and 'NTMP' in weight_type:
-            getntmp = 'getntmp'
-            logger.info('getting NTMP info')
-            ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
-            fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
-            del ff
-        else:
-            logger.info(str(name)+' '+str(weight_type))
         def read_positions_weights(name):
+            cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
+#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
+            fac_ntmp =  None
+            if name != 'data' and 'NTMP' in weight_type:
+                getntmp = 'getntmp'
+                logger.info('getting NTMP info')
+                ff = fitsio.read(cat_full.replace('PIP/',''),columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
+                fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
+                del ff
+            else:
+                logger.info(str(name)+' '+str(weight_type))
+
             positions, weights = [], []
             for reg in region:
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)

@@ -85,6 +85,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=4) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--nproc", help="number to run in parallel",default=9)
+parser.add_argument("--ext4out", help="the extension for output (slowly being enabled for h5)",choices=['.fits','.h5'],default='.h5')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
@@ -368,7 +369,7 @@ def doran(ii):
         #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     if args.mkdupranmasked == 'y':
-        outf = dirout+type+notqso+'_'+str(ii)+'_dupran_masked'+args.hpmapcut+'.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_dupran_masked'+args.hpmapcut+args.ext4out
         mapn = None
         maps = None
         mapcuts = None
