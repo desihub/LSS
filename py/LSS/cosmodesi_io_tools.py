@@ -160,9 +160,21 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     if rec_type:
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
-        return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
+        fname = os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
+        fname5 = os.path.join(cat_dir, '{}{}_{}.{}.h5'.format(tracer, region, ctype, dat_or_ran))
+        if os.path.isfile(fname):
+            return fname
+        elif os.path.isfile(fname5):
+            return fname5
+        else:
+            return 'file_not_found!!!'
     #print(nrandoms)
-    return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+    test_fname = os.path.join(cat_dir, '{}{}{}_0_{}.{}.fits'.format(tracer, ran_sw, region, ctype, dat_or_ran))
+    test_fname5 = os.path.join(cat_dir, '{}{}{}_0_{}.{}.h5'.format(tracer, ran_sw, region, ctype, dat_or_ran))
+    if os.path.isfile(test_fname):
+        return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+    elif os.path.isfile(test_fname5):
+        return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.h5'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
 def _format_bitweights(bitweights):
@@ -434,12 +446,15 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                     cat_fns = [cat_fns]
                 if name=='data':
                     def _get_tab(cat_fn):
-                        tab = Table.read(cat_fn)
+                        if '.fits' in cat_fn:
+                            tab = Table.read(cat_fn)
+                        if '.h5' in cat_fn:
+                            tab = common.read_hdf5_blosc(cat_fn)
                         if 'bitwise' in weight_type:
                             if 'BITWEIGHTS' in list(tab.dtype.names):
                                 pass
                             else:   
-                                tab = join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
+                                tab = join(tab, Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
                         #else:
                         if option is not None:
                             if 'RSDZ' in option:
@@ -449,7 +464,11 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                         return tab
                     positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0) for cat_fn in cat_fns]
                 else:
-                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0,fac_ntmp=fac_ntmp) for cat_fn in cat_fns]
+                    if '.fits' in cat_fns[0]:
+                        read_func = Table.read
+                    elif '.h5' in cat_fns[0]:
+                        read_func = common.read_hdf5_blosc
+                    positions_weights = [get_clustering_positions_weights(read_func(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0,fac_ntmp=fac_ntmp) for cat_fn in cat_fns]
                 
                 if isscalar:
                     positions.append(positions_weights[0][0])
