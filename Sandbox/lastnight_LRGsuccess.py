@@ -8,8 +8,9 @@ from desitarget.targetmask import zwarn_mask
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
-parser.add_argument("--plotnz",default='y')
-parser.add_argument("--plottsnr2",default='y')
+parser.add_argument("--plotnz",default='n')
+parser.add_argument("--thresh",default=850)
+parser.add_argument("--plottsnr2",default='n')
 parser.add_argument("--redux",default='daily')
 
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
@@ -45,17 +46,17 @@ for ii in range(0, len(tidl)):
 
 
 #sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
-sel = exptl > 850
+sel = exptl > args.thresh
 ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 selss = ss['LASTNIGHT'] == int(args.night)
-gt = ss[selss]['EFFTIME_SPEC'] > 850
+gt = ss[selss]['EFFTIME_SPEC'] > args.thresh
 tss = ss[selss][gt]['TILEID']
 sel |= np.isin(tidl,tss)
 tls_2mask = [9889,2693,3647,5958]
 sel &= ~np.isin(tidl,tls_2mask)
 tidl = tidl[sel]
 
-print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
+print('number dark tiles that have EFFTIME_ETC > '+str(args.tresh)+' during the night:')
 print(len(tidl))
 
 
