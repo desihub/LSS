@@ -24,6 +24,7 @@ print('number of exposures found:')
 print(len(exps))
 #cut to dark tiles
 sel = exps['FAPRGRM']=='dark'
+sel |= exps['FAPRGRM']=='dark1b'
 print('number that are dark time:')
 print(len(exps[sel]))
 
