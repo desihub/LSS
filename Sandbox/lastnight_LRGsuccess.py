@@ -9,7 +9,7 @@ from desitarget.targetmask import zwarn_mask
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
 parser.add_argument("--plotnz",default='n')
-parser.add_argument("--thresh",default=850,dtype=int)
+parser.add_argument("--thresh",default=850,type=int)
 parser.add_argument("--plottsnr2",default='n')
 parser.add_argument("--redux",default='daily')
 
