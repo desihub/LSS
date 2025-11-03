@@ -56,7 +56,7 @@ tls_2mask = [9889,2693,3647,5958]
 sel &= ~np.isin(tidl,tls_2mask)
 tidl = tidl[sel]
 
-print('number dark tiles that have EFFTIME_ETC > '+str(args.tresh)+' during the night:')
+print('number dark tiles that have EFFTIME_ETC > '+str(args.thresh)+' during the night:')
 print(len(tidl))
 
 
