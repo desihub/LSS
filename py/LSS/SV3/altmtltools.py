@@ -2384,7 +2384,9 @@ def write_amtl_tile_tracker(dirname, tiles, obscon = 'dark', survey = 'main'):
         tileid = t['TILEID']
         #reprocFlag = t['REPROCFLAG']
         actionType = t['ACTIONTYPE']
-        cond = (TileTracker['TILEID'] == tileid) & (TileTracker['ACTIONTYPE'] == actionType)
+        #LGN 20251103 - Adding actiontime as an additional condition due to the existance of tiles with multiple reproc actions
+        actionTime = t['ACTIONTIME']
+        cond = (TileTracker['TILEID'] == tileid) & (TileTracker['ACTIONTYPE'] == actionType) & (TileTracker['ACTIONTIME'] == actionTime)
         log.info('for tile {0}, number of matching tiles = {1}'.format(tileid, np.sum(cond)))
         #debugTrap = np.copy(TileTracker[dateKey])
         TileTracker['DONEFLAG'][cond] = True
