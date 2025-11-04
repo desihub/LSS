@@ -517,7 +517,7 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
-        subfrac = 1 #[0.7,0.545]
+        subfrac = [0.7,0.545]
     zsplit=1.5
 if args.tracer[:3] == 'BGS':
     P0 = 7000

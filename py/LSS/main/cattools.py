@@ -3996,7 +3996,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         wzm += 'zcmb_'
         common.printlog('corrected redshifts to cmb frame',logger)
 
-    '''
     if subfrac != 1:
         subfracl = np.ones(len(ff))
         sub_array = np.random.random(len(ff))
@@ -4010,8 +4009,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             subfracl *= subfrac
         keep = sub_array < subfracl
         wz &= keep
-    '''
-    common.printlog('ignoring subfrac',logger)
+
     ff = ff[wz]
     common.printlog('length after cutting to good z '+str(len(ff)),logger)
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
