@@ -81,8 +81,8 @@ fi
 #Random seed. Change to any integer you want (or leave the same)
 #If seed is different between two otherwise identical runs, the initial MTLs will also be different
 #seed is also saved in output directory
-seed=14126579
-#seed=3593589
+#seed=14126579
+seed=3593589
 
 
 #If mocklist is not equals to "", then it will supercede ndir=$mockend-$mockinit
@@ -210,6 +210,9 @@ secondary=''
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
 targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
+zfix="--zfix=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/highz.txt" 
+#zfix=''
+
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger
 numobs_from_ledger=''
@@ -285,7 +288,7 @@ altMTLBaseDir="$outputMTLFinalDestination"
 #altMTLBaseDir="$outputMTLFinalDestination/Univ000/"
 
 runtimeInit=$( echo "$endInit - $start" | bc -l )
-argstring="--altMTLBaseDir=$altMTLBaseDir --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist"
+argstring="--altMTLBaseDir=$altMTLBaseDir --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist $zfix"
 echo 'argstring for dateloop'
 echo $argstring
 nohup bash $path2LSS/dateLoopAltMTLBugFix_mock_batch.sh $NObsDates $NNodes $path2LSS $CVal $QVal $qR $argstring  >& $OFDL
