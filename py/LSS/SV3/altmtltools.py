@@ -19,21 +19,36 @@ import astropy.io
 import astropy.io.fits as pf
 from astropy.table import Table,join,vstack
 
+from desiutil.log import get_logger
+log = get_logger()
+
 #import memory_profiler
 #from memory_profiler import profile
+
+import importlib
+from pkg_resources import packaging
+
+try:
+    desitarget_version = importlib.metadata.version('desitarget')
+    log.info('Running with desitarget/{}'.format(desitarget_version))
+except importlib.metadata.PackageNotFoundError: #this occurs when on main branch
+    desitarget_version = '9999.9.9' #dummy value to ensure we import update_lya_1b on main branch 
+    log.info('Running with desitarget/main'.format(desitarget_version))
 
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
-from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date, update_lya_1b
+from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+
+#we can only import this function on desitarget versions > 3.4.2
+if packaging.version.parse(desitarget_version) >= packaging.version.parse('3.4.2'):
+    from desitarget.mtl import update_lya_1b
 
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
 from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
-
-from desiutil.log import get_logger
 
 import fitsio
 import LSS.common_tools as common
@@ -63,10 +78,10 @@ from pstats import SortKey
 from datetime import datetime, timedelta
 import glob
 
+# LGN 20250909, This will allow us to determine which tiles need to run under pre 3.4.2 desitarget version
+startdate_1b = '2025-07-21T23:36:04+00:00'
 
 pr = cProfile.Profile()
-
-log = get_logger()
 
 #os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 #os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
@@ -595,8 +610,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
 
     TSS = Table.read(TSSFN)
 
+    
     MTLDTFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv'
-
     MTLDT = Table.read(MTLDTFN)
 
     #tiles-specstatus file filtered to only matching obscon and surveySURVEY FAPRGRM
@@ -626,6 +641,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     TileIDs = []
     TypeOfActions = []
     TimesOfActions = []
+    #times for fa actions come from the fiberassign-{tile}.fits file
+    #times for update actions come from the mtl done tiles file
     doneFlag = []
     archiveDates = []
     
@@ -692,11 +709,11 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     #LGN This runs for all dark time surveys with actions at times later than 2025-07-21
     #LGN unless the lya1b flag is set to false. Only change this flag if you are certain
     #LGN you don't want to mimic real survey decisions.
-    if (lya1b) and (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
+    if (lya1b) and (obscon.lower() == 'dark') and (max(TimesOfActions) > startdate_1b):
         log.info('Adding QSO NUMOBS Increase Action')
         TileIDs.append(-1)
         TypeOfActions.append('lya1b')
-        TimesOfActions.append('2025-07-21T23:36:04+00:00')
+        TimesOfActions.append(startdate_1b)
         doneFlag.append(False)
         archiveDates.append(20250721)
 
@@ -1411,40 +1428,44 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         didUpdateHappen = False
         if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
             log.info('setting 1B/ext flag for update')
-            is_ext = True
+            is_1b = True
+
+            # LGN 20251104 Adding an edge case for calling update ledger on 1b tiles observed before lya1b changes
+            # LGN 20251104 The ext keyword does not exist for the update_ledger function until desitarget 3.4.2 
+            if t['ACTIONTIME'] < startdate_1b:
+                passext = False
+            else:
+                passext = True
         else:
-            is_ext = False
+            is_1b = False
+            
         # ADM update the appropriate ledger.
-        if mock:
+        # LGN 20250909 Revising this section to update for 1B changes and simplifying
+        if mock and targets is None: #Is this part still necessary??
+            raise ValueError('If processing mocks, you MUST specify a target file')
 
-            if targets is None:
-                raise ValueError('If processing mocks, you MUST specify a target file')
-            log.info('update loc a')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext)#, targets = targets)
-            didUpdateHappen = True
-        elif targets is None:
-            log.info('update loc b')
+        if is_1b:
+            #getting abbreviated obscon/path for non 1B survey (i.e. dark1b -> dark)
+            althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
+            obscon_short = obscon.replace('1B','')
 
-            # LGN 20250801 Adding handling for dark1b/brigh1b ledgers
-            # LGN I think this is only necessary in this portion of conditional? (i.e. targets is always None in current alt mtl work flow?)
-            if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
-                
-                # LGN replacing just the last instance of '1b' with '' in directory path
-                althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
-                obscon_short = obscon.replace('1b','')
+            #CHECK WITH AURELIO ABOUT TARGETS KEYWORD FOR MOCKS
+
+            if passext:
                 #Updating the non-1b ledger
-                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
-            
-            
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, ext=is_ext)
-            didUpdateHappen = True
+                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=False, targets = targets)
+                #Updating the 1b ledger
+                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=True, targets = targets)
+            else:
+                #Updating the non-1b ledger
+                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)
+                #Updating the 1b ledger
+                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)                
         else:
-            log.info('update loc c')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, targets = targets, ext=is_ext)
-            didUpdateHappen = True
-        assert(didUpdateHappen)
+            #Updating ledger (No ext keyword)
+            #Need clarification on mocks using target file in update_ledger()
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)
+
         if verbose or debug:
             log.info('if main, should sleep 1 second')
         #thisUTCDate = get_utc_date(survey=survey)
@@ -1591,6 +1612,12 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         iterloop = range(ndirs)
     ### JL - End of directory/loop variable construction ###
 
+    # LGN 20250916 - Reading mtl done tiles here to check if correct desitarget version is loaded
+    MTLDTFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv'
+    MTLDT = Table.read(MTLDTFN)
+    
+    prelya1b_tiles = MTLDT[MTLDT['TIMESTAMP'] < startdate_1b]['TILEID']
+
 
 
     if quickRestart:
@@ -1637,6 +1664,19 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             actionList = actionList[:1]
         
         for action in actionList:
+
+            # LGN 20250909. Adding checks here to ensure desitarget version is correct for pre/post 1b tiles
+            if action['TILEID'] in prelya1b_tiles and packaging.version.parse(desitarget_version) >= packaging.version.parse('3.4.2'):
+                log.info('You are running a pre DESI1b tile using a DESI1b version of desitarget')
+                log.info('This will cause unexpected behavior with LyA QSO target assignments')
+                log.info('Please module swap to a version of desitarget before version 3.4.2')
+                raise ValueError('Incorrect DESITARGET version is loaded')
+            elif action['TILEID'] not in prelya1b_tiles and packaging.version.parse(desitarget_version) < packaging.version.parse('3.4.2'):
+                log.info('You are running a DESI1b tile using a pre DESI1b version of desitarget')
+                log.info('This will cause unexpected behavior with LyA QSO target assignments')
+                log.info('Please module swap to a version of desitarget >= version 3.4.2')
+                raise ValueError('Incorrect DESITARGET version is loaded')
+            
 
             if action['ACTIONTYPE'] == 'fa':
                 OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock, reproducing = reproducing)
