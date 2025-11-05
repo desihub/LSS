@@ -61,6 +61,7 @@ zdir = '/global/cfs/cdirs/desi/spectro/redux/'+args.redux+'/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
 nzla = []
+tilegzl = []
 for tid in tidl:
     tile_tot = 0
     tile_good = 0
@@ -108,12 +109,15 @@ for tid in tidl:
             print(zmtlff+' not found') 
         
     print('the success rate for tile '+str(tid)+' is '+str(tile_good/tile_tot))
+    tilegzl.append(tile_good/tile_tot)
 print('the total number of BGS considered per petal for the night is:')
 print(tz)
 tzs = gz/tz
 print('the total fraction of good BGS z per petal for the night is:')
 print(tzs)
-
+print('the list of tiles and their success rates is')
+print(tidl)
+print(tilegzl)
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
     all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/BGS_ANY_full.dat.fits')
