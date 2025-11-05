@@ -1313,7 +1313,7 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
 
     return A2RMap, R2AMap
 def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = 'sv3', obscon = 'dark', today = None, 
-    getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False):
+    getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False, zfix = None):
     if verbose or debug:
         log.info('today = {0}'.format(today))
         log.info('obscon = {0}'.format(obscon))
@@ -1369,6 +1369,30 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         # ADM ZTILEID, and other columns addes for the Main Survey. These
         # ADM columns may not be needed for non-ledger simulations.
         # ADM Note that the data model differs with survey type.
+        
+
+        #For testing  #T
+        #T a=Table(altZCat)
+        
+
+        #a.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/altz_before_%s.fits' % ts)
+        if zfix is not None:
+            idqso, zalt = np.loadtxt(zfix, unpack=True)
+            idqso = idqso.astype(altZCat['TARGETID'].dtype)
+            zalt = zalt.astype(altZCat['Z'].dtype)
+            sort_idx = np.argsort(idqso)
+            sorted_src_ids = idqso[sort_idx]
+            sorted_src_zalt = zalt[sort_idx]
+
+            mask = np.isin(altZCat['TARGETID'], sorted_src_ids)
+            pos = np.searchsorted(sorted_src_ids, altZCat['TARGETID'][mask])
+
+
+            altZCat['Z'][mask] = sorted_src_zalt[pos]
+            #T b=Table(altZCat)
+            #T b.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/altz_after_%s.fits' % ts)
+        
+
         zcatdm = survey_data_model(zcatdatamodel, survey=survey)
         if zcat.dtype.descr != zcatdm.dtype.descr:
             msg = "zcat data model must be {} not {}!".format(
@@ -1433,7 +1457,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None, testDoubleDate = False, 
                     changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False, reproducing = False, single_action = False):
+                    debug = False, verbose = False, reproducing = False, single_action = False, zfix = None):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -1482,6 +1506,11 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         directory of alternate MTLs to update.
     single_action : :class:`bool`, optional, defaults to False
         If ``True`` then run a single dateloop iteration. Used in profiling.
+    zfix : :class:`str`, optional, defaults to ``None``
+        txt filename with 2 columns, TARGETID and z. These will be fixed 
+        during update_ledger when creating the Altzcat, which normally reads 
+        from the zmtl files. Use these redshifts instead
+
 
     Returns
     -------
@@ -1601,7 +1630,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
                 
             elif action['ACTIONTYPE'] == 'update':
-                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
+                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug, zfix = zfix)
                 
             elif action['ACTIONTYPE'] == 'reproc':
                 #returns timedict
