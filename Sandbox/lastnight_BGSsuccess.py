@@ -96,7 +96,7 @@ for tid in tidl:
                 wzwarn = wz#zmtlf['ZWARN'] == 0
                 gzlrg = zmtlf[wzwarn&wlrg]
                 tile_tot += len(zlrg)
-                tile_good += np.sum(gzlrg)
+                tile_good += len(gzlrg)
                 print('The fraction of good BGS is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
