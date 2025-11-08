@@ -75,7 +75,10 @@ nzls = {x: [] for x in range(0,10)}
 tsnrlsg = {x: [] for x in range(0,10)}
 tsnrls = {x: [] for x in range(0,10)}
 nzla = []
+tilegzl = []
 for tid in tidl:
+    tile_good = 0
+    tile_tot = 0
     for pt in range(0,10):
         
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
@@ -112,6 +115,8 @@ for tid in tidl:
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
+                tile_good += len(gzlrg)
+                tile_tot += len(zlrg)
                 nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
                 tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
                 tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
@@ -120,8 +125,9 @@ for tid in tidl:
                 print('no good lrg data')  
         else:
             print(zmtlff+' not found') 
-        
-
+        tilegzl.append(tile_good/tile_tot)
+print('tiles are:\n'+str(tidl))
+print('success rates are:\n'+str(tilegzl))
 print('the total number of LRG considered per petal for the night is:')
 print(tz)
 tzs = gz/tz
