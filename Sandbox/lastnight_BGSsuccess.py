@@ -108,8 +108,9 @@ for tid in tidl:
         else:
             print(zmtlff+' not found') 
         
-    print('the success rate for tile '+str(tid)+' is '+str(tile_good/tile_tot))
+    
     if tile_tot > 0:
+        print('the success rate for tile '+str(tid)+' is '+str(tile_good/tile_tot))
         tilegzl.append(tile_good/tile_tot)
     else:
         tilegzl.append('no data')
