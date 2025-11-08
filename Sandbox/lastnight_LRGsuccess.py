@@ -125,7 +125,7 @@ for tid in tidl:
                 print('no good lrg data')  
         else:
             print(zmtlff+' not found') 
-        tilegzl.append(tile_good/tile_tot)
+    tilegzl.append(tile_good/tile_tot)
 print('tiles are:\n'+str(tidl))
 print('success rates are:\n'+str(tilegzl))
 print('the total number of LRG considered per petal for the night is:')
