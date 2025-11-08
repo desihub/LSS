@@ -109,7 +109,10 @@ for tid in tidl:
             print(zmtlff+' not found') 
         
     print('the success rate for tile '+str(tid)+' is '+str(tile_good/tile_tot))
-    tilegzl.append(tile_good/tile_tot)
+    if tile_tot > 0:
+        tilegzl.append(tile_good/tile_tot)
+    else:
+        tilegzl.append('no data')
 print('the total number of BGS considered per petal for the night is:')
 print(tz)
 tzs = gz/tz
