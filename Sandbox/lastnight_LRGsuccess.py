@@ -112,7 +112,7 @@ for tid in tidl:
 
                 wzwarn = wz#zmtlf['ZWARN'] == 0
                 gzlrg = zmtlf[wzwarn&wlrg]
-                print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
+                print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra with mean TSNR2_LRG '+str(np.mean(rr[wfqa&wlrg]['TSNR2_LRG']))
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 tile_good += len(gzlrg)
