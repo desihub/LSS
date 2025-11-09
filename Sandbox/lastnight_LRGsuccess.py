@@ -95,8 +95,10 @@ for tid in tidl:
             print('number with bad qa '+str(num_badqa))
             nomtl = nodata | badqa
             wfqa = ~nomtl
+            wtsnr2 = rr['TSNR2_ELG'] > 80
+            
             wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
-            zlrg = zmtlf[wfqa&wlrg]
+            zlrg = zmtlf[wfqa&wlrg&wtsnr2]
             if len(zlrg) > 0:
                 #drz = (10**(3 - 3.5*zmtlf['Z']))
                 #mask_bad = (drz>30) & (zmtlf['DELTACHI2']<30)
