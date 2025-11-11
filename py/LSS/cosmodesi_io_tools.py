@@ -168,7 +168,7 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         elif os.path.isfile(fname5):
             return fname5
         else:
-            return 'file_not_found!!!'
+            return fname +' (or .h5) file_not_found!!!'
     #print(nrandoms)
     test_fname = os.path.join(cat_dir, '{}{}{}_0_{}.{}.fits'.format(tracer, ran_sw, region, ctype, dat_or_ran))
     test_fname5 = os.path.join(cat_dir, '{}{}{}_0_{}.{}.h5'.format(tracer, ran_sw, region, ctype, dat_or_ran))
