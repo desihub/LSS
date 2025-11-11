@@ -113,16 +113,16 @@ for tid in tidl:
                 wz &= (~mask_bad)
 
                 wzwarn = wz#zmtlf['ZWARN'] == 0
-                gzlrg = zmtlf[wzwarn&wlrg]
+                gzlrg = zmtlf[wzwarn&wfqa&wlrg&wtsnr2]
                 print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra with mean TSNR2_ELG '+str(np.mean(rr[wfqa&wlrg]['TSNR2_ELG'])))
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
                 tile_good += len(gzlrg)
                 tile_tot += len(zlrg)
-                nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
-                tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
-                tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
-                nzla.append(zmtlf[wzwarn&wlrg]['Z'])
+                nzls[pt].append(zmtlf[wzwarn&wfqa&wlrg&wtsnr2]['Z'])
+                tsnrlsg[pt].append(rr[wzwarn&wfqa&wlrg&wtsnr2]['TSNR2_LRG'])
+                tsnrls[pt].append(rr[wfqa&wlrg&wtsnr2]['TSNR2_LRG'])
+                nzla.append(zmtlf[wzwarn&wfqa&wlrg&wtsnr2]['Z'])
             else:
                 print('no good lrg data')  
         else:
