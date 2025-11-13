@@ -106,6 +106,7 @@ class main:
             self.fit_maps = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
             self.fit_maps_allebvcmb = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI','ZCMB']
             self.fit_maps_all = self.fit_maps
+            self.fit_maps_allebv = self.fit_maps
             self.ebits = [8,9,11]    
             self.tsnrcut = 80
             self.dchi2 = 0
@@ -135,6 +136,7 @@ class main:
         if tp[:3] == 'ELG':
             self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']#,'EBV_DIFF_MPF']
             self.fit_maps_all = self.fit_maps
+            self.fit_maps_allebv = self.fit_maps
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8
