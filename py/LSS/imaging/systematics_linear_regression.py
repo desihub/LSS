@@ -1085,7 +1085,7 @@ def produce_imweights(
                 logger.info("other regions not currently supported")
                 raise NotImplementedError("Exiting due to critical error with region")
         region_randoms = rands[region_mask_randoms]
-
+        logger.info("length of randoms in region "+region+ " is " +str(len(region_randoms)))
         logger.info("Reading template values for the randoms")
         randoms_templates_values = _read_systematic_templates_stacked_alt(
             ra=region_randoms["RA"],
