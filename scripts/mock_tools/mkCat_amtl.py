@@ -1080,7 +1080,7 @@ def read_file(fn):
 
 if args.doimlin == 'y':
     syscol = 'WEIGHT_IMLIN'
-    tpstr = args.type
+    tpstr = args.tracer
     if "BGS" in tracer_type:
         tpstr = "BGS_BRIGHT"
     if "LRG" in tracer_type:
