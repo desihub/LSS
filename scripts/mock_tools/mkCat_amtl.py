@@ -1069,7 +1069,7 @@ if args.addNtileweight2full == 'y':
         nproc = 9
     if args.survey == 'DA2':
         nproc = 9
-    common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,extradir=args.extra_clus_dir,tp=type,nproc=nproc)
+    common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,tp=type,nproc=nproc)
 
 def read_file(fn):
     if '.fits' in fn:
@@ -1198,7 +1198,7 @@ if args.doimlin == 'y':
             lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_N.fits"
         ),
         fit_maps=fit_maps,
-        output_directory=os.path.join(dirout, args.extra_clus_dir),
+        output_directory=dirout
         output_catalog_path=None,  # writing to disk will be done later to handle SGC/NGC separately
         output_column_name=syscol,
         save_summary_plots=True,
