@@ -1198,7 +1198,7 @@ if args.doimlin == 'y':
             lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_N.fits"
         ),
         fit_maps=fit_maps,
-        output_directory=dirout
+        output_directory=dirout,
         output_catalog_path=None,  # writing to disk will be done later to handle SGC/NGC separately
         output_column_name=syscol,
         save_summary_plots=True,
