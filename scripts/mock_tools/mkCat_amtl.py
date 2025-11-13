@@ -1110,9 +1110,9 @@ if args.doimlin == 'y':
             zrl = [(0.4, 1.1)]
         zsysmin = 0.4
         zsysmax = 1.1
-        if args.relax_zbounds:
-            zsysmax = 1.2
-            zsysmin = 0.3
+        #if args.relax_zbounds:
+        #    zsysmax = 1.2
+        #    zsysmin = 0.3
     
     if "BGS_BRIGHT-" in tracer_clus:
         zrl = [(0.1, 0.4)]
