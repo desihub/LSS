@@ -95,7 +95,7 @@ parser.add_argument("--resamp",help="resample radial info for different selectio
 parser.add_argument("--getFKP", help="calculate n(z) and FKP weights on final clustering catalogs", default='n')
 parser.add_argument("--add_bitweights", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 parser.add_argument("--add_extracols", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
-parser.add_argument("--add_weight_ntile", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
+parser.add_argument("--addNtileweight2full", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
 parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP weights.",default='n')
