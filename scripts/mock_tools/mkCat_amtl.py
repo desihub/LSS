@@ -1206,8 +1206,6 @@ if args.doimlin == 'y':
         tail=0.5,  # is the default
         logger=logger,
         loglevel="INFO",
-        templates_maps_nside=nside,
-        templates_maps_nested=nest,
     )
     
     # Data catalogs are already loaded, just recast them to astropy Tables
