@@ -1141,7 +1141,6 @@ if args.doimlin == 'y':
     from LSS.imaging.systematics_linear_regression import (
         make_fit_maps_dictionary,
         produce_imweights,
-        read_catalog,
     )
         # define the paths for the input files
     fname_ngc_out = os.path.join(
@@ -1181,7 +1180,7 @@ if args.doimlin == 'y':
     data_catalogs = np.concatenate([data_sgc, data_ngc])
 
     randoms_catalogs = np.concatenate(
-        [read_catalog(fname) for fname in randoms_fnames_in]
+        [read_file(fname) for fname in randoms_fnames_in]
     )
 
      # perform regression
