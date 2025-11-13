@@ -1189,7 +1189,7 @@ if args.doimlin == 'y':
         randoms_catalogs=randoms_catalogs,
         is_clustering_catalog=True,
         weight_scheme=None,
-        tracer_clus=tracer_clus,
+        tracer_type=tracer_clus,
         redshift_range=redshift_ranges,
         templates_maps_path_S=os.path.join(
             lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_S.fits"
