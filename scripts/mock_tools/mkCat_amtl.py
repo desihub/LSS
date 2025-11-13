@@ -1197,7 +1197,7 @@ if args.doimlin == 'y':
         templates_maps_path_N=os.path.join(
             lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_N.fits"
         ),
-        fit_maps=use_maps,
+        fit_maps=fit_maps,
         output_directory=os.path.join(dirout, args.extra_clus_dir),
         output_catalog_path=None,  # writing to disk will be done later to handle SGC/NGC separately
         output_column_name=syscol,
