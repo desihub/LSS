@@ -1081,13 +1081,13 @@ def read_file(fn):
 if args.doimlin == 'y':
     syscol = 'WEIGHT_IMLIN'
     tpstr = args.tracer
-    if "BGS" in tracer_type:
+    if "BGS" in tracer_clus:
         tpstr = "BGS_BRIGHT"
-    if "LRG" in tracer_type:
+    if "LRG" in tracer_clus:
         tpstr = "LRG"
     inds = np.arange(rm, rx)
     
-    if tracer_type[:3] == "ELG":
+    if tracer_clus[:3] == "ELG":
         if args.imsys_zbin == "split":
             zrl = [(0.8, 1.1), (1.1, 1.6)]
         elif args.imsys_zbin == 'one':
@@ -1096,14 +1096,14 @@ if args.doimlin == 'y':
         zsysmax = 1.6
     
     
-    if tracer_type[:3] == "QSO":
+    if tracer_clus[:3] == "QSO":
         if args.imsys_zbin == "split":
             zrl = [(0.8, 1.3), (1.3, 2.1), (2.1, 3.5)]
         elif args.imsys_zbin == 'one':
             zrl = [(0.8, 3.5)]
         zsysmin = 0.8
         zsysmax = 3.5
-    if tracer_type[:3] == "LRG":
+    if tracer_clus[:3] == "LRG":
         if args.imsys_zbin == "split":
             zrl = [(0.4, 0.6), (0.6, 0.8), (0.8, 1.1)]
         elif args.imsys_zbin == 'one':
@@ -1114,9 +1114,9 @@ if args.doimlin == 'y':
             zsysmax = 1.2
             zsysmin = 0.3
     
-    if "BGS_BRIGHT-" in tracer_type:
+    if "BGS_BRIGHT-" in tracer_clus:
         zrl = [(0.1, 0.4)]
-    elif tracer_type[:3] == "BGS":
+    elif tracer_clus[:3] == "BGS":
         zrl = [(0.01, 0.5)]
         zmin = 0.01
         zmax = 0.5
@@ -1145,24 +1145,24 @@ if args.doimlin == 'y':
     )
         # define the paths for the input files
     fname_ngc_out = os.path.join(
-        dirout, f"{tracer_type}_NGC_clustering.dat.h5"
+        dirout, f"{tracer_clus}_NGC_clustering.dat.h5"
     )
 
     fname_sgc_out = os.path.join(
-        dirout, f"{tracer_type}_SGC_clustering.dat.h5"
+        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
     )
 
     # get paths for random catalogs
     randoms_fnames_out = [
         os.path.join(
             dirout,
-            f"{tracer_type}_NGC_{i}_clustering.ran.h5",
+            f"{tracer_clus}_NGC_{i}_clustering.ran.h5",
         )
         for i in range(args.nran4imsys)
     ] + [
         os.path.join(
             dirout,
-            f"{tracer_type}_SGC_{i}_clustering.ran.h5",
+            f"{tracer_clus}_SGC_{i}_clustering.ran.h5",
         )
         for i in range(args.nran4imsys)
     ]
@@ -1190,7 +1190,7 @@ if args.doimlin == 'y':
         randoms_catalogs=randoms_catalogs,
         is_clustering_catalog=True,
         weight_scheme=None,
-        tracer_type=tracer_type,
+        tracer_clus=tracer_clus,
         redshift_range=redshift_ranges,
         templates_maps_path_S=os.path.join(
             lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_S.fits"
@@ -1245,11 +1245,11 @@ if args.doimlin == 'y':
     #  also write the weights in the randoms
     #if args.imsys_clus_ran:
     fname = os.path.join(
-        dirout,  f"{tracer_type}_NGC_clustering.dat.h5"
+        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
     )
     dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
     fname = os.path.join(
-        dirout, f"{tracer_type}_SGC_clustering.dat.h5"
+        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
     )
     dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
     dat = vstack([dat_sgc, dat_ngc])
@@ -1263,7 +1263,7 @@ if args.doimlin == 'y':
         for reg in regl:
             ran_fn = os.path.join(
                 dirout,
-                f"{tracer_type}_{reg}_{rann}_clustering.ran.h5",
+                f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
             )
             ran = Table(fitsio.read(ran_fn))
             if syscolr in ran.colnames:
