@@ -1177,9 +1177,11 @@ if args.doimlin == 'y':
     data_sgc = read_file(fname_sgc_in)
     data_ngc = read_file(fname_ngc_in)
 
-    data_catalogs = np.concatenate([data_sgc, data_ngc])
+    data_catalogs = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
+    common.printlog(str(np.unique(data_catalogs['PHOTSYS'],return_counts=True)),logger)
 
-    randoms_catalogs = np.concatenate(
+    #randoms_catalogs = np.concatenate(
+    randoms_catalogs = vstack(
         [read_file(fname) for fname in randoms_fnames_in]
     )
     common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
