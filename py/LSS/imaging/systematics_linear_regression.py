@@ -1148,7 +1148,7 @@ def produce_imweights(
             )
 
             data_we = jax.numpy.ones_like(selected_data[redshift_colname], dtype=float)
-            rand_we = jax.numpy.ones_like(selected_randoms, dtype=float)
+            rand_we = jax.numpy.ones_like(selected_randoms[redshift_colname], dtype=float)
 
             # add weights
             datacols = list(selected_data.dtype.names)
