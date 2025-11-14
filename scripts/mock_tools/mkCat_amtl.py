@@ -1182,7 +1182,8 @@ if args.doimlin == 'y':
     randoms_catalogs = np.concatenate(
         [read_file(fname) for fname in randoms_fnames_in]
     )
-
+    common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
+    sys.exit()
      # perform regression
     weights = produce_imweights(
         data_catalogs=data_catalogs,
