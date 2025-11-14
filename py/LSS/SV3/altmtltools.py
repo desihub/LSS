@@ -1389,6 +1389,7 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
 
 
             altZCat['Z'][mask] = sorted_src_zalt[pos]
+            altZCat['Z_QN'][mask] = 0.
             #T b=Table(altZCat)
             #T b.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/altz_after_%s.fits' % ts)
         
