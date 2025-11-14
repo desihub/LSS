@@ -1009,9 +1009,9 @@ def produce_imweights(
 
     # copy data/randoms to avoid modifying in place
     # and check that necessary columns are present
-    logger.info("There are %i rows of data", data_catalogs.size)
+    logger.info("There are %i rows of data", len(data_catalogs))
     all_data = Table(data_catalogs[data_colnames], copy=True)
-    logger.info("There are %i rows of data", randoms_catalogs.size)
+    logger.info("There are %i rows of data", len(randoms_catalogs))
     rands = randoms_catalogs[random_colnames].copy()
 
     # select good data that has been observed
