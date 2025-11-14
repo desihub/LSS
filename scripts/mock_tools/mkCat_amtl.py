@@ -1178,14 +1178,14 @@ if args.doimlin == 'y':
     data_ngc = read_file(fname_ngc_in)
 
     data_catalogs = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
-    common.printlog(str(np.unique(data_catalogs['PHOTSYS'],return_counts=True)),logger)
+    #common.printlog(str(np.unique(data_catalogs['PHOTSYS'],return_counts=True)),logger)
 
     #randoms_catalogs = np.concatenate(
     randoms_catalogs = vstack(
         [read_file(fname) for fname in randoms_fnames_in]
     )
-    common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
-    sys.exit()
+    #common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
+    
      # perform regression
     weights = produce_imweights(
         data_catalogs=data_catalogs,
