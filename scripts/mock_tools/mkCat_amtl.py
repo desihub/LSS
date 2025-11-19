@@ -1071,11 +1071,13 @@ if args.addNtileweight2full == 'y':
         nproc = 9
     common.add_weight_ntile(froot,logger=logger,ranmin=rm,nran=rx,par=args.par,tp=type,nproc=nproc)
 
-def read_file(fn):
+def read_file(fn,columns=None):
     if '.fits' in fn:
         data = Table(fitsio.read(fn.replace('global','dvs_ro')))
+        if columns is not None:
+            data.keep_columns(columns)
     if '.h5' in fn:
-        data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+        data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'),columns=columns)
     return data
 
 if args.doimlin == 'y':
