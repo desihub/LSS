@@ -3,7 +3,7 @@ freeze_iers()
 
 from multiprocessing import Pool
 from LSS.SV3 import altmtltools as amt
-from LSS.main import mockaltmtltools as mockamt
+#from LSS.main import mockaltmtltools as mockamt
 from astropy.table import Table, vstack, join
 #import altmtltools as amt
 from desiutil.log import get_logger
@@ -52,6 +52,8 @@ print(argv)
 args = parser.parse_args()
 
 args.ProcPerNode = 128
+
+print(args)
 
 
 
@@ -105,6 +107,7 @@ def procFunc(nproc):
     else:
         targets = None
 #    if args.mock:
+    print(args.obscon, args.survey, args.mtldir, args.zcatdir, args.altMTLBaseDir, ndirs, args.numobs_from_ledger,args.secondary,args.getosubp, args.quickRestart, multiproc, nproc, singleDate, args.redoFA, args.mock, targets, args.debug, args.verbose, args.reproducing)
     retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
         #retval = mockamt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir, ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing)
     #else:
@@ -126,7 +129,7 @@ def procFunc(nproc):
     return 42
 
 #indices of univ to update
-inds = [3]
+inds = [0]
     
 assert(len(inds))
 p = Pool()
