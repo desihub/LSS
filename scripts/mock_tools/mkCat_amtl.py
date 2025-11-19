@@ -1123,7 +1123,7 @@ if args.doimlin == 'y':
         zmin = 0.01
         zmax = 0.5
 
-    redshift_ranges = zrl
+    
     if args.imsys_zbin == 'fine':
         dz = 0.1
         zm = zsysmin
@@ -1135,6 +1135,8 @@ if args.doimlin == 'y':
             redshift_ranges += [(zm, zx)]
             zm = zx
         use_maps = fit_maps
+    else:
+        redshift_ranges = zrl
     common.printlog('the redshift bins that will be fit are '+str(redshift_ranges),logger)
     fit_maps = mainp.fit_maps_allebv
     debv = common.get_debv()
