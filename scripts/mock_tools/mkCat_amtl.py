@@ -1134,11 +1134,12 @@ if args.doimlin == 'y':
             zx = round(zx, 1)
             redshift_ranges += [(zm, zx)]
             zm = zx
-        use_maps = fit_maps
+        
     else:
         redshift_ranges = zrl
     common.printlog('the redshift bins that will be fit are '+str(redshift_ranges),logger)
     fit_maps = mainp.fit_maps_allebv
+    use_maps = fit_maps
     debv = common.get_debv()
     zcmb = common.mk_zcmbmap()
 
