@@ -1267,7 +1267,7 @@ if args.doimlin == 'y':
                 dirout,
                 f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
             )
-            ran = Table(fitsio.read(ran_fn))
+            ran = Table(read_file(ran_fn))
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             ran = join(ran, dat, keys=["TARGETID_DATA"])
