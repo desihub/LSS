@@ -261,6 +261,23 @@ mapcuts = mainp.mapcuts
 tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
 
+if args.mkdat == 'y':
+    logger.info('reading '+in_data_fn)
+    mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
+    logger.info('read '+in_data_fn.replace('global','dvs_ro'))
+    selcoll = mock_data['COLLISION'] == False
+    mock_data = mock_data[selcoll]
+    ndattot = len(mock_data)
+    lmockdat_noveto = len(mock_data)
+
+    mock_data = mock_data[goodtl]
+    logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
+
+    mock_data = Table(mock_data)
+    mock_data = unique(mock_data,keys=['TARGETID'])
+    mock_data.rename_column('RSDZ', 'Z')
+
+
 if args.mkdat == 'y' or args.mkran == 'y':
     tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
     specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
@@ -277,21 +294,6 @@ if args.mkdat == 'y' or args.mkran == 'y':
     goodtl = np.isin(tilelocid,gtl)
 
 
-if args.mkdat == 'y':
-    logger.info('reading '+in_data_fn)
-    mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
-    logger.info('read '+in_data_fn.replace('global','dvs_ro'))
-    selcoll = mock_data['COLLISION'] == False
-    mock_data = mock_data[selcoll]
-    ndattot = len(mock_data)
-    lmockdat_noveto = len(mock_data)
-
-    mock_data = mock_data[goodtl]
-    logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
-
-    mock_data = Table(mock_data)
-    mock_data = unique(mock_data,keys=['TARGETID'])
-    mock_data.rename_column('RSDZ', 'Z')
 
 
     
