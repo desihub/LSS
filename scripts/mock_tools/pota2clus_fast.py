@@ -269,8 +269,10 @@ if args.mkdat == 'y' or args.mkran == 'y':
     logger.info(len(np.unique(specf['TILEID'])))
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     logger.info('loaded specf file '+specfo)
-
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
+    if args.specrel == 'loa-v1' and 'v2' in args.data_dir:
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    else:
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
     gtl = np.unique(specfc['TILELOCID'])
     goodtl = np.isin(tilelocid,gtl)
 
@@ -376,8 +378,9 @@ for tracer in tracers:
     tracerr = tracer
     if tracer[:3] == 'BGS':
         tracerr = 'BGS_BRIGHT'
-    ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
-
+    #ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
+    ran_fname_base = args.data_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
+    
     if args.mk_inputran == 'y':
         def _mk_inputran(rann):
             outfn = ran_fname_base.replace('dvs_ro','global')+str(rann)+'_full.ran.fits'
