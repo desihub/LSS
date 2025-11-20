@@ -270,12 +270,6 @@ if args.mkdat == 'y':
     ndattot = len(mock_data)
     lmockdat_noveto = len(mock_data)
 
-    mock_data = mock_data[goodtl]
-    logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
-
-    mock_data = Table(mock_data)
-    mock_data = unique(mock_data,keys=['TARGETID'])
-    mock_data.rename_column('RSDZ', 'Z')
 
 
 if args.mkdat == 'y' or args.mkran == 'y':
@@ -293,6 +287,12 @@ if args.mkdat == 'y' or args.mkran == 'y':
     gtl = np.unique(specfc['TILELOCID'])
     goodtl = np.isin(tilelocid,gtl)
 
+    mock_data = mock_data[goodtl]
+    logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
+
+    mock_data = Table(mock_data)
+    mock_data = unique(mock_data,keys=['TARGETID'])
+    mock_data.rename_column('RSDZ', 'Z')
 
 
 
