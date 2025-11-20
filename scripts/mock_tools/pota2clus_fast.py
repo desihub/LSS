@@ -263,7 +263,7 @@ tnsrcol = mainp.tsnrcol
 
 if args.mkdat == 'y':
     logger.info('reading '+in_data_fn)
-    mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
+    mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'))#,columns=cols)
     logger.info('read '+in_data_fn.replace('global','dvs_ro'))
     selcoll = mock_data['COLLISION'] == False
     mock_data = mock_data[selcoll]
