@@ -3,11 +3,6 @@ from numpy.random import Generator, PCG64
 from astropy.io import fits
 import LSS.common_tools as common
 import numpy as np
-#z_lop = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph003/CutSky/ELG_v5/z1.175/forclustering/cutsky_abacusHF_DR2_ELG_LOP_z1p175_zcut_0p8to1p6_clustering.dat.fits')['Z']
-
-#z_lrg = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/LRG/z0.500/forclustering/cutsky_abacusHF_DR2_LRG_z0p500_zcut_0p4to1p1_clustering.dat.fits')['Z']
-
-#z_qso = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph007/CutSky/QSO/z1.400/forclustering/cutsky_abacusHF_DR2_QSO_z1p400_zcut_0p8to3p5_clustering.dat.fits')['Z']
 
 def return_north(ra, dec):
     '''
@@ -32,7 +27,7 @@ elg_snap = ['z0.950'] #, 'z1.175', 'z1.475']
 for i in range(18):#,18):#,18):
 
     ##ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_with_imagingmask_{i}.fits'
-    ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_NO_imagingmask_{i}.fits'
+    ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/raw/rands_intiles_DARK_{i}_NO_imagingmask_withz.fits'
     #ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_nomask_{i}.fits'
     random_file = Table.read(ranf)
 
@@ -187,7 +182,7 @@ for i in range(18):#,18):#,18):
     random_file = vstack([ran_north, ran_south])
 
     #ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_{i}_v2.fits'
-    ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_{i}_NO_imagingmask_withz.fits'
+###    ranf = f'/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_{i}_NO_imagingmask_withz.fits'
     
     common.write_LSS_scratchcp(random_file, ranf, extname = 'RANDOMS')
     fits.setval(ranf, 'ID_LRG', value = str(lrg_rea), ext = 1)
