@@ -46,7 +46,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/
-ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/
+ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -87,8 +87,8 @@ seed=3593589
 
 #If mocklist is not equals to "", then it will supercede ndir=$mockend-$mockinit
 #Mock realization
-mockinit=202
-mockend=203
+mockinit=0
+mockend=1
 
 let ndir=$mockend-$mockinit 
 
@@ -208,9 +208,9 @@ secondary=''
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
+targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
-zfix="--zfix=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/highz.txt" 
+zfix="--zfix=/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_withcontaminants.txt" 
 #zfix=''
 
 
