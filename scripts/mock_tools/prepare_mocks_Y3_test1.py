@@ -34,7 +34,7 @@ parser.add_argument("--output_fullpathfn", help="output mock file and full path"
 #parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
 parser.add_argument("--tracer", help="LRG, ELG or QSO") #,default='LRG')
 parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog")
-parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD")
+parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD", default='Z')
 parser.add_argument("--need_footprint", help="Do we need to prune by rounded tile footprint?", default='y')
 
 parser.add_argument("--need_nz_calib", help="Do we need to calibrate n(z) to match that of the survey?", default='n')
