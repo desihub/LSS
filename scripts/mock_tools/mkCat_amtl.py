@@ -1380,9 +1380,9 @@ if args.addsysnet == 'y':
     regl_sysnet = ['N','S']
     for reg in regl_sysnet:
         for zl in zrl:
-            zw = ''
-            if args.imsys_zbin == 'y':
-                zw = str(zl[0])+'_'+str(zl[1])
+            #zw = ''
+            #if args.imsys_zbin == 'y':
+            zw = str(zl[0])+'_'+str(zl[1])
             sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
             pred_counts = np.mean(sn_weights['weight'],axis=1)
             #pix_weight = np.mean(pred_counts)/pred_counts
