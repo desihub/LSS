@@ -1398,8 +1398,8 @@ if args.prep4sysnet == 'y':
                 sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
-            seld = dat['PHOTSYS'] == reg
-            selr = rands['PHOTSYS'] == reg
+            seld = data_catalogs['PHOTSYS'] == reg
+            selr = randoms_catalogs['PHOTSYS'] == reg
             #if args.use_allsky_rands == 'y':
             allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
@@ -1411,7 +1411,7 @@ if args.prep4sysnet == 'y':
             common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
             wtmd = 'wt'
             common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
-            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
+            prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd=wtmd,tp=args.type[:3])
             fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
