@@ -1366,8 +1366,8 @@ if args.prep4sysnet == 'y':
     for zl in zrl:
         zw = ''
         zmin,zmax=zl[0],zl[1]
-        if args.imsys_zbin == 'y':
-            zw = str(zmin)+'_'+str(zmax)
+        #if args.imsys_zbin == 'y':
+        zw = str(zmin)+'_'+str(zmax)
         for reg in regl:
             if type == 'LRG':
                 if reg == 'N':
