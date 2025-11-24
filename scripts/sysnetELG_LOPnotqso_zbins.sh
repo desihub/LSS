@@ -7,14 +7,8 @@ PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 version=$1
 type=$2
-notqso=$3
-BASEDIR=$4
-
+BASEDIR=$3
 tracer=$type
-if [$notqso = 'y']
-then
-    tracer=${type}notqso
-fi
 
 echo $tracer
 echo $notqso
