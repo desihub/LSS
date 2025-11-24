@@ -1367,7 +1367,7 @@ if args.prep4sysnet == 'y':
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
 
 
-if args.add_sysnet == 'y':
+if args.addsysnet == 'y':
     logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
     from LSS.imaging import densvar
     import healpy as hp
