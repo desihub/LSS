@@ -1408,6 +1408,7 @@ if args.addsysnet == 'y':
     # add custom column to catalog
     data_sgc['WEIGHT_SN'] = data_catalogs['WEIGHT_SN'][:transition_index]
     data_ngc['WEIGHT_SN'] = data_catalogs['WEIGHT_SN'][transition_index:]
+    syscol = 'WEIGHT_SN'
     # overwrite the WEIGHT columns
     if args.replace_syscol:
         data_sgc["WEIGHT"] /= data_sgc["WEIGHT_SYS"]
@@ -1431,7 +1432,7 @@ if args.addsysnet == 'y':
 
     #  also write the weights in the randoms
     #if args.imsys_clus_ran:
-    syscol = 'WEIGHT_SN'
+    
     fname = os.path.join(
         dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
     )
