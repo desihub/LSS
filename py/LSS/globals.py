@@ -137,6 +137,7 @@ class main:
             self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']#,'EBV_DIFF_MPF']
             self.fit_maps_all = self.fit_maps
             self.fit_maps_allebv = self.fit_maps
+            self.fit_maps_allebvcmb = self.fit_maps_allebv.append('ZCMB')
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8

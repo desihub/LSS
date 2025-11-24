@@ -1080,7 +1080,12 @@ def read_file(fn,columns=None):
         data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'),columns=columns)
     return data
 
-if args.doimlin == 'y':
+#for the mocks, just use the QSO map for dark time and the BGS one for bright time
+tpmap = 'QSO'
+if 'BGS' in args.tracer:
+    tpmap = 'BGS_BRIGHT'
+
+if args.doimlin == 'y' or args.prep4sysnet == 'y':
     syscol = 'WEIGHT_IMLIN'
     tpstr = args.tracer
     if "BGS" in tracer_clus:
@@ -1143,6 +1148,7 @@ if args.doimlin == 'y':
     debv = common.get_debv()
     zcmb = common.mk_zcmbmap()
 
+
     from LSS.imaging.systematics_linear_regression import (
         make_fit_maps_dictionary,
         produce_imweights,
@@ -1191,6 +1197,7 @@ if args.doimlin == 'y':
     )
     #common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
     
+if args.doimlin == 'y':
      # perform regression
     weights = produce_imweights(
         data_catalogs=data_catalogs,
@@ -1200,10 +1207,10 @@ if args.doimlin == 'y':
         tracer_type=tracer_clus,
         redshift_range=redshift_ranges,
         templates_maps_path_S=os.path.join(
-            lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_S.fits"
+            lssmapdirout, f"{tpmap}_mapprops_healpix_nested_nside{nside}_S.fits"
         ),
         templates_maps_path_N=os.path.join(
-            lssmapdirout, f"{tpstr}_mapprops_healpix_nested_nside{nside}_N.fits"
+            lssmapdirout, f"{tpmap}_mapprops_healpix_nested_nside{nside}_N.fits"
         ),
         fit_maps=fit_maps,
         output_directory=dirout,
@@ -1288,6 +1295,125 @@ if args.doimlin == 'y':
     else:
         for rn in inds:  # range(rm,rx):
             _add2ran(rn)
+
+if args.prepsysnet == 'y':
+    common.printlog('preparing data to run sysnet regression for '+tp,logger)
+    if not os.path.exists(dirout+'/sysnet'):
+        os.mkdir(dirout+'/sysnet')
+        print('made '+dirout+'/sysnet')    
+
+    from LSS.imaging import sysnet_tools
+    
+#     fname_ngc_in = os.path.join(
+#         dirout, f"{tracer_clus}_NGC_clustering.dat.h5"
+#     )
+# 
+#     fname_sgc_in = os.path.join(
+#         dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+#     )
+# 
+#     # get paths for random catalogs
+#     randoms_fnames_in = [
+#         os.path.join(
+#             dirout,
+#             f"{tracer_clus}_NGC_{i}_clustering.ran.h5",
+#         )
+#         for i in range(18)
+#     ] + [
+#         os.path.join(
+#             dirout,
+#             f"{tracer_clus}_SGC_{i}_clustering.ran.h5",
+#         )
+#         for i in range(18)
+#     ]
+# 
+#     
+#     import time
+#     time_start = time.time()
+#     common.printlog('Loading data for prep4sysnet...',logger)
+#     data_sgc = read_file(fname_sgc_in)
+#     data_ngc = read_file(fname_ngc_in)
+# 
+#     dat = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
+#     del data_sgc
+#     del data_ngc
+#     common.printlog('Loading randoms for prep4sysnet...',logger)
+#     rands = vstack(
+#         [read_file(fname,columns=['RA', 'DEC','PHOTSYS']) for fname in randoms_fnames_in]
+#     )
+    
+    #ranl = []
+    #if args.par == 'y':
+    #    def read_catalogs(randoms_path):
+    #        return fitsio.read(randoms_path,columns=['RA', 'DEC','PHOTSYS'])
+    #    rands_paths=[]
+    #    for i in range(0,18):
+    #        rands_paths.append(os.path.join(dirout.replace('global','dvs_ro'), tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits')) 
+    #    from multiprocessing import Pool
+    #    with Pool() as pool:
+    #        ranl = pool.map(read_catalogs, rands_paths)
+    #else:
+    #    for i in range(0,18):
+    #        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro'), tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
+    #        ranl.append(ran)
+    #rands = np.concatenate(ranl)
+    #common.printlog('Randoms loaded and stacked',logger)# time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
+    regl = ['N','S']
+    
+    for zl in zrl:
+        zw = ''
+        zmin,zmax=zl[0],zl[1]
+        if args.imsys_zbin == 'y':
+            zw = str(zmin)+'_'+str(zmax)
+        for reg in regl:
+            if type == 'LRG':
+                if reg == 'N':
+                    fitmapsbin = fit_maps
+                else:
+                    if zmax == 0.6:
+                        fitmapsbin = mainp.fit_maps46s
+                    if zmax == 0.8:
+                        fitmapsbin = mainp.fit_maps68s
+                    if zmax == 1.1:
+                        fitmapsbin = mainp.fit_maps81s
+            else:
+                fitmapsbin = fit_maps
+            #tpmap = tpstr
+            #if 'ELG' in tpstr and 'notqso' in tpstr:
+            #    tpmap = 'ELG_LOPnotqso'
+            pwf = lssmapdirout+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            sys_tab = Table.read(pwf)
+            cols = list(sys_tab.dtype.names)
+            for col in cols:
+                if 'DEPTH' in col:
+                    bnd = col.split('_')[-1]
+                    sys_tab[col] *= 10**(-0.4*common.ext_coeff[bnd]*sys_tab['EBV'])
+            for ec in ['GR','RZ']:
+                if 'EBV_DIFF_'+ec in fit_maps: 
+                    sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+            if 'EBV_DIFF_MPF' in fit_maps:
+                sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
+            if 'ZCMB' in fit_maps:
+                sys_tab['ZCMB'] = zcmb
+            seld = dat['PHOTSYS'] == reg
+            selr = rands['PHOTSYS'] == reg
+            #if args.use_allsky_rands == 'y':
+            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+            allsky_rands = fitsio.read(allsky_fn)
+            allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
+            #    selr_all = allsky_rands['PHOTSYS'] == reg
+            #    allrands = allsky_rands[selr_all]
+            #else:
+            #    allrands = None
+            common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
+            wtmd = 'wt'
+            common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
+            prep_table = sysnet_tools.prep4sysnet(dat[seld], rands[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
+                                                  zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
+                                                  columns=fitmapsbin,wtmd=wtmd,tp=args.type[:3])
+            fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
+            common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
+
  
 '''
 if args.FKPfull == 'y':
