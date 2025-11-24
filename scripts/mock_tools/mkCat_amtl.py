@@ -102,6 +102,7 @@ parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP
 
 parser.add_argument("--doimlin",help="whether to run linear imaging systematic regressions",default='n')
 parser.add_argument("--prep4sysnet",help="whether to make the healpix files that will be input to sysnet",default='n')
+parser.add_argument("--addsysnet",help="whether to add the sysnet weights to the catalogs",default='n')
 parser.add_argument("--imsys_zbin",help="string to encode redshift binning for linear regressions",default='split')
 parser.add_argument("--nran4imsys",help="number of randoms to use for linear imaging systematic regresions",default=10)
 parser.add_argument(
@@ -1088,7 +1089,7 @@ tpmap = 'QSO'
 if 'BGS' in args.tracer:
     tpmap = 'BGS_BRIGHT'
 
-if args.doimlin == 'y' or args.prep4sysnet == 'y':
+if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     syscol = 'WEIGHT_IMLIN'
     tpstr = args.tracer
     if "BGS" in tracer_clus:
@@ -1307,60 +1308,6 @@ if args.prep4sysnet == 'y':
 
     from LSS.imaging import sysnet_tools
     
-#     fname_ngc_in = os.path.join(
-#         dirout, f"{tracer_clus}_NGC_clustering.dat.h5"
-#     )
-# 
-#     fname_sgc_in = os.path.join(
-#         dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
-#     )
-# 
-#     # get paths for random catalogs
-#     randoms_fnames_in = [
-#         os.path.join(
-#             dirout,
-#             f"{tracer_clus}_NGC_{i}_clustering.ran.h5",
-#         )
-#         for i in range(18)
-#     ] + [
-#         os.path.join(
-#             dirout,
-#             f"{tracer_clus}_SGC_{i}_clustering.ran.h5",
-#         )
-#         for i in range(18)
-#     ]
-# 
-#     
-#     import time
-#     time_start = time.time()
-#     common.printlog('Loading data for prep4sysnet...',logger)
-#     data_sgc = read_file(fname_sgc_in)
-#     data_ngc = read_file(fname_ngc_in)
-# 
-#     dat = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
-#     del data_sgc
-#     del data_ngc
-#     common.printlog('Loading randoms for prep4sysnet...',logger)
-#     rands = vstack(
-#         [read_file(fname,columns=['RA', 'DEC','PHOTSYS']) for fname in randoms_fnames_in]
-#     )
-    
-    #ranl = []
-    #if args.par == 'y':
-    #    def read_catalogs(randoms_path):
-    #        return fitsio.read(randoms_path,columns=['RA', 'DEC','PHOTSYS'])
-    #    rands_paths=[]
-    #    for i in range(0,18):
-    #        rands_paths.append(os.path.join(dirout.replace('global','dvs_ro'), tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits')) 
-    #    from multiprocessing import Pool
-    #    with Pool() as pool:
-    #        ranl = pool.map(read_catalogs, rands_paths)
-    #else:
-    #    for i in range(0,18):
-    #        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro'), tpstr+'_'+str(i)+'_full'+args.use_map_veto+'.ran.fits'), columns=['RA', 'DEC','PHOTSYS']) 
-    #        ranl.append(ran)
-    #rands = np.concatenate(ranl)
-    #common.printlog('Randoms loaded and stacked',logger)# time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start)))
     regl = ['N','S']
     
     for zl in zrl:
@@ -1419,6 +1366,112 @@ if args.prep4sysnet == 'y':
                 os.makedirs( dirout+'/sysnet/')
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
 
+
+if args.add_sysnet == 'y':
+    logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
+    from LSS.imaging import densvar
+    import healpy as hp
+    #fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
+    #dd = Table.read(fn_full)
+    data_catalogs['WEIGHT_SN'] = np.ones(len(data_catalogs))
+    dth,dphi = densvar.radec2thphi(data_catalogs['RA'],data_catalogs['DEC'])
+    dpix = hp.ang2pix(256,dth,dphi)
+
+    regl_sysnet = ['N','S']
+    for reg in regl_sysnet:
+        for zl in zrl:
+            zw = ''
+            if args.imsys_zbin == 'y':
+                zw = str(zl[0])+'_'+str(zl[1])
+            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
+            pred_counts = np.mean(sn_weights['weight'],axis=1)
+            #pix_weight = np.mean(pred_counts)/pred_counts
+            #pix_weight = np.clip(pix_weight,0.5,2.)
+            pix_weight = 1./pred_counts
+            pix_weight = pix_weight / pix_weight.mean()
+            pix_weight = np.clip(pix_weight,0.5,2.)
+            sn_pix = sn_weights['hpix']
+            hpmap = np.ones(12*256*256)
+            for pix,wt in zip(sn_pix,pix_weight):
+                hpmap[pix] = wt
+        
+            sel = data_catalogs['PHOTSYS'] == reg
+            selz = data_catalogs['Z'] > zl[0]
+            selz &= data_catalogs['Z'] <= zl[1]
+
+            #print(np.sum(sel))
+            data_catalogs['WEIGHT_SN'][sel&selz] = hpmap[dpix[sel&selz]]
+    # Catalogs are just concatenated in the order SGC, NGC
+    # so this is enough to assign weights to the correct one
+    transition_index = len(data_sgc)
+    assert transition_index + len(data_ngc) == len(weights), "Shape mismatch!"
+    # add custom column to catalog
+    data_sgc['WEIGHT_SN'] = data_catalogs['WEIGHT_SN'][:transition_index]
+    data_ngc['WEIGHT_SN'] = data_catalogs['WEIGHT_SN'][transition_index:]
+    # overwrite the WEIGHT columns
+    if args.replace_syscol:
+        data_sgc["WEIGHT"] /= data_sgc["WEIGHT_SYS"]
+        data_sgc["WEIGHT_SYS"] = data_sgc[syscol]
+        data_sgc["WEIGHT"] *= data_sgc["WEIGHT_SYS"]
+
+        data_ngc["WEIGHT"] /= data_ngc["WEIGHT_SYS"]
+        data_ngc["WEIGHT_SYS"] = data_ngc[syscol]
+        data_ngc["WEIGHT"] *= data_ngc["WEIGHT_SYS"]
+    # write out everything
+    common.write_LSShdf5_scratchcp(
+        data_sgc,
+        fname_sgc_out,
+        logger=logger,
+    )
+    common.write_LSShdf5_scratchcp(
+        data_ngc,
+        fname_ngc_out,
+        logger=logger,
+    )
+
+    #  also write the weights in the randoms
+    #if args.imsys_clus_ran:
+    syscol = 'WEIGHT_SN'
+    fname = os.path.join(
+        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
+    )
+    dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
+    fname = os.path.join(
+        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+    )
+    dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
+    dat = vstack([dat_sgc, dat_ngc])
+    dat.rename_column("TARGETID", "TARGETID_DATA")
+    regl = ["NGC", "SGC"]
+    syscolr = syscol
+
+    # if args.replace_syscol == 'y':
+    #    syscolr = 'WEIGHT_SYS'
+    def _add2ran(rann):
+        for reg in regl:
+            ran_fn = os.path.join(
+                dirout,
+                f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
+            )
+            ran = Table(read_file(ran_fn))
+            if syscolr in ran.colnames:
+                ran.remove_column(syscolr)
+            ran = join(ran, dat, keys=["TARGETID_DATA"])
+            if args.replace_syscol:
+                ran["WEIGHT"] /= ran["WEIGHT_SYS"]
+                ran["WEIGHT_SYS"] = ran[syscolr]
+                ran["WEIGHT"] *= ran["WEIGHT_SYS"]
+            common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
+
+    if args.par == "y":
+        from multiprocessing import Pool
+
+        with Pool() as pool:
+            res = pool.map(_add2ran, inds)
+    else:
+        for rn in inds:  # range(rm,rx):
+            _add2ran(rn)
+  
  
 '''
 if args.FKPfull == 'y':
