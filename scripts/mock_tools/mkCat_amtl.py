@@ -1415,7 +1415,8 @@ if args.prep4sysnet == 'y':
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd=wtmd)
             fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
-            os.makedirs( dirout+'/sysnet/')
+            if not os.path.isdir(dirout+'/sysnet/'):
+                os.makedirs( dirout+'/sysnet/')
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
 
  
