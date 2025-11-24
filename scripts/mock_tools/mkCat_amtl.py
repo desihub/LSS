@@ -1404,7 +1404,7 @@ if args.addsysnet == 'y':
     # Catalogs are just concatenated in the order SGC, NGC
     # so this is enough to assign weights to the correct one
     transition_index = len(data_sgc)
-    assert transition_index + len(data_ngc) == len(weights), "Shape mismatch!"
+    assert transition_index + len(data_ngc) == len(data_catalogs['WEIGHT_SN']), "Shape mismatch!"
     # add custom column to catalog
     data_sgc['WEIGHT_SN'] = data_catalogs['WEIGHT_SN'][:transition_index]
     data_ngc['WEIGHT_SN'] = data_catalogs['WEIGHT_SN'][transition_index:]
