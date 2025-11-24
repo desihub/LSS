@@ -639,7 +639,7 @@ nside = 256
 vermap = args.dataversion
 
 lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/LSScats/{VERMAP}/hpmaps'.format(SURVEY=survey, SPECDATA=args.specdata, VERMAP=vermap)
-common.printlog('using '+lssmapdirout+' to find healpix maps')
+common.printlog('using '+lssmapdirout+' to find healpix maps',logger)
 if args.apply_veto == 'y':
     common.printlog('--- START APPLY_VETO; including HP maps---',logger=logger)
     common.printlog('applying vetos to mock ' + str(mocknum),logger=logger)
