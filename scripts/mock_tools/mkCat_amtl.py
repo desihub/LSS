@@ -625,19 +625,21 @@ if args.fullr == 'y':
 tracer_clus = args.tracer + notqso 
 #    import healpy as hp
 nside = 256
-if survey == 'Y1' and args.specdata == 'iron':
-    vermap = 'v0.6'
-elif survey == 'DA2' and args.specdata == 'jura-v1': 
-    vermap = 'v0.1'
-elif survey == 'DA2' and args.specdata == 'kibo-v1':   
-    vermap = 'v1'  
-elif survey == 'DA2' and args.specdata == 'loa-v1':
-    vermap = 'v1.1' 
-else:
-    raise Exception('survey and specdata not compatible')
+#if survey == 'Y1' and args.specdata == 'iron':
+#    vermap = 'v0.6'
+#elif survey == 'DA2' and args.specdata == 'jura-v1': 
+#    vermap = 'v0.1'
+#elif survey == 'DA2' and args.specdata == 'kibo-v1':   
+#    vermap = 'v1'  
+#elif survey == 'DA2' and args.specdata == 'loa-v1':
+#    vermap = 'v1.1' 
+#else:
+#    raise Exception('survey and specdata not compatible')
+
+vermap = args.dataversion
 
 lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/LSScats/{VERMAP}/hpmaps'.format(SURVEY=survey, SPECDATA=args.specdata, VERMAP=vermap)
-
+common.printlog('using '+lssmapdirout+' to find healpix maps')
 if args.apply_veto == 'y':
     common.printlog('--- START APPLY_VETO; including HP maps---',logger=logger)
     common.printlog('applying vetos to mock ' + str(mocknum),logger=logger)
@@ -1382,7 +1384,7 @@ if args.prep4sysnet == 'y':
             #tpmap = tpstr
             #if 'ELG' in tpstr and 'notqso' in tpstr:
             #    tpmap = 'ELG_LOPnotqso'
-            pwf = lssmapdirout+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
