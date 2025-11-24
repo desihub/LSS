@@ -15,12 +15,12 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 $LSSCODE/LSS/scripts/run_sysnet_cd.sh N ELG_LOPnotqso0.8_1.1 true false 1024 0.003 dnnp pnll $1 $2
 $LSSCODE/LSS/scripts/run_sysnet_cd.sh S ELG_LOPnotqso0.8_1.1 true false 1024 0.003 dnnp pnll $1 $2
 
-$LSSCODE/LSS/scripts/run_sysnet_cd_mpi.sh N ELG_LOPnotqso0.8_1.1 false true 1024 0.004 dnnp pnll $1 $2
-$LSSCODE/LSS/scripts/run_sysnet_cd_mpi.sh S ELG_LOPnotqso0.8_1.1 false true 1024 0.004 dnnp pnll $1 $2
+$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh N ELG_LOPnotqso0.8_1.1 false true 1024 0.004 dnnp pnll $1 $2
+$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh S ELG_LOPnotqso0.8_1.1 false true 1024 0.004 dnnp pnll $1 $2
 
 $LSSCODE/LSS/scripts/run_sysnet_cd.sh N ELG_LOPnotqso1.1_1.6 true false 1024 0.003 dnnp pnll $1 $2
 $LSSCODE/LSS/scripts/run_sysnet_cd.sh S ELG_LOPnotqso1.1_1.6 true false 1024 0.003 dnnp pnll $1 $2
 
-$LSSCODE/LSS/scripts/run_sysnet_cd_mpi.sh N ELG_LOPnotqso1.1_1.6 false true 1024 0.004 dnnp pnll $1 $2
-$LSSCODE/LSS/scripts/run_sysnet_cd_mpi.sh S ELG_LOPnotqso1.1_1.6 false true 1024 0.004 dnnp pnll $1 $2
+$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh N ELG_LOPnotqso1.1_1.6 false true 1024 0.004 dnnp pnll $1 $2
+$LSSCODE/LSS/scripts/run_sysnetELG_cd_mpi.sh S ELG_LOPnotqso1.1_1.6 false true 1024 0.004 dnnp pnll $1 $2
 
