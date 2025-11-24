@@ -101,6 +101,7 @@ parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to r
 parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP weights.",default='n')
 
 parser.add_argument("--doimlin",help="whether to run linear imaging systematic regressions",default='n')
+parser.add_argument("--prep4sysnet",help="whether to make the healpix files that will be input to sysnet",default='n')
 parser.add_argument("--imsys_zbin",help="string to encode redshift binning for linear regressions",default='split')
 parser.add_argument("--nran4imsys",help="number of randoms to use for linear imaging systematic regresions",default=10)
 parser.add_argument(
@@ -1296,7 +1297,7 @@ if args.doimlin == 'y':
         for rn in inds:  # range(rm,rx):
             _add2ran(rn)
 
-if args.prepsysnet == 'y':
+if args.prep4sysnet == 'y':
     common.printlog('preparing data to run sysnet regression for '+tp,logger)
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
