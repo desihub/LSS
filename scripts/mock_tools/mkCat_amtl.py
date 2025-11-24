@@ -1298,7 +1298,7 @@ if args.doimlin == 'y':
             _add2ran(rn)
 
 if args.prep4sysnet == 'y':
-    common.printlog('preparing data to run sysnet regression for '+tp,logger)
+    common.printlog('preparing data to run sysnet regression for '+tracer_clus,logger)
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
         print('made '+dirout+'/sysnet')    
