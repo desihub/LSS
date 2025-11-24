@@ -104,7 +104,7 @@ parser.add_argument("--doimlin",help="whether to run linear imaging systematic r
 parser.add_argument("--prep4sysnet",help="whether to make the healpix files that will be input to sysnet",default='n')
 parser.add_argument("--addsysnet",help="whether to add the sysnet weights to the catalogs",default='n')
 parser.add_argument("--imsys_zbin",help="string to encode redshift binning for linear regressions",default='split')
-parser.add_argument("--nran4imsys",help="number of randoms to use for linear imaging systematic regresions",default=10)
+parser.add_argument("--nran4imsys",help="number of randoms to use for linear imaging systematic regresions",default=18,type=int)
 parser.add_argument(
     "--replace_syscol",
     help="Replace any existing WEIGHT_SYS with new weights",
