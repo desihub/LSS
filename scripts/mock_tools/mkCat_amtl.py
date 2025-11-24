@@ -1368,7 +1368,7 @@ if args.prep4sysnet == 'y':
 
 
 if args.addsysnet == 'y':
-    logf.write('adding sysnet weights to data catalogs for '+tp+' '+str(datetime.now())+'\n')
+    common.printlog('adding sysnet weights to data catalogs for '+tracer_clus,logger)
     from LSS.imaging import densvar
     import healpy as hp
     #fn_full = dirout+tracer_clus+'_full'+args.use_map_veto+'.dat.fits'
