@@ -34,7 +34,7 @@ echo $BASEDIR
 # Flags and directories used by SYSNet 
 sysnet_app=$LSSCODE/LSS/py/LSS/imaging/sysnet_app_mpi.py
 sysnet_dir=$BASEDIR/$version/sysnet/
-srun_flags="-N 1 -C cpu --qos interactive --account desi "
+srun_flags=""
 lrfinder_flags="-ax all --model dnnp --loss pnll -fl"
 train_flags="-ax all --model dnnp --loss pnll --eta_min 0.00001 -k"
 north_flags="-lr $LR_N -bs $NBATCH_N --nn_structure ${NNS_N[@]} -ne $NEPOCH_N -nc $NCHAIN_N"
