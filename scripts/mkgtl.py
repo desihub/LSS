@@ -83,7 +83,7 @@ else:
 
 pd = pdir
 
-if '1b' in type:
+if '1b' in args.prog:
     pr += '1B'
     pdir += '1b'
 
@@ -99,13 +99,10 @@ if not os.path.exists(dirout):
     os.makedirs(dirout)
     logger.info('made '+dirout)
 
-globtype = args.type
 if 'dark' in args.prog:
     globtype = 'LRG'
 if 'bright' in args.prog:
-    #print('changing globtype')
     globtype = 'BGS'
-#print(globtype,args.type)
 mainp = main(globtype,args.verspec)
 
 mt = mainp.mtld
