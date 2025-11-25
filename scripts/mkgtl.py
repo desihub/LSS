@@ -88,7 +88,7 @@ if '1b' in args.prog:
     pdir += '1b'
 
 
-ldirspec = basedir+'/LSS/'+specrel+'/'
+ldirspec = basedir+args.survey+'/LSS/'+specrel+'/'
 
 dirout = ldirspec+'LSScats/'+version+'/'
 
