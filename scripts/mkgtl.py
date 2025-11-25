@@ -71,7 +71,6 @@ logger.info(args)
 
 basedir = args.basedir
 version = args.version
-faver = args.faver
 specrel = args.verspec
 
 
