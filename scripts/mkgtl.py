@@ -88,16 +88,9 @@ if '1b' in args.prog:
     pdir += '1b'
 
 
-ldirspec = maindir+specrel+'/'
-if not os.path.exists(ldirspec):
-    os.mkdir(ldirspec)
-    logger.info('made '+ldirspec)
-
+ldirspec = basedir+'/LSS/'+specrel+'/'
 
 dirout = ldirspec+'LSScats/'+version+'/'
-if not os.path.exists(dirout):
-    os.makedirs(dirout)
-    logger.info('made '+dirout)
 
 if 'dark' in args.prog:
     globtype = 'LRG'
