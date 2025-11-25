@@ -11,7 +11,7 @@ mocknum=5
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
-srun python $scriptdir/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
+srun python $scriptdir/mock_tools/mkCat_amtl.py --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
