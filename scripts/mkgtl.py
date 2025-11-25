@@ -150,4 +150,5 @@ else:
     specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
 gtl = np.unique(specfc['TILELOCID'])
 filena = dirout+'/'+pdir+'_unique_good_TILELOCID.txt'
+logger.info('writing results to '+filena)
 np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
