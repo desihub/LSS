@@ -181,24 +181,25 @@ data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScat
 gtl = None
 if args.add_gtl == 'y':
 
+    filena = data_dir+'/'+pdir+'_unique_good_TILELOCID.txt'
+    gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
+    #    filena = f'unique_TILELOCID_{survey}_{args.specdata}.txt'
+    #    common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
+    #    gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    #else:
+    #    common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
+    #    tsnrcut = mainp.tsnrcut
+    #    tnsrcol = mainp.tsnrcol        
 
-    if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
-        filena = f'unique_TILELOCID_{survey}_{args.specdata}.txt'
-        common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
-        gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
-    else:
-        common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
-        tsnrcut = mainp.tsnrcut
-        tnsrcol = mainp.tsnrcol        
-
-        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
-        specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
-        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    #    specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
+    #    specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
+    #    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
-        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    #    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
-        gtl = np.unique(specfc['TILELOCID'])
-        np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
+    #    gtl = np.unique(specfc['TILELOCID'])
+    #    np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
 
 #    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 #logger.info('loading specf file '+specfo)
