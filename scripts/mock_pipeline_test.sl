@@ -6,9 +6,10 @@
 #SBATCH -t 00:30:00
 
 source /global/common/software/desi/desi_environment.sh main
-module load LSS/main
+#module load LSS/main
 mocknum=5
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
+PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
 srun python $scriptdir/mock_tools/mkCat_SecondGen_amtl.py --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
 
