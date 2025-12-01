@@ -8,6 +8,16 @@ import fitsio
 from astropy.table import Table, unique, join, vstack
 import LSS.common_tools as common
 from LSS.globals import main
+import errno
+
+def test_dir(value):
+    if not os.path.exists(value):
+        try:
+            os.makedirs(value, 0o755)
+            print('made ' + value)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
 # Script to append quasar contaminants to the high-fidelity mocks
 # Starts by identifying contaminants in the full file of the data
@@ -22,14 +32,15 @@ basedir = '/global/cfs/cdirs/desi/survey/catalogs/'
 survey = 'DA2'
 data = 'LSS'
 verspec = 'loa-v1'
-version = 'v1.1'
-mock_path = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/forFA0_Y3_noimagingmask_applied.fits'
+version = 'v2'
+#version = 'v1.1'
+#mock_path = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/forFA0_Y3_noimagingmask_applied.fits'
 # mock_path =
 # '/global/cfs/cdirs/desi/mocks/cai/holi/v3.00/seed0201/holi_QSO_v3.00_GCcomb_clustering.dat.h5'
-path_out = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/'
-name_out = 'contaminants_forFA0_Y3_noimagingmask_applied.fits'
 tp = 'QSO'
-
+path_out = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/{survey}/{verspec}/{version}/{tp}'
+name_out = 'contaminants_rea{NUMREA}.fits'
+test_dir(path_out)
 # path_star = '/global/cfs/cdirs/desi/users/akrolew/%s_%s_%s_%s_stars.fits' % (tp, survey, verspec, version)
 # path_unclassified = '/global/cfs/cdirs/desi/users/akrolew/%s_%s_%s_%s_unclassified.fits' % (tp, survey, verspec, version)
 # path_galaxies =
@@ -103,208 +114,208 @@ print('Fraction of junk', 1 -
 # sim_dec = sim_data['DEC'][:]
 # sim_nx = sim_data['NX'][:]
 # sim_z = sim_data['Z'][:]
-np.random.seed(123)
+###np.random.seed(123)
+for numrea in range(2,100):
+    if append_stars:
+        stars = full[selstar]
+        weight = 1 / full[selstar]['FRACZ_TILELOCID'] * \
+            1 / full[selstar]['FRAC_TLOBS_TILES']
+        weight[np.isinf(weight)] = 0
 
-if append_stars:
-    stars = full[selstar]
-    weight = 1 / full[selstar]['FRACZ_TILELOCID'] * \
-        1 / full[selstar]['FRAC_TLOBS_TILES']
-    weight[np.isinf(weight)] = 0
+        int_weight = np.round(weight)
 
-    int_weight = np.round(weight)
+        argsort_weight_diff = np.argsort(weight - int_weight)
 
-    argsort_weight_diff = np.argsort(weight - int_weight)
+        for i in range(len(argsort_weight_diff)):
+            if np.sum(int_weight) < np.sum(weight):
+                print(np.sum(int_weight))
+                int_weight[argsort_weight_diff[i]] += 1
+            else:
+                break
 
-    for i in range(len(argsort_weight_diff)):
-        if np.sum(int_weight) < np.sum(weight):
-            print(np.sum(int_weight))
-            int_weight[argsort_weight_diff[i]] += 1
+        stars_ra = np.array([])
+        stars_dec = np.array([])
+        for i in range(len(weight)):
+            if int_weight[i] > 1:
+                offset = np.random.uniform(0, 0.025, int(int_weight[i] - 1))
+                offset = np.concatenate((np.array([0]), offset))
+                phase = np.random.uniform(0, 2 * np.pi, int(int_weight[i] - 1))
+                phase = np.concatenate((np.array([0]), phase))
+                delta_ra = offset * np.cos(phase) / np.cos(stars['DEC'][i])
+                delta_dec = offset * np.sin(phase)
+                stars_ra = np.concatenate((stars_ra, stars['RA'][i] + delta_ra))
+                stars_dec = np.concatenate((stars_dec, stars['DEC'][i] + delta_dec))
+            else:
+                stars_ra = np.concatenate((stars_ra, [stars['RA'][i]]))
+                stars_dec = np.concatenate((stars_dec, [stars['DEC'][i]]))
+
+        if "sim_ra" in vars():
+            sim_ra = np.concatenate((sim_ra, stars_ra))
+
+            sim_dec = np.concatenate((sim_dec, stars_dec))
+
+        
+            sim_z = np.concatenate((sim_z, np.zeros_like(stars_ra)))
+
         else:
-            break
+            sim_ra=stars_ra
+            sim_dec=stars_dec
+            sim_z=np.zeros_like(stars_ra)
 
-    stars_ra = np.array([])
-    stars_dec = np.array([])
-    for i in range(len(weight)):
-        if int_weight[i] > 1:
-            offset = np.random.uniform(0, 0.025, int(int_weight[i] - 1))
-            offset = np.concatenate((np.array([0]), offset))
-            phase = np.random.uniform(0, 2 * np.pi, int(int_weight[i] - 1))
-            phase = np.concatenate((np.array([0]), phase))
-            delta_ra = offset * np.cos(phase) / np.cos(stars['DEC'][i])
-            delta_dec = offset * np.sin(phase)
-            stars_ra = np.concatenate((stars_ra, stars['RA'][i] + delta_ra))
-            stars_dec = np.concatenate((stars_dec, stars['DEC'][i] + delta_dec))
+                                   # star_out = Table(np.array([-9 * np.ones(len(stars_ra)).astype('int'),
+                                   # 	-9 * np.ones(len(stars_ra)).astype('int'),
+                                   # 	stars_ra,
+                                   # 	stars_dec,
+                                   # 	np.zeros_like(stars_ra),
+                                   # 	np.zeros_like(stars_dec),
+                                   # 	np.array(['STAR'] * len(stars_ra)),
+                                   # 	np.zeros_like(stars_ra),
+                                   # 	np.zeros_like(stars_ra)]).T) #names=('GALAXYID',
+                                   # 	#'PID','RA','DEC','Z_NORSD','Z','TRACER_TYPE',
+                                   # 	#'NX','WEIGHT_FKP'))
+                                   # sim_data = vstack((Table(sim_data), star_out))
+                                   # star_out.write(path_star)
+    if append_unclassified:
+        unclassified=full[selection & ~selstar & ~selgal & ~(selection & gz)]
+        weight=1 / full[selection & ~selstar & ~selgal & ~(selection & gz)]['FRACZ_TILELOCID'] * 1 /full[selection & ~selstar & ~selgal & ~(selection & gz)]['FRAC_TLOBS_TILES']
+        weight[np.isinf(weight)]=0
+
+        int_weight=np.round(weight)
+
+        argsort_weight_diff=np.argsort(weight - int_weight)
+
+        for i in range(len(argsort_weight_diff)):
+            if np.sum(int_weight) < np.sum(weight):
+                print(np.sum(int_weight))
+                int_weight[argsort_weight_diff[i]] += 1
+            else:
+                break
+
+
+        unclassified_ra=np.array([])
+        unclassified_dec=np.array([])
+        for i in range(len(weight)):
+            if int_weight[i] > 1:
+                offset=np.random.uniform(0, 0.025, int(int_weight[i] - 1))
+                offset=np.concatenate((np.array([0]), offset))
+                phase=np.random.uniform(0, 2 * np.pi, int(int_weight[i] - 1))
+                phase=np.concatenate((np.array([0]), phase))
+                delta_ra=offset * np.cos(phase) / np.cos(unclassified['DEC'][i])
+                delta_dec=offset * np.sin(phase)
+                unclassified_ra=np.concatenate((unclassified_ra, unclassified['RA'][i] + delta_ra))
+                unclassified_dec=np.concatenate((unclassified_dec, unclassified['DEC'][i] + delta_dec))
+            else:
+                unclassified_ra=np.concatenate(
+                    (unclassified_ra, [unclassified['RA'][i]]))
+                unclassified_dec=np.concatenate(
+                    (unclassified_dec, [unclassified['DEC'][i]]))
+
+
+        if "sim_ra" in vars():
+            sim_ra=np.concatenate((sim_ra, unclassified_ra))
+            sim_dec=np.concatenate((sim_dec, unclassified_dec))
+        # sim_nx = np.concatenate((sim_nx, np.zeros_like(stars_ra))
+            sim_z=np.concatenate((sim_z, np.zeros_like(unclassified_ra)))
         else:
-            stars_ra = np.concatenate((stars_ra, [stars['RA'][i]]))
-            stars_dec = np.concatenate((stars_dec, [stars['DEC'][i]]))
+            sim_ra=unclassified_ra
+            sim_dec=unclassified_dec
+            sim_z=np.zeros_like(unclassified_ra)
 
-    if "sim_ra" in vars():
-        sim_ra = np.concatenate((sim_ra, stars_ra))
 
-        sim_dec = np.concatenate((sim_dec, stars_dec))
 
-    
-        sim_z = np.concatenate((sim_z, np.zeros_like(stars_ra)))
 
+                                                       # unclassified_out = Table(np.array([-9 * np.ones(len(unclassified_ra)).astype('int'),
+                                                       # 	-9 * np.ones(len(unclassified_ra)).astype('int'),
+                                                       # 	unclassified_ra,
+                                                       # 	unclassified_dec,
+                                                       # 	np.zeros_like(unclassified_ra),
+                                                       # 	np.zeros_like(unclassified_dec),
+                                                       # 	np.array(['UNKNOWN'] * len(unclassified_ra)),
+                                                       # 	np.zeros_like(unclassified_ra),
+                                                       # 	np.zeros_like(unclassified_ra)]).T) #names=('GALAXYID',
+                                                       # 	#'PID','RA','DEC','Z_NORSD','Z','TRACER_TYPE',
+                                                       # 	#'NX','WEIGHT_FKP'))
+                                                       # #sim_data = vstack((Table(sim_data), unclassified_out))
+                                                       # unclassified_out.write(path_unclassified)
+
+    if append_galaxies:
+        galaxies=full[selgal]
+        weight=1 / full[selgal]['FRACZ_TILELOCID'] * 1 / full[selgal]['FRAC_TLOBS_TILES']
+        weight[np.isinf(weight)]=0
+
+        int_weight=np.round(weight)
+
+        argsort_weight_diff=np.argsort(weight - int_weight)
+
+        for i in range(len(argsort_weight_diff)):
+            if np.sum(int_weight) < np.sum(weight):
+                print(np.sum(int_weight))
+                int_weight[argsort_weight_diff[i]] += 1
+            else:
+                break
+
+
+        galaxies_ra=np.array([])
+        galaxies_dec=np.array([])
+        for i in range(len(weight)):
+            if int_weight[i] > 1:
+                offset=np.random.uniform(0, 0.025, int(int_weight[i] - 1))
+                offset=np.concatenate((np.array([0]), offset))
+                phase=np.random.uniform(0, 2 * np.pi, int(int_weight[i] - 1))
+                phase=np.concatenate((np.array([0]), phase))
+                delta_ra=offset * np.cos(phase) / np.cos(galaxies['DEC'][i])
+                delta_dec=offset * np.sin(phase)
+                galaxies_ra=np.concatenate((galaxies_ra, galaxies['RA'][i] + delta_ra))
+                galaxies_dec=np.concatenate((galaxies_dec, galaxies['DEC'][i] + delta_dec))
+            else:
+                galaxies_ra=np.concatenate((galaxies_ra, [galaxies['RA'][i]]))
+                galaxies_dec=np.concatenate((galaxies_dec, [galaxies['DEC'][i]]))
+
+
+        if "sim_ra" in vars():
+            sim_ra=np.concatenate((sim_ra, galaxies_ra))
+            sim_dec=np.concatenate((sim_dec, galaxies_dec))
+        # sim_nx = np.concatenate((sim_nx, np.zeros_like(stars_ra))
+            sim_z=np.concatenate((sim_z, np.zeros_like(galaxies_ra)))
+        else:
+            sim_ra=galaxies_ra
+            sim_dec=galaxies_dec
+            sim_z=np.zeros_like(galaxies_ra)
+
+
+
+
+
+
+                                                       # galaxies_out = Table(np.array([-9 * np.ones(len(galaxies_ra)).astype('int'),
+                                                       # 	-9 * np.ones(len(galaxies_ra)).astype('int'),
+                                                       # 	galaxies_ra,
+                                                       # 	galaxies_dec,
+                                                       # 	np.zeros_like(galaxies_ra),
+                                                       # 	np.zeros_like(galaxies_dec),
+                                                       # 	np.array(['GALAXY'] * len(galaxies_ra)),
+                                                       # 	np.zeros_like(galaxies_ra),
+                                                       # 	np.zeros_like(galaxies_ra)]).T) #names=('GALAXYID',
+                                                       # 	#'PID','RA','DEC','Z_NORSD','Z','TRACER_TYPE',
+                                                       # 	#'NX','WEIGHT_FKP'))
+                                                       # #sim_data = vstack((Table(sim_data), galaxies_out))
+                                                       # galaxies_out.write(path_galaxies)
+
+                                                       # sim_data.write(path_out +
+                                                       # name_out)
+    savefits=True
+    if savefits:
+        col1 = fits.Column(name='RA', array=sim_ra, format='D')
+        col2 = fits.Column(name='DEC', array=sim_dec, format='D')
+        col3 = fits.Column(name='Z', array=sim_z, format='E')
+        cols = fits.ColDefs([col1, col2, col3])
+        tbhdu = fits.BinTableHDU.from_columns(cols)
+        tbhdu.writeto(os.path.join(path_out, name_out).format(NUMREA=numrea), overwrite=True)
     else:
-        sim_ra=stars_ra
-        sim_dec=stars_dec
-        sim_z=np.zeros_like(stars_ra)
-
-                               # star_out = Table(np.array([-9 * np.ones(len(stars_ra)).astype('int'),
-                               # 	-9 * np.ones(len(stars_ra)).astype('int'),
-                               # 	stars_ra,
-                               # 	stars_dec,
-                               # 	np.zeros_like(stars_ra),
-                               # 	np.zeros_like(stars_dec),
-                               # 	np.array(['STAR'] * len(stars_ra)),
-                               # 	np.zeros_like(stars_ra),
-                               # 	np.zeros_like(stars_ra)]).T) #names=('GALAXYID',
-                               # 	#'PID','RA','DEC','Z_NORSD','Z','TRACER_TYPE',
-                               # 	#'NX','WEIGHT_FKP'))
-                               # sim_data = vstack((Table(sim_data), star_out))
-                               # star_out.write(path_star)
-if append_unclassified:
-    unclassified=full[selection & ~selstar & ~selgal & ~(selection & gz)]
-    weight=1 / full[selection & ~selstar & ~selgal & ~(selection & gz)]['FRACZ_TILELOCID'] * 1 /full[selection & ~selstar & ~selgal & ~(selection & gz)]['FRAC_TLOBS_TILES']
-    weight[np.isinf(weight)]=0
-
-    int_weight=np.round(weight)
-
-    argsort_weight_diff=np.argsort(weight - int_weight)
-
-    for i in range(len(argsort_weight_diff)):
-        if np.sum(int_weight) < np.sum(weight):
-            print(np.sum(int_weight))
-            int_weight[argsort_weight_diff[i]] += 1
-        else:
-            break
-
-
-    unclassified_ra=np.array([])
-    unclassified_dec=np.array([])
-    for i in range(len(weight)):
-        if int_weight[i] > 1:
-            offset=np.random.uniform(0, 0.025, int(int_weight[i] - 1))
-            offset=np.concatenate((np.array([0]), offset))
-            phase=np.random.uniform(0, 2 * np.pi, int(int_weight[i] - 1))
-            phase=np.concatenate((np.array([0]), phase))
-            delta_ra=offset * np.cos(phase) / np.cos(unclassified['DEC'][i])
-            delta_dec=offset * np.sin(phase)
-            unclassified_ra=np.concatenate((unclassified_ra, unclassified['RA'][i] + delta_ra))
-            unclassified_dec=np.concatenate((unclassified_dec, unclassified['DEC'][i] + delta_dec))
-        else:
-            unclassified_ra=np.concatenate(
-                (unclassified_ra, [unclassified['RA'][i]]))
-            unclassified_dec=np.concatenate(
-                (unclassified_dec, [unclassified['DEC'][i]]))
-
-
-    if "sim_ra" in vars():
-        sim_ra=np.concatenate((sim_ra, unclassified_ra))
-        sim_dec=np.concatenate((sim_dec, unclassified_dec))
-    # sim_nx = np.concatenate((sim_nx, np.zeros_like(stars_ra))
-        sim_z=np.concatenate((sim_z, np.zeros_like(unclassified_ra)))
-    else:
-        sim_ra=unclassified_ra
-        sim_dec=unclassified_dec
-        sim_z=np.zeros_like(unclassified_ra)
-
-
-
-
-                                                   # unclassified_out = Table(np.array([-9 * np.ones(len(unclassified_ra)).astype('int'),
-                                                   # 	-9 * np.ones(len(unclassified_ra)).astype('int'),
-                                                   # 	unclassified_ra,
-                                                   # 	unclassified_dec,
-                                                   # 	np.zeros_like(unclassified_ra),
-                                                   # 	np.zeros_like(unclassified_dec),
-                                                   # 	np.array(['UNKNOWN'] * len(unclassified_ra)),
-                                                   # 	np.zeros_like(unclassified_ra),
-                                                   # 	np.zeros_like(unclassified_ra)]).T) #names=('GALAXYID',
-                                                   # 	#'PID','RA','DEC','Z_NORSD','Z','TRACER_TYPE',
-                                                   # 	#'NX','WEIGHT_FKP'))
-                                                   # #sim_data = vstack((Table(sim_data), unclassified_out))
-                                                   # unclassified_out.write(path_unclassified)
-
-if append_galaxies:
-    galaxies=full[selgal]
-    weight=1 / full[selgal]['FRACZ_TILELOCID'] * 1 / full[selgal]['FRAC_TLOBS_TILES']
-    weight[np.isinf(weight)]=0
-
-    int_weight=np.round(weight)
-
-    argsort_weight_diff=np.argsort(weight - int_weight)
-
-    for i in range(len(argsort_weight_diff)):
-        if np.sum(int_weight) < np.sum(weight):
-            print(np.sum(int_weight))
-            int_weight[argsort_weight_diff[i]] += 1
-        else:
-            break
-
-
-    galaxies_ra=np.array([])
-    galaxies_dec=np.array([])
-    for i in range(len(weight)):
-        if int_weight[i] > 1:
-            offset=np.random.uniform(0, 0.025, int(int_weight[i] - 1))
-            offset=np.concatenate((np.array([0]), offset))
-            phase=np.random.uniform(0, 2 * np.pi, int(int_weight[i] - 1))
-            phase=np.concatenate((np.array([0]), phase))
-            delta_ra=offset * np.cos(phase) / np.cos(galaxies['DEC'][i])
-            delta_dec=offset * np.sin(phase)
-            galaxies_ra=np.concatenate((galaxies_ra, galaxies['RA'][i] + delta_ra))
-            galaxies_dec=np.concatenate((galaxies_dec, galaxies['DEC'][i] + delta_dec))
-        else:
-            galaxies_ra=np.concatenate((galaxies_ra, [galaxies['RA'][i]]))
-            galaxies_dec=np.concatenate((galaxies_dec, [galaxies['DEC'][i]]))
-
-
-    if "sim_ra" in vars():
-        sim_ra=np.concatenate((sim_ra, galaxies_ra))
-        sim_dec=np.concatenate((sim_dec, galaxies_dec))
-    # sim_nx = np.concatenate((sim_nx, np.zeros_like(stars_ra))
-        sim_z=np.concatenate((sim_z, np.zeros_like(galaxies_ra)))
-    else:
-        sim_ra=galaxies_ra
-        sim_dec=galaxies_dec
-        sim_z=np.zeros_like(galaxies_ra)
-
-
-
-
-
-
-                                                   # galaxies_out = Table(np.array([-9 * np.ones(len(galaxies_ra)).astype('int'),
-                                                   # 	-9 * np.ones(len(galaxies_ra)).astype('int'),
-                                                   # 	galaxies_ra,
-                                                   # 	galaxies_dec,
-                                                   # 	np.zeros_like(galaxies_ra),
-                                                   # 	np.zeros_like(galaxies_dec),
-                                                   # 	np.array(['GALAXY'] * len(galaxies_ra)),
-                                                   # 	np.zeros_like(galaxies_ra),
-                                                   # 	np.zeros_like(galaxies_ra)]).T) #names=('GALAXYID',
-                                                   # 	#'PID','RA','DEC','Z_NORSD','Z','TRACER_TYPE',
-                                                   # 	#'NX','WEIGHT_FKP'))
-                                                   # #sim_data = vstack((Table(sim_data), galaxies_out))
-                                                   # galaxies_out.write(path_galaxies)
-
-                                                   # sim_data.write(path_out +
-                                                   # name_out)
-savefits=True
-if savefits:
-    col1 = fits.Column(name='RA', array=sim_ra, format='D')
-    col2 = fits.Column(name='DEC', array=sim_dec, format='D')
-    col3 = fits.Column(name='Z', array=sim_z, format='E')
-    cols = fits.ColDefs([col1, col2, col3])
-    tbhdu = fits.BinTableHDU.from_columns(cols)
-    tbhdu.writeto(path_out + name_out, overwrite=True)
-else:
-    with h5py.File(path_out + name_out, 'w') as f:
-# Create a dataset named 'my_dataset'
-# The data argument directly writes the NumPy array to the dataset
-        f.create_dataset('RA', data=sim_ra)
-        f.create_dataset('DEC', data=sim_dec)
-        f.create_dataset('Z', data=sim_z)
-        f.create_dataset('NX', data=sim_nx)
+        with h5py.File(path_out + name_out, 'w') as f:
+    # Create a dataset named 'my_dataset'
+    # The data argument directly writes the NumPy array to the dataset
+            f.create_dataset('RA', data=sim_ra)
+            f.create_dataset('DEC', data=sim_dec)
+            f.create_dataset('Z', data=sim_z)
+            f.create_dataset('NX', data=sim_nx)
