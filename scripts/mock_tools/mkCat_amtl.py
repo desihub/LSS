@@ -45,7 +45,6 @@ def test_dir(value):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--mockver", help="type of mock to use",default='ab_firstgen')
 parser.add_argument("--base_altmtl_dir", help="base directory of altmtl folder",default='/global/cfs/cdirs/desi/survey/catalogs/')
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
@@ -164,7 +163,7 @@ else:
 pd = pdir
 
 if args.base_output == None:
-    maindir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)
+    maindir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)
 else:
     maindir = args.base_output
 mockz = 'RSDZ'
@@ -277,7 +276,7 @@ pa = None
 outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
 test_dir(outdir)
 
-if args.mockver == 'ab_secondgen' and args.combd == 'y':
+if args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
     common.printlog('entering altmtl',logger)
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
@@ -1310,21 +1309,15 @@ if args.prep4sysnet == 'y':
     from LSS.imaging import sysnet_tools
     
     regl = ['N','S']
-    if tracer_clus == 'QSO':
-        regl = ['DES','SnotDES','N']
-        
+    
     for zl in zrl:
         zw = ''
         zmin,zmax=zl[0],zl[1]
         #if args.imsys_zbin == 'y':
         zw = str(zmin)+'_'+str(zmax)
         for reg in regl:
-            if 'DES' in reg:
-                reg_map = 'S'
-            else: 
-                reg_map = reg
-            if tracer_clus == 'LRG':
-                if reg_map == 'N':
+            if type == 'LRG':
+                if reg == 'N':
                     fitmapsbin = fit_maps
                 else:
                     if zmax == 0.6:
@@ -1338,7 +1331,7 @@ if args.prep4sysnet == 'y':
             #tpmap = tpstr
             #if 'ELG' in tpstr and 'notqso' in tpstr:
             #    tpmap = 'ELG_LOPnotqso'
-            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg_map+'.fits'
+            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -1352,25 +1345,10 @@ if args.prep4sysnet == 'y':
                 sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
-
-            # select regions 
-            if reg == 'N' or reg == 'S':
-                seld = data_catalogs['PHOTSYS']    == reg
-                selr = randoms_catalogs['PHOTSYS'] == reg
-            elif 'DES' in reg:
-                inDES  = common.select_regressis_DES(data_catalogs)
-                inDESr = common.select_regressis_DES(randoms_catalogs)
-                if reg == 'DES':
-                    seld = inDES
-                    selr = inDESr
-                if reg == 'SnotDES':
-                    seld = data_catalogs['PHOTSYS'] == 'S'
-                    seld &= ~inDES
-                    selr = randoms_catalogs['PHOTSYS'] == 'S'
-                    selr &= ~inDESr
-            
+            seld = data_catalogs['PHOTSYS'] == reg
+            selr = randoms_catalogs['PHOTSYS'] == reg
             #if args.use_allsky_rands == 'y':
-            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg_map}_nran18_nside256_ring.fits"
+            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
             allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
             #    selr_all = allsky_rands['PHOTSYS'] == reg
@@ -1388,6 +1366,7 @@ if args.prep4sysnet == 'y':
                 os.makedirs( dirout+'/sysnet/')
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
 
+
 if args.addsysnet == 'y':
     common.printlog('adding sysnet weights to data catalogs for '+tracer_clus,logger)
     from LSS.imaging import densvar
@@ -1399,9 +1378,6 @@ if args.addsysnet == 'y':
     dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
-    if tracer_clus == 'QSO':
-        regl_sysnet = ['DES','SnotDES','N']
-        
     for reg in regl_sysnet:
         for zl in zrl:
             #zw = ''
@@ -1419,16 +1395,7 @@ if args.addsysnet == 'y':
             for pix,wt in zip(sn_pix,pix_weight):
                 hpmap[pix] = wt
         
-            # select regions 
-            if reg == 'N' or reg == 'S':
-                sel = data_catalogs['PHOTSYS'] == reg
-            elif 'DES' in reg:
-                inDES = common.select_regressis_DES(data_catalogs)
-                if reg == 'DES':
-                    sel = inDES
-                if reg == 'SnotDES':
-                    sel = data_catalogs['PHOTSYS'] == 'S'
-                    sel &= ~inDES
+            sel = data_catalogs['PHOTSYS'] == reg
             selz = data_catalogs['Z'] > zl[0]
             selz &= data_catalogs['Z'] <= zl[1]
 
