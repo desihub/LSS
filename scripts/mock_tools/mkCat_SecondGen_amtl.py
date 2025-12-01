@@ -166,14 +166,15 @@ if args.targDir == None:
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
 tiles = fitsio.read(tile_fn)
 
+
 data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=survey, SPECVER=args.specdata,DATAVER=args.dataversion)
 
 gtl = None
 if args.add_gtl == 'y':
 
 
-    if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
-        filena = f'unique_TILELOCID_{survey}_{args.specdata}.txt'
+    filena = f'unique_TILELOCID_{survey}_{args.specdata}_{args.dataversion}.txt'
+    if os.path.isfile(filena):
         common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
         gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
     else:
@@ -189,7 +190,6 @@ if args.add_gtl == 'y':
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
         gtl = np.unique(specfc['TILELOCID'])
         np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
-
 #    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 #logger.info('loading specf file '+specfo)
 #specf = Table(fitsio.read(specfo))
@@ -494,9 +494,12 @@ subfrac = 1
 if tracer == 'QSO':
     zmin = 0.8
     zmax = 2.1
-#    if args.survey == 'Y1':
-#        subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
-#    if args.survey == 'DA2':
+    if args.survey == 'Y1':
+        subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
+    if args.survey == 'DA2':
+        subfrac = [0.97, 1.]
+        zsplit=2.1
+
 #        subfrac = 0.675 #1
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
 #        maxp = 3200
@@ -507,18 +510,19 @@ if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
     if args.survey == 'Y1':
         subfrac = 0.976
     if args.survey == 'DA2':
-        subfrac = 0.966
+        subfrac = 0.99
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
 #        maxp = 3000
     zmin = 0.8
     zmax = 1.6
-#    if args.survey == 'Y1':
-#        subfrac = [0.69,0.54]#0.676
-#    if args.survey == 'DA2':
-#        subfrac = [0.7,0.545]
-#    zsplit=1.5
+    if args.survey == 'Y1':
+        subfrac = [0.69,0.54]#0.676
+    if args.survey == 'DA2':
+        subfrac = [0.91,0.7]
+    zsplit=1.5
+
 if args.tracer[:3] == 'BGS':
     P0 = 7000
     dz_step = 0.01
@@ -992,12 +996,17 @@ def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
         fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     if '.h5' in app:
         fn = common.read_hdf5_blosc(flroot.replace('global','dvs_ro') +app)
+    
     sel_ngc = common.splitGC(fn)#gc.b > 0
+
+
     outf_ngc = flroot+'NGC_'+app
     if '.fits' in outf_ngc:
         common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
     if '.h5' in outf_ngc:
         common.write_LSShdf5_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+
+
     outf_sgc = flroot+'SGC_'+app
     if '.fits' in outf_sgc:
         common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
