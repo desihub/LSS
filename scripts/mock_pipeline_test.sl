@@ -6,12 +6,12 @@
 #SBATCH -t 00:30:00
 
 source /global/common/software/desi/desi_environment.sh main
-#module load LSS/main
+module load LSS/main
 mocknum=5
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
-PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
+#PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
-srun python $scriptdir/mock_tools/mkCat_amtl.py --mockver ab_secondgen --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir /dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1 --combd y --joindspec y --par y --usepota y
+srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName Holi/v3.00 --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/DA2/mocks/Holi/v3.00 --combd y --joindspec y --par y --usepota y
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
