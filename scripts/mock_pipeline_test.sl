@@ -7,7 +7,7 @@
 
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
-mocknum=5
+mocknum=201
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
