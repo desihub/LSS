@@ -38,6 +38,9 @@ parser.add_argument("--zrsdcol", help="name of column with redshift, including R
 parser.add_argument("--need_footprint", help="Do we need to prune by rounded tile footprint?", default='y')
 
 parser.add_argument("--need_nz_calib", help="Do we need to calibrate n(z) to match that of the survey?", default='n')
+parser.add_argument("--need_nz_tuning", help="Apply extra subsampling to match surface density of data", default='n')
+parser.add_argument("--save_mock_nz", help="Save mock nz so it is applied to all realizations in the future", default='n')
+parser.add_argument("--nzfilename", help="name of nz file that have been previously saved or you want to create for the first time. If ELG, must be two names separated by coma", default=None)
 
 
 #parser.add_argument("--ELGsplit", help="Are the ELGs already splitted into LOP and VLO? If 'n', make the division",default='y')
@@ -55,23 +58,17 @@ elif args.tracer == 'BGS':
     tile = 'BRIGHT'
 
 
-def read_parent_mock(mockname, filename):
+def read_parent_mock(filename):
 
-    if mockname == 'holimock':
+    if filename.endswith('.h5'): 
         import h5py
-        
         data = Table(h5py.File(filename, 'r+'))
-
-
-#        data = np.load(filename)
-
-#        data_dict = dict(data)
-#        data_dict['RA'] = data_dict.pop('ra')  # Rename key
-#        data_dict['DEC'] = data_dict.pop('dec')  # Rename key
-#        data = Table(data_dict)
-#        del data_dict
-    else:
+    elif filename.endswith('.fits'):
         data = Table.read(filename)
+    elif filename.endswith('.fits.gz'):
+        data = Table.read(filename)
+    else:
+        raise Exception('format input mock is not h5 or fits')
 
     return data
 
@@ -160,7 +157,7 @@ print('tracer type', tracer)
 print('mock flavour is ', args.mockname)
 print('it will read the file', os.path.join(args.input_mockpath, args.input_mockfile))
 
-data = read_parent_mock(args.mockname, os.path.join(args.input_mockpath, args.input_mockfile))
+data = read_parent_mock(os.path.join(args.input_mockpath, args.input_mockfile))
 data, initial_size = add_basic_columns(data, tracer)
 
 print('size of sample at start of the pipeline', initial_size)
@@ -171,7 +168,15 @@ print('size of sample after footprint pruning (if needed)', after_footprint_size
 
 if args.need_nz_calib == 'y':
     print('Start nz calibration to match density and nz to the data adding STATUS columns')
-    data = calibrate_nz(data, redshift_column = 'RSDZ', tracer_type=tracer, survey=args.survey)
+    if args.nzfilename == None:
+        args.save_mock_nz = 'n'
+        namefile = None
+    elif "," in namefile:
+        namefile = args.nzfilename.split(',')
+    else:
+        namefile = args.nzfilename
+
+    data = calibrate_nz(data, redshift_column = 'RSDZ', tracer_type=tracer, survey=args.survey, namefile = namefile, save_mock_nz = args.save_mock_nz)
     
 if tracer == 'LRG':
     print('start specific LRG preparation')
@@ -187,6 +192,13 @@ if tracer == 'LRG':
     idx = np.arange(len(data))
     
     data = data[idx[sel]]
+
+    if args.need_nz_tuning == 'y':
+        print('removing 23000 LRGs to match surface density')
+        remove = np.random.choice(len(data), size=23000, replace=False)
+        keep = np.setdiff1d(np.arange(len(data)), remove)
+        data = data[keep]
+
     size_final = len(data)
     print('After selecting LRG according to nz matching, size =', size_final)
     del data['STATUS']
@@ -208,9 +220,21 @@ if tracer == 'QSO':
     idx = np.arange(len(data))
     
     data = data[idx[sel]]
+    if args.need_nz_tuning == 'y':
+        print('removing 13000 QSOs to match surface density from 0.5 to 2.1')
+        lowdat = data[(data['RSDZ']<0.6)]
+        middat = data[(data['RSDZ']>0.6)&(data['RSDZ']<2.1)]
+        highdat = data[(data['RSDZ']>2.1)]
+
+        remove = np.random.choice(len(middat), size=65935, replace=False)
+        keep = np.setdiff1d(np.arange(len(middat)), remove)
+
+        middat = middat[keep]
+        data = vstack([lowdat, middat, highdat])
+
     size_final = len(data)
 
-    print('After selecting LRG according to nz matching, size =', size_final)
+    print('After selecting QSO according to nz matching, size =', size_final)
     sel_highz = data['RSDZ'] > 2.1
     data['NUMOBS_MORE'][sel_highz] = 4
     data['NUMOBS_INIT'][sel_highz] = 4
@@ -259,11 +283,31 @@ if tracer == 'ELG':
 
 
     data_lop['DESI_TARGET'] += 2**5
+    if args.need_nz_tuning == 'y':
+        print('before fine tuning elg_lop', len(data_lop))
+        remove = np.random.choice(len(data_lop), size=356927, replace=False)
+        #remove = np.random.choice(len(data_lop), size=142000, replace=False)
+        keep = np.setdiff1d(np.arange(len(data_lop)), remove)
+        data_lop = data_lop[keep]
+        print('after fine tuning elg_lop', len(data_lop))
+
+
 
     data_vlo['PRIORITY_INIT'] = 3000
     data_vlo['PRIORITY'] = 3000
     data_vlo['DESI_TARGET'] += 2**7 
-    
+
+    if args.need_nz_tuning == 'y':
+        print('before fine tuning elg_vlo', len(data_vlo))
+        remove = np.random.choice(len(data_vlo), size=643103, replace=False)
+        #remove = np.random.choice(len(data_vlo), size=642000, replace=False)
+        keep = np.setdiff1d(np.arange(len(data_vlo)), remove)
+        data_vlo = data_vlo[keep]
+        print('after fine tuning elg_vlo', len(data_vlo))
+
+
+
+
     datat.append(data_lop)
     datat.append(data_vlo)
     data = vstack(datat)
@@ -349,63 +393,5 @@ common.write_LSS_scratchcp(data, out_file_name, extname='TARGETS')
 fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
 fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
 
-
-'''
-def wrapper(bid_index):
-
-    idx = bidorder[bidcnts[bid_index]:bidcnts[bid_index+1]]
-    brickid = bid_unique[bid_index]
-
-    ra, dec = targets['RA'][idx], targets['DEC'][idx]
-    tid = targets['TARGETID'][idx]
-    bitmask2,nobsg,nobsr,nobsz = bitmask.bitmask_radec(brickid, ra, dec)
-
-    data = Table()
-    data['idx'] = idx
-    data['MASKBITS'] = bitmask2
-    data['NOBS_G'] = nobsg
-    data['NOBS_R'] = nobsr
-    data['NOBS_Z'] = nobsz
-    data['TARGETID'] = tid
-
-    return data
-
-dophot = False
-out_file_name = args.output_fullpathfn
-if dophot:
-
-    if 'MASKBITS' not in targets.colnames:
-        if 'BRICKID' not in targets.colnames:
-            from desiutil import brick
-            tmp = brick.Bricks(bricksize=0.25)
-            targets['BRICKID'] = tmp.brickid(targets['RA'], targets['DEC'])
-        # Just some tricks to speed up things
-        bid_unique, bidcnts = np.unique(targets['BRICKID'], return_counts=True)
-        bidcnts = np.insert(bidcnts, 0, 0)
-        bidcnts = np.cumsum(bidcnts)
-        bidorder = np.argsort(targets['BRICKID'])
-        
-        # start multiple worker processes
-        with Pool(processes=int(args.nproc)) as pool: ##hay que poner un int para que funcione!
-            res = pool.map(wrapper, np.arange(len(bid_unique)))
-        
-        res = vstack(res)
-        res.sort('idx')
-        res.remove_column('idx')
-        print('mask columns added')
-        
-        maskcols = ['NOBS_G','NOBS_R','NOBS_Z','MASKBITS']
-        if np.array_equal(res['TARGETID'],targets['TARGETID']):
-            for col in maskcols:
-                targets[col] = res[col]
-            del res
-
-    mainp = main(tp = tracer, specver = args.specdata)
-    targets = common.cutphotmask(targets, bits=mainp.imbits)
-else:
-
-    ending = out_file_name.split('.')[-1]
-    out_file_name = out_file_name.split('.' + ending)[0] + '_noimagingmask_applied.fits'
-'''
-
-
+if tracer == 'QSO':
+    print('write')
