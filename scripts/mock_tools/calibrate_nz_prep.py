@@ -3,20 +3,20 @@ import os
 from numpy.random import Generator, PCG64
 rng = Generator(PCG64())
 
-path_to_nz = '/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity'
+path_to_nz = '/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/'
 
 def get_nz(z_cat, tracer_type, ns=None):
     ''' The function where the n(z) is read and the NZ column is computed for the given redshifts.   '''
     if tracer_type == 'LRG':
-        nzfile = 'nz_lrg_v4.txt'
+        nzfile = 'nz_lrg_da2_mocks.txt'
     elif tracer_type == 'QSO':
-        nzfile = 'NZ_QSO_v3.txt'
+        nzfile = 'nz_qso_da2_mocks.txt'
     elif tracer_type == 'BGS':
-        nzfile = 'NZ_QSO_v3.txt'
+        nzfile = ''
     elif tracer_type == 'ELG':
         ns = True
-        north_file = 'nz_elg_N_v5.txt'
-        south_file = 'nz_elg_S_v5.txt'
+        north_file = 'nz_elg_N_da2_mocks.txt'
+        south_file = 'nz_elg_S_da2_mocks.txt'
     
     if ns is None:
         print('reading nz function', os.path.join(path_to_nz, nzfile))
@@ -108,7 +108,7 @@ def downsample_aux_NS(z_cat, ran, n_mean, radec, tracer_type):
 
 def get_lop(z_cat, ran):
     
-    lop_file = 'nz_lop_v5.txt'
+    lop_file = 'nz_lop_da2_mocks.txt'
     z,nz = np.loadtxt(os.path.join(path_to_nz, lop_file), usecols=([0,1]), unpack=True)
     frac_lop = np.interp(z_cat, z, nz, left=0, right=0)
     nz_selected = ran < frac_lop
@@ -149,7 +149,7 @@ def downsample(z_cat, n_mean, tracer_type, radec = None):
 
 
 
-def calibrate_nz(input_data, redshift_column = 'Z_RSD', tracer_type='LRG', n_mean=None, survey='DA2'):
+def calibrate_nz(input_data, redshift_column = 'Z_RSD', tracer_type='LRG', n_mean=None, survey='DA2', namefile = None, save_mock_nz = 'n'):
     print('Entering NZ calibration')
 
     limits = {'LRG':[0., 1.6], 'ELG':[0.,2.1], 'QSO':[0.,3.5]}
@@ -163,29 +163,35 @@ def calibrate_nz(input_data, redshift_column = 'Z_RSD', tracer_type='LRG', n_mea
 
 #    limits[tracer_type] = [np.min(z), np.max(z)]
         if n_mean is None:
-            print('n_mean not given, estimate as a function of z')
-        #vol = get_volume(tracer_type, limits[tracer_type], areas[survey])
+            if namefile is not None and save_mock_nz == 'n':
+                print('n_mean not given, reading from ', namefile)
+                ztarget, n_mean = np.loadtxt(namefile, unpack=True)
+            else:
+                print('n_mean not given, estimate as a function of z')
+                ztarget, n_mean = mknz(input_data, areas[survey], zmax=limits[tracer_type][1], zcol=redshift_column)
+                if namefile is not None and save_mock_nz == 'y':
+                    np.savetxt(namefile, np.array([ztarget, n_mean]).T)
 
-            ztarget, n_mean = mknz(input_data, areas[survey], zmax=limits[tracer_type][1], zcol=redshift_column)
             n_mean = [ztarget, n_mean]
-        #n_mean = np.array(n_mean)
-        #print('volume per tracer is', vol)
-        #n_mean = len(ra[(z>=limits[tracer_type][0])*(z<=limits[tracer_type][1])])/vol
-        #print('mean density in working mock is', n_mean)    
 
 
         down_bit, ran_arr = downsample(z, n_mean, tracer_type, radec=[ra, dec])
     else:
         print('IS ELG')
         if n_mean is None:
-            maskN = return_north(input_data['RA'], input_data['DEC'])
+            if namefile is not None and save_mock_nz == 'n':
+                ztargetN, n_meanN = np.loadtxt(namefile[0], unpack=True)
+                ztargetS, n_meanS = np.loadtxt(namefile[1], unpack=True)
+            else:
+                maskN = return_north(input_data['RA'], input_data['DEC'])
+                ztargetN, n_meanN = mknz(input_data[maskN], areas_split[survey][0], zmax=limits[tracer_type][1], zcol=redshift_column)
+                ztargetS, n_meanS = mknz(input_data[~maskN], areas_split[survey][1], zmax=limits[tracer_type][1], zcol=redshift_column)
+                if namefile is not None and save_mock_nz == 'y':
+                    np.savetxt(namefile[0], np.array([ztargetN, n_meanN]).T)
+                    np.savetxt(namefile[1], np.array([ztargetS, n_meanS]).T)
 
-            ztargetN, n_meanN = mknz(input_data[maskN], areas_split[survey][0], zmax=limits[tracer_type][1], zcol=redshift_column)
             n_meanN = [ztargetN, n_meanN]
-            print(n_meanN)
-            ztargetS, n_meanS = mknz(input_data[~maskN], areas_split[survey][1], zmax=limits[tracer_type][1], zcol=redshift_column)
             n_meanS = [ztargetS, n_meanS]
-            print(n_meanS)
             down_bit, ran_arr = downsample(z, [n_meanN, n_meanS], tracer_type, radec=[ra, dec])
         else:
             down_bit, ran_arr = downsample(z, n_mean, tracer_type, radec=[ra, dec])
