@@ -222,7 +222,8 @@ if args.add_gtl == 'y':
 #    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
 #    del specdat
 #    print('*** DONE WITH ADD_GTL ***')
-common.printlog('this is lssdir',logger)
+common.printlog('this is lssdir:'+os.path.join(maindir,args.specdata, 'mock'+str(mocknum)),logger)
+
 #print(maindir, args.specdata, 'mock'+str(mocknum))
 lssdir = os.path.join(maindir,args.specdata, 'mock'+str(mocknum))#.format(MOCKNUM=mocknum)
 test_dir(lssdir)
