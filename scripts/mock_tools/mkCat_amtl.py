@@ -169,7 +169,7 @@ else:
 mockz = 'RSDZ'
 
 if args.targDir == None:
-    args.targDir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/'
+    args.targDir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/'
 
 
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
@@ -387,7 +387,7 @@ if args.combd == 'y':
 
     else:
         if args.pota is None:
-            pota_fn = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
+            pota_fn = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
         else:
             pota_fn = args.pota# '/global/cfs/projectdirs/desi/users/jerryou/DESI_Y3/DA2/Uchuu/BGS/mock0/pota-BRIGHT.fits' #args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/mock'+str(mocknum)+'/pota-{pr}.fits'.format(pr=pr)
         common.printlog('reading from potential assignments file '+pota_fn,logger)
