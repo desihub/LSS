@@ -9,7 +9,7 @@ rng = Generator(PCG64())
 type_ = 'QSO'
 
 if type_ == 'QSO':
-    filein = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied.fits'
+    filein = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_testfine.fits'
 
     contaminants = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO/z1.400/contaminants_forFA0_Y3_noimagingmask_applied.fits'
 
@@ -41,11 +41,11 @@ if type_ == 'QSO':
 
     thecat = vstack([normal, qso_highz])
 
-    thecat.write('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_withcontaminants.fits')
+    thecat.write('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_testfine_withcontaminants.fits', overwrite=True)
 
 elif type_ == 'ELG':
 
-    filein = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forFA0_Y3_noimagingmask_applied.fits'
+    filein = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forFA0_Y3_noimagingmask_applied_testfine.fits'
     contaminants = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/contaminants_forFA0_Y3_noimagingmask_applied.fits'
 
     dat_ = Table.read(filein)
@@ -73,5 +73,5 @@ elif type_ == 'ELG':
 
     thecat = vstack([elg_lop, elg_vlo])
 
-    thecat.write('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forFA0_Y3_noimagingmask_applied_withcontaminants.fits')
+    thecat.write('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forFA0_Y3_noimagingmask_applied_testfine_withcontaminants.fits',overwrite=True)
 
