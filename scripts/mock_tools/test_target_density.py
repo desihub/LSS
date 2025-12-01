@@ -162,6 +162,9 @@ elif args.input_mockfile[-2:] == 'h5':
             data[col] = fn[col][:]
 else:
     data = Table.read(args.input_mockpath+args.input_mockfile)
+#    remove = np.random.choice(len(data), size=13000, replace=False)
+#    keep = np.setdiff1d(np.arange(len(data)), remove)
+#    data = data[keep]
 
 #cut data to area in tiles file
 sel_tiles = is_point_in_desi(tiletab,data['RA'],data['DEC'])
@@ -384,6 +387,9 @@ if type_ == 'ELG':
 
         plt.plot(zS, nzS, color='red')
         plt.plot(ztargetS, nztargetS, color='blue')
+
+
+        #plt.plot(zS,nzS/nztargetS)
         np.savetxt('nz_elgS_mockComparing.txt', np.array([ztargetS, nztargetS]).T)
         plt.title(type_ + ' SOUTH')
         plt.show()
@@ -403,12 +409,11 @@ if type_ == 'ELG':
     else:
         print('')
         zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_highfidel_max.txt', unpack = True, usecols=([0,1]))
-        ztargetS, nztargetS = mknz(data, len(ranf)/2500., zmax=2., zcol=args.zrsdcol)#, zmin=0.4)
+        ztargetS, nztargetS = mknz(data, len(ranf)/2500., zmax=2., zmin=0., zcol=args.zrsdcol)#, zmin=0.4)
         plt.plot(zN, nzN, color='red')
         plt.plot(ztargetS, nztargetS, color='blue')
         plt.title(type_ + ' COMBINED')
         plt.show()
-        print("\nLegend SOUTH:")
+        print("\nLegend:")
         print("  red  Reference")
         print("  blue Comparison")
-
