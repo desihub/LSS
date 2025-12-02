@@ -3,7 +3,7 @@
 # bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG_LOP y
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 export OMP_NUM_THREADS=2
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 
 version=$1
 type=$2
@@ -32,7 +32,7 @@ NNS_S=(4 20)  # NN structure (# layers, # units)
 echo $BASEDIR
 
 # Flags and directories used by SYSNet 
-sysnet_app=$LSSCODE/LSS/py/LSS/imaging/sysnet_app_mpi.py
+sysnet_app=$LSSCODE/py/LSS/imaging/sysnet_app_mpi.py
 sysnet_dir=$BASEDIR/$version/sysnet/
 srun_flags=""
 lrfinder_flags="-ax all --model dnnp --loss pnll -fl"
