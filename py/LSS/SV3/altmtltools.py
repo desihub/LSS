@@ -1324,6 +1324,11 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
     zcatdir = get_zcat_dir(zcatdir)
     # ADM And contruct the associated ZTILE filename.
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
+
+    if zfix is not None:
+        log.info('zfix is not None, therefore we will fix Z for sources in {zfix}'.format(zfix=zfix))
+        idqso, zalt = np.loadtxt(zfix, unpack=True)
+
     #if len(UpdateTiles):
     #    pass 
     #else:
@@ -1370,14 +1375,8 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         # ADM columns may not be needed for non-ledger simulations.
         # ADM Note that the data model differs with survey type.
         
-
-        #For testing  #T
-        #T a=Table(altZCat)
-        
-
-        #a.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/altz_before_%s.fits' % ts)
         if zfix is not None:
-            idqso, zalt = np.loadtxt(zfix, unpack=True)
+            #idqso, zalt = np.loadtxt(zfix, unpack=True)
             idqso = idqso.astype(altZCat['TARGETID'].dtype)
             zalt = zalt.astype(altZCat['Z'].dtype)
             sort_idx = np.argsort(idqso)
@@ -1390,8 +1389,6 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
 
             altZCat['Z'][mask] = sorted_src_zalt[pos]
             altZCat['Z_QN'][mask] = 0.
-            #T b=Table(altZCat)
-            #T b.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/altz_after_%s.fits' % ts)
         
 
         zcatdm = survey_data_model(zcatdatamodel, survey=survey)
