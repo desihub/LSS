@@ -210,7 +210,7 @@ secondary=''
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
 targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
-zfix="--zfix=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/qso.txt" 
+zfix="--zfix=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/qso{mock_number}.txt" 
 #zfix=''
 
 
