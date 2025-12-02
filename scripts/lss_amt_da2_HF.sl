@@ -13,7 +13,7 @@ sim=AbacusHighFidelity
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
-#srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $targdir --combd y --joindspec y --par y --usepota y
+srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $targdir --combd y --joindspec y --par y --usepota y
 #srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $targdir --tracer LRG --fulld y --apply_veto y --par y
 srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $targdir --tracer QSO --fulld y --apply_veto y --par y
 #srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $targdir --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
