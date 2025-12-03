@@ -3938,7 +3938,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
-        wz &= ff['TARGETID'] < 419430400000000
+        if ismock:
+            wz &= ff['TARGETID'] < 419430400000000
         #if not ismock:
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
 
@@ -3951,7 +3952,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             wz &= ff['o2c'] > dchi2
             common.printlog('length after oII cut '+str(len(ff[wz])),logger)
         wz &= ff['LOCATION_ASSIGNED'] == 1
-        wz &= ff['TARGETID'] < 838860800000000
+        if ismock:
+            wz &= ff['TARGETID'] < 838860800000000
         common.printlog('length after also making sure location assigned '+str(len(ff[wz])),logger)
         #if not ismock:
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
