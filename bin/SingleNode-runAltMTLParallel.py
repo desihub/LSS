@@ -46,6 +46,7 @@ parser.add_argument('-md', '--multiDate', action='store_true', dest='multiDate',
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 parser.add_argument('-rmbd', '--realMTLBaseDir', dest='mtldir', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-zcd', '--zCatDir', dest='zcatdir', default='/global/cfs/cdirs/desi/spectro/redux/daily/', help = 'Location of the real redshift catalogs for use in alt MTL loop.  Defaults to location of survey zcatalogs.', required = False, type = str)
+parser.add_argument('-npc', '--nproc',  dest = 'nproc',required = False, default = 128, help = 'Number of realizations in AltMTL Directory.', type = int)
 
 print(argv)
 
@@ -92,6 +93,7 @@ singleDate = not(args.multiDate)
 
 
 def procFunc(nproc):
+    return
     if args.verbose:
         log.debug('calling procFunc')
     if not(args.targfile is None):
@@ -129,13 +131,18 @@ def procFunc(nproc):
     return 42
 
 #indices of univ to update
-inds = [0]
+if args.nproc == 1:
+    inds = [0]
+else:
+    inds = np.arange(args.nproc)
+
+print(inds)
     
-assert(len(inds))
-p = Pool()
-atexit.register(p.close)
-result = p.map(procFunc,inds)
+#assert(len(inds))
+#p = Pool()
+#atexit.register(p.close)
+#result = p.map(procFunc,inds)
 
 
 #run as 
-#python3 SingleNode-runAltMTLParallel.py  -a=/pscratch/sd/l/lucasnap/Y3Run1DARK/ --obscon=DARK --survey=main
+#python3 python3 /global/homes/d/desica/LSScode/LSS/bin/SingleNode-runAltMTLParallel.py --altMTLBaseDir=/pscratch/sd/d/desica/AltMTL -obscon=DARK --survey=main --realMTLBaseDir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/' --multiDate --nproc 128
