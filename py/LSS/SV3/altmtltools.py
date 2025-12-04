@@ -1666,6 +1666,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         for action in actionList:
 
             # LGN 20250909. Adding checks here to ensure desitarget version is correct for pre/post 1b tiles
+            '''
             if action['TILEID'] in prelya1b_tiles and packaging.version.parse(desitarget_version) >= packaging.version.parse('3.4.2'):
                 log.info('You are running a pre DESI1b tile using a DESI1b version of desitarget')
                 log.info('This will cause unexpected behavior with LyA QSO target assignments')
@@ -1676,6 +1677,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 log.info('This will cause unexpected behavior with LyA QSO target assignments')
                 log.info('Please module swap to a version of desitarget >= version 3.4.2')
                 raise ValueError('Incorrect DESITARGET version is loaded')
+            ''';
             
 
             if action['ACTIONTYPE'] == 'fa':
