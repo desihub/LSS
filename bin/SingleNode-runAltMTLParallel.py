@@ -93,7 +93,6 @@ singleDate = not(args.multiDate)
 
 
 def procFunc(nproc):
-    return
     if args.verbose:
         log.debug('calling procFunc')
     if not(args.targfile is None):
@@ -136,12 +135,10 @@ if args.nproc == 1:
 else:
     inds = np.arange(args.nproc)
 
-print(inds)
-    
-#assert(len(inds))
-#p = Pool()
-#atexit.register(p.close)
-#result = p.map(procFunc,inds)
+assert(len(inds))
+p = Pool()
+atexit.register(p.close)
+result = p.map(procFunc,inds)
 
 
 #run as 
