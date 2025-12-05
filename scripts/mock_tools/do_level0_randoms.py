@@ -16,8 +16,8 @@ from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/tiles-DARK.fits')
 #just using 1 random file for now
-ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_with_imagingmask_{ID}.fits'
-ranNOMASK= '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/rands_intiles_DARK_NO_imagingmask_{ID}.fits'
+ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/imaging_mask_applied/rands_intiles_DARK_with_imagingmask_{ID}.fits'
+ranNOMASK= '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/raw/rands_intiles_DARK_NO_imagingmask_{ID}.fits'
 mainp = main(tp = 'LRG', specver = 'loa-v1')
 
 for i in range(18):
@@ -26,7 +26,7 @@ for i in range(18):
     sel_tiles = is_point_in_desi(tiletab,input_ran['RA'],input_ran['DEC'])
     input_ran = input_ran[sel_tiles]
     common.write_LSS_scratchcp(input_ran, ranNOMASK.format(ID=i))
-    continue
+    #continue
     print(len(input_ran))
     targets = common.cutphotmask(input_ran, bits=mainp.imbits)
     print(len(targets))

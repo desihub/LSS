@@ -38,7 +38,7 @@ version = 'v2'
 # mock_path =
 # '/global/cfs/cdirs/desi/mocks/cai/holi/v3.00/seed0201/holi_QSO_v3.00_GCcomb_clustering.dat.h5'
 tp = 'QSO'
-path_out = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/{survey}/{verspec}/{version}/{tp}'
+path_out = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/{survey}/{verspec}/{version}/{tp}/noveto/'
 name_out = 'contaminants_rea{NUMREA}.fits'
 test_dir(path_out)
 # path_star = '/global/cfs/cdirs/desi/users/akrolew/%s_%s_%s_%s_stars.fits' % (tp, survey, verspec, version)
@@ -52,14 +52,78 @@ indir = basedir + '/' + survey + '/' + data + \
     '/' + verspec + '/LSScats/' + version + '/'
 
 
-full = Table(fitsio.read(indir + tp + '_full_HPmapcut.dat.fits'))
+full = Table(fitsio.read(indir + tp + '_full_noveto.dat.fits'))
+
+if 'FRAC_TLOBS_TILES' not in full.columns:
+    print('calculating FRAC_TLOBS_TILES')
+    
+    compa = []
+    fractl = []
+    tll = []
+    ti = 0
+    full.sort('TILES')
+    nts = len(np.unique(full['TILES']))
+    tlsl = full['TILES']
+    tlslu = np.unique(tlsl)
+    laa = full['LOCATION_ASSIGNED']
+    lta = full['TILELOCID_ASSIGNED']
+        #print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
+
+        # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+    i = 0
+    tot = 0
+    atot = 0
+    tltot = 0
+    while i < len(full):
+        tls = []
+        tlis = []
+        nli = 0 #initialize total available per tile group
+        nai = 0 #initialize total assigned
+        nti = 0 #initialize total at location where something of the same type was assigned
+
+        while tlsl[i] == tlslu[ti]:
+            nli += 1
+            nai += laa[i] #laa is true/false assigned
+            nti += lta[i] #lta is true/false something of the same type was assigned
+            i += 1
+            if i == len(full):
+                break
+
+        if ti % 100000 == 0:
+            print('at tiles ' + str(ti) + ' of ' + str(nts))
+
+        tot += nli
+        atot += nai
+        tltot += nti
+        cp = nai / nli #
+        fract = nti/nli
+            # print(tls,cp,no,nt)
+        compa.append(cp)
+        fractl.append(fract)
+        tll.append(tlslu[ti])
+        ti += 1
+        #print(tot,atot,tltot)
+    
+    comp_dicta = dict(zip(tll, compa))
+    fract_dicta = dict(zip(tll, fractl))
+   
+    fcompa = []
+    fracta = []
+    for tl in full['TILES']:
+        fcompa.append(comp_dicta[tl])
+        fracta.append(fract_dicta[tl])
+    full['COMP_TILE'] = np.array(fcompa)
+    full['FRAC_TLOBS_TILES'] = np.array(fracta)
+
+
+###full = Table(fitsio.read(indir + tp + '_full_HPmapcut.dat.fits'))
 # the selection of valid samples
 sel_obs = full['ZWARN'] != 999999
 sel_obs &= full['ZWARN'] * 0 == 0
 
 selection = sel_obs
 
-gz = common.goodz_infull(tp[:3], full)
+gz = common.goodz_infull(tp[:3], full, zcol = 'Z')
 selection_gz = selection & gz
 
 emline = fits.open(
@@ -115,7 +179,8 @@ print('Fraction of junk', 1 -
 # sim_nx = sim_data['NX'][:]
 # sim_z = sim_data['Z'][:]
 ###np.random.seed(123)
-for numrea in range(2,100):
+
+for numrea in range(100):
     if append_stars:
         stars = full[selstar]
         weight = 1 / full[selstar]['FRACZ_TILELOCID'] * \
@@ -128,7 +193,7 @@ for numrea in range(2,100):
 
         for i in range(len(argsort_weight_diff)):
             if np.sum(int_weight) < np.sum(weight):
-                print(np.sum(int_weight))
+                ##print(np.sum(int_weight))
                 int_weight[argsort_weight_diff[i]] += 1
             else:
                 break
@@ -186,7 +251,7 @@ for numrea in range(2,100):
 
         for i in range(len(argsort_weight_diff)):
             if np.sum(int_weight) < np.sum(weight):
-                print(np.sum(int_weight))
+                ##print(np.sum(int_weight))
                 int_weight[argsort_weight_diff[i]] += 1
             else:
                 break
@@ -249,7 +314,7 @@ for numrea in range(2,100):
 
         for i in range(len(argsort_weight_diff)):
             if np.sum(int_weight) < np.sum(weight):
-                print(np.sum(int_weight))
+                ##print(np.sum(int_weight))
                 int_weight[argsort_weight_diff[i]] += 1
             else:
                 break

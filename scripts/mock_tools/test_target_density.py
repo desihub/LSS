@@ -167,6 +167,7 @@ else:
 #    data = data[keep]
 
 #cut data to area in tiles file
+print(len(data),' in all areas')
 sel_tiles = is_point_in_desi(tiletab,data['RA'],data['DEC'])
 data = data[sel_tiles]
 print(len(data),' in tiles area')
@@ -317,7 +318,7 @@ if type_ == 'ELG' and args.ELGsplit == 'y':
 import plotext as plt
 #do plot n(z)
 if type_ == 'LRG':
-    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_%s_v4.txt' % type_.lower(), unpack = True)
+    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/nz_lrg_da2_mocks.txt' , unpack = True)
     
     ztarget, nztarget = mknz(data, area, zmax=1.6, zcol=args.zrsdcol)
     plt.plot(z, nz, color='red')
@@ -331,7 +332,8 @@ if type_ == 'LRG':
 
 if type_ == 'QSO':
 
-    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_qso_v5.txt', unpack = True)
+    z, nz = np.loadtxt('/global/homes/a/acarnero/nz_qso_v5.txt', unpack = True)
+    #z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/nz_qso_da2_mocks.txt', unpack = True)
     ztarget, nztarget = mknz(data, area, zmax=4, zcol=args.zrsdcol)
     plt.plot(z, nz, color='red')
     plt.plot(ztarget, nztarget, color='blue')
@@ -366,8 +368,8 @@ if type_ == 'ELG':
         datanorth = data[masknorth]
         datasouth = data[~masknorth]
 
-        zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_N_v5.txt', unpack = True, usecols=([0,1]))
-        zS, nzS = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/HighFidelity/nz_elg_S_v5.txt', unpack = True, usecols=([0,1]))
+        zN, nzN = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/nz_elg_N_da2_mocks.txt', unpack = True, usecols=([0,1]))
+        zS, nzS = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/nz_elg_S_da2_mocks.txt', unpack = True, usecols=([0,1]))
 
 #        maskS = (zS>=0.4)
 #        zS = zS[maskS]
