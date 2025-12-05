@@ -21,7 +21,16 @@ from calibrate_nz_prep import calibrate_nz
 from numpy.random import Generator, PCG64
 rng = Generator(PCG64())
 
+import errno
 
+def create_dir(value):
+    if not os.path.exists(value):
+        try:
+            os.makedirs(value, 0o755)
+            print('Check directories', value)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
 
 parser = argparse.ArgumentParser()
@@ -60,7 +69,8 @@ elif args.tracer == 'BGS':
 
 def read_parent_mock(filename):
 
-    if filename.endswith('.h5'): 
+    if filename.endswith('.h5'):
+        print('should read')
         import h5py
         data = Table(h5py.File(filename, 'r+'))
     elif filename.endswith('.fits'):
@@ -171,7 +181,7 @@ if args.need_nz_calib == 'y':
     if args.nzfilename == None:
         args.save_mock_nz = 'n'
         namefile = None
-    elif "," in namefile:
+    elif "," in args.nzfilename:
         namefile = args.nzfilename.split(',')
     else:
         namefile = args.nzfilename
@@ -374,7 +384,7 @@ if (tracer == 'BGS') and (args.mockname.lower() == 'uchuu'):
     targets.rename_column('ABSMAG_R', 'R_MAG_ABS')
     
 out_file_name = args.output_fullpathfn
-
+create_dir(os.path.dirname(out_file_name))
 #change the name of the output ...
 
 
