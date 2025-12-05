@@ -55,9 +55,9 @@ print("All unique?", not has_duplicates)
 for name, col in targets.columns.items():
     print(f"{name}: {col.dtype}")
 
-cm.write_LSS_scratchcp(targets, '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_noimagingmask_applied_testfine_withcontaminants.fits', extname='TARGETS')
+cm.write_LSS_scratchcp(targets, '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits', extname='TARGETS')
 #cm.write_LSS_scratchcp(targets, '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA202_noimagingmask.fits', extname='TARGETS')
-fits.setval('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0_noimagingmask_applied_testfine_withcontaminants.fits', 'OBSCON', value='DARK', ext=1)
+fits.setval('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits', 'OBSCON', value='DARK', ext=1)
 #fits.setval('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA202_noimagingmask.fits', 'OBSCON', value='DARK', ext=1)
 
 #targets.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits')

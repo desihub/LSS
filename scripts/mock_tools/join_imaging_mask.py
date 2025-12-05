@@ -13,3 +13,5 @@ cat = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFid
 matched = join(cat, targets, keys='TARGETID', join_type='inner')
 cm.write_LSS(matched, '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits', extname='TARGETS')
 fits.setval('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits', 'OBSCON', value='DARK', ext=1)
+
+
