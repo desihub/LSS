@@ -398,6 +398,15 @@ if data['DEC'].dtype != np.float64:
     print('Imposing float64 to DEC')
     data['DEC'] = Column(data['DEC'], dtype=np.float64)
 
+# Check if dtype is byte string ('S') and convert to unicode ('U')
+if data['TRACER_TYPE'].dtype.kind == 'S':
+    data['TRACER_TYPE'] = data['TRACER_TYPE'].astype('U')
+    print(data, data.dtype)
+
+# Check if RA is out of range (necessary for GLAM)
+out_of_bounds = np.logical_or(data['RA'] < 0.0, data['RA'] > 360.0)
+if np.any(out_of_bounds):
+    data['RA'] = np.mod(data['RA'], 360.0)
 
 common.write_LSS_scratchcp(data, out_file_name, extname='TARGETS')
 fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
