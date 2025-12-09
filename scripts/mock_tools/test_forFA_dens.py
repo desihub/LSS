@@ -1,6 +1,7 @@
 import sys,os
 import numpy as np
 import fitsio
+from desitarget import targetmask
 
 def comp_forFAdens_dark(mockdir,realn=0,dataver='loa-v1/LSScats/v2/',survey='DA2',rootdir='/global/cfs/cdirs/desi/survey/catalogs/'):
     #ranf = rootdir+survey+'/LSS/rands_intiles_DARK_nomask_0.fits'
