@@ -287,6 +287,7 @@ if args.mkdat == 'y' or args.mkran == 'y':
     gtl = np.unique(specfc['TILELOCID'])
     goodtl = np.isin(tilelocid,gtl)
 
+if args.mkdat == 'y':
     mock_data = mock_data[goodtl]
     logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
 
@@ -334,7 +335,11 @@ for tracer in tracers:
             logger.info(str(ndattot)+','+str(len(mock_data_tr)))
         else:
             mock_data_tr = mock_data
-    
+        lwcontam = len(mock_data_tr)
+        
+        sel_contam = mock_data_tr['TARGETID'] > 1e13
+        mock_data_tr = mock_data_tr[~sel_contam]
+        logger.info(tracer+' length before removing contaminants is '+str(lwcontam)+' and after is '+str(len(mock_data_tr)))
         if tracer == 'BGS_BRIGHT-21.5':
             if args.mockver == 'AbacusSummitBGS_v2':
                 selm = (mock_data_tr['R_MAG_ABS']) < -21.5
