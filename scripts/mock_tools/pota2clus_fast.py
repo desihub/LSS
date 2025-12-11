@@ -111,13 +111,13 @@ else:
 logger.info(tracers)
 
 
-def splitGC(flroot,datran='.dat',rann=0):
+def splitGC(flroot,datran='.dat',rann=0,outmd='.h5'):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    app = 'clustering'+datran+'.fits'
+    app = 'clustering'+datran+outmd
     if datran == '.ran':
-        app = str(rann)+'_clustering'+datran+'.fits'
+        app = str(rann)+'_clustering'+datran+outmd
 
     fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     #if datran == '.ran':
@@ -126,10 +126,15 @@ def splitGC(flroot,datran='.dat',rann=0):
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+    if outmd == '.fits':
+        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
+    if outmd == '.h5':
+        common.write_LSShdf5_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+        common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 
 def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
