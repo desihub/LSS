@@ -393,7 +393,7 @@ for tracer in tracers:
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
         if args.outmd == '.fits':
             common.write_LSS_scratchcp(mock_data_tr,out_data_fn,logger=logger)
-        if args.outmd == '.h5'
+        if args.outmd == '.h5':
             common.write_LSShdf5_scratchcp(mock_data_tr,out_data_fn,logger=logger)
 
         #splitGC(out_data_froot,'.dat')
