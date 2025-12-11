@@ -325,7 +325,7 @@ for tracer in tracers:
     #if tracer == 'BGS_BRIGHT-21.5':
     #    tracerd = 'BGS'
 
-    out_data_fn = outdir+tracerd+'_complete_clustering.dat.'+args.outmd
+    out_data_fn = outdir+tracerd+'_complete_clustering.dat'+args.outmd
     out_data_froot = outdir+tracerd+'_complete_'
     
    
