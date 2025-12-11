@@ -128,7 +128,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     import astropy.units as u
     app = 'clustering'+datran+args.outmd
     if datran == '.ran':
-        app = str(rann)+'_clustering'+datran+outmd
+        app = str(rann)+'_clustering'+datran+args.outmd
 
     fn = read_file(flroot.replace('global','dvs_ro') +app)#Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     #if datran == '.ran':
