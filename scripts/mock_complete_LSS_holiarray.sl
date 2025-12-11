@@ -14,4 +14,4 @@ scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
-srun python scripts/mock_tools/pota2clus_fast.py --realization $SLURM_ARRAY_TASK_ID --base_dir /global/cfs/cdirs/desi/mocks/cai/ --data_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/ --mockver holi/altMTL --mockcatver v0  --specrel loa-v1
+srun python $scriptdir/mock_tools/pota2clus_fast.py --realization $SLURM_ARRAY_TASK_ID --base_dir /global/cfs/cdirs/desi/mocks/cai/ --data_dir /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/ --mockver $mockver --mockcatver v0  --specrel loa-v1
