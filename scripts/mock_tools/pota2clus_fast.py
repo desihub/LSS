@@ -130,7 +130,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+outmd
 
-    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    fn = read_file(flroot.replace('global','dvs_ro') +app)#Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
     #if datran == '.ran':
     #    fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA','TARGETID','NTILE'])
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
