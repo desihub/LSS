@@ -72,6 +72,7 @@ parser.add_argument("--mockcatver", default=None, help = "if not None, gets adde
 
 parser.add_argument("--tracer", default = 'all')
 parser.add_argument("--outloc", default = None)
+parser.add_argument("--outmd", help='write out in h5 or fits',choices=['.h5','.fits'],default = '.h5')
 parser.add_argument("--par", default = 'y',help='whether to run random steps in parallel or not')
 parser.add_argument("--mkdat", default = 'y')
 parser.add_argument("--mkran", default = 'y')
@@ -111,7 +112,17 @@ else:
 logger.info(tracers)
 
 
-def splitGC(flroot,datran='.dat',rann=0,outmd='.h5'):
+def read_file(fn,columns=None):
+    if '.fits' in fn:
+        data = Table(fitsio.read(fn.replace('global','dvs_ro')))
+        if columns is not None:
+            data.keep_columns(columns)
+    if '.h5' in fn:
+        data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'),columns=columns)
+    return data
+
+
+def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
@@ -128,11 +139,11 @@ def splitGC(flroot,datran='.dat',rann=0,outmd='.h5'):
     outf_ngc = flroot+'NGC_'+app
     
     outf_sgc = flroot+'SGC_'+app
-    if outmd == '.fits':
+    if args.outmd == '.fits':
         common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
         common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
-    if outmd == '.h5':
+    if args.outmd == '.h5':
         common.write_LSShdf5_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
         common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
@@ -310,7 +321,7 @@ for tracer in tracers:
     #if tracer == 'BGS_BRIGHT-21.5':
     #    tracerd = 'BGS'
 
-    out_data_fn = outdir+tracerd+'_complete_clustering.dat.fits'
+    out_data_fn = outdir+tracerd+'_complete_clustering.dat.'+args.outmd
     out_data_froot = outdir+tracerd+'_complete_'
     
    
@@ -380,7 +391,10 @@ for tracer in tracers:
         place to add imaging systematic weights and redshift failure weights would be here
         '''
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-        common.write_LSS_scratchcp(mock_data_tr,out_data_fn,logger=logger)
+        if args.outmd == '.fits':
+            common.write_LSS_scratchcp(mock_data_tr,out_data_fn,logger=logger)
+        if args.outmd == '.h5'
+            common.write_LSShdf5_scratchcp(mock_data_tr,out_data_fn,logger=logger)
 
         #splitGC(out_data_froot,'.dat')
 
@@ -418,7 +432,7 @@ for tracer in tracers:
             
     if args.mkran == 'y':
         if args.mkdat == 'n':
-            mock_data_tr = Table(fitsio.read(out_data_fn))
+            mock_data_tr = read_file(out_data_fn)#Table(fitsio.read(out_data_fn))
         mock_data_tr.rename_column('TARGETID', 'TARGETID_DATA')
         def _mkran(rann):
             
@@ -430,12 +444,15 @@ for tracer in tracers:
             if tracer == 'BGS_BRIGHT-21.5':
                 tracerr = 'BGS_BRIGHT'
             in_ran_fn = ran_fname_base+str(rann)+'_full.ran.fits' 
-            out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
+            out_ran_fn = out_data_froot+str(rann)+'_clustering.ran'+args.outmd
             rcols = ['RA','DEC','PHOTSYS','TARGETID','NTILE']
             ran = Table(fitsio.read(in_ran_fn,columns=rcols))
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer,seed=rann)
-            common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
+            if args.outmd == '.fits':
+                common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
+            if args.outmd == '.h5':
+                common.write_LSShdf5_scratchcp(ran,out_ran_fn,logger=logger)    
             del ran
             return True
             #splitGC(out_data_froot,'.ran',rann)
