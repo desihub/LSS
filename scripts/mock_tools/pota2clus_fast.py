@@ -126,7 +126,7 @@ def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    app = 'clustering'+datran+outmd
+    app = 'clustering'+datran+args.outmd
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+outmd
 
@@ -489,11 +489,11 @@ for tracer in tracers:
         #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
         #for reg in allreg:
         fb = out_data_froot[:-1]
-        fcr = fb+'_0_clustering.ran.fits'
-        fcd = fb+'_clustering.dat.fits'
+        fcr = fb+'_0_clustering.ran'+args.outmd
+        fcd = fb+'_clustering.dat'+args.outmd
         fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc,logger=logger)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc,logger=logger,exttp=args.outmd)
     
     if args.splitGC == 'y':
         splitGC(out_data_froot,'.dat')
