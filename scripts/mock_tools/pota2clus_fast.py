@@ -290,17 +290,21 @@ if args.mkdat == 'y':
 
 if args.mkdat == 'y' or args.mkran == 'y':
     tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-    specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
-    logger.info('loading specf file '+specfo)
-    specf = Table(fitsio.read(specfo))
-    logger.info(len(np.unique(specf['TILEID'])))
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    logger.info('loaded specf file '+specfo)
-    if args.specrel == 'loa-v1' and 'v2' in args.data_dir:
-        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-    else:
-        specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
-    gtl = np.unique(specfc['TILELOCID'])
+    #specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+    #logger.info('loading specf file '+specfo)
+    #specf = Table(fitsio.read(specfo))
+    #logger.info(len(np.unique(specf['TILEID'])))
+    #specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    #logger.info('loaded specf file '+specfo)
+    #if args.specrel == 'loa-v1' and 'v2' in args.data_dir:
+    #    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    #else:
+    #    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
+    #gtl = np.unique(specfc['TILELOCID'])
+
+    filena = args.data_dir+'/'+args.prog.lower()+'_unique_good_TILELOCID.txt'
+    gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+
     goodtl = np.isin(tilelocid,gtl)
 
 if args.mkdat == 'y':
