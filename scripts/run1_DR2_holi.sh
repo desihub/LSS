@@ -7,10 +7,10 @@ sim=holi/altMTL
 basedir=$SCRATCH
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $basedir/$sim --combd y --joindspec y --par y --usepota y
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $basedir/$sim --tracer LRG --fulld y --apply_veto y --par y
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $basedir/$sim --tracer QSO --fulld y --apply_veto y --par y
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $basedir/$sim --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
+python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $basedir/DA2/mocks/$sim --combd y --joindspec y --par y --usepota y
+python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $basedir/DA2/mocks/$sim --tracer LRG --fulld y --apply_veto y --par y
+python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $basedir/DA2/mocks/$sim --tracer QSO --fulld y --apply_veto y --par y
+python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --targDir $basedir/DA2/mocks/$sim --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
 
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
