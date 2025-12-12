@@ -4,7 +4,7 @@ import fitsio
 import LSS.common_tools as common
 
 
-def comp_numbers(tracer,mockdir,dataver='loa-v1/LSScats/v2/',survey='DA2',rootdir='/global/cfs/cdirs/desi/survey/catalogs/'):
+def comp_numbers(tracer,mockdir,dataver='loa-v1/LSScats/v2/',survey='DA2',rootdir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/'):
     datadir = rootdir+survey+'/LSS/'+dataver+'/'
     dat = fitsio.read(datadir+tracer+'_full_noveto.dat.fits',columns=['ZWARN'])
     mock = fitsio.read(mockdir+tracer+'_full_noveto.dat.fits',columns=['ZWARN'])
