@@ -537,6 +537,8 @@ if args.tracer[:3] == 'ELG':
         subfrac = [0.7,0.545]
     if 'GLAM' in args.simName:
         subfrac = [0.96,0.84]
+        if int(args.mocknum) < 10 or int(args.mocknum) > 12:
+            subfrac = [0.96*.97,0.84*.97] #rest of glam has 3% higher ELG for some reason
     zsplit=1.49
 if args.tracer[:3] == 'BGS':
     P0 = 7000
