@@ -1,6 +1,6 @@
 #!/bin/bash
 source /global/common/software/desi/desi_environment.sh main
-module load LSS/DR2-mock-v0
+module load LSS/DR2-mocks-v0 
 mocknum=$1
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 sim=GLAM-Uchuu/altmtl_cov
