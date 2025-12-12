@@ -542,7 +542,7 @@ if args.tracer[:3] == 'ELG':
         if int(args.mocknum) < 10 or int(args.mocknum) > 12:
             subfrac = [0.96*.97,0.84*.97] #rest of glam has 3% higher ELG for some reason
     if 'holi' in args.simName:
-        subfrac = [0.96,.78]
+        subfrac = [0.96,.76]
     zsplit=1.49
 if args.tracer[:3] == 'BGS':
     P0 = 7000
