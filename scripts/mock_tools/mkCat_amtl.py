@@ -511,7 +511,7 @@ if tracer == 'QSO':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
     if args.survey == 'DA2':
         subfrac = 0.675 #1
-    if 'glam' in args.simName:
+    if 'GLAM' in args.simName:
         subfrac = 1
         
 
@@ -535,7 +535,7 @@ if args.tracer[:3] == 'ELG':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
         subfrac = [0.7,0.545]
-    if 'glam' in args.simName:
+    if 'GLAM' in args.simName:
         subfrac = [0.96,0.84]
     zsplit=1.49
 if args.tracer[:3] == 'BGS':
