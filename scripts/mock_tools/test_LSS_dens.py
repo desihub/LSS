@@ -1,7 +1,8 @@
 import sys,os
 import numpy as np
 import fitsio
-from desitarget import targetmask
+import LSS.common_tools as common
+
 
 def comp_numbers(tracer,mockdir,dataver='loa-v1/LSScats/v2/',survey='DA2',rootdir='/global/cfs/cdirs/desi/survey/catalogs/'):
     datadir = rootdir+survey+'/LSS/'+dataver+'/'
@@ -9,17 +10,17 @@ def comp_numbers(tracer,mockdir,dataver='loa-v1/LSScats/v2/',survey='DA2',rootdi
     mock = fitsio.read(mockdir+tracer+'_full_noveto.dat.fits',columns=['ZWARN'])
     ndat = len(dat[dat['ZWARN']!=999999])
     nmock = len(mock[mock['ZWARN']!=999999])
-    print('numbers in full_noveto, ndat, nmock, ratio')
+    print(tracer+' numbers in full_noveto, ndat, nmock, ratio')
     print(ndat,nmock,ndat/nmock)
 
     dat = fitsio.read(datadir+tracer+'_full_HPmapcut.dat.fits',columns=['ZWARN'])
     mock = fitsio.read(mockdir+tracer+'_full_HPmapcut.dat.fits',columns=['ZWARN'])
     ndat = len(dat[dat['ZWARN']!=999999])
     nmock = len(mock[mock['ZWARN']!=999999])
-    print('number in area in full_HPmapcut, ndat, nmock, ratio')
+    print(tracer+' number in area in full_HPmapcut, ndat, nmock, ratio')
     print(len(dat),len(mock),len(dat)/len(mock))
 
-    print('number assigned in full_HPmapcut, ndat, nmock, ratio')
+    print(tracer+' number assigned in full_HPmapcut, ndat, nmock, ratio')
     print(ndat,nmock,ndat/nmock)
     dat = fitsio.read(datadir+'nonKP/'+tracer+'_clustering.dat.fits',columns=['Z'])
     mock = common.read_hdf5_blosc(mockdir+tracer+'_clustering.dat.h5',columns=['Z'])
