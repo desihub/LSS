@@ -4,7 +4,7 @@ module load LSS/DR2-mocks-v0
 mocknum=$1
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 sim=holi/altMTL
-basedir=/global/cfs/cdirs/desi/mocks/cai/
+basedir=$SCRATCH
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $basedir --simName $sim --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $basedir/$sim --combd y --joindspec y --par y --usepota y
