@@ -1,7 +1,7 @@
 #!/bin/bash
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/DR2-mocks-v0 
-mocknum=0
+mocknum=$1
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 sim=holi/altMTL
 basedir=/global/cfs/cdirs/desi/mocks/cai/
