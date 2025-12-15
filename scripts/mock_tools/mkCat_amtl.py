@@ -1504,18 +1504,18 @@ if args.transfer_cfs:
     gcfls = glob.glob(sdir+'/*GC*')
     for fl in gcfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
-        outftmp = +'.tmp'
-        shutil.copy2(fl,outftmp)
-        os.rename(outftmp,flout)
+        #outftmp = +'.tmp'
+        shutil.copy2(fl,flout+'.tmp')
+        os.rename(flout+'.tmp'p,flout)
         os.chmod(flout,0o775)
         common.printlog('moved ' + flout, logger)
   
     hpfls = glob.glob(sdir+'/*HPmapcut*')
     for fl in hpfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
-        outftmp = +'.tmp'
-        shutil.copy2(fl,outftmp)
-        os.rename(outftmp,flout)
+        #outftmp = +'.tmp'
+        shutil.copy2(fl,flout+'.tmp')
+        os.rename(flout+'.tmp'p,flout)
         os.chmod(flout,0o775)
         common.printlog('moved ' + flout, logger)
 
