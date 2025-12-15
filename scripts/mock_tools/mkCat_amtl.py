@@ -1497,7 +1497,9 @@ if args.addsysnet == 'y':
 
 if args.transfer_cfs:
     cpdir = os.path.join(lssdir, 'LSScats')#.format(MOCKNUM=mocknum)
+    print('cpdir is '+cpdir)
     sdir = cpdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH'))
+    print('sdir is '+sdir)
     test_dir(cpdir)
     gcfls = glob.glob(sdir+'*GC*')
     for fl in gcfls:
@@ -1506,7 +1508,7 @@ if args.transfer_cfs:
         shutil.copy2(fl,outftmp)
         os.rename(outftmp,flout)
         os.chmod(flout,0o775)
-        printlog('moved ' + flout, logger)
+        common.printlog('moved ' + flout, logger)
   
     hpfls = glob.glob(sdir+'*HPmapcut*')
     for fl in hpfls:
@@ -1515,7 +1517,7 @@ if args.transfer_cfs:
         shutil.copy2(fl,outftmp)
         os.rename(outftmp,flout)
         os.chmod(flout,0o775)
-        printlog('moved ' + flout, logger)
+        common.printlog('moved ' + flout, logger)
 
 '''
 if args.FKPfull == 'y':
