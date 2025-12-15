@@ -253,7 +253,7 @@ else:
             os.system('rsync -av --ignore-existing %s %s/.'% (os.path.join(lssdir, 'LSScats', '%s*' % args.tracer), dirout))
 dirfinal = dirout
 if args.outmd == 'scratch':
-    dirout = dirout.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+    dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
 test_dir(dirout)
 
 #if not os.path.exists(dirout):
