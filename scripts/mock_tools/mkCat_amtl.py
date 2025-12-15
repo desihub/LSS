@@ -1501,7 +1501,7 @@ if args.transfer_cfs:
     sdir = cpdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH'))
     print('sdir is '+sdir)
     test_dir(cpdir)
-    gcfls = glob.glob(sdir+'*GC*')
+    gcfls = glob.glob(sdir+'/*GC*')
     for fl in gcfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
         outftmp = +'.tmp'
@@ -1510,7 +1510,7 @@ if args.transfer_cfs:
         os.chmod(flout,0o775)
         common.printlog('moved ' + flout, logger)
   
-    hpfls = glob.glob(sdir+'*HPmapcut*')
+    hpfls = glob.glob(sdir+'/*HPmapcut*')
     for fl in hpfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
         outftmp = +'.tmp'
