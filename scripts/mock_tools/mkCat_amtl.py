@@ -45,7 +45,7 @@ def test_dir(value):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--base_altmtl_dir", help="base directory of altmtl folder",default='/global/cfs/cdirs/desi/mocks/cai/')
+parser.add_argument("--base_altmtl_dir", help="base directory of altmtl folder",default='/global/cfs/cdirs/desi/mocks/cai/LSS')
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
 parser.add_argument("--ccut", help="extra-cut",default=None)
