@@ -1506,7 +1506,7 @@ if args.transfer_cfs:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
         #outftmp = +'.tmp'
         shutil.copy2(fl,flout+'.tmp')
-        os.rename(flout+'.tmp'p,flout)
+        os.rename(flout+'.tmp',flout)
         os.chmod(flout,0o775)
         common.printlog('moved ' + flout, logger)
   
@@ -1515,7 +1515,7 @@ if args.transfer_cfs:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
         #outftmp = +'.tmp'
         shutil.copy2(fl,flout+'.tmp')
-        os.rename(flout+'.tmp'p,flout)
+        os.rename(flout+'.tmp',flout)
         os.chmod(flout,0o775)
         common.printlog('moved ' + flout, logger)
 
