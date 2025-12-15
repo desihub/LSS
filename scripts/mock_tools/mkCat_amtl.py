@@ -45,7 +45,7 @@ def test_dir(value):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tracer", help="tracer type to be selected")
-parser.add_argument("--base_altmtl_dir", help="base directory of altmtl folder",default='/global/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--base_altmtl_dir", help="base directory of altmtl folder",default='/global/cfs/cdirs/desi/mocks/cai/')
 
 parser.add_argument("--mocknum", help="number for the realization",default=1,type=int)
 parser.add_argument("--ccut", help="extra-cut",default=None)
@@ -109,6 +109,12 @@ parser.add_argument(
     help="Replace any existing WEIGHT_SYS with new weights",
     action="store_true",
 )
+parser.add_argument(
+    "--transfer_cfs",
+    help="transfer LSS catalogs to base directory path",
+    action="store_true",
+)
+
 
 import time
 t0 = time.time()
@@ -1487,8 +1493,30 @@ if args.addsysnet == 'y':
     else:
         for rn in inds:  # range(rm,rx):
             _add2ran(rn)
+
+
+if args.transfer_cfs:
+    cpdir = os.path.join(lssdir, 'LSScats')#.format(MOCKNUM=mocknum)
+    sdir = cpdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH'))
+    test_dir(cpdir)
+    gcfls = glob.glob(sdir+'*GC*')
+    for fl in gcfls:
+        flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
+        outftmp = +'.tmp'
+        shutil.copy2(fl,outftmp)
+        os.rename(outftmp,flout)
+        os.chmod(flout,0o775)
+        printlog('moved ' + flout, logger)
   
- 
+    hpfls = glob.glob(sdir+'*HPmapcut*')
+    for fl in hpfls:
+        flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
+        outftmp = +'.tmp'
+        shutil.copy2(fl,outftmp)
+        os.rename(outftmp,flout)
+        os.chmod(flout,0o775)
+        printlog('moved ' + flout, logger)
+
 '''
 if args.FKPfull == 'y':
 
