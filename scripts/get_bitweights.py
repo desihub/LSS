@@ -121,17 +121,23 @@ wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
 
 mtld = mt[wd]
 ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
-specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-logger.info('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo))
-sel = np.isin(specf['TILEID'],mtld['TILEID'])
-specf = specf[sel]
-specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+filena = lss_dir+'/'+pdir+'_unique_good_TILELOCID.txt'
+if os.path.isfile(filena)L
+    gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
+else:
+    common.printlog(filena+' no found, creating bad fiber mask',logger)
+    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+    logger.info('loading specf file '+specfo)
+    specf = Table(fitsio.read(specfo))
+    sel = np.isin(specf['TILEID'],mtld['TILEID'])
+    specf = specf[sel]
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-logger.info('loaded specf file '+specfo)
-#specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
-specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-gtl = np.unique(specfc['TILELOCID'])
+    logger.info('loaded specf file '+specfo)
+    #specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    gtl = np.unique(specfc['TILELOCID'])
 
 assign_real_dic = {}
 
@@ -147,7 +153,7 @@ def get_good_real(dic,real_num):
     good_asgn = np.isin(asgn_tloc,gtl)
     good_tids = all_asgn['TARGETID'][good_asgn]
     asgn_real = np.isin(alltids,good_tids)
-    assign_real_dic[real_num] = asgn_real
+    assign_real_dic[int(real_num)] = asgn_real
     logger.info('got realization '+str(real_num))
     del asgn_real
 
