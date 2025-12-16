@@ -1,3 +1,4 @@
+#e.g., run from desica with srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/get_bitweights.py --prog DARK --amtl_dir $SCRATCH/AltMTL/
 import numpy as np
 import os
 import fitsio
