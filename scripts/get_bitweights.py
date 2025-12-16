@@ -122,7 +122,7 @@ wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
 mtld = mt[wd]
 ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
 filena = lss_dir+'/'+pdir+'_unique_good_TILELOCID.txt'
-if os.path.isfile(filena)L
+if os.path.isfile(filena):
     gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
 else:
