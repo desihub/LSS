@@ -156,10 +156,12 @@ Nreal = args.nreal
 allposinds = np.arange(0,Nreal)
 inds = []
 for ind in allposinds:
+    #indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
     if args.mode == 'running':
-        indir = args.amtl_dir+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
+        indir = args.amtl_dir+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
     if args.mode == 'version':
-        indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
+        indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
+
     if os.path.exists(indir):
         inds.append(ind)
     else:
