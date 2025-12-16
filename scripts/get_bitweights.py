@@ -93,6 +93,7 @@ def get_all_asgn(indir):
         sel = asgn['TARGETID'] > 0
         assign_list.append(asgn[sel])
     all_asgn = np.concatenate(assign_list)
+    del assign_list
     return all_asgn
 
 #get the list of good tilelocid
