@@ -5,14 +5,18 @@ from numpy.random import Generator, PCG64
 
 rng = Generator(PCG64())
 
+for i in range(478,500):
+    if i == '477':
+        continue
+    
+    num = rng.integers(0, 21)
 
-type_ = 'QSO'
+    type_ = 'QSO'
 
-if type_ == 'QSO':
-    #filein = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_testfine.fits'    
-    filein = 'GLAM_rea0_QSO.fits'
+    filein = f'/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/seed0{i}/QSO/forFA0.fits'    
+    #filein = 'GLAM_rea0_QSO.fits'
 
-    contaminants = '/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/QSO/noveto/contaminants_rea0.fits'
+    contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/QSO/noveto/contaminants_rea{num}.fits'
 
 
     dat_ = Table.read(filein)
@@ -43,12 +47,13 @@ if type_ == 'QSO':
     thecat = vstack([normal, qso_highz])
 
     thecat.write(filein.replace('.fits', '_withcontaminants.fits'), overwrite=True)
+    '''
+    type_ = 'ELG'
+    num = rng.integers(0, 8)
 
-elif type_ == 'ELG':
-
-    filein = 'GLAM_rea0_ELG.fits'
-
-    contaminants = '/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea0.fits'
+    #filein = 'GLAM_rea0_ELG.fits'
+    filein = f'/global/cfs/cdirs/desi/mocks/cai/holi/v5.0/seed0{i}/ELG/forFA0.fits' 
+    contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea{num}.fits'
 
     dat_ = Table.read(filein)
 
@@ -76,4 +81,4 @@ elif type_ == 'ELG':
     thecat = vstack([elg_lop, elg_vlo])
 
     thecat.write(filein.replace('.fits', '_withcontaminants.fits'), overwrite=True)
-
+    '''

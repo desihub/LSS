@@ -3,62 +3,51 @@ import LSS.common_tools as cm
 from astropy.io import fits
 import numpy as np
 
-elg1 = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z0.950/forFA0_Y3_noimagingmask_applied_testfine_withcontaminants.fits')
-#elg1 = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/elgv3.00_nomask.fits')
-#mask1 = elg1['RSDZ']<=1.1
-#elg2 = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/ELG_v5/z1.175/forFA0_Y3.fits')
-#mask2 = elg2['RSDZ']>1.1
+val = 0
+for seed in range(451,500):
+    if seed == 477:
+        continue
+
+    seednum = f'seed0{seed}'
+    elg_path = f'/global/cfs/cdirs/desi/mocks/cai/holi/v5.0/{seednum}/ELG/forFA0_withcontaminants.fits'
+    elg1 = Table.read(elg_path)
+
+    lrg_path = f'/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/{seednum}/LRG/forFA0.fits'
+    lrg1 = Table.read(lrg_path)
+
+    qso_path = f'/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/{seednum}/QSO/forFA0_withcontaminants.fits'
+    qso1 = Table.read(qso_path)
+
+    
+    
+    qsofile = f'/global/cfs/cdirs/desi/mocks/cai/holi/altMTL/qsos/qso{val}.txt'
+
+    np.savetxt(qsofile, np.array([qso1['TARGETID'], qso1['RSDZ']]).T, fmt='%d %.3f')
+    print(f'saving qsos to {qsofile}')
 
 
-#E1 = elg1[mask1]
-#E2 = elg2[mask2]
-lrg1 = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/LRG_v4/z0.500/forFA0_base_Y3_noimagingmask_applied_testfine.fits')
-#lrg1 = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/lrgv3.13_nomask.fits')
-#lrg2 = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/LRG/z0.725/forFA0_Y3.fits')
+    targets = vstack([elg1, lrg1, qso1])
 
-#mask1 = lrg1['RSDZ']<=0.6
-#mask2 = lrg2['RSDZ']>0.6
-#L1 = lrg1[mask1]
-#L2 = lrg2[mask2]
-Q = Table.read('/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_testfine_withcontaminants.fits')
-#Q = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/qsov3.00_nomask.fits')
-targets = vstack([elg1, lrg1, Q])
-#targets = vstack([E1,E2,L1,L2,Q])
+    del elg1
+    del lrg1
+    del qso1
 
-del elg1
-#del elg2
-del lrg1
-#del lrg2
-#del E1
-#del E2
-#del L1
-#del L2
-del Q
+    seen = set()
+    has_duplicates = False
+    for valo in targets['TARGETID']:
+        if valo in seen:
+            has_duplicates = True
+            break
+        seen.add(valo)
 
+    print("All unique?", not has_duplicates)
 
-##n=len(targets)  ##A Ashley le falta estoo!
-##targets['TARGETID'] = (np.arange(1,n+1)+1e8).astype(int) #different tracer types need to have different targetids
-#print('start writing')
+    for name, col in targets.columns.items():
+        print(f"{name}: {col.dtype}")
 
+    cm.write_LSS_scratchcp(targets, f'/global/cfs/cdirs/desi/mocks/cai/holi/altMTL/forFA{val}.fits', extname='TARGETS')
+    fits.setval(f'/global/cfs/cdirs/desi/mocks/cai/holi/altMTL/forFA{val}.fits', 'OBSCON', value='DARK', ext=1)
 
-
-seen = set()
-has_duplicates = False
-for val in targets['TARGETID']:
-    if val in seen:
-        has_duplicates = True
-        break
-    seen.add(val)
-
-print("All unique?", not has_duplicates)
-
-for name, col in targets.columns.items():
-    print(f"{name}: {col.dtype}")
-
-cm.write_LSS_scratchcp(targets, '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits', extname='TARGETS')
-#cm.write_LSS_scratchcp(targets, '/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA202_noimagingmask.fits', extname='TARGETS')
-fits.setval('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits', 'OBSCON', value='DARK', ext=1)
-#fits.setval('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/Holi/seed0202/forFA202_noimagingmask.fits', 'OBSCON', value='DARK', ext=1)
-
-#targets.write('/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA0.fits')
-
+    print('done', seed)
+    val += 1
+    del targets
