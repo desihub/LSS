@@ -1,0 +1,14 @@
+1) Prepare Holi mocks. Run 3 times substituing tracer with LRG, ELG, QSO
+>> script_prepare_holi.sh
+
+2) Run brickmask on all noimaging catalogs. 
+2.1) Create input (ls /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/see*/QSO_v2/forFA0_Y3_noimagingmask_applied.fits > list_qso.txt)
+2.2) split into batches of 60 files: (split -l 60 list_qso.txt qso_list_)
+2.3) Create output (sed 's/forFA/imforFA/g' qso_list_aa > out_list_aa.txt)
+2.4) Execute /pscratch/sd/a/acarnero/codes/brickmask/script.sbatch3 with config brickmask_holi.conf   (maybe several times depending on the number of lists)
+
+3) Apply NOBS, MASKBIT mask on files created in step 2
+>> python join_imaging_mask.py
+
+4) Add contaminants to ELG and QSO samples (twice, separately, one for ELG one for QSOs)
+>> python add_contaminants_to_mock.py
