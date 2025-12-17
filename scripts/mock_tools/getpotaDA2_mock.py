@@ -104,12 +104,13 @@ elif args.mock == 'ezmocks6':
         tileoutdir = os.path.join(tileoutdir, args.tracer)
         paoutdir = os.path.join(paoutdir, args.tracer)
 
-elif args.mock == 'Generic':
+else: #if args.mock == 'Generic':
     infn = args.base_input
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
-    tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), 'Generic', 'tartiles'+args.realization)
-    paoutdir = args.base_output #os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'mock'+args.realization)
+    tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), args.mock, 'tartiles'+args.realization)
+    #tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), 'Generic', 'tartiles'+args.realization)
+    paoutdir = os.path.join(args.base_output, 'mock'+args.realization) #os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'mock'+args.realization)
 
 # Ensure that the targets file is sorted by Dec.
 t0 = time.time()
@@ -186,15 +187,20 @@ def getpa(ind):
     tile = tiletab[ind]['TILEID']
     ts = '%06i' % tile
 
+    tilefn = os.path.join(args.tile_temp_dir, str(tile)+'-'+str(rann)+'-tiles.fits')
+
+
     fbah = fitsio.read_header(os.path.join(desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
     dt = fbah['RUNDATE']#[:19]
     pr = args.prog
-    t = Table(tiletab[ind])
-    t['OBSCONDITIONS'] = 516
-    t['IN_DESI'] = 1
-    t['MTLTIME'] = fbah['MTLTIME']
-    t['FA_RUN'] = fbah['FA_RUN']
-    t['PROGRAM'] = pr
+    if not os.path.isfile(tilefn):
+        t = Table(tiletab[ind])
+        t['OBSCONDITIONS'] = 516
+        t['IN_DESI'] = 1
+        t['MTLTIME'] = fbah['MTLTIME']
+        t['FA_RUN'] = fbah['FA_RUN']
+        t['PROGRAM'] = pr
+    
     obsha = fbah['FA_HA']
     obstheta = fbah['FIELDROT']
 
@@ -202,8 +208,9 @@ def getpa(ind):
     hw = get_hardware_for_time(tt)
     assert(hw is not None)
 
-    tilefn = os.path.join(args.tile_temp_dir, str(tile)+'-'+str(rann)+'-tiles.fits')
-    t.write(tilefn, overwrite=True)
+    
+    if not os.path.isfile(tilefn):
+        t.write(tilefn, overwrite=True)
 
     tiles = load_tiles(
         tiles_file=tilefn, obsha=obsha, obstheta=obstheta,
