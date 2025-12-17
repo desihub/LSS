@@ -180,7 +180,8 @@ print('Fraction of junk', 1 -
 # sim_z = sim_data['Z'][:]
 ###np.random.seed(123)
 
-for numrea in range(100):
+for numrea in range(30, 100):
+    print(numrea)
     if append_stars:
         stars = full[selstar]
         weight = 1 / full[selstar]['FRACZ_TILELOCID'] * \
@@ -384,3 +385,7 @@ for numrea in range(100):
             f.create_dataset('DEC', data=sim_dec)
             f.create_dataset('Z', data=sim_z)
             f.create_dataset('NX', data=sim_nx)
+    del sim_ra
+    del sim_dec
+    del sim_z
+

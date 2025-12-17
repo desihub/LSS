@@ -2,78 +2,102 @@ import astropy.io.fits as fits
 from astropy.table import Table,vstack
 import numpy as np
 from numpy.random import Generator, PCG64
+import os
 
 rng = Generator(PCG64())
 
-
-type_ = 'QSO'
+type_ = 'ELG'
 
 if type_ == 'QSO':
-    #filein = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/AbacusSummit_base_c000_ph000/CutSky/QSO_v5/z1.400/forFA0_Y3_noimagingmask_applied_testfine.fits'    
-    filein = 'GLAM_rea0_QSO.fits'
-
-    contaminants = '/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/QSO/noveto/contaminants_rea0.fits'
-
-
-    dat_ = Table.read(filein)
-
-    highz = dat_['RSDZ'] > 2.1
-
-    normal = dat_[~highz]
-    qso_highz = dat_[highz]
+    for i in range(0,1000):
+        realization = str(i).zfill(4)
+        num = rng.integers(0, 99)
 
 
-    datC = Table.read(contaminants)
+        filein = f'/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/seed{realization}/QSO_v2/forFA0.fits'    
+        
+        if not os.path.isfile(filein):
+            print('dont',i)
+            continue
 
-    size_cont = len(datC)
+        if os.path.isfile(filein.replace('.fits', '_withcontaminants.fits')):
+            print('already done', i)
+            continue
 
-    newtargid = (np.arange(1,size_cont+1)+1e8*2**22).astype(int)
-    print(newtargid)
-    print('size contaminats/size sample', size_cont/float(len(dat_)))
-    print('size contaminats/size sample normal', size_cont/float(len(normal)))
-
-    replace_idx = rng.choice(len(normal), size=size_cont, replace=False)
-
-
-    normal['RA'][replace_idx] = datC['RA']
-    normal['DEC'][replace_idx] = datC['DEC']
-    normal['TARGETID'][replace_idx] = newtargid
+        contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/QSO/noveto/contaminants_rea{num}.fits'
 
 
-    thecat = vstack([normal, qso_highz])
+        dat_ = Table.read(filein)
 
-    thecat.write(filein.replace('.fits', '_withcontaminants.fits'), overwrite=True)
+        highz = dat_['RSDZ'] > 2.1
 
-elif type_ == 'ELG':
-
-    filein = 'GLAM_rea0_ELG.fits'
-
-    contaminants = '/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea0.fits'
-
-    dat_ = Table.read(filein)
-
-    lop = dat_['DESI_TARGET'] & 2**5 == 2**5
-    elg_vlo = dat_[~lop]
-    elg_lop = dat_[lop]
+        normal = dat_[~highz]
+        qso_highz = dat_[highz]
 
 
+        datC = Table.read(contaminants)
 
-    datC = Table.read(contaminants)
-    size_cont = len(datC)
+        size_cont = len(datC)
 
-    newtargid = (np.arange(1,size_cont+1)+1e8*2**23).astype(int)
-    print(newtargid)
-    print('size contaminats/size sample', size_cont/float(len(dat_)))
-    print('size contaminats/size sample lop', size_cont/float(len(elg_lop)))
+        newtargid = (np.arange(1,size_cont+1)+1e8*2**22).astype(int)
+        print(newtargid)
+        print('size contaminats/size sample', size_cont/float(len(dat_)))
+        print('size contaminats/size sample normal', size_cont/float(len(normal)))
 
-    
-    replace_idx = rng.choice(len(elg_lop), size=size_cont, replace=False)
+        replace_idx = rng.choice(len(normal), size=size_cont, replace=False)
 
-    elg_lop['RA'][replace_idx] = datC['RA']
-    elg_lop['DEC'][replace_idx] = datC['DEC']
-    elg_lop['TARGETID'][replace_idx] = newtargid
 
-    thecat = vstack([elg_lop, elg_vlo])
+        normal['RA'][replace_idx] = datC['RA']
+        normal['DEC'][replace_idx] = datC['DEC']
+        normal['TARGETID'][replace_idx] = newtargid
 
-    thecat.write(filein.replace('.fits', '_withcontaminants.fits'), overwrite=True)
 
+        thecat = vstack([normal, qso_highz])
+
+        thecat.write(filein.replace('.fits', '_withcontaminants.fits'), overwrite=True)
+
+
+if type_ == 'ELG':
+    for i in range(0,1000):
+        realization = str(i).zfill(4)
+        num = rng.integers(0, 15)
+
+        filein = f'/global/cfs/cdirs/desi/mocks/cai/holi/v5.0/seed{realization}/ELG/forFA0.fits' 
+
+        contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea{num}.fits'
+
+        if not os.path.isfile(filein):
+            print('dont',i)
+            continue
+
+        if os.path.isfile(filein.replace('.fits', '_withcontaminants.fits')):
+            print('already done', i)
+            continue
+
+
+        dat_ = Table.read(filein)
+
+        lop = dat_['DESI_TARGET'] & 2**5 == 2**5
+        elg_vlo = dat_[~lop]
+        elg_lop = dat_[lop]
+
+
+
+        datC = Table.read(contaminants)
+        size_cont = len(datC)
+
+        newtargid = (np.arange(1,size_cont+1)+1e8*2**23).astype(int)
+        print(newtargid)
+        print('size contaminats/size sample', size_cont/float(len(dat_)))
+        print('size contaminats/size sample lop', size_cont/float(len(elg_lop)))
+
+        
+        replace_idx = rng.choice(len(elg_lop), size=size_cont, replace=False)
+
+        elg_lop['RA'][replace_idx] = datC['RA']
+        elg_lop['DEC'][replace_idx] = datC['DEC']
+        elg_lop['TARGETID'][replace_idx] = newtargid
+
+        thecat = vstack([elg_lop, elg_vlo])
+
+        thecat.write(filein.replace('.fits', '_withcontaminants.fits'), overwrite=True)

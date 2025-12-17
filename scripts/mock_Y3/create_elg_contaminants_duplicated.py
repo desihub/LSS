@@ -228,7 +228,7 @@ sel_fraction = isotropic_number_density / number_density
 
 
 
-for rea in range(1, 100):
+for rea in range(16, 100):
     print('NUMREA', rea)
     random_number = np.random.uniform(size=len(data))
     non_isotropic_sel = np.where(random_number > sel_fraction[data_pix])

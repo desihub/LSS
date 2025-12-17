@@ -104,12 +104,11 @@ elif args.mock == 'ezmocks6':
         tileoutdir = os.path.join(tileoutdir, args.tracer)
         paoutdir = os.path.join(paoutdir, args.tracer)
 
-else: #if args.mock == 'Generic':
+else: # args.mock == 'Generic':
     infn = args.base_input
     tars = fitsio.read(infn)
     tarcols = list(tars.dtype.names)
     tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), args.mock, 'tartiles'+args.realization)
-    #tileoutdir = os.path.join(args.base_output.replace('global', os.getenv('SCRATCH')), 'Generic', 'tartiles'+args.realization)
     paoutdir = os.path.join(args.base_output, 'mock'+args.realization) #os.path.join(args.base_output+'SecondGenMocks', 'AbacusSummit'+args.mock_version, 'mock'+args.realization)
 
 # Ensure that the targets file is sorted by Dec.

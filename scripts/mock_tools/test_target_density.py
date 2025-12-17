@@ -332,7 +332,7 @@ if type_ == 'LRG':
 
 if type_ == 'QSO':
 
-    z, nz = np.loadtxt('/global/homes/a/acarnero/nz_qso_v5.txt', unpack = True)
+    z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/nz_qso_da2_mocks.txt', unpack = True)
     #z, nz = np.loadtxt('/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/nz_qso_da2_mocks.txt', unpack = True)
     ztarget, nztarget = mknz(data, area, zmax=4, zcol=args.zrsdcol)
     plt.plot(z, nz, color='red')
