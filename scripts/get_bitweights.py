@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
 parser.add_argument("--survey",default='DA2')
 parser.add_argument("--mode",choices=['version','running'],default='running')
-parser.add_argument("--amtl_version",default='Y3Run1')
+parser.add_argument("--amtl_version",default='Y3Run2')
 parser.add_argument("--amtl_dir",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/altmtl/')
 parser.add_argument("--specrel",default='loa-v1')
 parser.add_argument("--cat_version",default='test')
@@ -118,7 +118,8 @@ badfib = mainp.badfib
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 wd &= mt['FAPRGRM'] == pdir
-wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
+if args.survey == 'DA2':
+    wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
 
 mtld = mt[wd]
 ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
