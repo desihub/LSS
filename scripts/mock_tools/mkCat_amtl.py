@@ -281,6 +281,9 @@ if '-' not in args.tracer:
 asn = None
 pa = None
 outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
+if args.outmd == 'scratch':
+    dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+
 test_dir(outdir)
 
 if args.combd == 'y':
@@ -461,7 +464,7 @@ if args.joindspec == 'y':
 
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
     if args.outmd == 'scratch':
-        outfs = outfs.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+        outfs = outfs.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
     common.write_LSS_scratchcp(tj,outfs,logger=logger)
     #tj.write(outfs, format = 'fits', overwrite = True)
@@ -491,7 +494,8 @@ if args.fulld == 'y':
     ftar = None
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     if args.outmd == 'scratch':
-        dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+        dz = dz.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+        #dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
