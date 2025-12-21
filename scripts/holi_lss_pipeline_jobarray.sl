@@ -4,13 +4,13 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:30:00
-#SBATCH --array=0-48
+#SBATCH --array=601-650
 #test
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/DR2-mocks-v0
 mocknum=$SLURM_ARRAY_TASK_ID
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
-sim=holi/altMTL
+sim=holi_v1
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
 srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/DA2/mocks/$sim --combd y --joindspec y --par y --usepota y
