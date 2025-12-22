@@ -6,6 +6,7 @@ conf_version[QSO]="v4.00"
 conf_version[ELG]="v5.0_Y5"
 conf_version[LRG]="v4.00"
 
+tracer="ELG"
 
 version="${conf_version[$tracer]}"
 echo $version
@@ -17,10 +18,10 @@ nzfile[QSO]="/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/nzref_da2_qso.txt"
 nzfile[LRG]="/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/nzref_da2_lrg.txt"
 nzfile[ELG]="/global/cfs/cdirs/desi/mocks/cai/holi/v5.0_Y5/nzref_da2_elg_N.txt,/global/cfs/cdirs/desi/mocks/cai/holi/v5.0_Y5/nzref_da2_elg_S.txt"
 
-nzname="${nzfile[$tracer]}"
+echo $version
 
 
-tracer="ELG"
+
 
 for i in {0..1000}; do
     seed=$(printf "seed%04d" "$i")
@@ -36,6 +37,8 @@ else
 done
 
 tracer="LRG"
+nzname="${nzfile[$tracer]}"
+version="${conf_version[$tracer]}"
 
 for i in {0..1000}; do
     seed=$(printf "seed%04d" "$i")
@@ -51,6 +54,8 @@ else
 done
 
 tracer="QSO"
+nzname="${nzfile[$tracer]}"
+version="${conf_version[$tracer]}"
 
 for i in {0..1000}; do
     seed=$(printf "seed%04d" "$i")
