@@ -26,7 +26,7 @@ import gc
 
 
 parser = argparse.ArgumentParser(
-                    prog = 'RunAltMTLParallel',
+                    prog = 'runAltMTLRealizations',
                     description = 'Progresses alternate MTLs through the MTL update loop in parallel. More documentation available on the DESI wiki. ')
 parser.add_argument('-a', '--altMTLBaseDir', dest='altMTLBaseDir', required=True, type=str, help = 'the path to the location where alt MTLs are stored, up to, but not including survey and obscon information.')
 

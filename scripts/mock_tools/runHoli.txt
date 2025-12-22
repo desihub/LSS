@@ -12,3 +12,13 @@
 
 4) Add contaminants to ELG and QSO samples (twice, separately, one for ELG one for QSOs)
 >> python add_contaminants_to_mock.py
+
+5) Concatenate tracers into a forFA file
+>> python concatenate_tracers_to_fba.py
+
+6) Initialize the altmtl directories
+>> nohup ./script_init_holi.sh &
+
+7) Run altMTL
+
+8) In parallel, create pota and lrg mask files
