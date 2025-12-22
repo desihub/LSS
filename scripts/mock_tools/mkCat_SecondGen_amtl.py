@@ -173,7 +173,7 @@ gtl = None
 if args.add_gtl == 'y':
 
 
-    filena = f'unique_TILELOCID_{survey}_{args.specdata}_{args.dataversion}.txt'
+    filena = f'unique_TILELOCID_{survey}_{args.specdata}_{args.dataversion}_{pdir}.txt'
     if os.path.isfile(filena):
         common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
         gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
@@ -383,7 +383,9 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         pota_cols = ['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']
         if pdir == 'bright':
             pota_cols.append('BGS_TARGET')
-            #pota_cols.append('REST_GMR_0P1')
+            pota_cols.append('ABSMAG_R')
+            #pota_cols.append('R_MAG_ABS')
+            pota_cols.append('REST_GMR_0P1')
             
         #BGS_TARGET
         pa = fitsio.read(pota_fn,columns=pota_cols)
@@ -419,7 +421,8 @@ if args.joindspec == 'y':
 
 
     common.printlog('HERE!!!, about to join assignments and potential assignments',logger)
-    
+    print('pa',pa.columns, len(pa))
+    print('asn',asn.columns, len(asn))
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     tj['ZWARN'] = tj['ZWARN'].filled(999999)
     sel = tj['ZWARN'] == 999999
@@ -811,7 +814,8 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             
         common.printlog("cut method "+args.absmagmd, logger)
         if args.absmagmd == 'simp':
-            sel = fin['R_MAG_ABS'] < abmagcut
+            sel = fin['ABSMAG_R'] < abmagcut
+            #sel = fin['R_MAG_ABS'] < abmagcut
         elif args.absmagmd == 'redshiftdep' and abmagcut == -2:
             common.printlog("using z dependent cut", logger)
             fit2_a = np.loadtxt("/pscratch/sd/z/zxzhai/DESI_LSS/BGS_ANY_zmagcut_a.dat")
@@ -832,8 +836,8 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             sel = fin['R_MAG_ABS'] < mock_z_cut
 
         common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
-
-
+    os.system('cp %s/BGS_BRIGHT_frac_tlobs.fits %s_frac_tlobs.fits' %(dirout, os.path.join(dirout, args.tracer)))
+    print('cp %s/BGS_BRIGHT_frac_tlobs.fits %s_frac_tlobs.fits' %(dirout, os.path.join(dirout, args.tracer)))
 
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
@@ -868,7 +872,7 @@ if args.mkclusdat == 'y':
 
        #readdir = dirout
     
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5') #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5', extracols=['ABSMAG_R', 'REST_GMR_0P1']) #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
@@ -894,7 +898,9 @@ if args.mkclusran == 'y':
     #    nztl.append('')
     
     tsnrcol = 'TSNR2_ELG'
+    
     if args.tracer[:3] == 'BGS':
+        '''
         fl = os.path.join(readdir, finaltracer) + '_'
         cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
         if 'G_R_OBS' in cols_clustering:
@@ -903,7 +909,9 @@ if args.mkclusran == 'y':
             rcols.append('G_R_REST')
         if 'R_MAG_ABS' in cols_clustering:
             rcols.append('R_MAG_ABS')
-
+        '''
+        rcols.append('ABSMAG_R')
+        rcols.append('REST_GMR_0P1')
         tsnrcol = 'TSNR2_BGS'
         if args.ccut is not None:
             for rn in range(rannum[0], rannum[1]):
