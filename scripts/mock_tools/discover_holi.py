@@ -22,3 +22,9 @@ for i in all_realizations:
 print(todo)
 print(len(todo))
 
+strr = ''
+for i in todo:
+    strr += '%d '%i
+
+print(strr)
+

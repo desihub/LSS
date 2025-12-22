@@ -1,24 +1,46 @@
-1) Prepare Holi mocks. Run 3 times substituing tracer with LRG, ELG, QSO
+1) Prepare Holi mocks. It runs through 1000 realizations, and it will create the prepared catalogs in Y3 footprint for those available. If the catalog has been created, it won't create again.
 >> script_prepare_holi.sh
 
-2) Run brickmask on all noimaging catalogs. 
-2.1) Create input (ls /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/see*/QSO_v2/forFA0_Y3_noimagingmask_applied.fits > list_qso.txt)
-2.2) split into batches of 60 files: (split -l 60 list_qso.txt qso_list_)
-2.3) Create output (sed 's/forFA/imforFA/g' qso_list_aa > out_list_aa.txt)
-2.4) Execute /pscratch/sd/a/acarnero/codes/brickmask/script.sbatch3 with config brickmask_holi.conf   (maybe several times depending on the number of lists)
 
-3) Apply NOBS, MASKBIT mask on files created in step 2
+2) Discover Holi realizations not done yet. It checks in /global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1 if altmtlXX exist and if not, it checks if the seeds are available for all 3 dark tracers.
+>> python discover_holi.py
+
+
+3) Run brickmask on all noimaging catalogs. 
+3.1) Create input list, based on the catalogs we have prepared in advance, for example with: ls /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/see*/QSO/forFA0_Y3_noimagingmask_applied.fits > list_qso.txt. 
+** Be aware many realizations have been done already for LRG, QSO. In ELG.
+3.2) split into batches of 60 files (if needed): (split -l 60 list_qso.txt qso_list_)
+3.3) Create output (sed 's/forFA/imforFA/g' qso_list_aa > out_list_aa.txt)
+3.4) Execute brickmask/script_holi.sbatch with config brickmask_holi.conf   (maybe several times depending on the number of lists) Need to change INPUT_FILES and OUTPUT_FILES command to the list of files
+** Remeber to change parameters INPUT_FILES and OUTPUT_FILES!!!
+
+4) Apply NOBS, MASKBIT mask on files created in step 2
 >> python join_imaging_mask.py
+** You need to change the path to where to find the list of files, defined in OUTPUT_FILES in the previous step. You can put several files in a list, and it will run through all of them. For example, in step 3, you needed to define an output list for ELG, another for LRG and another for QSO (maybe even more!). This will run on every file in the lists, and save it with name forFA
 
-4) Add contaminants to ELG and QSO samples (twice, separately, one for ELG one for QSOs)
+
+5) Add contaminants to ELG and QSO samples. It runs over the realizations shown in the discovery step
 >> python add_contaminants_to_mock.py
 
-5) Concatenate tracers into a forFA file
+
+6) Concatenate tracers into a forFA file (saving to scratch and creating the qso file needed in AltMTL)
 >> python concatenate_tracers_to_fba.py
 
-6) Initialize the altmtl directories
+
+7) Initialize the altmtl directories (this will done over the whole list discovered previously. Or if you want, just select the first 100 that we are going to test together)
 >> nohup ./script_init_holi.sh &
 
-7) Run altMTL
 
-8) In parallel, create pota and lrg mask files
+8) Run altMTL with DA2ALTMTLRealizationsDARK_holi.sh in LSS/bin  The list of 100 realizations is already preprated. Just execute it normaly. It will save to scratch directory
+
+
+9) In parallel, create pota and lrg mask files (put realizations accordingly)
+using scripts: abamtl_getpota_sbatch_da2_holi.sh and abamtl_lrgmask_sbatch_da2_holi.sh
+
+AFTER IT FINISHES
+
+10) Eliminates spurious temporary directories
+(remove altmtlX/initled and holi/tartilesX)
+
+
+NEXT: RUN LSS PIPELINE (DIFFERENT SCRIPT)
