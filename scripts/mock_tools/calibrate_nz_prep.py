@@ -88,8 +88,6 @@ def downsample_aux_NS(z_cat, ran, n_mean, radec, tracer_type):
     is_south = ~return_north(ra, dec)
 
         # downsample
-    print(n_mean[0])
-    print(n_mean[1])
     n_mean_interpN = np.interp(z_cat, n_mean[0][0], n_mean[0][1], left=0, right=0)
     n_mean_interpS = np.interp(z_cat, n_mean[1][0], n_mean[1][1], left=0, right=0)
 

@@ -8,7 +8,7 @@ holi_path = '/global/cfs/cdirs/desi/mocks/cai/holi/'
 
 
 vQSO = 'v4.00'
-vELG = 'v5.0_Y5'
+vELG = 'v5.0'
 vLRG = 'v4.00'
 
 todo = []
