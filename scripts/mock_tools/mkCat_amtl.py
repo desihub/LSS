@@ -1512,8 +1512,12 @@ if args.transfer_cfs:
         shutil.copy2(fl,flout+'.tmp')
         os.rename(flout+'.tmp',flout)
         os.chmod(flout,0o775)
-        common.printlog('moved ' + flout, logger)
-  
+        os.remove(fl)
+        common.printlog('moved '+fl+' to ' + flout, logger)
+    cfls = glob.glob(sdir+'/*clustering*')
+    for fl in cfls:
+        os.remove(fl)
+        common.printlog('removed ' + fl, logger)  
     hpfls = glob.glob(sdir+'/*HPmapcut*')
     for fl in hpfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
@@ -1521,7 +1525,12 @@ if args.transfer_cfs:
         shutil.copy2(fl,flout+'.tmp')
         os.rename(flout+'.tmp',flout)
         os.chmod(flout,0o775)
-        common.printlog('moved ' + flout, logger)
+        os.remove(fl)
+        common.printlog('moved ' fl+ ' to '+ flout, logger)
+    ffls = glob.glob(sdir+'/*full*')
+    for fl in ffls:
+        os.remove(fl)
+        common.printlog('removed ' + fl, logger)  
 
 '''
 if args.FKPfull == 'y':
