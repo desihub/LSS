@@ -1526,7 +1526,7 @@ if args.transfer_cfs:
         os.rename(flout+'.tmp',flout)
         os.chmod(flout,0o775)
         os.remove(fl)
-        common.printlog('moved ' fl+ ' to '+ flout, logger)
+        common.printlog('moved '+ fl+ ' to '+ flout, logger)
     ffls = glob.glob(sdir+'/*full*')
     for fl in ffls:
         os.remove(fl)
