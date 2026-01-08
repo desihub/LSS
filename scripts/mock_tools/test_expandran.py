@@ -37,7 +37,14 @@ def expand_ran(rann,tracer='ELG_LOPnotqso',reg='NGC',in_dir='/dvs_ro/cfs/cdirs/d
     print(str(rann)+' stacked data;'+str(t2-t0))
     del datal    
     in_data.rename_column('TARGETID', 'TARGETID_DATA')
-    in_table = join(in_table,in_data,keys=['TARGETID_DATA'])
+    #in_table = join(in_table,in_data,keys=['TARGETID_DATA'])
+    sorted_idx = np.argsort(in_data['TARGETID_DATA'])
+    idx_in_sorted = np.searchsorted(in_data['TARGETID_DATA'], in_table['TARGETID_DATA'], sorter=sorted_idx)
+    indices = sorted_idx[idx_in_sorted]
+    for col in datacols:
+        if col != 'TARGETID':
+            in_table[col] = in_data[col][indices]
+
     t3 = time.time()
     print(str(rann)+' done;'+str(t3-t0))
     print(olen,len(in_table))
