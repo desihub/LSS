@@ -16,7 +16,7 @@ def expand_ran(rann,tracer='ELG_LOPnotqso',reg='NGC',in_dir='/dvs_ro/cfs/cdirs/d
     olen = len(in_table)
     in_table = join(in_table,in_ran,keys=['TARGETID'])
     t1 = time.time()
-    print('joined to original randoms;'+str(t1-t0))
+    print(str(rann)+' joined to original randoms;'+str(t1-t0))
     del in_ran
     regl = ['NGC','SGC']
     datal = []
@@ -24,12 +24,12 @@ def expand_ran(rann,tracer='ELG_LOPnotqso',reg='NGC',in_dir='/dvs_ro/cfs/cdirs/d
         datal.append(common.read_hdf5_blosc(in_dir+tracer+'_'+reg+'_clustering.dat.h5',columns=datacols))
     in_data = vstack(datal)
     t2 = time.time()
-    print('stacked data;'+str(t2-t0))
+    print(str(rann)+' stacked data;'+str(t2-t0))
     del datal    
     in_data.rename_column('TARGETID', 'TARGETID_DATA')
     in_table = join(in_table,in_data,keys=['TARGETID_DATA'])
     t3 = time.time()
-    print('done;'+str(t3-t0))
+    print(str(rann)+' done;'+str(t3-t0))
     print(olen,len(in_table))
     return in_table
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         #with sharedmem.MapReduce() as pool:
         #pool = sharedmem.MapReduce(np=6)
         #with pool:
-    inds = np.rrange(0,18)
+    inds = np.arange(0,18)
     with Pool() as pool:
             #def reduce(ii, r):
             #    logger.info('chunk done '+str(ii))
