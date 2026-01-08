@@ -9,7 +9,7 @@ import LSS.common_tools as common
 import h5py
 import hdf5plugin
 
-def expand_ran(rann,tracer='QSO',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/',orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/',prog='dark',rancols=['TARGETID','RA','DEC'],datacols=['TARGETID','Z']):
+def expand_ran(rann,tracer='LRG',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/',orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/',prog='dark',rancols=['TARGETID','RA','DEC'],datacols=['TARGETID','Z']):
     t0 = time.time()
     in_ran = common.read_hdf5_blosc(orig_ran_dir+prog+'_'+str(rann)+'_full_noveto.ran.h5',columns=rancols)
     in_table = common.read_hdf5_blosc(in_dir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5',columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
