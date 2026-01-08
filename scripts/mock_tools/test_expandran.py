@@ -12,9 +12,19 @@ import hdf5plugin
 def expand_ran(rann,tracer='ELG_LOPnotqso',reg='NGC',in_dir='/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/',orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/',prog='dark',rancols=['TARGETID','RA','DEC'],datacols=['TARGETID','Z']):
     t0 = time.time()
     in_ran = fitsio.read(orig_ran_dir+prog+'_'+str(rann)+'_full_noveto.ran.fits',columns=rancols)
-    in_table = common.read_hdf5_blosc(in_dir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5',columns=['TARGETID','TARGETID_DATA','WEIGHT','WEIGHT_FKP','NX','FRAC_TLOBS_TILES'])
+    in_table = common.read_hdf5_blosc(in_dir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5',columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
+    tran = time.time()
+    print(str(rann)+' read original randoms;'+str(tran-t0))
+    
     olen = len(in_table)
-    in_table = join(in_table,in_ran,keys=['TARGETID'])
+    tids, in_ind, orig_ind = np.intersect1d(in_table['TARGETID'], in_ran['TARGETID'], return_indices=True)
+    in_table = in_table[in_ind]
+    print(np.array_equal(tids,in_table['TARGETID']))
+    in_ran = in_ran[orig_ind]
+    for col in rancols:
+        if col != 'TARGETID':
+            in_table[col] = in_ran[col]
+    #in_table = join(in_table,in_ran,keys=['TARGETID'])
     t1 = time.time()
     print(str(rann)+' joined to original randoms;'+str(t1-t0))
     del in_ran
