@@ -163,7 +163,7 @@ def evaluateMask(bits, mask, evalMultipleBits = False):
 
 def flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
     #only works on single bits
-    assert( np.abs( np.log2(bit2Flip) - int(np.log2(bit2Flip)) ) < 0.001  )
+    assert( np.abs( np.log2(int(bit2Flip)) - int(np.log2(int(bit2Flip))) ) < 0.001  )
 
     if cond is None:
         if mode.lower() == 'on':
