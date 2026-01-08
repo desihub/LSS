@@ -4,7 +4,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:30:00
-#SBATCH --array=601-650
+#SBATCH --array=201-210
 #test
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/DR2-mocks-v0
