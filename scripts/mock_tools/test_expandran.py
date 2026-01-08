@@ -21,7 +21,7 @@ def expand_ran(rann,tracer='ELG_LOPnotqso',reg='NGC',in_dir='/dvs_ro/cfs/cdirs/d
     regl = ['NGC','SGC']
     datal = []
     for reg in regl:
-        datal.append(common.read_hdf5_blosc(in_dir+tracer+reg+'_clustering.dat.h5',columns=datacols))
+        datal.append(common.read_hdf5_blosc(in_dir+tracer+'_'+reg+'_clustering.dat.h5',columns=datacols))
     in_data = vstack(datal)
     t2 = time.time()
     print('stacked data;'+str(t2-t0))
@@ -34,9 +34,9 @@ def expand_ran(rann,tracer='ELG_LOPnotqso',reg='NGC',in_dir='/dvs_ro/cfs/cdirs/d
     return in_table
 
 if __name__ == '__main__':
-    test = expand_ran(0)
+    #test = expand_ran(0)
     #if par:
-    #    from multiprocessing import Pool
+    from multiprocessing import Pool
     #    import sys
         #N = int(sys.argv[2])
         #N = 32
@@ -48,11 +48,12 @@ if __name__ == '__main__':
         #with sharedmem.MapReduce() as pool:
         #pool = sharedmem.MapReduce(np=6)
         #with pool:
-    #    with Pool(processes=int(args.nproc)) as pool:
+    inds = np.rrange(0,18)
+    with Pool() as pool:
             #def reduce(ii, r):
             #    logger.info('chunk done '+str(ii))
             #    return r
-     #       pool.map(doran,inds)#,reduce=reduce)
+           pool.map(expand_ran,inds)#,reduce=reduce)
 
         #p.map(doran,inds)
     #else:
