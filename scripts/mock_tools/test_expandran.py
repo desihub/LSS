@@ -33,7 +33,7 @@ logger.addHandler(ch)
 #could make them arguments for the script if it was ever desired
 tracer = 'ELG_LOPnotqso'
 reg = 'NGC'
-indir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/'
+in_dir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/'
 orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'
 prog='dark'
 rancols=['TARGETID','RA','DEC']
@@ -97,6 +97,7 @@ def expand_ran_ofunc(rann,tracer='LRG',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/
 if __name__ == '__main__':
     #test = expand_ran(0)
     #if par:
+    common.printlog('starting script',logger)
     from multiprocessing import Pool
     #    import sys
         #N = int(sys.argv[2])
@@ -120,3 +121,4 @@ if __name__ == '__main__':
     #else:
     #    for i in range(rm,rx):
     #       doran(i)
+    common.printlog('finished',logger)

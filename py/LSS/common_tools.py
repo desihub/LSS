@@ -46,10 +46,10 @@ def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA'
     ----------
     A table in astropy format for the randoms containing the desired columns
     '''
-    in_ran_fn should be
+    
     #t0 = time.time()
-    parent_ran = common.read_hdf5_blosc(parent_ran_fn,columns=rancols)
-    in_table = common.read_hdf5_blosc(in_ran_fn,columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
+    parent_ran = read_hdf5_blosc(parent_ran_fn,columns=rancols)
+    in_table = read_hdf5_blosc(in_ran_fn,columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
     #tran = time.time()
     #print(str(rann)+' read original randoms;'+str(tran-t0))
     
@@ -57,18 +57,18 @@ def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA'
     tids, in_ind, orig_ind = np.intersect1d(in_table['TARGETID'], parent_ran['TARGETID'], return_indices=True)
     in_table = in_table[in_ind]
     #print(np.array_equal(tids,in_table['TARGETID']))
-    in_ran = in_ran[orig_ind]
+    parent_ran = parent_ran[orig_ind]
     for col in rancols:
         if col != 'TARGETID':
-            in_table[col] = in_ran[col]
+            in_table[col] = parent_ran[col]
     #in_table = join(in_table,in_ran,keys=['TARGETID']) #astropy join is much slower
     #t1 = time.time()
     #print(str(rann)+' joined to original randoms;'+str(t1-t0))
-    del in_ran
+    del parent_ran
     regl = ['NGC','SGC']
     datal = []
     for reg in regl:
-        datal.append(common.read_hdf5_blosc(in_clus_fileroot+'_'+reg+'_clustering.dat.h5',columns=datacols))
+        datal.append(read_hdf5_blosc(in_clus_fileroot+'_'+reg+'_clustering.dat.h5',columns=datacols))
     in_data = vstack(datal)
     #t2 = time.time()
     #print(str(rann)+' stacked data;'+str(t2-t0))
