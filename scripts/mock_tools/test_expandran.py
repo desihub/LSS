@@ -97,6 +97,7 @@ def expand_ran_ofunc(rann,tracer='LRG',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/
 if __name__ == '__main__':
     #test = expand_ran(0)
     #if par:
+    common.printlog('starting script',logger)
     from multiprocessing import Pool
     #    import sys
         #N = int(sys.argv[2])
@@ -120,3 +121,4 @@ if __name__ == '__main__':
     #else:
     #    for i in range(rm,rx):
     #       doran(i)
+    common.printlog('finished',logger)
