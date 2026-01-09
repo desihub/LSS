@@ -57,14 +57,14 @@ def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA'
     tids, in_ind, orig_ind = np.intersect1d(in_table['TARGETID'], parent_ran['TARGETID'], return_indices=True)
     in_table = in_table[in_ind]
     #print(np.array_equal(tids,in_table['TARGETID']))
-    in_ran = in_ran[orig_ind]
+    parent_ran = parent_ran[orig_ind]
     for col in rancols:
         if col != 'TARGETID':
-            in_table[col] = in_ran[col]
+            in_table[col] = parent_ran[col]
     #in_table = join(in_table,in_ran,keys=['TARGETID']) #astropy join is much slower
     #t1 = time.time()
     #print(str(rann)+' joined to original randoms;'+str(t1-t0))
-    del in_ran
+    del parent_ran
     regl = ['NGC','SGC']
     datal = []
     for reg in regl:
