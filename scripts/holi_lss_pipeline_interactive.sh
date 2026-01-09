@@ -1,7 +1,7 @@
 #!/bin/bash
 source /global/common/software/desi/desi_environment.sh main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-export LSSCODE=$HOME/LSScode
+export LSSCODE=$HOME/LSScode/LSS
 export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #module load LSS/DR2-mocks-v0
 mocknum=201
