@@ -48,8 +48,8 @@ def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA'
     '''
     
     #t0 = time.time()
-    parent_ran = common.read_hdf5_blosc(parent_ran_fn,columns=rancols)
-    in_table = common.read_hdf5_blosc(in_ran_fn,columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
+    parent_ran = read_hdf5_blosc(parent_ran_fn,columns=rancols)
+    in_table = read_hdf5_blosc(in_ran_fn,columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
     #tran = time.time()
     #print(str(rann)+' read original randoms;'+str(tran-t0))
     
@@ -68,7 +68,7 @@ def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA'
     regl = ['NGC','SGC']
     datal = []
     for reg in regl:
-        datal.append(common.read_hdf5_blosc(in_clus_fileroot+'_'+reg+'_clustering.dat.h5',columns=datacols))
+        datal.append(read_hdf5_blosc(in_clus_fileroot+'_'+reg+'_clustering.dat.h5',columns=datacols))
     in_data = vstack(datal)
     #t2 = time.time()
     #print(str(rann)+' stacked data;'+str(t2-t0))
