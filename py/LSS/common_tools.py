@@ -25,7 +25,76 @@ def radec2thphi(ra,dec):
     
 def thphi2radec(theta,phi):
     return 180./np.pi*phi,-(180./np.pi*theta-90)
+
+def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA','DEC'],datacols=['TARGETID','Z'],logger=None):
+    #function to add columns to randoms, most useful for mock randoms where the same column values are used
+    #assumes data is saved in the LSS h5 format; could edit to allow functionality for fits or other formats
+    '''
+    Parameters
+    ----------
+    in_ran_fn : string 
+        full path to input randoms to expand, in LSS h5 format, containing at least the columns 'TARGETID','TARGETID_DATA','WEIGHT','NX'
+    parent_ran_fn : string 
+        full path to randoms that are a superset of data to expand and contain at least TARGETID, RA, DEC, in LSS h5 format
+    in_clus_fileroot : string
+        directory + tracer for clustering catalogs (allowing NGC/SGC to be loaded by simply adding +'_'+reg+'_clustering.dat.h5'), in LSS h5 format
+    rancols : list 
+        a list of the column names to add to the input table from the parent random catalog via TARGETID match
+    datacols : list 
+        a list of the column names to add to the input table from the data catalog via a TARGETID_DATA to TARGETID match
+    Returns
+    ----------
+    A table in astropy format for the randoms containing the desired columns
+    '''
+    in_ran_fn should be
+    #t0 = time.time()
+    parent_ran = common.read_hdf5_blosc(parent_ran_fn,columns=rancols)
+    in_table = common.read_hdf5_blosc(in_ran_fn,columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
+    #tran = time.time()
+    #print(str(rann)+' read original randoms;'+str(tran-t0))
     
+    olen = len(in_table)
+    tids, in_ind, orig_ind = np.intersect1d(in_table['TARGETID'], parent_ran['TARGETID'], return_indices=True)
+    in_table = in_table[in_ind]
+    #print(np.array_equal(tids,in_table['TARGETID']))
+    in_ran = in_ran[orig_ind]
+    for col in rancols:
+        if col != 'TARGETID':
+            in_table[col] = in_ran[col]
+    #in_table = join(in_table,in_ran,keys=['TARGETID']) #astropy join is much slower
+    #t1 = time.time()
+    #print(str(rann)+' joined to original randoms;'+str(t1-t0))
+    del in_ran
+    regl = ['NGC','SGC']
+    datal = []
+    for reg in regl:
+        datal.append(common.read_hdf5_blosc(in_clus_fileroot+'_'+reg+'_clustering.dat.h5',columns=datacols))
+    in_data = vstack(datal)
+    #t2 = time.time()
+    #print(str(rann)+' stacked data;'+str(t2-t0))
+    del datal    
+    in_data.rename_column('TARGETID', 'TARGETID_DATA')
+    #in_table = join(in_table,in_data,keys=['TARGETID_DATA']) #astropy join is much slower
+    
+    if in_data['TARGETID_DATA'].max() < 1000000000:
+        lookup = np.arange(1 + in_data['TARGETID_DATA'].max())
+        lookup[in_data['TARGETID_DATA']] = np.arange(len(in_data))
+        indices = lookup[in_table['TARGETID_DATA']]
+    else:
+        printlog('TARGETID_DATA max is too large, using slower method',None)
+        sorted_idx = np.argsort(in_data['TARGETID_DATA'])
+        idx_in_sorted = np.searchsorted(in_data['TARGETID_DATA'], in_table['TARGETID_DATA'], sorter=sorted_idx)
+        indices = sorted_idx[idx_in_sorted]
+    for col in datacols:
+        if col != 'TARGETID':
+            in_table[col] = in_data[col][indices]
+
+    #t3 = time.time()
+    #print(str(rann)+' done;'+str(t3-t0))
+    #print(olen,len(in_table))
+    return in_table
+
+
 def mask_bad_fibers_time_dependent(dz, badfibers_td,logger=None):
     # Use the time-dependent bad fiber file to remove data
     # dz is the input data file, which must have FIBER and LASTNIGHT columns
