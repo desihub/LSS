@@ -1,8 +1,8 @@
 #!/bin/bash
 source /global/common/software/desi/desi_environment.sh main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-LSSCODE=$HOME/LSScode
-PYTHONPATH=$PYTHONPATH:$LSSCODE/py
+export LSSCODE=$HOME/LSScode
+export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #module load LSS/DR2-mocks-v0
 mocknum=201
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
