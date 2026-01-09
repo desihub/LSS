@@ -38,9 +38,16 @@ def expand_ran(rann,tracer='LRG',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/mocks/
     del datal    
     in_data.rename_column('TARGETID', 'TARGETID_DATA')
     #in_table = join(in_table,in_data,keys=['TARGETID_DATA'])
-    sorted_idx = np.argsort(in_data['TARGETID_DATA'])
-    idx_in_sorted = np.searchsorted(in_data['TARGETID_DATA'], in_table['TARGETID_DATA'], sorter=sorted_idx)
-    indices = sorted_idx[idx_in_sorted]
+    
+    if in_data['TARGETID_DATA'].max() < 1000000000:
+        lookup = np.arange(1 + in_data['TARGETID_DATA'].max())
+        lookup[in_data['TARGETID_DATA']] = np.arange(len(in_data))
+        indices = lookup[in_table['TARGETID_DATA']]
+    else:
+        print('TARGETID_DATA max is too large, using slower method')
+        sorted_idx = np.argsort(in_data['TARGETID_DATA'])
+        idx_in_sorted = np.searchsorted(in_data['TARGETID_DATA'], in_table['TARGETID_DATA'], sorter=sorted_idx)
+        indices = sorted_idx[idx_in_sorted]
     for col in datacols:
         if col != 'TARGETID':
             in_table[col] = in_data[col][indices]
