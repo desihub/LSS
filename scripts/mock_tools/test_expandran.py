@@ -9,7 +9,44 @@ import LSS.common_tools as common
 import h5py
 import hdf5plugin
 
-def expand_ran(rann,tracer='LRG',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/',orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/',prog='dark',rancols=['TARGETID','RA','DEC'],datacols=['TARGETID','Z']):
+import logging
+
+# create logger
+logname = 'LSSran'
+logger = logging.getLogger(logname)
+logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+
+#global variables
+#could make them arguments for the script if it was ever desired
+tracer = 'ELG_LOPnotqso'
+reg = 'NGC'
+indir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/'
+orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'
+prog='dark'
+rancols=['TARGETID','RA','DEC']
+datacols=['TARGETID','Z']
+
+def _expand_ran_ind(rann):
+        in_ran_fn = in_dir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5'
+        parent_ran_fn = orig_ran_dir+prog+'_'+str(rann)+'_full_noveto.ran.h5'
+        in_clus_fileroot = in_dir+tracer
+        common.expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=rancols,datacols=datacols,logger=logger)
+
+#what was used originally, keeping here for any debugging needs
+def expand_ran_ofunc(rann,tracer='LRG',reg='SGC',in_dir='/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/',orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/',prog='dark',rancols=['TARGETID','RA','DEC'],datacols=['TARGETID','Z']):
     t0 = time.time()
     in_ran = common.read_hdf5_blosc(orig_ran_dir+prog+'_'+str(rann)+'_full_noveto.ran.h5',columns=rancols)
     in_table = common.read_hdf5_blosc(in_dir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5',columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
@@ -77,7 +114,7 @@ if __name__ == '__main__':
             #def reduce(ii, r):
             #    logger.info('chunk done '+str(ii))
             #    return r
-           pool.map(expand_ran,inds)#,reduce=reduce)
+           pool.map(_expand_ran_ind,inds)#,reduce=reduce)
 
         #p.map(doran,inds)
     #else:
