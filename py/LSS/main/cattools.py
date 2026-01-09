@@ -3935,7 +3935,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         wzm += 'ntileg'+str(ntilecut)+'_'
     outf = (fl+wzm+'clustering.dat.fits').replace(tp,extradir+tp)
     
-    in_fn = fl+'_full'+use_map_veto+'.dat
+    in_fn = fl+'_full'+use_map_veto+'.dat'
     if os.path.isfile(in_fn+'.h5'):
         common.printlog('reading '+in_fn+'.h5',logger)
         ff = common.read_hdf5_blosc(in_fn.replace('global', 'dvs_ro')+'.h5')
