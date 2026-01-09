@@ -3144,7 +3144,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     if mockz and mask_coll:
         collf = mask_coll
 
-    dz = Table(fitsio.read(zf))
+    if '.fits' in zf:
+        dz = Table(fitsio.read(zf))
+    if '.h5' in zf:
+        dz = common.read_hdf5_blosc(zf)
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         if logger is not None:
@@ -3186,9 +3189,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
     if mockz:
         common.printlog('getting mock assignment info',logger)
-        assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup.fits').format(PROG=prog)
-        fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
-        fs = Table(fs)
+        assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup').format(PROG=prog)
+        if os.path.isfile(assignf+'.h5'):
+            common.printlog('reading '+assignf+'.h5',logger)
+            fs = common.read_hdf5_blosc(assignf+'.h5')
+        elif os.path.isfile(assignf+'.fits'):
+            common.printlog('reading '+assignf+'.fits',logger)
+            fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
+            fs = Table(fs)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
@@ -3567,7 +3575,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         dz['PHOTSYS'][sel] = 'S'
                
     
-    common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if '.fits' in outf:
+        common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if '.h5' in outf:
+        common.write_LSShdf5_scratchcp(dz,outf,logger=logger)
     if return_array == 'y':
         return dz
 
@@ -3923,7 +3934,16 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
     outf = (fl+wzm+'clustering.dat.fits').replace(tp,extradir+tp)
-    ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
+    
+    in_fn = fl+'_full'+use_map_veto+'.dat
+    if os.path.isfile(in_fn+'.h5'):
+        common.printlog('reading '+in_fn+'.h5',logger)
+        ff = common.read_hdf5_blosc(in_fn.replace('global', 'dvs_ro')+'.h5')
+    elif os.path.isfile(in_fn+'.fits'):
+        common.printlog('reading '+in_fn+'.fits',logger)
+        ff = Table.read(in_fn.replace('global', 'dvs_ro')+'.fits')
+
+    #ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
     cols = list(ff.dtype.names)

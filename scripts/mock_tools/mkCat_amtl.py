@@ -358,9 +358,10 @@ if args.combd == 'y':
     asn = join(asn, tar_in, keys=['TARGETID'],join_type='left')
     common.printlog('joined to assignments',logger)
     #print(len(dat_comb))
-    outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
-    common.write_LSS_scratchcp(asn,outf,logger=logger)
-
+    #outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
+    #ommon.write_LSS_scratchcp(asn,outf,logger=logger)
+    outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    common.write_LSShdf5_scratchcp(sn,outf,logger=logger)
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
@@ -462,11 +463,13 @@ if args.joindspec == 'y':
         tj = setdiff(tj,coll,keys=['TARGETID','LOCATION','TILEID'])
         common.printlog('length after masking collisions '+str(len(tj)),logger)
 
-    outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
+    #outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
+    outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.h5')
     if args.outmd == 'scratch':
         outfs = outfs.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
-    common.write_LSS_scratchcp(tj,outfs,logger=logger)
+    #common.write_LSS_scratchcp(tj,outfs,logger=logger)
+    common.write_LSShdf5_scratchcp(tj,outfs,logger=logger)
     #tj.write(outfs, format = 'fits', overwrite = True)
     #common.print('wrote ' + outfs)
     #don't do this anymore, it gets done within mkfulld
@@ -492,7 +495,8 @@ if args.fulld == 'y':
     mainp = main(args.tracer, args.specdata, survey=args.survey)
 
     ftar = None
-    dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
+    #dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
+    dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.h5')
     if args.outmd == 'scratch':
         dz = dz.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
         #dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
@@ -500,7 +504,7 @@ if args.fulld == 'y':
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
-    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(maindir, 'fba%d' % mocknum))
+    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.h5'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(maindir, 'fba%d' % mocknum))
     common.printlog('*** END WITH FULLD ***',logger=logger)
     
     gc.collect()
@@ -678,8 +682,11 @@ if args.apply_veto == 'y':
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_hp + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
     mapcuts = mainp.mapcuts
 
-    fin = os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.fits')
-    colnames = list(fitsio.read(fin,rows=1).dtype.names)
+    fin = os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.h5')
+    if dataf is None:
+        dataf = common.read_hdf5_blosc(fin)
+    #colnames = list(fitsio.read(fin,rows=1).dtype.names)
+    colnames = list(dataf.dtype.names)
     maskcols = ['NOBS_G', 'NOBS_R', 'NOBS_Z', 'MASKBITS']
     addlrg = 0
     if args.tracer == 'LRG':
@@ -721,10 +728,11 @@ if args.apply_veto == 'y':
         del dataf
     else:
         in_use = fin
-    fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits')
+    fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
     dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto,logger=logger) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
-    common.write_LSS_scratchcp(dataf,fout,logger=logger)
+    #common.write_LSS_scratchcp(dataf,fout,logger=logger)
+    common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
     print('data veto done, now doing randoms')
 
     gc.collect()
@@ -1498,7 +1506,11 @@ if args.addsysnet == 'y':
         for rn in inds:  # range(rm,rx):
             _add2ran(rn)
 
-
+def _reduce_columns(fname,cols2keep=['TARGETID','TARGETID_DATA','NX','WEIGHT']):
+    data = common.read_hdf5_blosc(fname)
+    data.keep_columns(cols2keep)
+    common.write_LSShdf5_scratchcp(data,fname)
+    
 if args.transfer_cfs:
     cpdir = os.path.join(lssdir, 'LSScats')#.format(MOCKNUM=mocknum)
     print('cpdir is '+cpdir)
@@ -1506,6 +1518,11 @@ if args.transfer_cfs:
     print('sdir is '+sdir)
     test_dir(cpdir)
     gcfls = glob.glob(sdir+'/*GC*')
+    from multiprocessing import Pool
+
+    with Pool(processes=20) as pool:
+        pool.map(_reduce_columns, gcfls)
+
     for fl in gcfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
         #outftmp = +'.tmp'
