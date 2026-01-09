@@ -46,7 +46,7 @@ def expand_ran(in_ran_fn,parent_ran_fn,in_clus_fileroot,rancols=['TARGETID','RA'
     ----------
     A table in astropy format for the randoms containing the desired columns
     '''
-    in_ran_fn should be
+    
     #t0 = time.time()
     parent_ran = common.read_hdf5_blosc(parent_ran_fn,columns=rancols)
     in_table = common.read_hdf5_blosc(in_ran_fn,columns=['TARGETID','TARGETID_DATA','WEIGHT','NX'])
