@@ -361,7 +361,7 @@ if args.combd == 'y':
     #outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
     #ommon.write_LSS_scratchcp(asn,outf,logger=logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
-    common.write_LSShdf5_scratchcp(sn,outf,logger=logger)
+    common.write_LSShdf5_scratchcp(asn,outf,logger=logger)
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
