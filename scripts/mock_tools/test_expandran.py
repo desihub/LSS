@@ -33,7 +33,7 @@ logger.addHandler(ch)
 #could make them arguments for the script if it was ever desired
 tracer = 'ELG_LOPnotqso'
 reg = 'NGC'
-indir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/'
+in_dir = '/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1/altmtl201/loa-v1/mock201/LSScats/'
 orig_ran_dir='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'
 prog='dark'
 rancols=['TARGETID','RA','DEC']
