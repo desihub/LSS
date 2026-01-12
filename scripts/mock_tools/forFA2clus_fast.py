@@ -256,7 +256,7 @@ for tracer in tracers:
 
     elif tracer == 'QSO':
         zmin = 0.8
-        zmax = 2.1
+        zmax = 3.5
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
