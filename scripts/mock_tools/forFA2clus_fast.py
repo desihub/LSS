@@ -204,10 +204,11 @@ cols = [
 'TARGETID',
 'RA',
 'DEC','RSDZ',
-'DESI_TARGET','BRICKID','NOBS_G',
-'NOBS_R',
-'NOBS_Z',
-'MASKBITS']
+'DESI_TARGET']#,
+#'BRICKID','NOBS_G',
+#'NOBS_R',
+#'NOBS_Z',
+#'MASKBITS']
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
 mock_data = Table(fitsio.read(in_data_fn,columns=cols))
@@ -280,7 +281,7 @@ for tracer in tracers:
         place to add imaging systematic weights and redshift failure weights would be here
         '''
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-        common.write_LSS(mock_data_tr,out_data_fn)
+        common.write_LSS_scratchcp(mock_data_tr,out_data_fn)
 
         #splitGC(out_data_froot,'.dat')
 
