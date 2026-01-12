@@ -262,6 +262,8 @@ for tracer in tracers:
         zmax = 0.4
 
     if args.mkdat == 'y':
+        sel_contam = mock_data_tr['TARGETID'] > 419430400000000
+        mock_data_tr = mock_data_tr[~sel_contam]
     
         if tracer == 'BGS_BRIGHT-21.5':
             selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
