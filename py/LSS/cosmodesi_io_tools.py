@@ -307,6 +307,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
         #assumes no imaging systematic weights were in default
         weights *=  catalog['WEIGHT_IMLIN'][mask]
 
+    if 'data_compup' in weight_type and name == 'data':
+        weights = catalog['WEIGHT_COMP'][mask]/catalog['FRAC_TLOBS_TILES'][mask]
     if 'completeness_only' in weight_type:
         weights = catalog['WEIGHT_COMP'][mask]
         print('weights set to WEIGHT_COMP')
