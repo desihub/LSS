@@ -19,7 +19,7 @@ for i in range(imin,imax):
         if not os.path.isfile(fd):
             ml.append(fd)
             h3 = 0
-        fr = lssdir + tr+'_0_NGC_clustering.ran.h5'
+        fr = lssdir + tr+'_NGC_0_clustering.ran.h5'
         if not os.path.isfile(fr):
             ml.append(fr)
             h3 = 0
@@ -31,7 +31,7 @@ for i in range(imin,imax):
         if not os.path.isfile(fd):
             ml.append(fd)
             he = 0
-        fr = lssdir + tr+'_0_NGC_clustering.ran.h5'
+        fr = lssdir + tr+'_NGC_0_clustering.ran.h5'
         if not os.path.isfile(fr):
             ml.append(fr)
             he = 0
