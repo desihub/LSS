@@ -15,11 +15,11 @@ for i in range(imin,imax):
     he = 1
     ml = []
     for tr in tracers:        
-        fd = lssdir + tr+'_NGC_clustering.dat.fits'
+        fd = lssdir + tr+'_NGC_clustering.dat.h5'
         if not os.path.isfile(fd):
             ml.append(fd)
             h3 = 0
-        fr = lssdir + tr+'_0_NGC_clustering.ran.fits'
+        fr = lssdir + tr+'_0_NGC_clustering.ran.h5'
         if not os.path.isfile(fr):
             ml.append(fr)
             h3 = 0
@@ -27,11 +27,11 @@ for i in range(imin,imax):
         out3.write(str(i)+'\n')
         me = []
         tr = 'ELGnotqso'
-        fd = lssdir + tr+'_NGC_clustering.dat.fits'
+        fd = lssdir + tr+'_NGC_clustering.dat.h5'
         if not os.path.isfile(fd):
             ml.append(fd)
             he = 0
-        fr = lssdir + tr+'_0_NGC_clustering.ran.fits'
+        fr = lssdir + tr+'_0_NGC_clustering.ran.h5'
         if not os.path.isfile(fr):
             ml.append(fr)
             he = 0
