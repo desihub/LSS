@@ -43,7 +43,7 @@ for i in range(imin,imax):
         missing3.write(str(i)+' ')
         for j in range(0,len(ml)):
             missing3.write(ml[j]+' ')
-            missing3.write('\n')
+        missing3.write('\n')
   
 missing3.close()
 out3.close()
