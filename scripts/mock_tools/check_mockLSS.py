@@ -36,12 +36,16 @@ for i in range(imin,imax):
             ml.append(fr)
             he = 0
         if he == 1:
-            oute.write(str(i)+'\n')
+            out4.write(str(i)+'\n')
         else:
-            missinge.write(str(i)
+            missinge.write(str(i)+'\n')
     else:
         missing3.write(str(i)+' ')
         for j in range(0,len(ml)):
             missing3.write(ml[i]+' ')
             missing3.write('\n')
-    
+  
+missing3.close()
+out3.close()
+missinge.close()
+out4.close()
