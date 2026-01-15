@@ -10,7 +10,7 @@ imin = 1
 imax = 1001
 tracers = ['QSO','LRG','ELG_LOPnotqso']
 for i in range(imin,imax):
-    lssdir = indir+'altmtl'+str(i)+'/loa-v1/mock'+str(i)+'/LSScats/'
+    lssdir = indir+'/altmtl'+str(i)+'/loa-v1/mock'+str(i)+'/LSScats/'
     h3 = 1
     he = 1
     ml = []
