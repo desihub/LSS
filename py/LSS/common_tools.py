@@ -1486,7 +1486,11 @@ def apply_veto(fin,fout=None,ebits=None,zmask=False,maxp=3400,comp_only=False,re
         #print(tot,atot,tltot)
         comp_dicta = dict(zip(tll, compa))
         fract_dicta = dict(zip(tll, fractl))
-        tlobs_fn = fout.replace('full'+mapveto+'.dat.fits','frac_tlobs.fits')
+        if '.fits' in fout:
+            tlobs_fn = fout.replace('full'+mapveto+'.dat.fits','frac_tlobs.fits')
+        if '.h5' in fout:
+            tlobs_fn = fout.replace('full'+mapveto+'.dat.h5','frac_tlobs.fits')   
+        printlog('tlobs file will get written to '+tlobs_fn) 
         tlobs = Table()
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
