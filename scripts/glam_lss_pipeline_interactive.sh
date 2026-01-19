@@ -7,7 +7,7 @@ export LSSCODE=$HOME/LSScode/LSS
 export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #
 mocknum=10
-scriptdir=$LSS/scripts
+scriptdir=$LSSCODE/scripts
 #/global/homes/d/desica/LSScode/LSS/scripts
 sim=GLAM-Uchuu_v1
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
