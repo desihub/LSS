@@ -6,7 +6,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME/LSScode/LSS
 export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #
-mocknum=10
+mocknum=100
 scriptdir=$LSSCODE/scripts
 #/global/homes/d/desica/LSScode/LSS/scripts
 sim=GLAM-Uchuu_v1
