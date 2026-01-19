@@ -11,8 +11,8 @@ module load LSS/main
 #DR2-mocks-v1
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 mocknum=$SLURM_ARRAY_TASK_ID
-scriptdir=$LSSCODE/scripts
-#/global/homes/d/desica/LSScode/LSS/scripts
+#scriptdir=$LSSCODE/scripts
+scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 sim=holi_test
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
