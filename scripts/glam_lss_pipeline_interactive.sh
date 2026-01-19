@@ -8,7 +8,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #
 mocknum=101
-scriptdir = $HOME/LSScode/LSS/scripts
+scriptdir=$HOME/LSScode/LSS/scripts
 #scriptdir=$LSSCODE/scripts
 #/global/homes/d/desica/LSScode/LSS/scripts
 sim=GLAM-Uchuu_v1
