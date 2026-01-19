@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
 #DR2-mocks-v1

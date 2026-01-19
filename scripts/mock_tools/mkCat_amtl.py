@@ -554,7 +554,7 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'DA2':
         subfrac = [0.7,0.545]
     if 'GLAM' in args.simName:
-        subfrac = [0.99,0.78]
+        subfrac = [0.96,0.76]
         #if int(args.mocknum) < 10 or int(args.mocknum) > 12:
         #    subfrac = [0.96*.97,0.84*.97] #rest of glam has 3% higher ELG for some reason
     if 'holi' in args.simName:
