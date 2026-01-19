@@ -529,6 +529,7 @@ if tracer == 'QSO':
         subfrac = 1
     if 'GLAM' in args.simName:
         subfrac = [0.97,1]
+        zsplit = 2.1
         
 
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
