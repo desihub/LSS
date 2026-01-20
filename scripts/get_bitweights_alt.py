@@ -82,7 +82,8 @@ def removeLeadingZeros(num):
 
 
 def _get_fa(fl):
-    asgn = Table(fitsio.read(fl,columns=['TARGETID', 'LOCATION']))
+    asgn = Table(fitsio.read(fl))#,columns=['TARGETID', 'LOCATION']))
+    asgn.keep_columns(['TARGETID', 'LOCATION'])
     sp = fl.split('-')
     tid = int(removeLeadingZeros(sp[-1].strip('.fits')))
     #print(tid)
@@ -187,7 +188,9 @@ for ind in inds:
     with ProcessPoolExecutor() as executor:
         for fa in executor.map(_get_fa, list(fls)):
             tl.append(fa)
+    logger.info('got assignments '+str(ind))
     all_asgn = np.concatenate(tl)
+    logger.info('concatenated assignments '+str(ind))
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
     good_asgn = np.isin(asgn_tloc,gtl)
     good_tids = all_asgn['TARGETID'][good_asgn]
