@@ -173,7 +173,7 @@ logger.info('about to get '+str(len(inds))+' realizations in sequence')
 from concurrent.futures import ProcessPoolExecutor
 assign_real_dic = {}
 for ind in inds:
-    logger.info('getting realization '+str(real_num))
+    logger.info('getting realization '+str(ind))
     tl = [] 
     if args.mode == 'running':
         indir = args.amtl_dir+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
