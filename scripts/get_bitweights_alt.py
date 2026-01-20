@@ -194,7 +194,7 @@ for ind in inds:
     asgn_real = np.isin(alltids,good_tids)
     #assign_real_dic[int(real_num)] = asgn_real
     assign_real_dic[int(ind)] = asgn_real
-    logger.info('got realization '+str(real_num))
+    logger.info('got realization '+str(ind))
 
 
 logger.info('got all realizations')
