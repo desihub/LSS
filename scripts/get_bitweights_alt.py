@@ -82,13 +82,13 @@ def removeLeadingZeros(num):
 
 
 def _get_fa(fl):
-	asgn = Table(fitsio.read(fl,columns=['TARGETID', 'LOCATION']))
-	sp = fl.split('-')
-	tid = int(removeLeadingZeros(sp[-1].strip('.fits')))
-	#print(tid)
-	asgn['TILEID'] = tid
-	sel = asgn['TARGETID'] > 0
-	return asgn[sel]
+    asgn = Table(fitsio.read(fl,columns=['TARGETID', 'LOCATION']))
+    sp = fl.split('-')
+    tid = int(removeLeadingZeros(sp[-1].strip('.fits')))
+    #print(tid)
+    asgn['TILEID'] = tid
+    sel = asgn['TARGETID'] > 0
+    return asgn[sel]
 
 
 #get the list of good tilelocid
@@ -184,9 +184,9 @@ for ind in inds:
     if len(fls) == 0:
         logger.info('no files found in '+indir)
 
-	with ProcessPoolExecutor() as executor:
-		for fa in executor.map(_get_fa, list(fls)):
-			tl.append(fa)
+    with ProcessPoolExecutor() as executor:
+        for fa in executor.map(_get_fa, list(fls)):
+            tl.append(fa)
     all_asgn = np.concatenate(tl)
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
     good_asgn = np.isin(asgn_tloc,gtl)
