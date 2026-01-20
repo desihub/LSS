@@ -88,8 +88,8 @@ def _get_fa(fl):
     tid = int(removeLeadingZeros(sp[-1].strip('.fits')))
     #print(tid)
     asgn['TILEID'] = tid
-    sel = asgn['TARGETID'] > 0
-    return asgn[sel]
+    #sel = asgn['TARGETID'] > 0
+    return asgn#[sel]
 
 
 #get the list of good tilelocid
@@ -190,6 +190,8 @@ for ind in inds:
             tl.append(fa)
     logger.info('got assignments '+str(ind))
     all_asgn = np.concatenate(tl)
+    sel = all_asgn['TARGETID'] > 0
+    all_asgn = all_asgn[sel]
     logger.info('concatenated assignments '+str(ind))
     asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
     good_asgn = np.isin(asgn_tloc,gtl)
