@@ -85,7 +85,7 @@ def get_all_asgn(indir):
         logger.info('no files found in '+indir)
     assign_list = []
     for fl in fls:
-        asgn = Table(fitsio.read(fl,columns=['FIBER', 'TARGETID', 'LOCATION']))
+        asgn = Table(fitsio.read(fl,columns=['TARGETID', 'LOCATION']))
         sp = fl.split('-')
         tid = int(removeLeadingZeros(sp[-1].strip('.fits')))
         #print(tid)
@@ -158,6 +158,7 @@ def get_good_real(dic,real_num):
     assign_real_dic[int(real_num)] = asgn_real
     logger.info('got realization '+str(real_num))
     del asgn_real
+    del all_asgn
 
 from multiprocessing import Pool
 Nreal = args.nreal
