@@ -1512,17 +1512,18 @@ if args.addsysnet == 'y':
             _add2ran(rn)
 
 def _reduce_columns(fname,cols2keep=['TARGETID','TARGETID_DATA','NX','WEIGHT']):
+    common.printlog('reducing columns for '+fname,logger)
     data = common.read_hdf5_blosc(fname)
     data.keep_columns(cols2keep)
-    common.write_LSShdf5_scratchcp(data,fname)
+    common.write_LSShdf5_scratchcp(data,fname,logger=logger)
     
 if args.transfer_cfs:
     cpdir = os.path.join(lssdir, 'LSScats')#.format(MOCKNUM=mocknum)
-    print('cpdir is '+cpdir)
+    common.printlog('cpdir is '+cpdir,logger)
     sdir = cpdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH'))
-    print('sdir is '+sdir)
+    common.printlog('sdir is '+sdir,logger)
     test_dir(cpdir)
-    gcfls = glob.glob(sdir+'/*GC*')
+    gcfls = glob.glob(sdir+'/*GC*.h5')
     from multiprocessing import Pool
 
     with Pool(processes=20) as pool:
