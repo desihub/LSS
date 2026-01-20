@@ -1523,11 +1523,12 @@ if args.transfer_cfs:
     sdir = cpdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH'))
     common.printlog('sdir is '+sdir,logger)
     test_dir(cpdir)
-    gcfls = glob.glob(sdir+'/*GC*.h5')
+    gcfls = glob.glob(sdir+'/*GC*')
+    gcranfls = glob.glob(sdir+'/*GC*ran.h5')
     from multiprocessing import Pool
 
     with Pool(processes=20) as pool:
-        pool.map(_reduce_columns, gcfls)
+        pool.map(_reduce_columns, gcranfls)
 
     for fl in gcfls:
         flout = fl.replace(os.getenv('SCRATCH'),args.base_altmtl_dir)
