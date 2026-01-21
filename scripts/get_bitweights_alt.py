@@ -172,6 +172,7 @@ logger.info('about to get '+str(len(inds))+' realizations in sequence')
    
 
 from concurrent.futures import ProcessPoolExecutor
+executor = ProcessPoolExecutor() 
 assign_real_dic = {}
 for ind in inds:
     logger.info('getting realization '+str(ind))
@@ -185,9 +186,9 @@ for ind in inds:
     if len(fls) == 0:
         logger.info('no files found in '+indir)
 
-    with ProcessPoolExecutor() as executor:
-        for fa in executor.map(_get_fa, list(fls)):
-            tl.append(fa)
+    #with ProcessPoolExecutor() as executor:
+    for fa in executor.map(_get_fa, list(fls)):
+        tl.append(fa)
     logger.info('got assignments '+str(ind))
     all_asgn = np.concatenate(tl)
     sel = all_asgn['TARGETID'] > 0
