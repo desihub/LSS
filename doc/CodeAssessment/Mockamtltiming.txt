@@ -2,14 +2,20 @@
 
 ### Total processing time
 
-combination: 17 minutes
-full data LRG: 8.5 minutes
-full data QSO: 6 minutes
-full data ELG: 23 minutes; took 18.9 in 10/24/25 test, code should have been the same
+combination: 17 minutes; reduced to 11 minutes on 12/01/25 test (read goodhare from .txt file); 9 minutes on 01/09/26 saving as h5
+full data LRG: 8.5 minutes; reduced to 7.7 minutes on 12/01/25 test; 6.8 minutes on 01/09/26
+full data QSO: 6 minutes; 5.4 minutes on 12/01/25 test; 4.3 minutes on 01/09/26
+full data ELG_LOP: 23 minutes; 17.9 minutes 01/09/26 
+full data ELG: 22 minutes on 01/09/26
 clustering catalogs LRG: 11 minutes; h5 3.7
 clustering catalogs ELG: 12 minutes; h5 5.5
 clustering catalogs QSO: 15 minutes;  h5 4.8
 Total: 92.5 minutes; 1.54 node hours
+
+Adding in linear regresions:
+11 minutes for QSO
+11 minutes for LRG
+3.8 for ELG_LOP sysnet prep
 
 Total in astropy join/unique: 4.5+1.5+3.5+2+2
 
