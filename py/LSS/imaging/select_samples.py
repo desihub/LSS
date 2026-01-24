@@ -93,7 +93,7 @@ def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
 	        bs = targetmask.bgs_mask[type]
 	        tp = 'BGS_TARGET'
 	    else:
-			print(type,targroot)
+		    print(type,targroot)
 	        bs = targetmask.desi_mask[type]
 	        tp = 'DESI_TARGET'  
 	    ws = '' 
