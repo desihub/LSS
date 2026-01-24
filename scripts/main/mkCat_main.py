@@ -494,7 +494,7 @@ if args.apply_map_veto == 'y':
     import healpy as hp
     tracer_clushp = tracer_clus
     #BGS_ANY and BGS_BRIGHT should essentially have same footprint
-    if tracer_clus == 'BGS_ANY':
+    if tracer_clus[:3] == 'BGS':
         tracer_clushp = 'BGS_BRIGHT'
     if 'ELG' in tracer_clus:
         tracer_clushp = 'ELG_LOPnotqso'
