@@ -268,7 +268,7 @@ if mkfullr and args.fullr_mode != 'prog':
     logger.info('finished finding znotposs')
     del specft
 
-    if type == 'BGS_BRIGHT':
+    if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
     else:
