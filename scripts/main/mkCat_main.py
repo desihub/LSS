@@ -382,7 +382,7 @@ if mkfulld:
     ftar = fitsio.read(tarf)   
 
     from desitarget import targetmask
-    if type == 'BGS_BRIGHT':
+    if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
     else:
