@@ -135,7 +135,7 @@ parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_al
 parser.add_argument("--addNtileweight2full",help="whether to add the NTILE weight to the full catalogs (necessary for consistent angular upweighting)",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
-parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
+#parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n') done automatically within mkclusran
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -1410,21 +1410,6 @@ if args.splitGC == 'y':
              _spran(rn)
 
 
-if args.resamp == 'y':
-            
-    for reg in regions:
-        flin = dirout + tracer_clus + '_'+reg    
-        def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-        
-        
-        if args.par == 'y':
-            from multiprocessing import Pool
-            with Pool() as pool:
-                res = pool.map(_parfun, inds)
-        else:
-            for rn in range(rm,rx):
-                _parfun(rn)
     
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
@@ -1658,6 +1643,23 @@ if args.imsys_clus_fb_ran == 'y':
     else:
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
+
+
+# if args.resamp == 'y':
+#             
+#     for reg in regions:
+#         flin = dirout + tracer_clus + '_'+reg    
+#         def _parfun(rannum):
+#             ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+#         
+#         
+#         if args.par == 'y':
+#             from multiprocessing import Pool
+#             with Pool() as pool:
+#                 res = pool.map(_parfun, inds)
+#         else:
+#             for rn in range(rm,rx):
+#                 _parfun(rn)
 
 
 #if args.nz == 'y':
