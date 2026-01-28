@@ -388,7 +388,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                     log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
                     log.info(f'targver  = {targver}')
                     log.info(f'reproducing = {reproducing}') 
-                
+            
                 if not os.path.exists(outdir):
                     log.info('running makedirs. making {0}'.format(outdir))
                     os.makedirs(outdir)
