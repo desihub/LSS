@@ -44,8 +44,8 @@ t_start = time.time()
 log = Logger.get()
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
-parser.add_argument("--survey", help="e.g.,Y1 or DA2", default='DA2')
+parser.add_argument("--prog", choices=['DARK','BRIGHT','custom'],default='DARK')
+parser.add_argument("--survey", help="e.g.,Y1 or DA2; if prog is custom, full path to tiles file", default='DA2')
 parser.add_argument("--getcoll",default='y')
 parser.add_argument("--input",help='full path to input file, assumed to be fits')
 parser.add_argument("--output",help='full path to output file, will be saved as fits')
@@ -81,7 +81,10 @@ if not os.path.exists(tileoutdir):
     os.makedirs(tileoutdir)
     #print('made '+tileoutdir)
 
-tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', args.survey, 'LSS', 'tiles-'+args.prog+'.fits'))
+if args.prog == 'custom':
+    tiletab = Table.read(args.survey)
+else:  
+    tiletab = Table.read(os.path.join(desi_input_dir, 'survey', 'catalogs', args.survey, 'LSS', 'tiles-'+args.prog+'.fits'))
 log.info('Reading startup globals: %.3f' % (time.time() - t_start))
 
 def get_tile_targ(tile):
