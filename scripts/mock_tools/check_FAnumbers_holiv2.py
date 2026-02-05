@@ -11,7 +11,7 @@ for realn in range(mini,maxi):
     fname = mockdir+'forFA'+str(realn)+'.fits'
     if os.path.isfile(fname):
         f = fitsio.read(fname,columns=['DESI_TARGET'])
-        print(len(f),f.dtype.names)
+        #print(len(f),f.dtype.names)
         sel_LRG = f['DESI_TARGET'] & 1 > 0
         sel_ELG = f['DESI_TARGET'] & 2 > 0
         sel_QSO = f['DESI_TARGET'] & 4 > 0
