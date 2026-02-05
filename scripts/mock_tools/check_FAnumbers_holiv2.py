@@ -4,7 +4,7 @@ import numpy as np
 mockdir = '/pscratch/sd/d/desica/DA2/mocks/holi_v2/'
 outfn = mockdir+'tracer_num.txt'
 fo = open(outfn,'w')
-fo.write('#realization num_LRG num_ELG num_QSO'\n')
+fo.write('#realization num_LRG num_ELG num_QSO\n')
 mini = 0
 maxi = 1001
 for realn in range(mini,maxi):
