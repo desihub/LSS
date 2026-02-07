@@ -108,7 +108,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
         #fitsio.write(outf,specd,clobber=True)
-        common.write_LSS_scratchcp(outf,specd,logger=logger)
+        common.write_LSS_scratchcp(specd,outf,logger=logger)
         return True
     else:
         return False
