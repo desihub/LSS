@@ -130,7 +130,7 @@ args = parser.parse_args()
 
 
 if args.tracer == 'all':
-    tps = ['ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT','LRG','QSO']
+    tps = ['LGE','ELGnotqso','ELG_LOPnotqso','ELGandQSO','BGS_ANY','BGS_BRIGHT','LRG','QSO']
 else:
     tps = [args.tracer]
 for tp in tps:
