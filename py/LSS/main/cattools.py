@@ -875,7 +875,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         #    qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
 
     qso_cat = vstack(qsocats,metadata_conflicts='silent')
-    qso_cat['TILEID'] = tile
+    qso_cat['TILEID'] = int(tile)
     #print(qso_cat.dtype.names)
     if cols is not None:
         qso_cat = Table(qso_cat)
