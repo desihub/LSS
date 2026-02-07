@@ -53,7 +53,7 @@ def dndz_monthall(yearmonths,tp,zcol='Z_not4clus'):
     zmin = 0
     zmax = 2
 
-    if tp == 'LRG':
+    if tp == 'LRG' or tp == 'LGE':
         #drz = (10**(3 - 3.5*dt[zcol]))
         #mask_bad = (drz>30) & (dt['DELTACHI2']<30)
         #mask_bad |= (drz<30) & (dt['DELTACHI2']<drz)
