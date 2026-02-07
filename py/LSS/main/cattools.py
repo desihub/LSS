@@ -19,6 +19,7 @@ import healpy as hp
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
 
+
 #from LSS.common_tools import find_znotposs
 
 
@@ -32,6 +33,7 @@ logger.setLevel(level=logging.INFO)
 
 
 def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
+    import LSS.common_tools as common
     s = 0
     n = 0
     nfail = 0
@@ -61,6 +63,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         tmask = ~np.isin(tiles['TILEID'],tdone)
     print('will add QSO info for '+str(len(tiles[tmask]))+' tiles')
     #kl = list(specd.dtype.names)
+    qso_tls = []
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = combQSOdata(tile,zdate,tdate,cols=kl)
@@ -83,20 +86,28 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
                     new[colname][...] = tspec[colname][...]
 
                 #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                #specd = np.hstack((specd,new))
+                qso_tls.append(new)
+                print(tile,n,len(tiles[tmask]),len(new))
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            
+            
 
             n += 1
-            print(tile,n,len(tiles[tmask]),len(specd))
+            
         else:
             print(str(tile)+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
+    if len(qso_tls > 0):
+        qso_tls = np.hstack(qso_tls)
+        specd = np.hstack([specd,qso_tls])
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
-        fitsio.write(outf,specd,clobber=True)
+        #fitsio.write(outf,specd,clobber=True)
+        common.write_LSS_scratchcp(outf,specd,logger=logger)
         return True
     else:
         return False
