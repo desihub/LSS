@@ -52,6 +52,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
 
         s = 1
         tdone = np.unique(specd['TILEID'])
+        common.printlog(str(np.max(tdone)),logger)
         tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         infl = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog_'+release+'.fits'
@@ -99,7 +100,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
             print(str(tile)+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
-    if len(qso_tls > 0):
+    if len(qso_tls) > 0:
         qso_tls = np.hstack(qso_tls)
         specd = np.hstack([specd,qso_tls])
     kp = (specd['TARGETID'] > 0)

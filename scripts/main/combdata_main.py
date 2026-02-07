@@ -388,7 +388,7 @@ if specrel == 'daily' and args.survey == 'DA2':
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
     print('making/adding to QSO catalog '+outf)
-    print(tiles4comb['TILEID'][0])
+    print(tiles4comb.dtype)
     if specrel == 'daily':# and args.survey == 'main':
         ct.combtile_qso(tiles4comb,outf,restart=redoqso)
     else:
