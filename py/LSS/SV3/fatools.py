@@ -353,7 +353,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         gaiadr = 'dr2'
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
-
+    
     if mtldir is not None:
         if 'sv3' in indir.lower():
             if verbose:
@@ -383,7 +383,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 mock = mock)
             #tdirMain+prog,
             #LGN 06/11/25: Adding compatibility with reproducing tests for DARK1B
-            elif targver == '1.0.0' or targver == '3.0.0':
+            #LGN 01/28/26: Adding compatibility with BRIGHT1B
+            elif targver == '1.0.0' or targver == '3.0.0' or targver == '3.2.0':
                 if verbose:
                     log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
                     log.info(f'targver  = {targver}')

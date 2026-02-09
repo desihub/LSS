@@ -498,8 +498,11 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
         print('New end date is the same as the current end date, update will not be performed')
         return
 
+    #only pass the lya1b keyword if prev_endDate is before 20250721 and new enddate is after 20250721
+    upd_lya1b = (prev_endDate <= 20250721) & (endDate > 20250721)
+
     #generate TileTracker update file
-    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True)
+    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b)
 
     #read into memory
     update_TT = Table.read(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
@@ -1410,7 +1413,7 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         # setting up update info
         didUpdateHappen = False
         if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
-            log.info('setting 1B/ext flag for update')
+            log.info('setting 1B flag for update')
             is_1b = True
 
             # LGN 20251104 Adding an edge case for calling update ledger on 1b tiles observed before lya1b changes
@@ -1418,6 +1421,7 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             if t['ACTIONTIME'] < '2025-07-21T23:36:04+00:00':
                 passext = False
             else:
+                log.info('setting ext flag for update')
                 passext = True
         else:
             is_1b = False
@@ -1435,9 +1439,10 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             #CHECK WITH AURELIO ABOUT TARGETS KEYWORD FOR MOCKS
 
             if passext:
-                #Updating the non-1b ledger
+                log.info('Running update_ledger with ext=True')
+                #Updating the non-1b ledger (ext = False)
                 update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=False, targets = targets)
-                #Updating the 1b ledger
+                #Updating the 1b ledger (ext = True)
                 update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=True, targets = targets)
             else:
                 #Updating the non-1b ledger
@@ -1659,6 +1664,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             
             #LGN 07/29/25: Adding new LyA1B case
             elif action['ACTIONTYPE'] == 'lya1b':
+                log.info('Running LyA1B Ledger Update')
                 #run update on the realization
                 update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp=action['ACTIONTIME'], donefile=False)
                 #record succesful update in ledger
