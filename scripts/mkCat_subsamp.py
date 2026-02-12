@@ -434,8 +434,8 @@ if args.imsys_clus == 'y':
         if reg == 'DES' or reg == 'SnotDES':
             regu = 'S'
         mptr = args.input_tracer
-        if args.input_tracer == 'BGS_ANY':
-            mptr = 'BGS_BRIGHT' #bright and any cover the same footprint so the same map is used for both
+        if args.input_tracer[:3] == 'BGS':
+            mptr = 'BGS_BRIGHT' #bright and any/faint cover the same footprint so the same map is used for both
         pwf = lssmapdirout+mptr+'_mapprops_healpix_nested_nside256_'+regu+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
