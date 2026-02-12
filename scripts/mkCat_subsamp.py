@@ -74,6 +74,7 @@ parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
 parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
+parser.add_argument("--imsys_zbin", help="use separate redshift bins for imaging systematic regressions? (or a wider redshift range for BGS)", default='n')
 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 
