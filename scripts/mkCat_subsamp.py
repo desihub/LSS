@@ -394,7 +394,12 @@ if args.imsys_clus == 'y':
         else:
             zrl = [(0.4,1.1)]  
     if args.input_tracer[:3] == 'BGS':
-        zrl = [(0.1,0.4)]
+        if args.imsys_zbin == 'hi':
+            zrl = [(0,0.5)]
+        elif args.imsys_zbin == 'y':
+            zrl = [(0,0.3),(0.3,0.5)]    
+        else:
+            zrl = [(0.1,0.4)]
 
     
     #get maps to regress against
