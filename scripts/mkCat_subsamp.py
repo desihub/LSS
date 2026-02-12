@@ -45,7 +45,7 @@ from LSS.globals import main
 
 
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--ccut", help="a string that is used define your subsample", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 #arguments to find input data
 parser.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
