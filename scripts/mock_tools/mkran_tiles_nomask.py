@@ -21,9 +21,6 @@ parser.add_argument("--ranmax", help="maximum-1 random index to process",default
 
 args = parser.parse_args()
 
-rng = np.random.default_rng(seed=int(args.ran_seed))
-
-
 tiletab = Table.read(f'/global/cfs/cdirs/desi/survey/catalogs/{args.survey}/LSS/tiles-{args.program}.fits')
 
 for i in range(args.ranmin,args.ranmax):
