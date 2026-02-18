@@ -978,14 +978,8 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
         printlog('added NTILE = 1 column because column did not exist', logger=logger)
         nont = 1
     if comp_ntl is None:
-        ntl = np.unique(fd['NTILE'])
-        comp_ntl = np.ones(len(ntl))
-        weight_ntl = np.ones(len(ntl))
-        for i in range(0, len(ntl)):
-            sel = fd['NTILE'] == ntl[i]
-            mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])
-            weight_ntl[i] = mean_ntweight
-            comp_ntl[i] = 1/mean_ntweight  # *mean_fracobs_tiles
+        weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
 
         if compmd == 'ran':
             if exttp == '.fits':
@@ -995,13 +989,9 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
                 fran = read_hdf5_blosc(fb.replace(
                     'global', 'dvs_ro')+'_0_clustering.ran'+exttp, columns=['NTILE', 'FRAC_TLOBS_TILES'])
 
-            fttl = np.zeros(len(ntl))
-            for i in range(0, len(ntl)):
-                sel = fran['NTILE'] == ntl[i]
-                mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-                fttl[i] = mean_fracobs_tiles
+            fttl = np.bincount(fran['NTILE']-1, weights=fran['FRAC_TLOBS_TILES']) / np.bincount(fran['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in randoms. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
         else:
-            fttl = np.ones(len(ntl))
+            fttl = np.ones_like(comp_ntl) # the f_tile factor should not apply for altmtl completeness
         print(comp_ntl, fttl)
         comp_ntl = comp_ntl*fttl
 
