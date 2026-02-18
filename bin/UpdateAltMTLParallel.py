@@ -32,7 +32,7 @@ def procFunc(nproc):
     #then generate an update tiletracker with entries from tiles in the range [previous endDate, new endData]
     #finally, the existing tiletracker will be merged with the update tiletracker, and files renamed such that the merged tiletracker is used by loop_alt_ledger
     amt.updateTileTracker(altmtldir, args.endDate, survey = args.survey, obscon = args.obscon)
-
+    
     amt.loop_alt_ledger(obscon = args.obscon, survey = args.survey, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', zcatdir = '/global/cfs/cdirs/desi/spectro/redux/daily/', altmtlbasedir = args.altMTLBaseDir, ndirs = None, numobs_from_ledger = True, secondary = False, getosubp = False, quickRestart = False, multiproc = True, nproc = nproc, singleDate = False, redoFA = False, mock = args.mock, targets = None, debug = False, verbose = False, reproducing = args.reproducing)
 
     return
@@ -42,3 +42,5 @@ inds = range(args.nproc)
     
 p = Pool()
 result = p.map(procFunc,inds)
+p.close()
+p.join()
