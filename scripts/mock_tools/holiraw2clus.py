@@ -154,6 +154,10 @@ def ran_col_assign(randoms, data, sample_columns, tracer, seed=0):
     des_resamp = False
     if 'QSO' in tracer:
         des_resamp = True
+    if 'PHOTSYS' not in randoms.colnames:
+        randoms = common.addNS(randoms)
+    if 'PHOTSYS' not in data.colnames:
+        data = common.addNS(data)
     selregr = randoms['PHOTSYS'] == 'N'
     selregd = data['PHOTSYS'] == 'N'
     _resamp(selregr, selregd)
