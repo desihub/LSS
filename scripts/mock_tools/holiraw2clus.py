@@ -60,7 +60,7 @@ parser.add_argument("--realization", default=1,
 parser.add_argument("--base_dir", help="base directory for input/output",
                     default='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/')
 parser.add_argument("--data_dir", help="where to find the data randoms",
-                    default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/')
+                    default='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/')
 parser.add_argument(
     "--minr", help="minimum number for random files", default=0, type=int)
 parser.add_argument(
