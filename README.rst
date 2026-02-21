@@ -25,22 +25,22 @@ The code for k+e corrections was originally copied from Sam Moore's github (http
 Installation
 ------------
 
-First, git clone this repo:
+First, git clone this repo; the following instructions are specific for this branch.
 
 If you want any change to the code to take place immediately, either:
 
+1.  Install (and uninstall) the current git checkout:
+
+    $>  pip install --user -e .
+
+    $>  pip uninstall LSS
+
+Or
+
 1.  Add the "bin" directory to your
-    ``$PATH`` environment variable and add the "py" directory to your
+    ``$PATH`` environment variable and add the top-level directory to your
     ``$PYTHONPATH`` environment variable.
-e.g., if you git cloned from your $HOME directory, $>  PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
-
-Or (not actually recommended as this is less common usage)
-
-2.  Install (and uninstall) the current git checkout:
-
-    $>  python setup.py develop --user
-
-    $>  python setup.py develop --user --uninstall
+e.g., if you git cloned from your $HOME directory, $>  PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 You can also install a fixed version of the package:
 
