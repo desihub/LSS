@@ -1,7 +1,7 @@
 #!/bin/bash
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME/LSScode
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 for (( i=$1;i<=$2;i++ ))
 do

@@ -8,7 +8,7 @@ cd $LSSCODE
 git clone https://github.com/desihub/LSS.git
 cd LSS
 git pull
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 module swap fiberassign/5.0.0
 
 #if you need to delete temporary fiberassign files

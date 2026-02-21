@@ -1,7 +1,7 @@
 #annotated mock altmtl pipeline
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 mocknum=5
 
@@ -22,7 +22,7 @@ srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/sc
 #switch to cosmodesi environment for QSO
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME #change to wherever LSS code got cloned
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 
 #get QSO fulld (--fulld y), and masked data (--apply_veto y) and randoms (--apply_veto_ran y), and add tileloc info to randoms (--add_tlcomp y)

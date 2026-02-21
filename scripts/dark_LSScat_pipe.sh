@@ -4,7 +4,7 @@ set -e
 
 source /global/common/software/desi/desi_environment.sh main
 #export LSSCODE=$HOME ; do this before script, e.g., export LSSCODE=$HOME/LSScode for desica
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 verspec=loa-v1
 survey=DA2
@@ -81,7 +81,7 @@ survey=DA2
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO   --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --imsys y --survey $survey --verspec $verspec --imsys_zbin y --use_map_veto _HPmapcut --version $1
 

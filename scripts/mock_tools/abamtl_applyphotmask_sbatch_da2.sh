@@ -8,7 +8,7 @@
 #SBATCH --mem=40G
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #Execute it as: >> sbatch abamtl_applyphotmask_sbatch_da2.sh DARK or abamtl_applyphotmask_sbatch_da2.sh BRIGHT
 #if LSSCODE has not been sourced previously, it should be the path to https://github.com/desihub/LSS/ in your system

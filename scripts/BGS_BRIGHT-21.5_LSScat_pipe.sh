@@ -4,7 +4,7 @@ set -e
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT --verspec iron --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --add_fs y --survey Y1 --version $1
 

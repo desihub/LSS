@@ -82,7 +82,7 @@ https://github.com/desihub/LSS/blob/main/scripts/getpotaY1_mock.py --realization
 
 ### POTENTIAL ASSIGNMENT ONLY INSTRUCTIONS ###
 
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #Make complete LSS catalogs with goodhardware and imaging veto masks applied
 #Code does randoms in serial, 4 are likely enough

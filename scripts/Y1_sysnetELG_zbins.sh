@@ -4,7 +4,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSDIR=$HOME
 #export SYSNETDIR=$HOME/desicode
 export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
-PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS
 
 python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --prepsysnet y --imsys_zbin y --fulld n --survey Y1 --verspec iron --version $1
 

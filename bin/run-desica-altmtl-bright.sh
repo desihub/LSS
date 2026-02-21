@@ -11,6 +11,6 @@
 
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME/LSSCODE
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 srun -N 1 python3 /global/homes/d/desica/LSScode/LSS/bin/SingleNode-runAltMTLParallel.py --altMTLBaseDir=/pscratch/sd/d/desica/AltMTL -obscon=BRIGHT --survey=main --realMTLBaseDir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/' --multiDate --nproc 128

@@ -2,7 +2,7 @@
 source /global/common/software/desi/desi_environment.sh main
 #export LSSCODE=$HOME
 export LSSCODE=$HOME/LSScode #on desica
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 #comb of spec and tar files (dark then bright)
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec daily --prog dark --survey DA2 --par y --make_tile_file y (--redotarspec y)
@@ -381,7 +381,7 @@ srun -n 64 -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scrip
 
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME/LSScode
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 cd $LSSCODE/LSS/bin
 
 required chmod 775 /global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/ from my login

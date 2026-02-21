@@ -56,7 +56,7 @@ This process runs on regular queue that takes 12 hours but to complete the opera
 
 ### POTENTIAL ASSIGNMENT ONLY INSTRUCTIONS ###
 
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #Make complete LSS catalogs with goodhardware and imaging veto masks applied
 #Code does randoms in serial, 4 are likely enough

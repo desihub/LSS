@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #Execute it as: >> sbatch abamtl_lrgmask_sbatch_da2.sh
 #if LSSCODE has not been sourced previously, it should be the path to https://github.com/desihub/LSS/ in your system

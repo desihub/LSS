@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 srun -N 1 -C cpu -t 04:00:00 -q interactive python run_mocks_multipass.py --realmin $1 --realmax $2 --footprint Y1 --nproc 128
 

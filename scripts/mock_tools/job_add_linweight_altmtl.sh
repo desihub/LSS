@@ -13,7 +13,7 @@ echo $SLURM_ARRAY_TASK_ID
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main 
 export LSSDIR=$HOME/LSS
-PYTHONPATH=$PYTHONPATH:$LSSDIR/py
+PYTHONPATH=$PYTHONPATH:$LSSDIR
 
 DATA_VERSION='v0.6'
 TRACER=BGS_BRIGHT-21.5

@@ -3,7 +3,7 @@
 # bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG_LOP y
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 export OMP_NUM_THREADS=2
-PYTHONPATH=$PYTHONPATH:$LSSCODE/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE
 
 version=$1
 type=$2

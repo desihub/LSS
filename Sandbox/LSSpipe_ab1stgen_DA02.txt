@@ -2,7 +2,7 @@
 #from the LSS/scripts/mock_tools directory
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #1st files need to be prepared for fiberassign and then have fiberassign run
 # <realnum> can be 1-25, rannum can be up to 20, but a few are probably enough

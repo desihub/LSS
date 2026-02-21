@@ -5,7 +5,7 @@
 #from the 'LSS/scripts/mock_tools' directory run the below commands
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #1st files need to be prepared for fiberassign and then have fiberassign run
 #Code from Anand Raichoor runs assignment in 7 passes; tiles in each pass don't overlap so can be run in parallel

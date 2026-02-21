@@ -14,6 +14,6 @@ export OMP_PROC_BIND=spread
 
 #run the application:
 source /global/common/software/desi/desi_environment.sh 
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 srun -n 32 -c 8 --cpu_bind=cores $HOME/LSS/bin/mpi_bitweights --mtl inputfolder/targ.fits --tiles inputfolder/tiles.fits --format fits --outdir outputfolder --realizations 128

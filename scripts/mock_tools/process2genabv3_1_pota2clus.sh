@@ -1,6 +1,6 @@
 #!/bin/bash
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 for (( i=$1;i<=$2;i++ ))
 do
  srun -N 1 -C cpu -t 00:45:00 --qos interactive --account desi python scripts/mock_tools/pota2clus_fast.py --realization $i 

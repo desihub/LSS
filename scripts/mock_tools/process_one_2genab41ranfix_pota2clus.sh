@@ -1,6 +1,6 @@
 #!/bin/bash
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 ver=v4_1fixran
 

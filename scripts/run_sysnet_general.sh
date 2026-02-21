@@ -1,7 +1,7 @@
 #!/bin/bash
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 export OMP_NUM_THREADS=2
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 tracer=$1
 BASEDIR=$2

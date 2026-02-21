@@ -29,7 +29,7 @@ Then, when running, the --version argument will be the final subdirectory name
 >cd code_directory
 >git clone https://github.com/desihub/LSS.git
 >export LSSDIR=$HOME/code_directory #assuming $HOME/code_directory is the full path
->PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
+>PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS
 >export LSSBASE=$SCRATCH/DESI_LSS/
 
 #no longer necessary now that sysnet has been included in the cosmodesi

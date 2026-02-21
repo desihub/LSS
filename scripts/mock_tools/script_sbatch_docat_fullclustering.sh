@@ -11,6 +11,6 @@
 ##SBATCH --exclusive
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-#PYTHONPATH=$PYTHONPATH  #:$HOME/LSS/py
+#PYTHONPATH=$PYTHONPATH  #:$HOME/LSS
 
 srun /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/run_AMTLmock_v4_1.sh $SLURM_ARRAY_TASK_ID

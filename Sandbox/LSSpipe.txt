@@ -2,7 +2,7 @@
 #from the LSS/scripts/main directory
 
 source /project/projectdirs/desi/software/desi_environment.sh master
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 #data, run separately for dark and bright time
 #this script first goes through the fiberassign files, first combining all of the information together split by healpix

@@ -5,7 +5,7 @@ set -e
 #annotated mock altmtl pipeline
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 mocknum=$1
 
@@ -36,7 +36,7 @@ srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $LSSCODE/LS
 #switch to cosmodesi environment for the rest of the codes
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME #change to wherever LSS code got cloned
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 
 #get QSO clustering catalogs (--mkclusdat y --mkclusran y), split them NGC/SGC (--splitGC y), refactor/add FKP weights (--nz y)

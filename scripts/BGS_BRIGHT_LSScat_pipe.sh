@@ -4,7 +4,7 @@ set -e
 
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 TRACER='BGS_BRIGHT'
 

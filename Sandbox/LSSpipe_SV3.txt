@@ -3,7 +3,7 @@
 
 source /global/common/software/desi/desi_environment.sh master
 #add the LSS/py to python path; Ashley just has LSS in $HOME
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 
 #data, run separately for dark and bright time

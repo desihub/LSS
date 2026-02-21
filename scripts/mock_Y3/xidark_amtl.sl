@@ -13,7 +13,7 @@
 ##SBATCH --dependency=afterok:38588061_15
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS
 
 
 code_path=$HOME/installed_packages/desihub/LSS/scripts

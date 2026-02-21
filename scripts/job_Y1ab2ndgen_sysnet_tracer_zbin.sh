@@ -15,7 +15,7 @@ echo $SLURM_ARRAY_TASK_ID
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main 
 export LSSDIR=$HOME/LSS
-PYTHONPATH=$PYTHONPATH:$LSSDIR/py
+PYTHONPATH=$PYTHONPATH:$LSSDIR
 
 RUN_SYSNET=$LSSDIR/scripts/run_sysnetELG_ab2ndgen.sh 
 #/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4_1//altmtl0/mock0/LSScats

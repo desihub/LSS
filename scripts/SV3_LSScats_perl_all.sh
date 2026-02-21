@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /global/common/software/desi/desi_environment.sh master
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 python SV3/mkCat_SV3.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec fuji --version $1
 python SV3/mkCat_SV3.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec fuji --version $1

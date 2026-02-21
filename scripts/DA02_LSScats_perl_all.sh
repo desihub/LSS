@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source /global/common/software/desi/desi_environment.sh master
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 PYTHONPATH=$PYTHONPATH:/global/homes/a/ajross/.local/lib/python3.8/site-packages/
 
 python main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec guadalupe --survey DA02 --version $1

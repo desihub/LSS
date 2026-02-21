@@ -2,7 +2,7 @@
 
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=/pscratch/sd/a/acarnero/codes/LSS
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 #prepare dark mock input catalogs (run on interactive queue with one cpus per realization. Do not apply photometric mask). 
 #It is sbatch script calling to run1_prepmock_LSS_DA2.sh as array parallelization, calling finally to: prepare_mocks_Y3_dark.py or prepare_mocks_Y3_bright.py

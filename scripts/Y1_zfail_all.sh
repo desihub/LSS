@@ -1,7 +1,7 @@
 #!/bin/bash
 source /global/common/software/desi/desi_environment.sh main
 
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 python scripts/main/mkCat_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --type ELG_LOP --notqso y --add_weight_zfail y --fulld n --survey Y1 --verspec iron --version $1
 

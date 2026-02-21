@@ -10,6 +10,6 @@
 #SBATCH --mem=460G
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:/pscratch/sd/a/acarnero/codes/LSS/py
+PYTHONPATH=$PYTHONPATH:/pscratch/sd/a/acarnero/codes/LSS
 
 srun /pscratch/sd/a/acarnero/codes/LSS/scripts/mock_tools/run1_AMTLmock_combd_LSS.sh $SLURM_ARRAY_TASK_ID

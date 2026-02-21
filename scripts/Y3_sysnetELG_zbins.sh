@@ -4,7 +4,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSDIR=$HOME
 #export SYSNETDIR=$HOME/desicode
 export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
-PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSDIR/LSS
 
 verspec=loa-v1
 survey=DA2

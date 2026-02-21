@@ -7,7 +7,7 @@ module load LSS/main
 #DR2-mocks-v1
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export LSSCODE=$HOME/LSScode/LSS
-#export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
+#export PYTHONPATH=$PYTHONPATH:$LSSCODE
 #
 mocknum=102
 scriptdir=$HOME/LSScode/LSS/scripts

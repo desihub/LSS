@@ -2,7 +2,7 @@
 #from the LSS/scripts/main directory
 
 source /global/common/software/desi/desi_environment.sh master
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 PYTHONPATH=$PYTHONPATH:/global/homes/a/ajross/.local/lib/python3.8/site-packages/ #needed for regressis for some reason
 salloc -N 1 -q interactive -C cpu -t 4:00:00
 

@@ -14,7 +14,7 @@
 
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:/global/u2/j/jerryou/installed_packages/desihub/LSS/py
+PYTHONPATH=$PYTHONPATH:/global/u2/j/jerryou/installed_packages/desihub/LSS
 
 seed=$SLURM_ARRAY_TASK_ID
 

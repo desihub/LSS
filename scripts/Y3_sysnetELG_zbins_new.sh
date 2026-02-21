@@ -5,7 +5,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
 #export LSSDIR=$HOME use already exported $LSSCODE directory
 export LSSBASE=/global/cfs/cdirs/desi/survey/catalogs/
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 version=$1
 verspec=loa-v1

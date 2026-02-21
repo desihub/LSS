@@ -4,7 +4,7 @@ set -e
 
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 verspec=loa-v1
 survey=DA2
@@ -28,7 +28,7 @@ survey=DA2
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 
 $LSSCODE/LSS/scripts/Y3_sysnetELGtot_zbins.sh $1

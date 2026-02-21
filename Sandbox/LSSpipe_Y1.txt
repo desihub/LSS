@@ -8,7 +8,7 @@ cd $LSSCODE
 git clone https://github.com/desihub/LSS.git
 cd LSS
 git pull
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS
 
 #data, run separately for dark and bright time
 #this script will merge the target info (already compiled from fiberassign files) with the spectroscopic info
@@ -132,7 +132,7 @@ python $LSSCODE/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT-21.5 --basedir 
 
 #get regressis weights
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-#PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+#PYTHONPATH=$PYTHONPATH:$HOME/LSS
 for tp,notqso in zip(tps,notqsos):
 	python mkCat_main.py --type tp  --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --regressis y --add_regressis y --survey Y1 --verspec iron --imsys_zbin y (--notqso notqso) 
     

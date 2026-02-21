@@ -14,7 +14,7 @@
 source /global/common/software/desi/desi_environment.sh main
 export OMP_NUM_THREADS=1
 
-PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS
 path2LSS=/global/homes/j/jerryou/installed_packages/desihub/LSS/bin
 
 ALTMTLHOME=/pscratch/sd/j/jerryou/DESI_Y3/SecondGenMocks/EZmock/

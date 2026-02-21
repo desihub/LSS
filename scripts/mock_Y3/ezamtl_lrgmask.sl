@@ -13,7 +13,7 @@
 #SBATCH --dependency=afterok:38715455_15
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS
 
 LSSCODE="$HOME/installed_packages/desihub/LSS/"
 

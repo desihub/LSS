@@ -14,7 +14,7 @@
 #annotated mock altmtl pipeline
 source /global/common/software/desi/desi_environment.sh main
 export LSSCODE=$HOME/installed_packages/desihub/LSS
-PYTHONPATH=$PYTHONPATH:$LSSCODE/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE
 
 specdata="loa-v1"
 

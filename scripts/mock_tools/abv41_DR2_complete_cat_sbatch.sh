@@ -7,6 +7,6 @@
 #SBATCH --account=desi
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 srun scripts/mock_tools/process_one_DR2_2genab41_pota2clus.sh $SLURM_ARRAY_TASK_ID

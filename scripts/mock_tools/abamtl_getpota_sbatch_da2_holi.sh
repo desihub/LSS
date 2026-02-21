@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 
 source /global/common/software/desi/desi_environment.sh main
-#PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+#PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 
 #NEED TO BE TESTED IN CASE OF I/O ISSUES

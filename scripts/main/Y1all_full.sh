@@ -2,7 +2,7 @@
 #make sure to set $LSSCODE to wherever the LSS git repo is (e.g., $HOME)
 #provide the version, e.g. Y1all_full.sh 0.1
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 
 #python $LSSCODE/LSS/scripts/main/combdata_main.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec iron --prog dark --survey Y1 --counts_only y --dospec n

@@ -12,7 +12,7 @@
 #SBATCH -e ./stdout/%x_%a.e%j
 
 source /global/common/software/desi/desi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/installed_packages/desihub/LSS
 
 LSSCODE="$HOME/installed_packages/desihub/LSS/"
 

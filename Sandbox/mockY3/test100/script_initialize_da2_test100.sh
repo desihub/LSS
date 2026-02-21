@@ -11,6 +11,6 @@
 
 source /global/common/software/desi/desi_environment.sh main
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+PYTHONPATH=$PYTHONPATH:$HOME/LSS
 
 srun python initialize_amtl_mocks_da2_test100.py $DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v100/forFA$SLURM_ARRAY_TASK_ID.fits $DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v100/altmtl$SLURM_ARRAY_TASK_ID DARK
