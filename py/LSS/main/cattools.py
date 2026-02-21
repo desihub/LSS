@@ -1845,6 +1845,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
     fgu.sort('sort')
     #fgu.sort('ZPOSS')
     fu = unique(fgu,keys='TARGETID')#,keep='last')
+    fu.remove_column('sort') # remove sort column - pretty sure it is no longer accessed
 
     tidsu = fu['TARGETID']#[wp][natloc]
     tids = fgu['TARGETID']
@@ -2586,6 +2587,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
+    dz.remove_column('sort') # remove sort column - pretty sure it is no longer accessed
     logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
@@ -2705,7 +2707,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_ts
 
                 dz.sort('sort') #should allow to later cut on tsnr for match to data
                 dz = unique(dz,keys=['TARGETID'],keep='last')
-                dz.remove_columns(['sort'])
+                dz.remove_column('sort')
                 #print('length after cutting to unique TARGETID '+str(len(dz)))
                 #print(np.unique(dz['NTILE']))
                 dz.write(outf,format='fits', overwrite=True)
