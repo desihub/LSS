@@ -42,7 +42,7 @@ if have_desiutil:
     setup_keywords['version'] = ds.get_version(setup_keywords['name'])
 else:
     try:
-        with open(os.path.join('py', setup_keywords['name'], '_version.py')) as v:
+        with open(os.path.join(setup_keywords['name'], '_version.py')) as v:
             setup_keywords['version'] = v.read().split('=')[1].strip().strip("'").strip('"')
     except FileNotFoundError:
         setup_keywords['version'] = '0.0.1'
@@ -67,8 +67,7 @@ setup_keywords['provides'] = [setup_keywords['name']]
 setup_keywords['python_requires'] = '>=3.5'
 setup_keywords['zip_safe'] = False
 setup_keywords['use_2to3'] = False
-setup_keywords['packages'] = find_packages('py')
-setup_keywords['package_dir'] = {'': 'py'}
+setup_keywords['packages'] = find_packages('.')
 
 setup_keywords['cmdclass'] = {'sdist': DistutilsSdist}
 if have_desiutil:
