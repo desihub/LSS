@@ -131,10 +131,12 @@ if args.mapmd == 'all':
     dosky_z = 'y'
     do_ebvnew_diff = 'y'
     do_lrgmask = 'y'
+    do_elgmask = 'y'
     do_ebvnocib_diff = 'y'
     
 
 if do_lrgmask == 'y':
+    print('making LRG mask map')
     lrg_mask_frac = np.zeros(256*256*12)
     ranmap = np.zeros(256*256*12)
     ranmap_lmask = np.zeros(256*256*12)
@@ -145,10 +147,28 @@ if do_lrgmask == 'y':
     ranpix = hp.ang2pix(256,th,phi,nest=True)
     for pix,mvalue in zip(ranpix,ran_lrgmask['lrg_mask']):
         ranmap[pix] += 1
-        if mvalue > 1:
+        if mvalue > 0:
             ranmap_lmask[pix] += 1
     sel = ranmap > 0
     lrg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
+
+if do_elgmask == 'y':
+    print('making ELG mask map')
+    elg_mask_frac = np.zeros(256*256*12)
+    ranmap = np.zeros(256*256*12)
+    ranmap_lmask = np.zeros(256*256*12)
+    randir = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+    ran = fitsio.read(randir+'randoms-1-0.fits',columns=['RA','DEC'])
+    ran_lrgmask = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-0elgimask.fits')
+    th,phi = common.radec2thphi(ran['RA'],ran['DEC'])
+    ranpix = hp.ang2pix(256,th,phi,nest=True)
+    for pix,mvalue in zip(ranpix,ran_lrgmask['elg_mask']):
+        ranmap[pix] += 1
+        if mvalue > 0:
+            ranmap_lmask[pix] += 1
+    sel = ranmap > 0
+    elg_mask_frac[sel] = ranmap_lmask[sel]/ranmap[sel]
+
 
 zcmb = common.mk_zcmbmap()
 
@@ -194,6 +214,7 @@ def plot_reldens(parv,pixlg,pixlgw,pixlr,titl='',cl='k',xlab='',yl = (0.8,1.1)):
     plt.title(titl+' '+args.weight_col)
     plt.grid()
     plt.ylim(yl[0],yl[1])
+    print(np.sum(parv[wp]*pixlr[wp])/np.sum(pixlr[wp]))
     print(xlab,'weighted: '+str(chi2),'unweighted: '+str(chi2nw))
     fname = outdir_txt + 'ngalvs_'+xlab+titl.replace(' ','')+'.txt'
     fname = fname.replace(' - ','')
@@ -368,6 +389,16 @@ for tp in tps:
                 fig = plt.figure()
                 parv = lrg_mask_frac
                 mp = 'fraction of area in LRG mask'
+                
+                chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
+                figs.append(fig)
+                chi2tot += chi2
+                nmaptot += 1
+
+            if do_elgmask == 'y':
+                fig = plt.figure()
+                parv = elg_mask_frac
+                mp = 'fraction of area in ELG mask'
                 
                 chi2,chi2nw  = plot_reldens(parv,pixlg,pixlgw,pixlr,cl=cl,xlab=mp,titl=args.survey+' '+tp+zr+' '+reg,yl=yl)
                 figs.append(fig)

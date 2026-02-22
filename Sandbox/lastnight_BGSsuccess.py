@@ -8,7 +8,7 @@ from desitarget.targetmask import zwarn_mask
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
-parser.add_argument("--plotnz",default='y')
+parser.add_argument("--plotnz",default='n')
 parser.add_argument("--redux",default='daily')
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
 parser.add_argument("--outdir",default='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/plots/tests/')
@@ -61,7 +61,10 @@ zdir = '/global/cfs/cdirs/desi/spectro/redux/'+args.redux+'/tiles/cumulative/'
 
 nzls = {x: [] for x in range(0,10)}
 nzla = []
+tilegzl = []
 for tid in tidl:
+    tile_tot = 0
+    tile_good = 0
     for pt in range(0,10):
         
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
@@ -93,6 +96,8 @@ for tid in tidl:
 
                 wzwarn = wz#zmtlf['ZWARN'] == 0
                 gzlrg = zmtlf[wzwarn&wlrg]
+                tile_tot += len(zlrg)
+                tile_good += len(gzlrg)
                 print('The fraction of good BGS is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
@@ -103,13 +108,20 @@ for tid in tidl:
         else:
             print(zmtlff+' not found') 
         
-
+    
+    if tile_tot > 0:
+        print('the success rate for tile '+str(tid)+' is '+str(tile_good/tile_tot))
+        tilegzl.append(tile_good/tile_tot)
+    else:
+        tilegzl.append('no data')
 print('the total number of BGS considered per petal for the night is:')
 print(tz)
 tzs = gz/tz
 print('the total fraction of good BGS z per petal for the night is:')
 print(tzs)
-
+print('the list of tiles and their success rates is')
+print(tidl)
+print(tilegzl)
 if args.plotnz == 'y':
     from matplotlib import pyplot as plt
     all = fitsio.read('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/BGS_ANY_full.dat.fits')

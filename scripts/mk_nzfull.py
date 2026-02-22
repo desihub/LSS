@@ -29,10 +29,10 @@ fcd = fb+'_full_HPmapcut.dat.fits'
 
 common.mknz_full(fcd, fcr, args.tracer[:3], bs=bs, zmin=zmin, zmax=zmax,write='y')
 nzf = np.loadtxt(fb+'_full_HPmapcut_nz.txt').transpose()
-plt.plot(nzf[0],nzf[3])
+plt.plot(nzf[0],nzf[3],'k-',label='total')
 plt.xlabel('redshift')
 plt.ylabel('n(z) (h/Mpc)^3')
-plt.legend()
+
 plt.grid()
 if args.tracer[:3] == 'ELG':
     plt.ylim(0,0.0012)
@@ -43,4 +43,12 @@ if args.tracer[:3] == 'BGS':
 if args.tracer == 'BGS_BRIGHT-21.5':
     plt.xlim(0,0.5)
 plt.title(args.tracer)
+
+regl = ['N','S']
+for reg in regl:
+    common.mknz_full(fcd, fcr, args.tracer[:3], bs=bs, zmin=zmin, zmax=zmax,write='y',reg=reg)
+    nzf = np.loadtxt(fb+'_full_HPmapcut_'+reg+'_nz.txt').transpose()
+    plt.plot(nzf[0],nzf[3],label=reg)
+
+plt.legend()
 plt.savefig(args.inputdir+'plots/'+args.tracer+'_nz.png')

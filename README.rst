@@ -32,6 +32,9 @@ If you want any change to the code to take place immediately, either:
 1.  Add the "bin" directory to your
     ``$PATH`` environment variable and add the "py" directory to your
     ``$PYTHONPATH`` environment variable.
+e.g., if you git cloned from your $HOME directory, $>  PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
+
+Or (not actually recommended as this is less common usage)
 
 2.  Install (and uninstall) the current git checkout:
 
@@ -43,15 +46,21 @@ You can also install a fixed version of the package:
 
     $>  python setup.py install --user
 
-This will put the main scripts bin/mkCat_* in your $PATH (typically in $HOME/.local/bin).
+This will put the main scripts bin/ in your $PATH (typically in $HOME/.local/bin).
 
-This code only works on NERSC, in the DESI environment. Therefore, make sure to be in the DESI environment, e.g., run
+This code only works on NERSC, in the DESI or cosmodesi environments. Most work in the DESI environment: e.g., run
 
     $>  source /global/common/software/desi/desi_environment.sh main
 
-before trying anything else (master should soon switch to main). Some code also requires the cosmodesi environment to be loaded (e.g., for 2pt functions and/or reconstruction, regressis tools, etc.) After sourcing the above, source it
+Some code requires the cosmodesi environment to be loaded instead (e.g., for 2pt functions and/or reconstruction, regressis tools, etc.) Source it via
 
     $>  source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+
+or
+
+    $>  source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
+
+for some of the latest capabilities.
 
 
 Structure
@@ -59,10 +68,14 @@ Structure
 
 Versions developed for different specific settings are being created. These are in separate folders in the py/LSS directory. Common tools go in the LSS directory.
 
-Scripts meant to act like executables are in the bin directory. The default mode will produce output in your CSCRATCH directory on NERSC.
+Scripts meant to act like executables are in the bin directory, but most of what gets run by the LSS pipeline is in the scripts directory. scripts/main/mkCat_main.py is the primary script for running LSS catalogs.
 
 Examples
 --------
+
+The full LSS pipeline for a data version is scripts/dark_LSScat_pipe.sh
+
+These are from early developments and might still work
 
 python bin/mkCat_SV3_simp.py --type QSO #This re-creates the version 1 catalogs writing them into your scratch by default. One should be able to test edits to the catalogs using this (starting from some pre-defined inputs). Available types are QSO, BGS_ANY, BGS_BRIGHT, ELG, ELG_HIP, LRG, MWS_ANY
 

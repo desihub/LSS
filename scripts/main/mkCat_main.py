@@ -135,7 +135,7 @@ parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_al
 parser.add_argument("--addNtileweight2full",help="whether to add the NTILE weight to the full catalogs (necessary for consistent angular upweighting)",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
-parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
+#parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n') done automatically within mkclusran
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -382,7 +382,7 @@ if mkfulld:
     ftar = fitsio.read(tarf)   
 
     from desitarget import targetmask
-    if type == 'BGS_BRIGHT':
+    if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
     else:
@@ -398,10 +398,15 @@ if mkfulld:
 if args.add_veto == 'y':
     logf.write('added veto columns to data catalogs for '+tp+' '+str(datetime.now()))
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
-    common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
+    mask_type = type[:3].lower()
+    tarver='targetsDR9v1.1.1'
+    if type == 'LGE':
+        mask_type = 'lrg'
+        tarver='targetsDR9v3.0.0'
+    common.add_veto_col(fin,type,ran=False,tracer_mask=mask_type,redo=True,tarver=tarver)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
+        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver)
         
 if args.join_etar == 'y':
     logf.write('added extra target columns to data catalogs for '+tp+' '+str(datetime.now()))
@@ -489,7 +494,7 @@ if args.apply_map_veto == 'y':
     import healpy as hp
     tracer_clushp = tracer_clus
     #BGS_ANY and BGS_BRIGHT should essentially have same footprint
-    if tracer_clus == 'BGS_ANY':
+    if tracer_clus[:3] == 'BGS':
         tracer_clushp = 'BGS_BRIGHT'
     if 'ELG' in tracer_clus:
         tracer_clushp = 'ELG_LOPnotqso'
@@ -1405,21 +1410,6 @@ if args.splitGC == 'y':
              _spran(rn)
 
 
-if args.resamp == 'y':
-            
-    for reg in regions:
-        flin = dirout + tracer_clus + '_'+reg    
-        def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-        
-        
-        if args.par == 'y':
-            from multiprocessing import Pool
-            with Pool() as pool:
-                res = pool.map(_parfun, inds)
-        else:
-            for rn in range(rm,rx):
-                _parfun(rn)
     
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
@@ -1653,6 +1643,23 @@ if args.imsys_clus_fb_ran == 'y':
     else:
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
+
+
+# if args.resamp == 'y':
+#             
+#     for reg in regions:
+#         flin = dirout + tracer_clus + '_'+reg    
+#         def _parfun(rannum):
+#             ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+#         
+#         
+#         if args.par == 'y':
+#             from multiprocessing import Pool
+#             with Pool() as pool:
+#                 res = pool.map(_parfun, inds)
+#         else:
+#             for rn in range(rm,rx):
+#                 _parfun(rn)
 
 
 #if args.nz == 'y':

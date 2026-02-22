@@ -204,10 +204,11 @@ cols = [
 'TARGETID',
 'RA',
 'DEC','RSDZ',
-'DESI_TARGET','BRICKID','NOBS_G',
-'NOBS_R',
-'NOBS_Z',
-'MASKBITS']
+'DESI_TARGET']#,
+#'BRICKID','NOBS_G',
+#'NOBS_R',
+#'NOBS_Z',
+#'MASKBITS']
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
 mock_data = Table(fitsio.read(in_data_fn,columns=cols))
@@ -255,12 +256,14 @@ for tracer in tracers:
 
     elif tracer == 'QSO':
         zmin = 0.8
-        zmax = 2.1
+        zmax = 3.5
     elif tracer == 'BGS_BRIGHT-21.5':
         zmin = 0.1
         zmax = 0.4
 
     if args.mkdat == 'y':
+        sel_contam = mock_data_tr['TARGETID'] > 419430400000000
+        mock_data_tr = mock_data_tr[~sel_contam]
     
         if tracer == 'BGS_BRIGHT-21.5':
             selm = (mock_data_tr['R_MAG_ABS']+0.05) < -21.5
@@ -280,7 +283,7 @@ for tracer in tracers:
         place to add imaging systematic weights and redshift failure weights would be here
         '''
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-        common.write_LSS(mock_data_tr,out_data_fn)
+        common.write_LSS_scratchcp(mock_data_tr,out_data_fn)
 
         #splitGC(out_data_froot,'.dat')
 

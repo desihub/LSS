@@ -139,12 +139,16 @@ if args.notqso == 'y':
     notqso = 'notqso'
 
 
-if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
+if type[:3] == 'BGS' or ('bright' in type) or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
     pr = 'DARK'
     pdir = 'dark'
+
+if '1b' in args.type:
+    pr += '1B'
+    pdir += '1b'
 
 pd = pdir
 

@@ -19,6 +19,7 @@ import healpy as hp
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
 
+
 #from LSS.common_tools import find_znotposs
 
 
@@ -32,6 +33,7 @@ logger.setLevel(level=logging.INFO)
 
 
 def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
+    import LSS.common_tools as common
     s = 0
     n = 0
     nfail = 0
@@ -50,6 +52,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
 
         s = 1
         tdone = np.unique(specd['TILEID'])
+        common.printlog(str(np.max(tdone)),logger)
         tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         infl = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog_'+release+'.fits'
@@ -61,6 +64,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         tmask = ~np.isin(tiles['TILEID'],tdone)
     print('will add QSO info for '+str(len(tiles[tmask]))+' tiles')
     #kl = list(specd.dtype.names)
+    qso_tls = []
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = combQSOdata(tile,zdate,tdate,cols=kl)
@@ -83,20 +87,28 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
                     new[colname][...] = tspec[colname][...]
 
                 #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                #specd = np.hstack((specd,new))
+                qso_tls.append(new)
+                print(tile,n,len(tiles[tmask]),len(new))
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            
+            
 
             n += 1
-            print(tile,n,len(tiles[tmask]),len(specd))
+            
         else:
             print(str(tile)+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
+    if len(qso_tls) > 0:
+        qso_tls = np.hstack(qso_tls)
+        specd = np.hstack([specd,qso_tls])
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
-        fitsio.write(outf,specd,clobber=True)
+        #fitsio.write(outf,specd,clobber=True)
+        common.write_LSS_scratchcp(specd,outf,logger=logger)
         return True
     else:
         return False
@@ -864,7 +876,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         #    qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
 
     qso_cat = vstack(qsocats,metadata_conflicts='silent')
-    qso_cat['TILEID'] = tile
+    qso_cat['TILEID'] = int(tile)
     #print(qso_cat.dtype.names)
     if cols is not None:
         qso_cat = Table(qso_cat)
@@ -2474,7 +2486,12 @@ def mk_maskedran_wdup(gtl,indir,rann,imbits,outf,pd,ebits,notqso='',hpmapcut='_H
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
-    common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if '.fits' in outf:
+        common.write_LSS_scratchcp(dz,outf,logger=logger)
+    elif '.h5' in outf:
+        common.write_LSShdf5_scratchcp(dz,outf,logger=logger)
+    else:
+        common.printwarn('UNSUPPORTED EXTENSION IN OUTPUT FILE NAME, NOT WRITING!!!',logger=logger)
     del dz
     return True    
 
@@ -3139,7 +3156,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     if mockz and mask_coll:
         collf = mask_coll
 
-    dz = Table(fitsio.read(zf))
+    if '.fits' in zf:
+        dz = Table(fitsio.read(zf))
+    if '.h5' in zf:
+        dz = common.read_hdf5_blosc(zf)
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         if logger is not None:
@@ -3181,9 +3201,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
     if mockz:
         common.printlog('getting mock assignment info',logger)
-        assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup.fits').format(PROG=prog)
-        fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
-        fs = Table(fs)
+        assignf = os.path.join(mockassigndir, 'datcomb_{PROG}assignwdup').format(PROG=prog)
+        if os.path.isfile(assignf+'.h5'):
+            common.printlog('reading '+assignf+'.h5',logger)
+            fs = common.read_hdf5_blosc(assignf+'.h5')
+        elif os.path.isfile(assignf+'.fits'):
+            common.printlog('reading '+assignf+'.fits',logger)
+            fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
+            fs = Table(fs)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
@@ -3361,7 +3386,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         prog = 'dark'
         if tp[:3] == 'BGS':
             prog = 'bright'
-
+        if tp == 'LGE':
+            prog = 'dark1b'
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
         dz = join(dz,specdat,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
     
@@ -3561,7 +3587,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         dz['PHOTSYS'][sel] = 'S'
                
     
-    common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if '.fits' in outf:
+        common.write_LSS_scratchcp(dz,outf,logger=logger)
+    if '.h5' in outf:
+        common.write_LSShdf5_scratchcp(dz,outf,logger=logger)
     if return_array == 'y':
         return dz
 
@@ -3890,7 +3919,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None):
+def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None,exttp='.fits'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3917,7 +3946,16 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     if ntilecut > 0:
         wzm += 'ntileg'+str(ntilecut)+'_'
     outf = (fl+wzm+'clustering.dat.fits').replace(tp,extradir+tp)
-    ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
+    
+    in_fn = fl+'_full'+use_map_veto+'.dat'
+    if os.path.isfile(in_fn+'.h5'):
+        common.printlog('reading '+in_fn+'.h5',logger)
+        ff = common.read_hdf5_blosc(in_fn.replace('global', 'dvs_ro')+'.h5')
+    elif os.path.isfile(in_fn+'.fits'):
+        common.printlog('reading '+in_fn+'.fits',logger)
+        ff = Table.read(in_fn.replace('global', 'dvs_ro')+'.fits')
+
+    #ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
     cols = list(ff.dtype.names)
@@ -3926,11 +3964,14 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     else:
         ff['Z_not4clus'].name = 'Z'
     if tp[:3] == 'QSO':
+
         #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
         wz = ff['Z']*0 == 0
         wz &= ff['Z'] != 999999
         wz &= ff['Z'] != 1.e20
         wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['TARGETID'] < 419430400000000
         #if not ismock:
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
 
@@ -3943,6 +3984,8 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             wz &= ff['o2c'] > dchi2
             common.printlog('length after oII cut '+str(len(ff[wz])),logger)
         wz &= ff['LOCATION_ASSIGNED'] == 1
+        if ismock:
+            wz &= ff['TARGETID'] < 838860800000000
         common.printlog('length after also making sure location assigned '+str(len(ff[wz])),logger)
         #if not ismock:
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
@@ -3987,7 +4030,6 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         wzm += 'zcmb_'
         common.printlog('corrected redshifts to cmb frame',logger)
 
-
     if subfrac != 1:
         subfracl = np.ones(len(ff))
         sub_array = np.random.random(len(ff))
@@ -4001,7 +4043,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
             subfracl *= subfrac
         keep = sub_array < subfracl
         wz &= keep
-        
+
     ff = ff[wz]
     common.printlog('length after cutting to good z '+str(len(ff)),logger)
     ff['WEIGHT'] = np.ones(len(ff))#ff['WEIGHT_ZFAIL']
@@ -4205,15 +4247,18 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         if splitNS == 'y':
             outfn = fl+wzm+'N_clustering.dat.fits'
             comments = ["DA02 'clustering' LSS catalog for data, BASS/MzLS region","entries are only for data with good redshifts"]
-            common.write_LSS(ff[wn],outfn.replace(tp,extradir+tp),comments)
+            common.write_LSS_scratchp(ff[wn],outfn.replace(tp,extradir+tp),logger=logger)
 
             outfn = fl+wzm+'S_clustering.dat.fits'
             comments = ["DA02 'clustering' LSS catalog for data, DECaLS region","entries are only for data with good redshifts"]
             ffs = ff[~wn]
-            common.write_LSS(ffs,outfn.replace(tp,extradir+tp),comments)
+            common.write_LSS_scratchp(ffs,outfn.replace(tp,extradir+tp),logger=logger)
         else:
-            outfn = fl+wzm+'clustering.dat.fits'
-            common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp))
+            outfn = fl+wzm+'clustering.dat'+exttp
+            if exttp == '.fits':
+                common.write_LSS_scratchcp(ff,outfn.replace(tp,extradir+tp),logger=logger)
+            if exttp == '.h5':
+                common.write_LSShdf5_scratchcp(ff,outfn.replace(tp,extradir+tp),logger=logger)
     if return_cat == 'y':
         if splitNS == 'y':
             return ff[wn],ff[~wn]
@@ -4296,7 +4341,7 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp=''):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',outext='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -4432,7 +4477,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc[wn]
         else:
             ffcn = ffc
-        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran.fits'#).replace(tp,extradir+tp)  
+        outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran'+outext#).replace(tp,extradir+tp)  
         
         des_resamp = False
         if 'QSO' in tp:
@@ -4485,7 +4530,18 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             #comments seem to cause I/O issues
             #comments = ["'clustering' LSS catalog for random number "+str(rann)+", "+reg+" region","entries are only for data with good redshifts"]
             #common.write_LSS(ffcn,outfn)#,comments)
-            common.write_LSS_scratchcp(ffcn,outfn,logger=logger)
+            #common.printlog(str(ffcn.dtype),logger)
+            #for col in kc:
+                #common.printlog(col+' '+str(ffcn[col].shape),logger)
+            #    if str(ffcn[col].dtype) == 'S1':
+            #        ffcn[col] == np.array(ffcn[col],dtype='<U1')
+
+            if outext == '.fits':
+                common.write_LSS_scratchcp(ffcn,outfn,logger=logger)
+            elif outext == '.h5':
+                common.write_LSShdf5_scratchcp(ffcn,outfn,logger=logger)
+            else:
+                common.printwarn('nothing will be written out, invalid extension')
         tabl.append(ffcn)
     #outfs =  fl+ws+wzm+'S_'+str(rann)+'_clustering.ran.fits'
     #if clus_arrays is None:
@@ -4898,7 +4954,7 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
             sel_tile[i] = True
     tiles = tiles[sel_tile]
     if len(tiles) == 0:
-        print('no tiles to process for '+str(ii))
+        common.printlog('no tiles to process for '+str(ii),logger)
         return True
     rtall = read_targets_in_tiles(dirrt,tiles)
     common.printlog('read targets on all tiles',logger)
@@ -4936,6 +4992,7 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     inds = np.arange(len(tiles))
     for ind in inds:
         _create_rantile(ind)
+        common.printlog('done with '+str(ii)+' tile '+str(ind)+' out of '+str(len(inds)),logger)
     #from multiprocessing import Pool
     #with Pool() as pool:
     #    res = pool.map(_create_rantile, inds)
