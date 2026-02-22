@@ -1843,9 +1843,9 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         print('number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
     fgu.sort('sort')
+    fgu.remove_column('sort') # remove sort column - pretty sure it is no longer accessed
     #fgu.sort('ZPOSS')
     fu = unique(fgu,keys='TARGETID')#,keep='last')
-    fu.remove_column('sort') # remove sort column - pretty sure it is no longer accessed
 
     tidsu = fu['TARGETID']#[wp][natloc]
     tids = fgu['TARGETID']
