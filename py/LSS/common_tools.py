@@ -642,19 +642,19 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
     zmax is the upper edge of the last bin
     '''
     # cd = distance(om,1-om)
+    headers = []
     if '.fits' in fcr:
         # should have originally had 2500/deg2 density, so can convert to area
         ranf = fitsio.read_header(fcr, ext=1)
         area = ranf['NAXIS2']/randens
 
         print('area is '+str(area))
-        outf = open(fout, 'w')
-        outf.write('#area is '+str(area)+'square degrees\n')
+        headers.append('#area is '+str(area)+'square degrees')
 
         if compmd == 'ran':
             ranf = fitsio.read(fcr)
             area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
-            outf.write('#effective area is '+str(area)+'square degrees\n')
+            headers.append('#effective area is '+str(area)+'square degrees')
 
     if '.h5' in fcr:
         # should have originally had 2500/deg2 density, so can convert to area
@@ -662,12 +662,11 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
         area = len(ranf)/randens
 
         print('area is '+str(area))
-        outf = open(fout, 'w')
-        outf.write('#area is '+str(area)+'square degrees\n')
+        headers.append('#area is '+str(area)+'square degrees')
 
         if compmd == 'ran':
             area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
-            outf.write('#effective area is '+str(area)+'square degrees\n')
+            headers.append('#effective area is '+str(area)+'square degrees')
 
     del ranf
     if '.fits' in fcd:
@@ -679,18 +678,15 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
     if wtmd == 'clus':
         # this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
         wts = df['WEIGHT_COMP']*df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']
+    else: wts = None # no weights, if relevant at all
     zhist = np.histogram(df['Z'], bins=nbin, range=(zmin, zmax), weights=wts)
-    outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
-    for i in range(0, nbin):
-        zl = zhist[1][i]
-        zh = zhist[1][i+1]
-        zm = (zh+zl)/2.
-        voli = area/(360.*360./np.pi)*4.*np.pi/3. * \
-            (dis_dc(zh)**3.-dis_dc(zl)**3.)
-        nbarz = zhist[0][i]/voli
-        outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz) +
-                   ' '+str(zhist[0][i])+' '+str(voli)+'\n')
-    outf.close()
+    headers.append('#zmid zlow zhigh n(z) Nbin Vol_bin')
+    zl = zhist[1][:-1]
+    zh = zhist[1][1:]
+    zm = (zh+zl)/2.
+    voli = area/(360.*360./np.pi)*4.*np.pi/3. * np.diff(dis_dc(zhist[1])**3.)
+    nbarz = zhist[0]/voli
+    np.savetxt(fout, np.column_stack([zm, zl, zh, nbarz, zhist[0], voli]), fmt='%.18g', header='\n'.join(headers), comments='')
     return True
 
 
