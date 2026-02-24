@@ -12,7 +12,7 @@ selbad = fsse['SSE_WITH_MASK'] >= 98.96
 bad_tids = fsse['TARGETID'][selbad]
 
 input_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/nonKP/'
-output_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/testsse/'
+output_dir = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/testsse/'
 regl = ['NGC', 'SGC']
 nran = 18
 for reg in regl:
