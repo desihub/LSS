@@ -334,7 +334,8 @@ if args.splitGC == 'y':
 #4) refactors the weights (section 8.2 of the KP3 paper arXiv:2411.12020)
 #5) writes the NGC/SGC clustering catalogs back out for data and randoms
 #It needs to take inputs for completeness and mean weight as a function of NTILE, of the non-subsampled catalog, so that the angular upweighting option can remain consistent
-def get_ntile_info(fd):
+def get_ntile_info(clus_orig_fname):
+    fd = fitsio.read(clus_orig_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
     weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
     comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
     if args.compmd != 'altmtl':
@@ -355,8 +356,8 @@ if args.nz == 'y':
         extra_dir = 'nonKP'
         if args.compmd == 'altmtl':
             extra_dir = 'PIP'
-        clus_orig = fitsio.read(dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits')
-        comp_ntl,weight_ntl = get_ntile_info(clus_orig)                        
+        clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits'
+        comp_ntl, weight_ntl = get_ntile_info(clus_orig)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
 
 # determine linear weights for imaging systematics
