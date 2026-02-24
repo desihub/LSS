@@ -974,7 +974,8 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
         printlog('added NTILE = 1 column because column did not exist', logger=logger)
         nont = 1
     if comp_ntl is None:
-        weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        if weight_ntl is None:
+            weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
         comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
 
         if compmd == 'ran':
