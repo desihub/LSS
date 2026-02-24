@@ -1347,6 +1347,8 @@ if args.prep4sysnet == 'y':
     from LSS.imaging import sysnet_tools
     
     regl = ['N','S']
+    if tracer_clus == 'QSO':
+        regl = ['DES','SnotDES','N']
     
     for zl in zrl:
         zw = ''
@@ -1354,8 +1356,12 @@ if args.prep4sysnet == 'y':
         #if args.imsys_zbin == 'y':
         zw = str(zmin)+'_'+str(zmax)
         for reg in regl:
-            if type == 'LRG':
-                if reg == 'N':
+            if 'DES' in reg:
+                reg_map = 'S'
+            else: 
+                reg_map = reg
+            if tracer_clus == 'LRG':
+                if reg_map == 'N':
                     fitmapsbin = fit_maps
                 else:
                     if zmax == 0.6:
@@ -1369,7 +1375,7 @@ if args.prep4sysnet == 'y':
             #tpmap = tpstr
             #if 'ELG' in tpstr and 'notqso' in tpstr:
             #    tpmap = 'ELG_LOPnotqso'
-            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg_map+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -1383,10 +1389,25 @@ if args.prep4sysnet == 'y':
                 sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
-            seld = data_catalogs['PHOTSYS'] == reg
-            selr = randoms_catalogs['PHOTSYS'] == reg
+            
+            # select regions 
+            if reg == 'N' or reg == 'S':
+                seld = data_catalogs['PHOTSYS']    == reg
+                selr = randoms_catalogs['PHOTSYS'] == reg
+            elif 'DES' in reg:
+                inDES  = common.select_regressis_DES(data_catalogs)
+                inDESr = common.select_regressis_DES(randoms_catalogs)
+                if reg == 'DES':
+                    seld = inDES
+                    selr = inDESr
+                if reg == 'SnotDES':
+                    seld = data_catalogs['PHOTSYS'] == 'S'
+                    seld &= ~inDES
+                    selr = randoms_catalogs['PHOTSYS'] == 'S'
+                    selr &= ~inDESr
+                    
             #if args.use_allsky_rands == 'y':
-            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg_map}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
             allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
             #    selr_all = allsky_rands['PHOTSYS'] == reg
@@ -1404,7 +1425,6 @@ if args.prep4sysnet == 'y':
                 os.makedirs( dirout+'/sysnet/')
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
 
-
 if args.addsysnet == 'y':
     common.printlog('adding sysnet weights to data catalogs for '+tracer_clus,logger)
     from LSS.imaging import densvar
@@ -1416,6 +1436,9 @@ if args.addsysnet == 'y':
     dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
+    if tracer_clus == 'QSO':
+        regl_sysnet = ['DES','SnotDES','N']
+        
     for reg in regl_sysnet:
         for zl in zrl:
             #zw = ''
@@ -1433,7 +1456,16 @@ if args.addsysnet == 'y':
             for pix,wt in zip(sn_pix,pix_weight):
                 hpmap[pix] = wt
         
-            sel = data_catalogs['PHOTSYS'] == reg
+            # select regions 
+            if reg == 'N' or reg == 'S':
+                sel = data_catalogs['PHOTSYS'] == reg
+            elif 'DES' in reg:
+                inDES = common.select_regressis_DES(data_catalogs)
+                if reg == 'DES':
+                    sel = inDES
+                if reg == 'SnotDES':
+                    sel = data_catalogs['PHOTSYS'] == 'S'
+                    sel &= ~inDES
             selz = data_catalogs['Z'] > zl[0]
             selz &= data_catalogs['Z'] <= zl[1]
 
