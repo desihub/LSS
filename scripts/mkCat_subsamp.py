@@ -335,25 +335,12 @@ if args.splitGC == 'y':
 #5) writes the NGC/SGC clustering catalogs back out for data and randoms
 #It needs to take inputs for completeness and mean weight as a function of NTILE, of the non-subsampled catalog, so that the angular upweighting option can remain consistent
 def get_ntile_info(fd):
-    ntl = np.unique(fd['NTILE'])
-    comp_ntl = np.ones(len(ntl))
-    weight_ntl = np.ones(len(ntl))
-    for i in range(0,len(ntl)):
-        sel = fd['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
-        weight_ntl[i] = mean_ntweight
-        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-        
-        if args.compmd != 'altmtl':
-            fttl = np.zeros(len(ntl))
-            for i in range(0,len(ntl)): 
-                sel = fd['NTILE'] == ntl[i]
-                mean_fracobs_tiles = np.mean(fd[sel]['FRAC_TLOBS_TILES'])
-                fttl[i] = mean_fracobs_tiles
-        else:
-            fttl = np.ones(len(ntl))
-    comp_ntl = comp_ntl*fttl
-    return comp_ntl,weight_ntl
+    weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
+    if args.compmd != 'altmtl':
+        fttl = np.bincount(fd['NTILE']-1, weights=fd['FRAC_TLOBS_TILES']) / np.bincount(fd['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
+    return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
  
 if args.nz == 'y':
     for reg in regions:#allreg:
