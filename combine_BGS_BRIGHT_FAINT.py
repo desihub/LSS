@@ -27,12 +27,15 @@ parser.add_argument("--par", choices=['y', 'n'], help="run different random numb
 args = parser.parse_args()
 logger.info(f"Running with arguments: {args}")
 
-input_dir = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/'
+input_dir = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS
 logger.info(f"Primary input directory is {input_dir}")
-input_dir_alt = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/'
-logger.info(f"Backup input directory is {input_dir_alt}")
-output_dir = os.path.join(args.outdir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/'
+input_dir_alt = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with analysis, where we keep non-standard catalogs
+input_dir_alt2 = os.path.join(args.outdir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # outdir with LSS, files may be there from a run of mkCat_subsamp.py
+logger.info(f"Backup input directories are {input_dir_alt} and {input_dir_alt2}")
+output_dir = os.path.join(args.outdir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # outdir with analysis
 logger.info(f"Output directory is {output_dir}")
+try_dirs = [input_dir, input_dir_alt, input_dir_alt2, output_dir]
+
 samples_base = ['BRIGHT', 'FAINT']
 samples = [sample + args.ccut for sample in samples_base]
 logger.info(f"Combining samples {samples} obtained by applying cut {args.ccut} to base samples {samples_base}")
@@ -45,10 +48,11 @@ phot_regions = ["N", "S"]
 def read_catalog(sample: str, reg: str, iran: int | None = None) -> Table:
     """Read the clustering catalog for a given sample and region."""
     basename = f'BGS_{sample}_{reg}' + f'_{iran}' * (iran is not None) + '_clustering.' + ('dat' if iran is None else 'ran') + '.fits'
-    path = os.path.join(input_dir, basename)
-    if not os.path.isfile(path): path = os.path.join(input_dir_alt, basename) # try alternative input dir (with analysis instead of LSS)
-    if not os.path.isfile(path): path = os.path.join(output_dir, basename) # try the output dir just in case
-    if not os.path.isfile(path): raise FileNotFoundError(f"{basename} not found in any of the input or output directories ({input_dir}, {input_dir_alt}, {output_dir}).")
+    for dirname in try_dirs:
+        path = os.path.join(dirname, basename)
+        if os.path.isfile(path): break # exit from the loop for the highest-priority directory where the file is found
+    else: # "else" means the case when the loop completes without a break, thus the file is not found in any of the directories
+        raise FileNotFoundError(f"{basename} not found in any of the input or output directories {try_dirs}.")
     logger.info(f"Reading clustering catalog from {path}")
     return Table.read(path)
 
