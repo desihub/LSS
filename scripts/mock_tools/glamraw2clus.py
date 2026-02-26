@@ -218,7 +218,7 @@ for tracer in tracers:
     out_data_froot = outdir+tracerd+'_input_'
     ss = str(args.realization).zfill(4)
     mock_data_tr = common.read_hdf5_blosc(
-        mockdir+args.tracer+args.tracer_ver+'/GLAM-Uchuu_'+tracerd+'_'+str(args.realization)+'_Y3_cut_sky_clustering.h5')
+        mockdir+args.tracer+args.tracer_ver+'/GLAM-Uchuu_'+tracerd+'_'+str(args.realization)+'_Y3_cut_sky_clustering.h5', extname=None)
     if tracer == 'LRG':
         zmin = 0.4
         zmax = 1.1
