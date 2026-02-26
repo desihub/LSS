@@ -110,8 +110,7 @@ dirin = ldirspec+'LSScats/'+version+'/'
 lssmapdirout = dirin+'/hpmaps/' #maps for imaging systematics regressions
     
 if not os.path.exists(dirin):
-    
-    sys.exit('issue with '+dirin+' it does not exist')
+    raise RuntimeError('issue with '+dirin+': it does not exist')
 
 common.printlog('running subsampling '+dirin+args.input_tracer +' catalogs according to '+ccut,logger)
 
