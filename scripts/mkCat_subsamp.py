@@ -64,7 +64,7 @@ parser.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the
 parser.add_argument("--clusd", choices=['n', 'y'], help="make the 'clustering' catalog intended for paircounts", default='n')
 parser.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)
-parser.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (use parallel script for all)", default=18, type=int)
+parser.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
 parser.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes", default='n')
 parser.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
 
