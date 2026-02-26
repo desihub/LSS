@@ -214,10 +214,11 @@ if args.mkfulldat == 'y':
         sel = abr < float(args.ccut)
         sel &= z2use < 2
 
-    elif args.ccut == 'zcmb-21.35': #the sample used in DR2 BAO analysis
-        #don't use any k-correction at all, yields ~constant density
-        common.printlog('applying the -21.35 selection and correcting redshifts to the cmb frame',logger)
-        tracer_out = tracer_out.replace('zcmb-21.35','-21.35_zcmb')
+    elif args.ccut.startswith('zcmb') and is_float(args.ccut[len('zcmb'):]): # like the above absolute magnitude cut without k-correction, but with redshifts corrected to the CMB frame
+        # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
+        ccut_mag_str = args.ccut[len('zcmb'):]
+        common.printlog('applying the '+ccut_mag_str+' selection on absolute magnitude without k-correction and correcting redshifts to the cmb frame',logger)
+        tracer_out = tracer_out.replace('zcmb'+ccut_mag_str, ccut_mag_str+'_zcmb')
         from LSS.tabulated_cosmo import TabulatedDESI
         cosmo = TabulatedDESI()
         dis_dc = cosmo.comoving_radial_distance
@@ -234,7 +235,7 @@ if args.mkfulldat == 'y':
         cfluxr = fulldat['FLUX_R']/fulldat['MW_TRANSMISSION_R']
         r_dered = 22.5 - 2.5*np.log10(cfluxr)
         abr = r_dered -dm
-        sel = abr < -21.35
+        sel = abr < float(ccut_mag_str)
         sel &= z2use < 2
         
 
