@@ -145,7 +145,12 @@ if args.mkfulldat == 'y':
     common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
     fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
     
-    
+    def is_float(s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
     
     #for selections based on fastspecfit; other cases can be written similarly
     if 'FSFABSmag' in args.ccut:
@@ -192,9 +197,9 @@ if args.mkfulldat == 'y':
         #add any additional selections here
         
         #write output to new "full" catalog at your defined location
-    elif args.ccut == '-21.35': #the sample used in DR2 BAO analysis
-        #don't use any k-correction at all, yields ~constant density
-        common.printlog('applying the -21.35 selection',logger)
+    elif is_float(args.ccut): # following the example of the -21.35 cut used for BGS_BRIGHT in DR2 BAO analysis, which yielded a ~constant density sample, this option allows you to apply a simple cut on absolute magnitude (below the given value) without any k-correction, which yields a ~constant density sample
+        # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
+        common.printlog('applying the '+args.ccut+' selection on absolute magnitude without k-correction',logger)
         from LSS.tabulated_cosmo import TabulatedDESI
         cosmo = TabulatedDESI()
         dis_dc = cosmo.comoving_radial_distance
@@ -206,7 +211,7 @@ if args.mkfulldat == 'y':
         cfluxr = fulldat['FLUX_R']/fulldat['MW_TRANSMISSION_R']
         r_dered = 22.5 - 2.5*np.log10(cfluxr)
         abr = r_dered -dm
-        sel = abr < -21.35
+        sel = abr < float(args.ccut)
         sel &= z2use < 2
 
     elif args.ccut == 'zcmb-21.35': #the sample used in DR2 BAO analysis
