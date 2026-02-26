@@ -82,10 +82,6 @@ parser.add_argument("--par", choices=['y', 'n'], help="run different random numb
 args = parser.parse_args()
 common.printlog(str(args),logger)
 
-basedir = args.basedir
-version = args.version
-specrel = args.verspec
-ccut = args.ccut
 rm = int(args.minr)
 rx = int(args.maxr)
 
@@ -101,18 +97,14 @@ zmax = mainp.zmax
 
 #set up input directory
 
-maindir = basedir +'/'+args.survey+'/LSS/'
+dirin = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version) + '/'
 
-ldirspec = maindir+specrel+'/'
-
-dirin = ldirspec+'LSScats/'+version+'/'
-
-lssmapdirout = dirin+'/hpmaps/' #maps for imaging systematics regressions
+lssmapdirout = dirin + 'hpmaps/' #maps for imaging systematics regressions
     
 if not os.path.exists(dirin):
     raise RuntimeError('issue with '+dirin+': it does not exist')
 
-common.printlog('running subsampling '+dirin+args.input_tracer +' catalogs according to '+ccut,logger)
+common.printlog('running subsampling '+dirin+args.input_tracer +' catalogs according to '+args.ccut,logger)
 
 #parse arguments to toggle options
     
