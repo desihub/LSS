@@ -50,7 +50,7 @@ parser.add_argument("--ccut", help="a string that is used define your subsample"
 #arguments to find input data
 parser.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
 parser.add_argument("--basedir", help="base directory for input, a versioning structure is expected under it", default='/global/cfs/cdirs/desi/survey/catalogs/')
-parser.add_argument("--outdir", help="directory for output, a versioning structure will be created under it", default=os.environ['SCRATCH'])
+parser.add_argument("--outdir", help="directory for output, the catalogs will be saved directly under it", default=os.environ['SCRATCH'])
 parser.add_argument("--version", help="catalog version for input", default='v2')
 parser.add_argument("--survey", help="e.g., Y1, DA2", default='DA2')
 parser.add_argument("--verspec", help="version for redshifts", default='loa-v1')
