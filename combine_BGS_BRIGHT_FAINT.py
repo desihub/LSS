@@ -83,7 +83,7 @@ for (sample, sample_base) in zip(samples, samples_base):
         logger.info(f"Obtaining NTILE data for sample {sample_base} and region {reg}")
         base_data = Table.read(input_dir + f'BGS_{sample_base}_{reg}_clustering.dat.fits')
         comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
-        fttl = np.bincount(base_data['NTILE']-1, weights=base_data['FRAC_TLOBS_TILES']) / np.bincount(base_data['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (randoms might be more correct for this; note that it NTILE is shifted down by 1)
+        fttl = np.bincount(base_data['NTILE']-1, weights=base_data['FRAC_TLOBS_TILES']) / np.bincount(base_data['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (randoms might be more correct for this; note that NTILE is shifted down by 1)
         comp_ntile_factors[sample][reg] = comp_ntl * fttl # indexed by NTILE-1
         del base_data # free memory
 
@@ -167,7 +167,6 @@ def process_random(iran: int):
     # combination
     logger.info(f"Sorting randoms by TARGETID for random number {iran}")
     for sample in samples: random[sample].sort('TARGETID') # sort randoms by TARGETID
-    # for sample1 in samples[1:]: assert np.array_equal(random[samples[0]]['TARGETID'], random[sample1]['TARGETID']) # must be equal after sorting, happen to be different before for mag-cut samples
     random_comb = []
     for phot_region in phot_regions:
         logger.info(f"Selecting randoms in photometric region {phot_region} for random number {iran}")
