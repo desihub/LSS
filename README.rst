@@ -1,4 +1,5 @@
-# LSS
+LSS
+===
 
 |Actions Status| |Coveralls Status| |Documentation Status|
 
