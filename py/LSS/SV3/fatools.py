@@ -353,7 +353,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         gaiadr = 'dr2'
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
-
+    
     if mtldir is not None:
         if 'sv3' in indir.lower():
             if verbose:
@@ -383,7 +383,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 mock = mock)
             #tdirMain+prog,
             #LGN 06/11/25: Adding compatibility with reproducing tests for DARK1B
-            elif targver == '1.0.0' or targver == '3.0.0':
+            #LGN 01/28/26: Adding compatibility with BRIGHT1B
+            elif targver == '1.0.0' or targver == '3.0.0' or targver == '3.2.0':
                 if verbose:
                     log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
                     log.info(f'targver  = {targver}')
@@ -394,7 +395,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                     os.makedirs(outdir)
                   
                 shutil.copyfile(indir+ts+'-targ.fits', tarfn)
-
+    
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -580,17 +581,44 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-    
-        d = io.read_targets_in_tiles(
-            mtldir,
-            tiles,
-            quick=False,
-            mtl=True,
-            unique=True,
-            isodate=mtltime,
-            verbose=verbose,
-            tabform='ascii.ecsv'
-        )
+        # LGN: Adding handling for bright1b/dark1b tiles
+        if 'dark1b' or 'bright1b' in mtldir:
+            log.info('Running with maketwostyle=True')
+            is_ext = True
+            # LGN Formatting the path to bright or dark ledgers
+            # LGN Passing list of directories to read_targets_in_tiles
+            mtldir_short = os.path.join(
+                os.path.dirname(mtldir), 
+                os.path.basename(mtldir).replace('1b', '')
+            )
+            mtldirs = [mtldir_short, mtldir]
+            
+            d = io.read_targets_in_tiles(
+                mtldirs,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
+        
+        else:
+            is_ext = False
+        
+            d = io.read_targets_in_tiles(
+                mtldir,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
         
     
     try:
