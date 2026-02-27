@@ -40,13 +40,17 @@ Or (not actually recommended as this is less common usage)
 
 2.  Install (and uninstall) the current git checkout:
 
-    $>  python setup.py develop --user
+.. code-block:: bash
 
-    $>  python setup.py develop --user --uninstall
+    pip install -e . --user
+
+    pip uninstall LSS
 
 You can also install a fixed version of the package:
 
-    $>  python setup.py install --user
+.. code-block:: bash
+
+    pip install -e . --user
 
 This will put the main scripts bin/ in your $PATH (typically in $HOME/.local/bin).
 
