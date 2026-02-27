@@ -37,6 +37,7 @@ e.g., if you git cloned from your $HOME directory
 .. code-block:: bash
 
     PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+    PATH=$PATH:$HOME/LSS/bin # if needed
 
 Or (not actually recommended as this is less common usage)
 
