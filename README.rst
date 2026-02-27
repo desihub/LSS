@@ -32,7 +32,9 @@ If you want any change to the code to take place immediately, either:
 1.  Add the "bin" directory to your
     ``$PATH`` environment variable and add the "py" directory to your
     ``$PYTHONPATH`` environment variable.
-e.g., if you git cloned from your $HOME directory, $>  PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
+e.g., if you git cloned from your $HOME directory::
+
+    PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
 
 Or (not actually recommended as this is less common usage)
 
