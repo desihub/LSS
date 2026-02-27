@@ -1,4 +1,5 @@
-# LSS
+LSS
+===
 
 |Actions Status| |Coveralls Status| |Documentation Status|
 
@@ -32,33 +33,48 @@ If you want any change to the code to take place immediately, either:
 1.  Add the "bin" directory to your
     ``$PATH`` environment variable and add the "py" directory to your
     ``$PYTHONPATH`` environment variable.
-e.g., if you git cloned from your $HOME directory, $>  PYTHONPATH=$PYTHONPATH:$HOME/LSS/py 
+e.g., if you git cloned from your $HOME directory
+
+.. code-block:: bash
+
+    PYTHONPATH=$PYTHONPATH:$HOME/LSS/py
+    PATH=$PATH:$HOME/LSS/bin # if needed
 
 Or (not actually recommended as this is less common usage)
 
 2.  Install (and uninstall) the current git checkout:
 
-    $>  python setup.py develop --user
+.. code-block:: bash
 
-    $>  python setup.py develop --user --uninstall
+    pip install -e . --user
+
+    pip uninstall LSS
 
 You can also install a fixed version of the package:
 
-    $>  python setup.py install --user
+.. code-block:: bash
+
+    pip install -e . --user
 
 This will put the main scripts bin/ in your $PATH (typically in $HOME/.local/bin).
 
 This code only works on NERSC, in the DESI or cosmodesi environments. Most work in the DESI environment: e.g., run
 
-    $>  source /global/common/software/desi/desi_environment.sh main
+.. code-block:: bash
+
+    source /global/common/software/desi/desi_environment.sh main
 
 Some code requires the cosmodesi environment to be loaded instead (e.g., for 2pt functions and/or reconstruction, regressis tools, etc.) Source it via
 
-    $>  source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+.. code-block:: bash
+
+    source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
 or
 
-    $>  source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
+.. code-block:: bash
+
+    source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
 
 for some of the latest capabilities.
 
