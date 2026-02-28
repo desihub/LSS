@@ -8,7 +8,7 @@ from LSS import common_tools as common
 fsse = Table.read(
     '/dvs_ro/cfs/cdirs/desicollab/users/zhaoc/spec_catas_dr2_elg/output/ELG_merged_properties_with_threshold_v2.fits.gz', hdu=1)
 
-selbad = data['SSE_DCHI2_COMB'] > data.meta['COMB_MAX']
+selbad = fsse['SSE_DCHI2_COMB'] > fsse.meta['COMB_MAX']
 
 bad_tids = fsse['TARGETID'][selbad]
 
