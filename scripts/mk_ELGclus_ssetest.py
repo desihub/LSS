@@ -5,9 +5,10 @@ import sys
 import fitsio
 from LSS import common_tools as common
 
-fsse = fitsio.read(
-    '/dvs_ro/cfs/cdirs/desicollab/users/zhaoc/spec_catas_dr2_elg/output/ELG_merged_properties_v2.fits.gz')
-selbad = fsse['SSE_WITH_MASK'] >= 98.96
+fsse = Table.read(
+    '/dvs_ro/cfs/cdirs/desicollab/users/zhaoc/spec_catas_dr2_elg/output/ELG_merged_properties_with_threshold_v2.fits.gz', hdu=1)
+
+selbad = data['SSE_DCHI2_COMB'] > data.meta['COMB_MAX']
 
 bad_tids = fsse['TARGETID'][selbad]
 
