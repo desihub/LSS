@@ -46,7 +46,8 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/
-ALTMTLHOME=/pscratch/sd/d/desica/DA2/mocks/holi_v1/
+#ALTMTLHOME=/pscratch/sd/d/desica/DA2/mocks/holi_v1/
+ALTMTLHOME=/pscratch/sd/d/desica/DA2/mocks/holi_v2/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -90,9 +91,14 @@ seed=3593589
 #mockinit=0
 #mockend=48
 
+# added by ZZ, but a better solution is to just remove --mockmin=$mockinit --mockmax=$mockend in the definition of argstring
+mockinit=0
+mockend=1
+
 let ndir=$mockend-$mockinit 
 
-mocklist="201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303"
+#mocklist="0,1,2,7,8,9,10,11,12,13,14,23,24,25,28,29,30,31,33,34,35,38,39,43,44,45,48,49,52,53,54,56,57,58,59,60,61,62,64,65,67,68,69,91,95,100,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223"
+mocklist="201,203,224,229,230,242,243,253,255,256,257,258,264,266,268,272,276,277,282,283,284,287,289,291,294,296,297,308,312,313"
 size=$(echo "$mocklist" | tr ',' ' ' | wc -w)
 
 if [ "$size" -ne 0 ]; then
@@ -208,9 +214,10 @@ secondary=''
 #targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
-targfile="--targfile=/pscratch/sd/d/desica/DA2/mocks/holi_v1/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
+#targfile="--targfile=/pscratch/sd/d/desica/DA2/mocks/holi_v1/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits'
+targfile="--targfile=/pscratch/sd/d/desica/DA2/mocks/holi_v2/forFA{mock_number}.fits"
 
-zfix="--zfix=/pscratch/sd/d/desica/DA2/mocks/holi_v1/qsos/qso{mock_number}.txt" 
+zfix="--zfix=/pscratch/sd/d/desica/DA2/mocks/holi_v2/qsos/qso{mock_number}.txt" 
 #zfix=''
 
 
