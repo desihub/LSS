@@ -523,12 +523,12 @@ if tracer == 'QSO':
     zmax = 2.1
     if args.survey == 'Y1':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
-    if args.survey == 'DA2':
+    if args.survey == 'DA2' and args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
         subfrac = 0.675 #1
-    if 'holi' in args.simName:
-        subfrac = 1
-    if 'GLAM' in args.simName:
-        subfrac = 1
+    #if 'holi' in args.simName:
+    #    subfrac = 1
+    #if 'GLAM' in args.simName:
+    #    subfrac = 1
         #subfrac = [0.97,1]
         #zsplit = 2.1
         
@@ -543,8 +543,8 @@ if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
         subfrac = 0.976
     if args.survey == 'DA2':
         subfrac = 0.966
-    if 'holi' in args.simName:
-        subfrac = 0.985
+        if 'holi' in args.simName:
+            subfrac = 0.985
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
@@ -554,13 +554,15 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
-        subfrac = [0.7,0.545]
-    if 'GLAM' in args.simName:
         subfrac = [0.96,0.76]
+        if args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
+            subfrac = [0.7,0.545]
+    #if 'GLAM' in args.simName:
+    #    subfrac = [0.96,0.76]
         #if int(args.mocknum) < 10 or int(args.mocknum) > 12:
         #    subfrac = [0.96*.97,0.84*.97] #rest of glam has 3% higher ELG for some reason
-    if 'holi' in args.simName:
-        subfrac = [0.96,.76]
+    #if 'holi' in args.simName:
+    #    subfrac = [0.96,.76]
     zsplit=1.49
 if args.tracer[:3] == 'BGS':
     P0 = 7000
@@ -883,7 +885,7 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
-    
+    common.printlog('using subfrac '+str(subfrac),logger)
     if args.add_extracols is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
         columns_extra = ['TARGETID']
