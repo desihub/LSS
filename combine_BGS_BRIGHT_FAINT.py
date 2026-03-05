@@ -27,14 +27,13 @@ parser.add_argument("--par", choices=['y', 'n'], help="run different random numb
 args = parser.parse_args()
 logger.info(f"Running with arguments: {args}")
 
-input_dir = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS
+input_dir = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with analysis, where we keep non-standard catalogsS
 logger.info(f"Primary input directory is {input_dir}")
-input_dir_alt = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with analysis, where we keep non-standard catalogs
-input_dir_alt2 = os.path.join(args.outdir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # outdir with LSS, files may be there from a run of mkCat_subsamp.py
-logger.info(f"Backup input directories are {input_dir_alt} and {input_dir_alt2}")
 output_dir = os.path.join(args.outdir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # outdir with analysis
 logger.info(f"Output directory is {output_dir}")
-try_dirs = [input_dir, input_dir_alt, input_dir_alt2, output_dir]
+input_dir_main = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut catalogs, and for fallback if the cut catalogs are not found in the analysis directory
+logger.info(f"Input directory for non-cut catalogs (and fallback) is {input_dir_main}")
+try_dirs = [input_dir, output_dir, input_dir_main] # order to look for input files
 
 samples_base = ['BRIGHT', 'FAINT']
 samples = [sample + args.ccut for sample in samples_base]
@@ -85,7 +84,7 @@ for (sample, sample_base) in zip(samples, samples_base):
         logger.info(f"Reading nz data for sample {sample} and region {reg} from {nz_name}")
         nz_data[sample][reg] = np.loadtxt(nz_name).T
         logger.info(f"Obtaining NTILE data for sample {sample_base} and region {reg}")
-        base_data = Table.read(input_dir + f'BGS_{sample_base}_{reg}_clustering.dat.fits') # the base sample catalog should be in the main input dir
+        base_data = Table.read(input_dir_main + f'BGS_{sample_base}_{reg}_clustering.dat.fits') # the base sample catalog should be in the main input dir
         comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
         fttl = np.bincount(base_data['NTILE']-1, weights=base_data['FRAC_TLOBS_TILES']) / np.bincount(base_data['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (randoms might be more correct for this; note that NTILE is shifted down by 1)
         comp_ntile_factors[sample][reg] = comp_ntl * fttl # indexed by NTILE-1
