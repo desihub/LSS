@@ -45,14 +45,17 @@ regions = ['NGC', 'SGC']
 phot_regions = ["N", "S"]
 
 
+def lookup_dirs(basename: str) -> str:
+    for dirname in try_dirs:
+        path = os.path.join(dirname, basename)
+        if os.path.isfile(path): return path
+    raise FileNotFoundError(f"{basename} not found in any of the input or output directories {try_dirs}.")
+
+
 def read_catalog(sample: str, reg: str, iran: int | None = None) -> Table:
     """Read the clustering catalog for a given sample and region."""
     basename = f'BGS_{sample}_{reg}' + f'_{iran}' * (iran is not None) + '_clustering.' + ('dat' if iran is None else 'ran') + '.fits'
-    for dirname in try_dirs:
-        path = os.path.join(dirname, basename)
-        if os.path.isfile(path): break # exit from the loop for the highest-priority directory where the file is found
-    else: # "else" means the case when the loop completes without a break, thus the file is not found in any of the directories
-        raise FileNotFoundError(f"{basename} not found in any of the input or output directories {try_dirs}.")
+    path = lookup_dirs(basename)
     logger.info(f"Reading clustering catalog from {path}")
     return Table.read(path)
 
@@ -78,10 +81,11 @@ for (sample, sample_base) in zip(samples, samples_base):
     nz_data[sample] = {}
     comp_ntile_factors[sample] = {}
     for reg in regions:
-        logger.info(f"Reading nz data for sample {sample} and region {reg}")
-        nz_data[sample][reg] = np.loadtxt(input_dir + f'BGS_{sample}_{reg}_nz.txt').T
+        nz_name = lookup_dirs(f'BGS_{sample}_{reg}_nz.txt')
+        logger.info(f"Reading nz data for sample {sample} and region {reg} from {nz_name}")
+        nz_data[sample][reg] = np.loadtxt(nz_name).T
         logger.info(f"Obtaining NTILE data for sample {sample_base} and region {reg}")
-        base_data = Table.read(input_dir + f'BGS_{sample_base}_{reg}_clustering.dat.fits')
+        base_data = Table.read(input_dir + f'BGS_{sample_base}_{reg}_clustering.dat.fits') # the base sample catalog should be in the main input dir
         comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
         fttl = np.bincount(base_data['NTILE']-1, weights=base_data['FRAC_TLOBS_TILES']) / np.bincount(base_data['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (randoms might be more correct for this; note that NTILE is shifted down by 1)
         comp_ntile_factors[sample][reg] = comp_ntl * fttl # indexed by NTILE-1
