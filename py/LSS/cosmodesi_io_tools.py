@@ -108,7 +108,8 @@ def select_region(ra, dec, region):
     elif 'GC' in region:
         from astropy.coordinates import SkyCoord
         import astropy.units as u
-        c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        #c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        c = SkyCoord(ra,dec,frame='icrs',unit='deg')
         gc = c.transform_to('galactic')
         sel_ngc = gc.b > 0
         if region == 'NGC':
