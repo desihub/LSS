@@ -18,7 +18,7 @@ def read_file(fn, columns=None):
     return data
 
 def get_ran(tracer,rann,realization,reg,base_dir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/',
-                             mockver='GLAM-Uchuu_v1',datadir='/global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/v2/'):
+                             mockver='GLAM-Uchuu_v1',datadir='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'):
     tardir = base_dir+mockver
     LSSdir = tardir+'/altmtl'+str(realization)+'/loa-v1/mock'+str(realization)+'/LSScats/'
     in_ran_fn = LSSdir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5' 
