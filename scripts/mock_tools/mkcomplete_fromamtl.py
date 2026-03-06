@@ -53,7 +53,7 @@ def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/
         zmax = 1.6
     in_data_fn = LSSdir+tracer+'_full_HPmapcut.dat.h5'    
     print(in_data_fn)
-    in_data = read_file(in_data_fn,columns=['TARGETID','RA','DEC','NTILE','ZWARN'])
+    in_data = read_file(in_data_fn,columns=['TARGETID','RA','DEC','NTILE','ZWARN','FRACZ_TILELOCID','FRAC_TLOBS_TILES'])
     
     sel_con = in_data['TARGETID'] < 419430400000000 #remove contaminants
     in_data = in_data[sel_con]
@@ -80,10 +80,10 @@ def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/
     in_data['WEIGHT_SYS'] = np.ones(len(in_data))
     in_data['WEIGHT_COMP'] = np.ones(len(in_data))                             
     in_data['WEIGHT_ZFAIL'] = np.ones(len(in_data))
-    in_data['FRAC_TLOBS_TILES'] = np.ones(len(in_data))
-    weight_ntl = np.bincount(in_data['NTILE'], weights=in_data['WEIGHT_COMP']) / np.bincount(in_data['NTILE'])
+    #in_data['FRAC_TLOBS_TILES'] = np.ones(len(in_data))
+    fracz_ntl = np.bincount(in_data['NTILE'], weights=in_data['FRACZ_TILELOCID']) / np.bincount(in_data['NTILE'])
     fttl = np.bincount(in_data['NTILE'], weights=in_data['FRAC_TLOBS_TILES']) / np.bincount(in_data['NTILE'])
-    cntl = fttl/weight_ntl
+    cntl = fttl*fracz_ntl
     #for nt in range(0,8):
     #    seld = in_data['NTILE'] == nt
     #    comp = np.sum(sela&seld)/np.sum(seld)		
