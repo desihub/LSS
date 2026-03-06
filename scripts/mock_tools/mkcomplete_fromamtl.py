@@ -74,17 +74,20 @@ def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/
         print('for zfail, keeping '+str(np.sum(subz)/len(in_data)))
         in_data =in_data[subz]
               
-    cntl = np.zeros(8)
+    #cntl = np.zeros(8)
     sela = in_data['ZWARN'] != 999999
     in_data['WEIGHT'] = np.ones(len(in_data))
     in_data['WEIGHT_SYS'] = np.ones(len(in_data))
     in_data['WEIGHT_COMP'] = np.ones(len(in_data))                             
     in_data['WEIGHT_ZFAIL'] = np.ones(len(in_data))
     in_data['FRAC_TLOBS_TILES'] = np.ones(len(in_data))
-    for nt in range(0,8):
-        seld = in_data['NTILE'] == nt
-        comp = np.sum(sela&seld)/np.sum(seld)		
-        cntl[nt] = comp
+    weight_ntl = np.bincount(in_data['NTILE'], weights=in_data['WEIGHT_COMP']) / np.bincount(in_data['NTILE'])
+    fttl = np.bincount(in_data['NTILE'], weights=in_data['FRAC_TLOBS_TILES']) / np.bincount(in_data['NTILE'])
+    cntl = fttl/weight_ntl
+    #for nt in range(0,8):
+    #    seld = in_data['NTILE'] == nt
+    #    comp = np.sum(sela&seld)/np.sum(seld)		
+    #    cntl[nt] = comp
     in_data['WEIGHT'] = cntl[in_data['NTILE']]
         
     print('completeness as a function of NTILE is '+str(cntl))
