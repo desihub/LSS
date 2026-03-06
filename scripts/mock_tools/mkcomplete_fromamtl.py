@@ -109,7 +109,7 @@ else:
     tracers = [args.tracer]
 regl = ['NGC','SGC']
 for tracer in tracers:
-    for reg in region:
+    for reg in regl:
         out_fname = args.outloc+'/'+args.mock_ver+'/complete'+str(args.realization)+'/'+tracer+'_'+reg+'_clustering.dat.h5'
         data = get_parent_clus_fromfull(tracer,args.realization,reg,base_dir=args.basedir,mockver=args.mock_ver)
         common.write_LSShdf5_scratchcp(data, out_fname)
