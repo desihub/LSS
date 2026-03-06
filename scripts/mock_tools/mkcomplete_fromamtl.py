@@ -17,6 +17,20 @@ def read_file(fn, columns=None):
             'global', 'dvs_ro'), columns=columns)
     return data
 
+def get_ran(tracer,rann,realization,reg,base_dir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/',
+                             mockver='GLAM-Uchuu_v1',datadir='/global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/v2/'):
+    tardir = base_dir+mockver
+    LSSdir = tardir+'/altmtl'+str(realization)+'/loa-v1/mock'+str(realization)+'/LSScats/'
+    in_ran_fn = LSSdir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5' 
+    in_clus_fileroot = LSSdir+tracer
+    if 'BGS' in tracer:
+        parent_ran_fn = datadir+'bright_'+str(rann)+'_full_noveto.ran.h5'
+    else:
+        parent_ran_fn = datadir+'dark_'+str(rann)+'_full_noveto.ran.h5' 
+    ran = common.expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot)    
+    return ran
+       
+
 
 def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/',
                              mockver='GLAM-Uchuu_v1'):
@@ -103,6 +117,9 @@ parser.add_argument("--mock_ver", help="type and version of mocks",
 
 parser.add_argument("--tracer", default='all')
 parser.add_argument("--outloc", default=os.getenv('SCRATCH'))
+parser.add_argument("--doran", action='store_true')
+parser.add_argument("--ranmin", default=0,type=int)
+parser.add_argument("--ranmax", default=4,type=int)
 
 
 
@@ -121,3 +138,8 @@ for tracer in tracers:
         out_fname = outdir+tracer+'_'+reg+'_clustering.dat.h5'
         data = get_parent_clus_fromfull(tracer,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
         common.write_LSShdf5_scratchcp(data, out_fname)
+        if args.doran:
+            for i in range(args.ranmin,args.ranmax):
+                get_ran(tracer,i,realization,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
+                out_fname = outdir+tracer+'_'+str(i)+'_'+reg+'_clustering.ran.h5'
+                
