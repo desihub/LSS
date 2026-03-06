@@ -1,3 +1,20 @@
+import numpy as np
+import fitsio
+import glob
+import argparse
+from astropy.table import Table,join,unique,vstack
+
+def read_file(fn, columns=None):
+    if '.fits' in fn:
+        data = Table(fitsio.read(fn.replace('global', 'dvs_ro')))
+        if columns is not None:
+            data.keep_columns(columns)
+    if '.h5' in fn:
+        data = common.read_hdf5_blosc(fn.replace(
+            'global', 'dvs_ro'), columns=columns)
+    return data
+
+
 def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/',
                              mockver='GLAM-Uchuu_v1'):
     tardir = base_dir+mockver
@@ -5,9 +22,6 @@ def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/
     tar_data = read_file(tar_data_fn,columns=['TARGETID','RSDZ'])
     tar_data.rename_column('RSDZ','Z')
     LSSdir = tardir+'/altmtl'+str(realization)+'/loa-v1/mock'+str(realization)+'/LSScats/'
-    pars = params(tracer)
-    zmin = pars.zmin
-    zmax = pars.zmax
     if tracer == 'QSO':
         P0 = 6000
         zmin = 0.8
@@ -71,3 +85,30 @@ def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/
     in_data['NX'] = nl*cntl[in_data['NTILE']]
     in_data['WEIGHT_FKP'] = 1/(1+P0*in_data['NX'])
     return in_data
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--realization", default=1,
+                    help="which realization to use, default is 1", type=int)
+parser.add_argument("--base_dir", help="base directory for input/output",
+                    default='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/')
+parser.add_argument("--mock_ver", help="type and version of mocks",
+                    default='GLAM-Uchuu_v1')
+
+parser.add_argument("--tracer", default='all')
+parser.add_argument("--outloc", default=os.getenv('SCRATCH'))
+
+
+
+args = parser.parse_args()
+logger.info(args)
+if args.tracer == 'all':
+    tracers = ['ELG_LOPnotqso','LRG','QSO']
+else:
+    tracers = [args.tracer]
+regl = ['NGC','SGC']
+for tracer in tracers:
+    for reg in region:
+        out_fname = args.outloc+'/'+args.mock_ver+'/complete'+str(args.realization)+'/'+tracer+'_'+reg+'_clustering.dat.h5')
+            data = get_parent_clus_fromfull(tracer,args.realization,reg,base_dir=args.basedir,mockver=args.mock_ver)
+            common.write_LSShdf5_scratchcp(
+                data, out_fname)
