@@ -141,7 +141,7 @@ for tracer in tracers:
         if args.doran:
             #easy way to speed up code would be to do different random realizations in parallel
             for i in range(args.ranmin,args.ranmax):
-                get_ran(tracer,i,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
+                ran = get_ran(tracer,i,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
                 out_fname = outdir+tracer+'_'+reg+'_'+str(i)+'_clustering.ran.h5'
-                common.write_LSShdf5_scratchcp(data, out_fname)
+                common.write_LSShdf5_scratchcp(ran, out_fname)
                 
