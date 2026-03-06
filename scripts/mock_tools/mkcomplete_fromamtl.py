@@ -66,6 +66,7 @@ def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/
     in_data['WEIGHT_SYS'] = np.ones(len(in_data))
     in_data['WEIGHT_COMP'] = np.ones(len(in_data))                             
     in_data['WEIGHT_ZFAIL'] = np.ones(len(in_data))
+    in_data['FRAC_TLOBS_TILES'] = np.ones(len(in_data))
     for nt in range(0,8):
         seld = in_data['NTILE'] == nt
         comp = np.sum(sela&seld)/np.sum(seld)		
