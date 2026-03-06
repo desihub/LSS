@@ -139,6 +139,7 @@ for tracer in tracers:
         data = get_parent_clus_fromfull(tracer,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
         common.write_LSShdf5_scratchcp(data, out_fname)
         if args.doran:
+            #easy way to speed up code would be to do different random realizations in parallel
             for i in range(args.ranmin,args.ranmax):
                 get_ran(tracer,i,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
                 out_fname = outdir+tracer+'_'+reg+'_'+str(i)+'_clustering.ran.h5'
