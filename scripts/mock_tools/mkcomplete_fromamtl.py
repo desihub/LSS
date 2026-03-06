@@ -102,7 +102,7 @@ parser.add_argument("--outloc", default=os.getenv('SCRATCH'))
 
 
 args = parser.parse_args()
-logger.info(args)
+
 if args.tracer == 'all':
     tracers = ['ELG_LOPnotqso','LRG','QSO']
 else:
