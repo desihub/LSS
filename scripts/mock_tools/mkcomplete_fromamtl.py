@@ -109,8 +109,11 @@ if args.tracer == 'all':
 else:
     tracers = [args.tracer]
 regl = ['NGC','SGC']
+outdir = args.outloc+'/'+args.mock_ver+'/complete'+str(args.realization)+'/'
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
 for tracer in tracers:
     for reg in regl:
-        out_fname = args.outloc+'/'+args.mock_ver+'/complete'+str(args.realization)+'/'+tracer+'_'+reg+'_clustering.dat.h5'
+        out_fname = outdir+tracer+'_'+reg+'_clustering.dat.h5'
         data = get_parent_clus_fromfull(tracer,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
         common.write_LSShdf5_scratchcp(data, out_fname)
