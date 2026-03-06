@@ -141,6 +141,6 @@ for tracer in tracers:
         if args.doran:
             for i in range(args.ranmin,args.ranmax):
                 get_ran(tracer,i,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
-                out_fname = outdir+tracer+'_'+str(i)+'_'+reg+'_clustering.ran.h5'
+                out_fname = outdir+tracer+'_'+reg+'_'+str(i)+'_clustering.ran.h5'
                 common.write_LSShdf5_scratchcp(data, out_fname)
                 
