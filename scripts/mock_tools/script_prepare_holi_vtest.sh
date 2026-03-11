@@ -5,8 +5,8 @@
 declare -A conf_version
 
 conf_version[QSO]="webjax_v4.80"
-conf_version[ELG]="webjax_v4.80"
-conf_version[LRG]="webjax_v4.81"
+conf_version[ELG]="webjax_v4.81"
+conf_version[LRG]="webjax_v4.80"
 
 
 #echo $version
