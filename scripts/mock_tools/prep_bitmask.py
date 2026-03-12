@@ -129,7 +129,9 @@ srun -n 64 -c 4 --cpu-bind=cores '''+rootdir+'/BRICKMASK -c '''+conf_file+'\n'
 rundir = '/global/homes/d/desica/BRICKMASKcode/brickmask/'
 qsomin = 100
 qsomax = 125
+elgmin = 0
+elgmax = 50
 fileroot = rundir+'holi_AJRrun1'
-mk_inputandoutput_fn(file_root=fileroot,qsomin=qsomin,qsomax=qsomax,elgmin=0,elgmax=50)
+mk_inputandoutput_fn(file_root=fileroot,qsomin=qsomin,qsomax=qsomax,elgmin=elgmin,elgmax=elgmax)
 mk_confile('.conf',fileroot)
 mk_sbatch(fileroot+'.sbatch',fileroot+'.conf',rundir)
