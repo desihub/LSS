@@ -8,7 +8,7 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
         if os.path.isfile(in_fn):
             fn_inputs.write(in_fn+'\n')
             out_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/imforFA0_Y3_noimagingmask_applied.fits'
-            fn_outputs.write(fn_outputs+'\n')
+            fn_outputs.write(out_fn+'\n')
         else:
             print(in_fn+' not found')
     for i in range(lrgmin,lrgmax):
@@ -16,7 +16,7 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
         if os.path.isfile(in_fn):
             fn_inputs.write(in_fn+'\n')
             out_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/imforFA0_Y3_noimagingmask_applied.fits'
-            fn_outputs.write(fn_outputs+'\n')
+            fn_outputs.write(out_fn+'\n')
         else:
             print(in_fn+' not found')
     for i in range(elgmin,elgmax):
@@ -24,7 +24,7 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
         if os.path.isfile(in_fn):
             fn_inputs.write(in_fn+'\n')
             out_fn = lrgdir+'seed'+str(i).zfill(4)+'/ELG/imforFA0_Y3_noimagingmask_applied.fits'
-            fn_outputs.write(fn_outputs+'\n')
+            fn_outputs.write(out_fn+'\n')
         else:
             print(in_fn+' not found')
 
