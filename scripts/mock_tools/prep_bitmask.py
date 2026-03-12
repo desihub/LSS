@@ -102,14 +102,14 @@ VERBOSE         =
 	fo.write(output)
 	fo.close()
 
-def mk_sbatch(batch_fn,conf_file,rootdir='/global/homes/d/desica/BRICKMASKcode/brickmask/'):
+def mk_sbatch(batch_fn,conf_file,rootdir='/global/homes/d/desica/BRICKMASKcode/brickmask/',jobname='test'):
     fo = open(batch_fn,'w')
     #conf_file = rootdir+conf_file
     outs = '''#!/bin/bash
 #SBATCH --time=4:00:00
 #SBATCH --qos=regular
 #SBATCH --nodes=1
-#SBATCH -J holiv3_1
+#SBATCH -J '''+jobname+'\n'+'''
 #SBATCH --constraint=cpu
 #SBATCH --account=desi
 #SBATCH --cpus-per-task=4
@@ -134,4 +134,4 @@ elgmax = 50
 fileroot = rundir+'holi_AJRrun1'
 mk_inputandoutput_fn(file_root=fileroot,qsomin=qsomin,qsomax=qsomax,elgmin=elgmin,elgmax=elgmax)
 mk_confile('.conf',fileroot)
-mk_sbatch(fileroot+'.sbatch',fileroot+'.conf',rundir)
+mk_sbatch(fileroot+'.sbatch',fileroot+'.conf',rundir,jobname='holiBM_AJRrun1')
