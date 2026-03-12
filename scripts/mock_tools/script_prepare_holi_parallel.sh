@@ -8,6 +8,11 @@ conf_version[QSO]="webjax_v4.80"
 conf_version[ELG]="webjax_v4.81"
 conf_version[LRG]="webjax_v4.80"
 
+declare -A sversion
+sversion[QSO]="v4.80"
+sversion[ELG]="v4.81"
+sversion[LRG]="v4.80"
+
 
 #echo $version
 
@@ -20,16 +25,17 @@ nzfile[ELG]="/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.81/nzref_da2_elg_N.
 
 #echo $version
 
-tracer="ELG"
+tracer=$3
 
 version="${conf_version[$tracer]}"
+short_version="${sversion[$tracer]}"
 nzname="${nzfile[$tracer]}"
 
 seed="seed0001"
 if [ -f "/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/$tracer/forFA0_Y3_noimagingmask_applied.fits" ]; then
     echo "/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/$tracer/forFA0_Y3_noimagingmask_applied.fits exists"
 else
-    python $LSS/scripts/mock_tools/prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/ --input_mockfile holi_ELG_v4.81_GCcomb_clustering.dat.h5 --tracer ELG --zrsdcol Z --output_fullpathfn /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits --save_mock_nz y --nzfilename $nzname --need_nz_calib y
+    python $LSS/scripts/mock_tools/prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/ --input_mockfile holi_"$tracer"_"$short_version"_GCcomb_clustering.dat.h5 --tracer $tracer --zrsdcol Z --output_fullpathfn /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits --save_mock_nz y --nzfilename $nzname --need_nz_calib y
 fi
 
 # Run iterations in parallel with max 10 jobs running at a time
@@ -44,7 +50,7 @@ for ((i=$1;i<=$2;i++ )); do
 	if [ -f "/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/$tracer/forFA0_Y3_noimagingmask_applied.fits" ]; then
 	    echo "/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/$tracer/forFA0_Y3_noimagingmask_applied.fits exists"
 	else
-	    python $LSS/scripts/mock_tools/prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/ --input_mockfile holi_ELG_v4.81_GCcomb_clustering.dat.h5 --tracer ELG --zrsdcol Z --output_fullpathfn /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits --save_mock_nz n --nzfilename $nzname --need_nz_calib y
+	    python $LSS/scripts/mock_tools/prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/ --input_mockfile holi_"$tracer$"_"$short_version"_GCcomb_clustering.dat.h5 --tracer $tracer --zrsdcol Z --output_fullpathfn /global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits --save_mock_nz n --nzfilename $nzname --need_nz_calib y
 	fi
     } &
 
