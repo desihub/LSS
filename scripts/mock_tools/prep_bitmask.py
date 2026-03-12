@@ -122,6 +122,7 @@ export CFITSIO_DIR=/global/common/software/desi/users/naimgk/cfitsio
 export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
 
 srun -n 64 -c 4 --cpu-bind=cores '''+rootdir+'/BRICKMASK -c '''+conf_file+'\n'
+    fo.write(outs)
     fo.close()
 
 
