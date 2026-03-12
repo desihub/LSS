@@ -1,5 +1,42 @@
-def mk_confile(conf_fn,input_fn,output_fn):
-	fo = open(conf_fn,'w')
+import os
+
+def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/',lrgdir='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/',elgdir='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.81/',qsomin=0,qsomax=0,lrgmin=0,lrgmax=0,elgmin=0,elgmax=0):
+    fn_inputs = open(file_root+'_in.txt','w')
+    fn_outputs = open(file_root+'_out.txt','w')
+    for i in range(qsomin,qsomax):
+        in_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/forFA0_Y3_noimagingmask_applied.fits'
+        if os.path.isfile(in_fn):
+            fn_inputs.write(in_fn+'\n')
+            out_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/imforFA0_Y3_noimagingmask_applied.fits'
+            fn_outputs.write(fn_outputs+'\n')
+        else:
+            print(in_fn+' not found')
+    for i in range(lrgmin,lrgmax):
+        in_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/forFA0_Y3_noimagingmask_applied.fits'
+        if os.path.isfile(in_fn):
+            fn_inputs.write(in_fn+'\n')
+            out_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/imforFA0_Y3_noimagingmask_applied.fits'
+            fn_outputs.write(fn_outputs+'\n')
+        else:
+            print(in_fn+' not found')
+    for i in range(elgmin,elgmax):
+        in_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/forFA0_Y3_noimagingmask_applied.fits'
+        if os.path.isfile(in_fn):
+            fn_inputs.write(in_fn+'\n')
+            out_fn = lrgdir+'seed'+str(i).zfill(4)+'/ELG/imforFA0_Y3_noimagingmask_applied.fits'
+            fn_outputs.write(fn_outputs+'\n')
+        else:
+            print(in_fn+' not found')
+
+    fn_inputs.close()
+    fn_outputs.close()
+    
+    
+
+def mk_confile(conf_fn,file_root):
+	input_fn = file_root+'_in.txt'
+	output_fn = file_root+'_out.txt'
+	fo = open(file_root+conf_fn,'w')
 	output = '''# Configuration file for BRICKMASK (default: `brickmask.conf').
 # Format: keyword = value # comment
 #     or: keyword = [element1, element2]
@@ -64,3 +101,34 @@ VERBOSE         =
 '''
 	fo.write(output)
 	fo.close()
+
+def mk_sbatch(batch_fn,conf_file,rootdir='/global/homes/d/desica/BRICKMASKcode/brickmask/'):
+    fo = open(batch_fn,'w')
+    #conf_file = rootdir+conf_file
+    outs = '''#!/bin/bash
+#SBATCH --time=4:00:00
+#SBATCH --qos=regular
+#SBATCH --nodes=1
+#SBATCH -J holiv3_1
+#SBATCH --constraint=cpu
+#SBATCH --account=desi
+#SBATCH --cpus-per-task=4
+#SBATCH --ntasks=64
+#SBATCH  --dependency=afterany:46580373
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+
+module load cpu cray-fftw
+export CFITSIO_DIR=/global/common/software/desi/users/naimgk/cfitsio
+export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
+
+srun -n 64 -c 4 --cpu-bind=cores '''+rootdir+'/BRICKMASK -c '''+conf_file+'\n'
+    fo.close()
+
+
+rundir = '/global/homes/d/desica/BRICKMASKcode/brickmask/'
+qsomin = 100
+qsomax = 125
+fileroot = rundir+'holi_AJRrun1'
+mk_inputandoutput_fn(fileroot=filerot,qsomin=qsomin,qsomax=qsomax,elgmin=0,elgmax=50)
+mk_confile('.conf',fileroot)
+mk_sbatch(fileroot+'.sbatch',fileroot+'.conf',rundir)
