@@ -125,13 +125,38 @@ srun -n 64 -c 4 --cpu-bind=cores '''+rootdir+'/BRICKMASK -c '''+conf_file+'\n'
     fo.write(outs)
     fo.close()
 
+import argpars
+parser = argparse.ArgumentParser()
+parser.add_argument("--qsomin", default=0,
+                    help="minimum qso realization", type=int)
+parser.add_argument("--qsomax", default=0,
+                    help="maximum qso realization", type=int)
 
-rundir = '/global/homes/d/desica/BRICKMASKcode/brickmask/'
-qsomin = 100
-qsomax = 125
-elgmin = 0
-elgmax = 50
-fileroot = rundir+'holi_AJRrun1'
-mk_inputandoutput_fn(file_root=fileroot,qsomin=qsomin,qsomax=qsomax,elgmin=elgmin,elgmax=elgmax)
+parser.add_argument("--lrgmin", default=0,
+                    help="minimum lrg realization", type=int)
+parser.add_argument("--lrgmax", default=0,
+                    help="maximum lrg realization", type=int)
+
+parser.add_argument("--elgmin", default=0,
+                    help="minimum elg realization", type=int)
+parser.add_argument("--elgmax", default=0,
+                    help="maximum elg realization", type=int)
+parser.add_argument("--rundir", default='/global/homes/d/desica/BRICKMASKcode/brickmask/',
+                    help="directory for everything associated with the run")
+parser.add_argument("--subname", default='AJRtest',
+                    help="name for the files")
+
+args = parser.parse_args()
+
+
+rundir = args.rundir
+qsomin = args.qsomin
+qsomax = args.qsomax
+elgmin = args.elgmin
+elgmax = args.elgmax
+lrgmin = args.lrgmin
+lrgmax = args.lrgmax
+fileroot = rundir+args.subname
+mk_inputandoutput_fn(file_root=fileroot,qsomin=qsomin,qsomax=qsomax,elgmin=elgmin,elgmax=elgmax,lrgmin=lrgmin,lrgmax=lrgmax)
 mk_confile('.conf',fileroot)
-mk_sbatch(fileroot+'.sbatch',fileroot+'.conf',rundir,jobname='holiBM_AJRrun1')
+mk_sbatch(fileroot+'.sbatch',fileroot+'.conf',rundir,jobname='holiBM_'+args.subname)
