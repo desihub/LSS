@@ -125,7 +125,7 @@ srun -n 64 -c 4 --cpu-bind=cores '''+rootdir+'/BRICKMASK -c '''+conf_file+'\n'
     fo.write(outs)
     fo.close()
 
-import argpars
+import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--qsomin", default=0,
                     help="minimum qso realization", type=int)
