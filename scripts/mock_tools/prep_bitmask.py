@@ -23,7 +23,7 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
         in_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
             fn_inputs.write(in_fn+'\n')
-            out_fn = lrgdir+'seed'+str(i).zfill(4)+'/ELG/imforFA0_Y3_noimagingmask_applied.fits'
+            out_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/imforFA0_Y3_noimagingmask_applied.fits'
             fn_outputs.write(out_fn+'\n')
         else:
             print(in_fn+' not found')
