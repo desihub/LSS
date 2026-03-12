@@ -1,6 +1,6 @@
 #!/bin/bash
-
-#only the ELG version has changed from v3, so we only need to rerun ELGs
+source /global/common/software/desi/desi_environment.sh main
+module load LSS/main
 
 declare -A conf_version
 
