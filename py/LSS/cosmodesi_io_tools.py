@@ -146,12 +146,18 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         cat_dir = cat_dir.replace('/blinded','')
         cat_dir = cat_dir.replace('PIP','')
         logger.info('cat_dir for full file is '+cat_dir)
-        if 'BGS_BRIGHT' in tracer:
-            tracer = 'BGS_BRIGHT'
-            logger.info('reset tracer name to BGS_BRIGHT for reading full file')
-        if 'LRG' in tracer:
-            tracer = 'LRG'
-            logger.info('reset tracer name to LRG for reading full file')
+        if 'BGS' in tracer:
+			if 'BGS_BRIGHT' in tracer:
+				tracer = 'BGS_BRIGHT'
+				logger.info('reset tracer name to BGS_BRIGHT for reading full file')
+			else:
+			    logger.error('NEED TO FIX THE CODE, TELL ASHLEY TO FIX IT')
+		else:
+		    tracer = tracer[:3]
+            logger.info('reset tracer name to '+tracer+' for reading full file')
+        #if 'LRG' in tracer:
+        #    tracer = 'LRG'
+        #    logger.info('reset tracer name to LRG for reading full file')
         
     dat_or_ran = name[:3]
     if name == 'randoms' and tracer == 'LRG_main' and ctype == 'full':
