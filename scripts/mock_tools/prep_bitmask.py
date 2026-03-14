@@ -3,31 +3,48 @@ import os
 def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/',lrgdir='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/',elgdir='/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.81/',qsomin=0,qsomax=0,lrgmin=0,lrgmax=0,elgmin=0,elgmax=0):
     fn_inputs = open(file_root+'_in.txt','w')
     fn_outputs = open(file_root+'_out.txt','w')
-    for i in range(qsomin,qsomax):
+    nqso = 0
+	for i in range(qsomin,qsomax):
         in_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
-            fn_inputs.write(in_fn+'\n')
             out_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/imforFA0_Y3_noimagingmask_applied.fits'
-            fn_outputs.write(out_fn+'\n')
+			if os.path.isfile(out_fn):
+			    print(out_fn+' already exists')
+			else:
+				fn_inputs.write(in_fn+'\n')
+                fn_outputs.write(out_fn+'\n')
+			    nqso += 1
         else:
             print(in_fn+' not found')
+    print('number of qso to do is '+str(nqso))
+    nlrg = 0
     for i in range(lrgmin,lrgmax):
         in_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
-            fn_inputs.write(in_fn+'\n')
             out_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/imforFA0_Y3_noimagingmask_applied.fits'
-            fn_outputs.write(out_fn+'\n')
+			if os.path.isfile(out_fn):
+			    print(out_fn+' already exists')
+			else:
+				fn_inputs.write(in_fn+'\n')
+                fn_outputs.write(out_fn+'\n')
+			    nlrg += 1
         else:
             print(in_fn+' not found')
+    print('number of lrg to do is '+str(nlrg))
+    nelg = 0
     for i in range(elgmin,elgmax):
         in_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
-            fn_inputs.write(in_fn+'\n')
             out_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/imforFA0_Y3_noimagingmask_applied.fits'
-            fn_outputs.write(out_fn+'\n')
+			if os.path.isfile(out_fn):
+			    print(out_fn+' already exists')
+			else:
+				fn_inputs.write(in_fn+'\n')
+                fn_outputs.write(out_fn+'\n')
+			    nelg += 1
         else:
             print(in_fn+' not found')
-
+    print('number of elg to do is '+str(nlrg))
     fn_inputs.close()
     fn_outputs.close()
     
