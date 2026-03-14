@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#arguments to run1_456.sh are realization elg_version lrg_version qso_version output_directory mock_type
+
 max_jobs=$3
 job_count=0
 
