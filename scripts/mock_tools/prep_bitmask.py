@@ -4,16 +4,16 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
     fn_inputs = open(file_root+'_in.txt','w')
     fn_outputs = open(file_root+'_out.txt','w')
     nqso = 0
-	for i in range(qsomin,qsomax):
+    for i in range(qsomin,qsomax):
         in_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
             out_fn = qsodir+'seed'+str(i).zfill(4)+'/QSO/imforFA0_Y3_noimagingmask_applied.fits'
-			if os.path.isfile(out_fn):
-			    print(out_fn+' already exists')
-			else:
-				fn_inputs.write(in_fn+'\n')
+            if os.path.isfile(out_fn):
+                print(out_fn+' already exists')
+            else:
+                fn_inputs.write(in_fn+'\n')
                 fn_outputs.write(out_fn+'\n')
-			    nqso += 1
+                nqso += 1
         else:
             print(in_fn+' not found')
     print('number of qso to do is '+str(nqso))
@@ -22,12 +22,12 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
         in_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
             out_fn = lrgdir+'seed'+str(i).zfill(4)+'/LRG/imforFA0_Y3_noimagingmask_applied.fits'
-			if os.path.isfile(out_fn):
-			    print(out_fn+' already exists')
-			else:
-				fn_inputs.write(in_fn+'\n')
+            if os.path.isfile(out_fn):
+                print(out_fn+' already exists')
+            else:
+                fn_inputs.write(in_fn+'\n')
                 fn_outputs.write(out_fn+'\n')
-			    nlrg += 1
+                nlrg += 1
         else:
             print(in_fn+' not found')
     print('number of lrg to do is '+str(nlrg))
@@ -36,15 +36,15 @@ def mk_inputandoutput_fn(file_root,qsodir='/global/cfs/cdirs/desi/mocks/cai/holi
         in_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/forFA0_Y3_noimagingmask_applied.fits'
         if os.path.isfile(in_fn):
             out_fn = elgdir+'seed'+str(i).zfill(4)+'/ELG/imforFA0_Y3_noimagingmask_applied.fits'
-			if os.path.isfile(out_fn):
-			    print(out_fn+' already exists')
-			else:
-				fn_inputs.write(in_fn+'\n')
+            if os.path.isfile(out_fn):
+                print(out_fn+' already exists')
+            else:
+                fn_inputs.write(in_fn+'\n')
                 fn_outputs.write(out_fn+'\n')
-			    nelg += 1
+                nelg += 1
         else:
             print(in_fn+' not found')
-    print('number of elg to do is '+str(nlrg))
+    print('number of elg to do is '+str(nelg))
     fn_inputs.close()
     fn_outputs.close()
     
