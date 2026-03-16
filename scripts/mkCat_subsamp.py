@@ -251,6 +251,7 @@ weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
+    common.printlog('about to start mkclusdat',logger)
     ct.mkclusdat(args.outdir+'/'+tracer_out,weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto,logger=logger)
 
 #make clustering catalogs for randoms
