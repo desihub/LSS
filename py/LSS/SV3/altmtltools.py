@@ -499,6 +499,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
         return
 
     #only pass the lya1b keyword if prev_endDate is before 20250721 and new enddate is after 20250721
+    #is this effective? need to be sure we don't write multiple lya1b actions
     upd_lya1b = (prev_endDate <= 20250721) & (endDate > 20250721)
 
     #generate TileTracker update file
@@ -607,21 +608,25 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
 
     #if we only want entries from tiles within the [startDate, endDate] window
     if update_only:
+        # 20260303 LGN Changing behavior to work with makeTileTracker refactor
+        # 20260303 LGN We now longer check against the end date based on MTLDoneTiles, just start date
+        # 20260303 LGN This allows us to select actions fa'd before, but updated after the end date
+        
         #change output name to avoid overwriting the existing tile tracker
         TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
         #convert dates into datetime objects
         startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
-        endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
+        #endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
 
         #format into strings for comparisson to MTL DT timestamp column
         #note we increment startDate by one day to avoid overlapping on previous endDate
         #note we increment endDate by one day to catch tiles from the final day (less than or equal to doesn't work due to column datatype comparison)
         startDate_frm = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
-        endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+        #endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
 
         #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
         #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check prog/survey match)
-        time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (MTLDT['TIMESTAMP'] < endDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
+        time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
         TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
     TileIDs = []
@@ -639,17 +644,18 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         
         thisTileMTLDT = MTLDT[MTLDT['TILEID'] == tileid]
         
-        if len(thisTileMTLDT) > 1:
-            thisTileMTLDT.sort('TIMESTAMP')
-        elif len(thisTileMTLDT) == 0:
+        # 20260302 LGN Rewriting to remove ARCHIVEDATE check. 
+        # 20260302 LGN We want fa actions before the endDate to be included.
+        if len(thisTileMTLDT) == 0:
             continue
+        elif len(thisTileMTLDT) > 1:
+            thisTileMTLDT.sort('TIMESTAMP')
         else:
             log.info(len(thisTileMTLDT))
             log.info(thisTileMTLDT['ARCHIVEDATE'])
             log.info(thisTileMTLDT['ARCHIVEDATE'][0])
             log.info(type(thisTileMTLDT['ARCHIVEDATE'][0]))
-            if thisTileMTLDT['ARCHIVEDATE'][0] > int(endDate):
-                continue
+        
         reprocFlag = False
         thisFAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
 
@@ -1340,7 +1346,11 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
         log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
     return A2RMap, R2AMap
-def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = 'sv3', obscon = 'dark', today = None, 
+    
+# LGN 20260220 Adding tiletracker as a passed argument
+# LGN 20260220 Necessary to check the fa date of an update action
+# LGN 20260220 In order to check if we should pass the ext keyword
+def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracker, survey = 'sv3', obscon = 'dark', today = None, 
     getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False):
     if verbose or debug:
         log.info('today = {0}'.format(today))
@@ -1416,13 +1426,14 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             log.info('setting 1B flag for update')
             is_1b = True
 
-            # LGN 20251104 Adding an edge case for calling update ledger on 1b tiles observed before lya1b changes
-            # LGN 20251104 The ext keyword does not exist for the update_ledger function until desitarget 3.4.2 
+            # LGN 20260220 In order to determine if we pass ext=True we need to check the fiberassign date associated with this update
+            #fa_time = tiletracker[(tiletracker['TILEID'] == t['TILEID']) & (tiletracker['ACTIONTYPE'] == 'fa')]['ACTIONTIME']
             if t['ACTIONTIME'] < '2025-07-21T23:36:04+00:00':
-                passext = False
+                log.info('setting ext flag = False for 1B tile')
+                is_ext = False
             else:
-                log.info('setting ext flag for update')
-                passext = True
+                log.info('setting ext flag = True for update')
+                is_ext = True
         else:
             is_1b = False
             
@@ -1436,22 +1447,15 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
             althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
             obscon_short = obscon.replace('1B','')
 
-            #CHECK WITH AURELIO ABOUT TARGETS KEYWORD FOR MOCKS
+            # LGN: CHECK WITH AURELIO ABOUT TARGETS KEYWORD FOR MOCKS
 
-            if passext:
-                log.info('Running update_ledger with ext=True')
-                #Updating the non-1b ledger (ext = False)
-                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=False, targets = targets)
-                #Updating the 1b ledger (ext = True)
-                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=True, targets = targets)
-            else:
-                #Updating the non-1b ledger
-                update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)
-                #Updating the 1b ledger
-                update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)                
+            #Updating the non-1b ledger
+            update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
+            #Updating the 1b ledger
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
+             
         else:
             #Updating ledger (No ext keyword)
-            #Need clarification on mocks using target file in update_ledger()
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)
 
         if verbose or debug:
@@ -1650,9 +1654,12 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock, reproducing = reproducing)
                 assert(len(OrigFAs))
                 A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
-                
+
+            # LGN 20260220 Adding tiletracker as a passed argument
+            # LGN 20260220 Necessary to check the fa date of an update action
+            # LGN 20260220 In order to check if we should pass the ext keyword
             elif action['ACTIONTYPE'] == 'update':
-                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
+                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, altMTLTileTracker, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
                 
             elif action['ACTIONTYPE'] == 'reproc':
                 #returns timedict
