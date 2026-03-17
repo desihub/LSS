@@ -1,7 +1,7 @@
 #!/bin/bash
 # bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG y
 # bash $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_test.sh v2 ELG_LOP y
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export OMP_NUM_THREADS=2
 PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 
