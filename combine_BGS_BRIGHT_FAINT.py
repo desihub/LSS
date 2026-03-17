@@ -12,11 +12,11 @@ logger = logging.getLogger('combine_BGS_BRIGHT_FAINT')
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--ccut", help="if combining subsamples, the string that defines them (default is empty string for full catalogs)", default='')
 #arguments to find input data
-parser.add_argument("--basedir", help="base directory for input", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
+parser.add_argument("--basedir", help="base directory for input, note that a versioning structure is expected under this directory", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--version", help="catalog version for input", default='v2')
 parser.add_argument("--survey", help="e.g., Y1, DA2", default='DA2')
 parser.add_argument("--verspec", help="version for redshifts", default='loa-v1')
-parser.add_argument("--outdir", help="directory for output, note that a versioning structure is created under this directory", default=os.environ['SCRATCH'])
+parser.add_argument("--outdir", help="directory for output", default=os.environ['SCRATCH'])
 
 parser.add_argument("--data", choices=['y', 'n'], help="write the data catalog?", default='y')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)
@@ -29,7 +29,7 @@ logger.info(f"Running with arguments: {args}")
 
 input_dir = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with analysis, where we keep non-standard catalogsS
 logger.info(f"Primary input directory is {input_dir}")
-output_dir = os.path.join(args.outdir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # outdir with analysis
+output_dir: str = args.outdir + '/'
 logger.info(f"Output directory is {output_dir}")
 input_dir_main = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut catalogs, and for fallback if the cut catalogs are not found in the analysis directory
 logger.info(f"Input directory for non-cut catalogs (and fallback) is {input_dir_main}")
