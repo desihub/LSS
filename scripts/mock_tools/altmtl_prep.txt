@@ -1,0 +1,26 @@
+#alt mtl preparation steps
+
+#get per tracer forFA files and bit mask info, could all be run in one script, outputs are saved on cfs
+	srun -N 1 -C cpu -t 01:00:00 --qos interactive --account desi bash $HOME/LSScode/LSS/scripts/mock_tools/script_prepare_holi_parallel.sh 200 249 ELG
+	
+	python $HOME/LSScode/LSS/scripts/mock_tools/prep_bitmask.py --elgmin 200 --elgmax 250 --subname elg250
+	
+	srun -N 1 -C cpu -t 01:00:00 --qos interactive --account desi bash $HOME/LSScode/LSS/scripts/mock_tools/script_prepare_holi_parallel.sh 200 249 LRG
+	
+	sbatch $HOME/BRICKMASKcode/brickmask/elg250.sbatch
+	
+	python $HOME/LSScode/LSS/scripts/mock_tools/prep_bitmask.py --lrgmin 200 --lrgmax 250 --subname lrg250
+	
+	sbatch $HOME/BRICKMASKcode/brickmask/lrg250.sbatch
+	
+	srun -N 1 -C cpu -t 01:00:00 --qos interactive --account desi bash $HOME/LSScode/LSS/scripts/mock_tools/script_prepare_holi_parallel.sh 200 249 QSO
+	
+	python $HOME/LSScode/LSS/scripts/mock_tools/prep_bitmask.py --qsomin 200 --qsomax 250 --subname qso250
+	
+	sbatch $HOME/BRICKMASKcode/brickmask/qso250.sbatch
+
+#from LSScode/LSS, make forFA files on scratch for altmtl, needs to wait until brickmask code is finished
+	srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi scripts/mock_tools/run_456_holi_v3_inparallel_nooverw.sh 200 299 5
+
+#initialize ledgers on scratch, 2.8 minutes per realization
+	$HOME/LSScode/LSS/scripts/mock_tools/script_init_holi_v3_inter_sequence.sh 100 199
