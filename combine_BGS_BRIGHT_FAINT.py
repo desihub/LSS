@@ -166,7 +166,7 @@ def process_random(iran: int):
         random[sample] = combine_regions(random[sample]) # combine NGC and SGC for each sample, which is more convenient for balancing weights in photometric regions (N and S)
 
     random[sample_comb] = {}
-    np.random.seed(42)
+    np.random.seed(42+iran) # reproducible but different for each random number. otherwise, the BRIGHT and FAINT randoms will have the same TARGETID across the random numbers
 
     # combination
     logger.info(f"Sorting randoms by TARGETID for random number {iran}")
