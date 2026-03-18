@@ -1855,7 +1855,7 @@ def convert_fits2h5(filename):
     write_LSShdf5_scratchcp(ff, filename.replace('.fits', '.h5'))
 
 
-def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o775):
+def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o664):
     import h5py
     import hdf5plugin  # need to be in the cosmodesi test environment, as of Sep 4th 25
 
@@ -1898,7 +1898,7 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o775):
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
     shutil.chown(outf, group='desi') # good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
-    os.chmod(outf, mode)
+    os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
     printlog('moved output to ' + outf, logger)
     df = 0
     # printlog('checking read of column ' + testcol, logger)
@@ -1942,7 +1942,7 @@ def read_hdf5_blosc(filename, columns=None, extname='LSS'):
     return data
 
 
-def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mode=0o775):
+def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mode=0o664):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
@@ -1981,7 +1981,7 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mod
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
     shutil.chown(outf, group='desi') # good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
-    os.chmod(outf, mode)
+    os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
 
     # os.system('cp ' + tmpfn + ' ' + outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
