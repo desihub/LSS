@@ -1897,7 +1897,7 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o664):
     shutil.copy2(tmpfn, outftmp)
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    shutil.chown(outf, group='desi') # good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
+    shutil.chown(outf, group='desi') # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
     os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
     printlog('moved output to ' + outf, logger)
     df = 0
@@ -1980,7 +1980,7 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mod
     shutil.copy2(tmpfn, outftmp)
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    shutil.chown(outf, group='desi') # good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
+    shutil.chown(outf, group='desi') # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
     os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
 
     # os.system('cp ' + tmpfn + ' ' + outf)
