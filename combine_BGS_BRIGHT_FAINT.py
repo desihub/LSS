@@ -179,11 +179,12 @@ def process_random(iran: int):
         for i_sample in range(1, len(samples)): assert np.array_equal(randoms_in_region[0]['TARGETID'], randoms_in_region[i_sample]['TARGETID']) # must be equal (after sorting above)
         n_randoms_tot = len(randoms_in_region[0]) # now doesn't matter which sample for randoms
         n_random_goals = np.rint(n_randoms_tot * n_data[phot_region] / n_data[phot_region].sum()).astype(int) # number of randoms to draw for each sample, following the data proportion; round to integer
+        logger.info(f"Total number of randoms in photometric region {phot_region} for random number {iran} is {n_randoms_tot}, the number of randoms to draw for each sample is {n_random_goals}, and the data numbers are {n_data[phot_region]}")
         all_random_indices = np.random.permutation(n_randoms_tot) # shuffle the indices of randoms
         n_random_split = np.cumsum(n_random_goals)[:-1] # get the indices to split the shuffled randoms
         random_indices = np.split(all_random_indices, n_random_split) # split the shuffled indices according to the number of randoms to draw for each sample
         random_to_data_ratios_orig = [get_total_weights(these_randoms_in_region).sum() / wsum_data[phot_region][i] for i, these_randoms_in_region in enumerate(randoms_in_region)] # compute the random-to-data weight ratio for each sample in this photometric region before subsampling
-        randoms_in_region = [these_randoms[these_indices] for these_randoms, these_indices in zip(randoms_in_region, random_indices)] # get the randoms for each sample
+        randoms_in_region = [these_randoms[these_indices] for these_randoms, these_indices in zip(randoms_in_region, random_indices)] # subsample/select the randoms for each sample
         random_to_data_ratios = [get_total_weights(these_randoms_in_region).sum() / wsum_data[phot_region][i] for i, these_randoms_in_region in enumerate(randoms_in_region)] # compute the random-to-data weight ratio for each sample in this photometric region after subsampling but before reweighting
         target_ratio = 1 if args.random_data_ratio == 'unity' else random_to_data_ratios_orig[0] # the target random-to-data weight ratio for all samples in this photometric region; if 'unity', set to 1; if 'legacy', set to the original ratio for the first sample (which is BRIGHT)
         logger.info(f"Reweighting in photometric region {phot_region} for random number {iran}. Original random-to-data weight ratios are {random_to_data_ratios_orig}, after subsampling they are {random_to_data_ratios}; target random-to-data weight ratio is {target_ratio}")
