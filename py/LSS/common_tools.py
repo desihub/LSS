@@ -1863,6 +1863,8 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o660, group='desi'):
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
+    mode is the chmod permissions to set on the output file, default is octal 660 for user and group read/write but no permissions for others
+    group is the group owner to set on the output file, default is 'desi' (for NERSC). if blank or None, the group ownership will not be changed
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     will return 'FAIL' or 'SUCCESS'
     '''
@@ -1948,6 +1950,8 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mod
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
+    mode is the chmod permissions to set on the output file, default is octal 660 for user and group read/write but no permissions for others
+    group is the group owner to set on the output file, default is 'desi' (for NERSC). if blank or None, the group ownership will not be changed
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     '''
     import shutil
