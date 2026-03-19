@@ -1874,7 +1874,7 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o664):
     rng = np.random.default_rng()  # seed=rann)
     ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/' + \
-        outf.split('/')[-1] + '.tmp'+str(ranstring)
+        os.path.basename(outf) + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         # os.system('rm ' + tmpfn)
         os.remove(tmpfn)
@@ -1954,7 +1954,7 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mod
     rng = np.random.default_rng()  # seed=rann)
     ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/' + \
-        outf.split('/')[-1] + '.tmp'+str(ranstring)
+        os.path.basename(outf) + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
