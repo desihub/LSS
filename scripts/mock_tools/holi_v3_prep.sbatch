@@ -30,7 +30,7 @@ nzfile[QSO]="/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/nzref_da2_qso.tx
 nzfile[LRG]="/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/nzref_da2_lrg.txt"
 nzfile[ELG]="/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.81/nzref_da2_elg_N.txt,/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.81/nzref_da2_elg_S.txt"
 
-tracers=('LRG','ELG','QSO')
+tracers=('LRG', 'ELG', 'QSO')
 seed=$(printf "seed%04d" "$SLURM_ARRAY_TASK_ID")
 for tracer in "${tracers[@]}"; do
 
