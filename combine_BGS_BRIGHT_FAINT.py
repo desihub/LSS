@@ -135,7 +135,7 @@ if args.data == 'y':
         this_data_comb = vstack([data[sample][reg] for sample in samples])
         path = os.path.join(output_dir, f'BGS_{sample_comb}_{reg}_clustering.dat.fits')
         logger.info(f"Writing {sample_comb} data for region {reg} to {path}")
-        write_LSS_scratchcp(this_data_comb, path, logger=logger, mode=0o660)
+        write_LSS_scratchcp(this_data_comb, path, logger=logger)
     del this_data_comb # free memory
 
 # compute the number and sum of weights for data in each photometric region, which will be used to balance the randoms in each photometric region
@@ -206,7 +206,7 @@ def process_random(iran: int):
         path = os.path.join(output_dir, f'BGS_{sample_comb}_{reg}_{iran}_clustering.ran.fits')
         logger.info(f"Writing {sample_comb} randoms for region {reg} and random number {iran} to {path}")
         this_random_comb.remove_column('REGION') # remove the REGION column before writing, to be consistent with the original files
-        write_LSS_scratchcp(this_random_comb, path, logger=logger, mode=0o660)
+        write_LSS_scratchcp(this_random_comb, path, logger=logger)
     logger.info(f"Finished processing for random number {iran}")
 
 # deal with randoms
