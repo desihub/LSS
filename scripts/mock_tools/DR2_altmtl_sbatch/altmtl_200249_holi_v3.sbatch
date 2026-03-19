@@ -6,7 +6,7 @@
 #SBATCH --constraint=cpu
 ##SBATCH -q debug
 #SBATCH -q regular
-#SBATCH -t 12:00:00
+#SBATCH -t 48:00:00
 ##SBATCH --dependency=afterany:46276251
 #SBATCH --nodes=1
 
@@ -39,7 +39,7 @@ reproducing=''
 mockinit=200
 mockend=250
 mocklist=''
-zfix="${ALTMTLHOME}/forFA{mock_number}_QSO_targetid_z.txt"
+zfix="${ALTMTLHOME}/qsos/qso{mock_number}.txt"
 
 argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist --zfix=$zfix"
 echo "argstring for dateloop"

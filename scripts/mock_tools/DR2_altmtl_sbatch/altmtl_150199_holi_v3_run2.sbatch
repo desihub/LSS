@@ -39,7 +39,7 @@ reproducing=''
 mockinit=150
 mockend=200
 mocklist=''
-zfix="${ALTMTLHOME}/forFA{mock_number}_QSO_targetid_z.txt"
+zfix="${ALTMTLHOME}/qsos/qso{mock_number}.txt"
 
 argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist --zfix=$zfix"
 echo "argstring for dateloop"
