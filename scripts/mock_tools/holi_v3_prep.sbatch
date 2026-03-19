@@ -37,6 +37,7 @@ for tracer in "${tracers[@]}"; do
   version="${conf_version[$tracer]}"
   short_version="${sversion[$tracer]}"
   nzname="${nzfile[$tracer]}"
+  echo $nzname
 
 	if [ -f "/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/$tracer/forFA0_Y3_noimagingmask_applied.fits" ]; then
 	    echo "/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/$tracer/forFA0_Y3_noimagingmask_applied.fits exists"
