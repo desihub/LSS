@@ -33,6 +33,7 @@ for tracer in "${tracers[@]}"; do
   version="${conf_version[$tracer]}"
   short_version="${sversion[$tracer]}"
   nzname="${nzfile[$tracer]}"
+  echo $tracer
   echo $nzname
   echo $short_version
   echo $version
