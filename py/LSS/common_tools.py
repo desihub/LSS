@@ -1855,7 +1855,7 @@ def convert_fits2h5(filename):
     write_LSShdf5_scratchcp(ff, filename.replace('.fits', '.h5'))
 
 
-def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o664):
+def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o660, group='desi'):
     import h5py
     import hdf5plugin  # need to be in the cosmodesi test environment, as of Sep 4th 25
 
@@ -1863,6 +1863,8 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o664):
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
+    mode is the chmod permissions to set on the output file, default is octal 660 for user and group read/write but no permissions for others
+    group is the group owner to set on the output file, default is 'desi' (for NERSC). if blank or None, the group ownership will not be changed
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     will return 'FAIL' or 'SUCCESS'
     '''
@@ -1897,7 +1899,8 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o664):
     shutil.copy2(tmpfn, outftmp)
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    shutil.chown(outf, group='desi') # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
+    if group: # blank group will cause problems with chown
+        shutil.chown(outf, group=group) # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
     os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
     printlog('moved output to ' + outf, logger)
     df = 0
@@ -1942,11 +1945,13 @@ def read_hdf5_blosc(filename, columns=None, extname='LSS'):
     return data
 
 
-def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mode=0o664):
+def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mode=0o660, group='desi'):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
+    mode is the chmod permissions to set on the output file, default is octal 660 for user and group read/write but no permissions for others
+    group is the group owner to set on the output file, default is 'desi' (for NERSC). if blank or None, the group ownership will not be changed
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     '''
     import shutil
@@ -1980,7 +1985,8 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mod
     shutil.copy2(tmpfn, outftmp)
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    shutil.chown(outf, group='desi') # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
+    if group: # blank group will cause problems with chown
+        shutil.chown(outf, group=group) # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
     os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
 
     # os.system('cp ' + tmpfn + ' ' + outf)
