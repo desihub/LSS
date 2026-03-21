@@ -3,7 +3,7 @@
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -t 00:10:00
+#SBATCH -t 00:15:00
 #SBATCH --array=450-999
 
 source /global/common/software/desi/desi_environment.sh main
