@@ -7,7 +7,7 @@
 ##SBATCH -q debug
 #SBATCH -q regular
 #SBATCH -t 23:00:00
-#SBATCH --dependency=afterany:50434017
+#SBATCH --dependency=afterany:50434260
 #SBATCH --nodes=1
 #SBATCH --reservation=altmtl
 
@@ -37,8 +37,8 @@ mock='--mock'
 targfile="--targfile=${ALTMTLHOME}/forFA{mock_number}.fits"
 multiDate='--multiDate'
 reproducing=''
-mockinit=700
-mockend=750
+mockinit=750
+mockend=800
 mocklist=''
 zfix="${ALTMTLHOME}/qsos/qso{mock_number}.txt"
 
