@@ -681,8 +681,8 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
     else: wts = None # no weights, if relevant at all
     zhist = np.histogram(df['Z'], bins=nbin, range=(zmin, zmax), weights=wts)
     headers.append('#zmid zlow zhigh n(z) Nbin Vol_bin')
-    zl = zhist[1][:-1]
-    zh = zhist[1][1:]
+    zl = round(zhist[1][:-1],5)
+    zh = round(zhist[1][1:],5)
     zm = (zh+zl)/2.
     voli = area/(360.*360./np.pi)*4.*np.pi/3. * np.diff(dis_dc(zhist[1])**3.)
     nbarz = zhist[0]/voli
@@ -736,8 +736,8 @@ def mknz_full(fcd, fcr, tp, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., write='
     print('number of nans in weights '+str(np.sum(selnan)))
     wts[selnan] = 1.
     zhist = np.histogram(df[zcol], bins=nbin, range=(zmin, zmax), weights=wts)
-    zl = zhist[1][:-1]
-    zh = zhist[1][1:]
+    zl = round(zhist[1][:-1],5)
+    zh = round(zhist[1][1:],5)
     zm = (zl+zh)/2.
     vol = area/(360.*360./np.pi)*4.*np.pi/3.*(dis_dc(zh)**3.-dis_dc(zl)**3.)
     nz = zhist[0]/vol
