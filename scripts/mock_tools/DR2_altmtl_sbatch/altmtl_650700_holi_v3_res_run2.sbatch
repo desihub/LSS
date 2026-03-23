@@ -37,8 +37,8 @@ mock='--mock'
 targfile="--targfile=${ALTMTLHOME}/forFA{mock_number}.fits"
 multiDate='--multiDate'
 reproducing=''
-mockinit=600
-mockend=650
+mockinit=650
+mockend=700
 mocklist=''
 zfix="${ALTMTLHOME}/qsos/qso{mock_number}.txt"
 
