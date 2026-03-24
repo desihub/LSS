@@ -7,12 +7,12 @@
 #SBATCH --array=213-248
 #test
 source /global/common/software/desi/desi_environment.sh main
-module load LSS/main
+#module load LSS/main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 mocknum=$SLURM_ARRAY_TASK_ID
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 sim=holi_v3
-#PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
+export PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
 srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer QSO  --splitGC y --nz y --par y
 srun python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer LRG   --splitGC y --nz y --par y
