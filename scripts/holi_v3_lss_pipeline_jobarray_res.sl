@@ -4,7 +4,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:30:00
-#SBATCH --array=249-399
+#SBATCH --array=400-449,500-549
 #SBATCH --reservation=altmtl
 #test
 source /global/common/software/desi/desi_environment.sh main
