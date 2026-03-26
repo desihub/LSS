@@ -5,6 +5,6 @@ do
  echo $SCRATCH/DA2/mocks/$1/altmtl$i/initled
  mv $SCRATCH/DA2/mocks/$1/altmtl$i/fba$i/* /global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/$1/altmtl$i/fba$i/
  mv $SCRATCH/DA2/mocks/$1/mock$i/pota* /global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/$1/altmtl$i/fba$i/
- mv $SCRATCH/DA2/mocks/$1/pota* /global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/$1/
+ mv $SCRATCH/DA2/mocks/$1/forFA* /global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/$1/
 done
 
