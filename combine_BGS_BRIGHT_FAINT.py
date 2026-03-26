@@ -20,7 +20,7 @@ parser.add_argument("--verspec", help="version for redshifts", default='loa-v1')
 parser.add_argument("--outdir", help="directory for output", default=os.environ['SCRATCH'])
 
 parser.add_argument("--data", choices=['y', 'n'], help="write the data catalog?", default='y')
-parser.add_argument("--random_data_ratio", choices=['unity', 'legacy'], help="how to set the random-to-data weight ratio for BRIGHT and FAINT (they must be equal). unity sets the ratio to 1; legacy is closer to the default from LSS catalogs, which takes the first ratio (in this case, BRIGHT)", default='unity')
+parser.add_argument("--random_data_ratio", choices=['unity', 'first_original', 'first_subsampled'], help="how to set the random-to-data weight ratio for BRIGHT and FAINT (they must be equal). unity sets the ratio to 1; first_original is closer to the default from LSS catalogs, which takes the first ratio (in this case, BRIGHT) before subsampling; first_subsampled takes the first ratio after subsampling (this keeps the first tracer random weights untouched after subsampling, whereas the previous option upscales them)", default='first_original')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)
 parser.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (use parallel script for all)", default=18, type=int)
 
@@ -187,7 +187,7 @@ def process_random(iran: int):
         random_to_data_ratios_orig = [get_total_weights(these_randoms_in_region).sum() / wsum_data[phot_region][i] for i, these_randoms_in_region in enumerate(randoms_in_region)] # compute the random-to-data weight ratio for each sample in this photometric region before subsampling
         randoms_in_region = [these_randoms[these_indices] for these_randoms, these_indices in zip(randoms_in_region, random_indices)] # subsample/select the randoms for each sample
         random_to_data_ratios = [get_total_weights(these_randoms_in_region).sum() / wsum_data[phot_region][i] for i, these_randoms_in_region in enumerate(randoms_in_region)] # compute the random-to-data weight ratio for each sample in this photometric region after subsampling but before reweighting
-        target_ratio = 1 if args.random_data_ratio == 'unity' else random_to_data_ratios_orig[0] # the target random-to-data weight ratio for all samples in this photometric region; if 'unity', set to 1; if 'legacy', set to the original ratio for the first sample (which is BRIGHT)
+        target_ratio = 1 if args.random_data_ratio == 'unity' else random_to_data_ratios_orig[0] if args.random_data_ratio == 'first_original' else random_to_data_ratios[0] # the target random-to-data weight ratio for all samples in this photometric region; if 'unity', set to 1; if 'first_original', set to the original ratio for the first sample (which is BRIGHT); if 'first_subsampled', set to the ratio for the first sample after subsampling
         logger.info(f"Reweighting in photometric region {phot_region} for random number {iran}. Original random-to-data weight ratios are {random_to_data_ratios_orig}, after subsampling they are {random_to_data_ratios}; target random-to-data weight ratio is {target_ratio}")
         for i in range(len(samples)): randoms_in_region[i]['WEIGHT'] *= target_ratio / random_to_data_ratios[i] # make random-to-data ratio target_ratio for BRIGHT and FAINT parts in each region
         logger.info(f"Stacking in photometric region {phot_region} for random number {iran}")
