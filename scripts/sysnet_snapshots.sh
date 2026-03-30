@@ -1,18 +1,21 @@
 #!/bin/bash
 # This script generates and ensemble of SYSNet models from SYSNet snapshots.
 # 1. First train the NN model, saving snapshots every T_0 epochs.
-# 2. Pull the snapshots and forward model and save predictions in HEALPix maps with Nside=256.
-# bash $LSSCODE/LSS/scripts/Y3_sysnet_snapshots.sh v2 ELG
-# bash $LSSCODE/LSS/scripts/Y3_sysnet_snapshots.sh v2 ELG_LOP
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh test
+# 2. Pull the snapshots, forward model and save predictions in HEALPix maps with Nside=256.
+# Note: This script automatically runs in an interactive node
+# export LSSCODE=$HOME # Change to your LSS code directory.
+# bash $LSSCODE/LSS/scripts/sysnet_snapshots.sh ELG
+# bash $LSSCODE/LSS/scripts/sysnet_snapshots.sh ELG_LOP
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 export OMP_NUM_THREADS=2
 PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
-export PYTHONPATH=$HOME/sysnetdev:$PYTHONPATH
+# export PYTHONPATH=$HOME/sysnetdev:$PYTHONPATH
 
-version=$1
-verspec=loa-v1
+# /global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/
 survey=DA2
-type=$2
+verspec=loa-v1
+version=v2
+type=$1
 
 if [ $type = 'ELG_LOP' ] 
 then
@@ -48,8 +51,8 @@ echo $BASEDIR
 # Flags and directories used by SYSNet 
 sysnet_app=$LSSCODE/LSS/py/LSS/imaging/sysnet_appensemble_mpi.py
 sysnet_dir=$BASEDIR/$version/sysnet/ # This directory should contain the prepared data tables
-#sysnet_snap_dir=$BASEDIR/$version/sysnet_snapshots/
-sysnet_snap_dir=$SCRATCH/$version/sysnet_snapshots/ # output directory
+sysnet_snap_dir=$BASEDIR/$version/sysnet_snapshots/
+# sysnet_snap_dir=$SCRATCH/$version/sysnet_snapshots/ # output directory
 srun_flags="-N 1 -C cpu --qos interactive --account desi "
 train_flags="-ax all --model dnnp --loss pnll --eta_min 0.00001 --snapshot_ensemble -k --no_eval"
 north_flags="-lr $LR_N -bs $NBATCH_N --nn_structure ${NNS_N[@]} -ne $NEPOCH_N -nc $NCHAIN_N"
