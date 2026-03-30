@@ -67,46 +67,46 @@ if __name__ == '__main__':
     zrl = [[0.8,1.1],[1.1,1.6]]
     regions = ['N','S']
 
-    # if rank == 0:
-    #     print(args)
-    #     templates_dict = dict()
-    #     chcks_dict = dict()
-    #     oudir_dict = dict()
-    #     for zl in zrl:
-    #         zw = str(zl[0])+'_'+str(zl[1])
-    #         for reg in regions:
-    #             temp_id = f'{zw}_{reg}'
-    #             templates_dict[temp_id] = ft.read(args.input_directory+f'/prep_{args.type}{zw}_{reg}.fits')
-    #             chcks_dict[temp_id] = glob(args.snapshot_directory+f'/{args.type}{zw}_{reg}/model_*/snapshot_*.pth.tar')
-    #             oudir_dict[temp_id] = args.output_directory+f'/windows_{args.type}{zw}_{reg}/'
-    #             if not os.path.exists(oudir_dict[temp_id]):
-    #                 os.makedirs(oudir_dict[temp_id])
-    #                 print('rank 0 creates ', oudir_dict[temp_id])
-    # else:
-    #     templates_dict = None
-    #     chcks_dict = None
-    #     oudir_dict = None
+    if rank == 0:
+        print(args)
+        templates_dict = dict()
+        chcks_dict = dict()
+        oudir_dict = dict()
+        for zl in zrl:
+            zw = str(zl[0])+'_'+str(zl[1])
+            for reg in regions:
+                temp_id = f'{zw}_{reg}'
+                templates_dict[temp_id] = ft.read(args.input_directory+f'/prep_{args.type}{zw}_{reg}.fits')
+                chcks_dict[temp_id] = glob(args.snapshot_directory+f'/{args.type}{zw}_{reg}/model_*/snapshot_*.pth.tar')
+                oudir_dict[temp_id] = args.output_directory+f'/windows_{args.type}{zw}_{reg}/'
+                if not os.path.exists(oudir_dict[temp_id]):
+                    os.makedirs(oudir_dict[temp_id])
+                    print('rank 0 creates ', oudir_dict[temp_id])
+    else:
+        templates_dict = None
+        chcks_dict = None
+        oudir_dict = None
     
-    # templates_dict = comm.bcast(templates_dict, root=0)
-    # chcks_dict = comm.bcast(chcks_dict, root=0)
-    # oudir_dict = comm.bcast(oudir_dict, root=0)
+    templates_dict = comm.bcast(templates_dict, root=0)
+    chcks_dict = comm.bcast(chcks_dict, root=0)
+    oudir_dict = comm.bcast(oudir_dict, root=0)
     
-    # for zl in zrl:
-    #     zw = str(zl[0])+'_'+str(zl[1])
-    #     for reg in regions:
-    #         temp_id = f'{zw}_{reg}'
-    #         chcks = chcks_dict[temp_id]
-    #         templates = templates_dict[temp_id]
-    #         oudir = oudir_dict[temp_id]
-    #         nn_structure = args.north_nn_structure if reg == 'N' else args.south_nn_structure
+    for zl in zrl:
+        zw = str(zl[0])+'_'+str(zl[1])
+        for reg in regions:
+            temp_id = f'{zw}_{reg}'
+            chcks = chcks_dict[temp_id]
+            templates = templates_dict[temp_id]
+            oudir = oudir_dict[temp_id]
+            nn_structure = args.north_nn_structure if reg == 'N' else args.south_nn_structure
             
-    #         start, end = split_NtoM(len(chcks), size, rank)
-    #         my_chcks = chcks[start:end+1]
+            start, end = split_NtoM(len(chcks), size, rank)
+            my_chcks = chcks[start:end+1]
 
-    #         if rank == 0:print(rank, len(my_chcks), templates.size, my_chcks[:2])
-    #         do_forward(templates, my_chcks, rank, oudir, args.model, nn_structure)
+            if rank == 0:print(rank, len(my_chcks), templates.size, my_chcks[:2])
+            do_forward(templates, my_chcks, rank, oudir, args.model, nn_structure)
             
-    # comm.Barrier()
+    comm.Barrier()
     
     if rank == 0:
         # Generate and save nn-weights.fits per data split. 
