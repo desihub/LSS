@@ -20,6 +20,7 @@ from desiutil.log import get_logger
 import cProfile, pstats, io
 from pstats import SortKey
 import argparse
+import yaml
 log = get_logger()
 
 #Keeping all arguments from previous version
@@ -40,7 +41,7 @@ parser.add_argument('-d', '--debug', dest = 'debug', default=False, action='stor
 parser.add_argument('-nt', '--dontUseTemp', dest = 'usetmp', default=True, action='store_false', help = 'pass flag to NOT use local tmp directories on compute nodes for initial writing of alt MTLs.')
 parser.add_argument('-ow', '--overwrite', dest = 'overwrite', default=False, action='store_true', help = 'pass this flag to regenerate already existing alt MTLs.')
 parser.add_argument('-sb', '--saveBackup', dest = 'saveBackup', default=False, action='store_true', help = 'Save the initial MTLs post shuffling in a backup directory underneath the main alt MTL directories.')
-parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a text file consisting only of one line of comma separated healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
+parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a yaml file with an entry named Initial whose values are the healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
 
 parser.add_argument('--version', action='version', version='There are no version numbers.', help = 'There are no version numbers.')
 parser.add_argument('-sbp', '--shuffleBrightPriorities', action='store_true', dest='shuffleBrightPriorities', default=False, help = 'Pass this flag to shuffle top level PRIORITIES in BRIGHT survey Alt MTLs. If this argument is true, should also be setting PromoteFracBGSFaint.', required = False)
@@ -90,7 +91,15 @@ else:
     with open(args.outputMTLDirBase + 'SeedFile', 'w') as f:
         f.write(str(args.seed))
 
-HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
+# 20260401 LGN - Modifying HPList to be read from a YAML file, not a csv
+# 20260401 LGN - Leaving legacy code commented for reference
+#HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
+
+with open(args.HPListFile) as f:
+    HPYaml = yaml.safe_load(f)
+
+HPList = np.array(HPYaml['Initial'])
+
 if args.verbose or args.debug:
     log.debug('HPList')
     log.debug(HPList)
