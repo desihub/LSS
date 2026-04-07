@@ -12,7 +12,7 @@ import desitarget
 
 #import desitarget.io as io
 import glob
-from LSS.SV3.altmtltools import initializeAlternateMTLs
+from LSS.SV3.altmtltools import initializeAlternateMTLs, initializeYAML_HPTracker
 import numpy as np
 import os 
 from sys import argv
@@ -95,7 +95,11 @@ else:
 # 20260401 LGN - Leaving legacy code commented for reference
 #HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
 
-with open(args.HPListFile) as f:
+# 20260407 LGN - We now want to write the yaml file before reading it, as the 
+# 20260407 LGN - files are decentralized from the LSS repo, and can be purpose built
+yaml_path = initializeYAML_HPTracker(args.obscon,args.finalDir,real_mtl_dir=args.exampleLedgerBase)
+
+with open(yaml_path) as f:
     HPYaml = yaml.safe_load(f)
 
 HPList = np.array(HPYaml['Initial'])
