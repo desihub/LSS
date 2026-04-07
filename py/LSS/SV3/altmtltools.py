@@ -38,6 +38,7 @@ log = get_logger()
 
 import fitsio
 import LSS.common_tools as common
+import yaml
 
 import healpy as hp
 
@@ -606,6 +607,17 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     
     TilesSel = np.unique(TSS_Sel['TILEID'])
 
+    #convert start/enddate into datetime objects, used for comparison
+    #if update_only is True, and for ledger addition actions
+    startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
+    endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
+
+    #format startdate into string for comparisson to MTL DT timestamp column
+    #note we increment startDate by one day to avoid overlapping on previous endDate
+    #(less than or equal to doesn't work due to datatype comparison)
+    startDate_str = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+    endDate_str = (endDate_dt).strftime("%Y-%m-%d") 
+
     #if we only want entries from tiles within the [startDate, endDate] window
     if update_only:
         # 20260303 LGN Changing behavior to work with makeTileTracker refactor
@@ -614,19 +626,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         
         #change output name to avoid overwriting the existing tile tracker
         TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
-        #convert dates into datetime objects
-        startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
-        #endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
-
-        #format into strings for comparisson to MTL DT timestamp column
-        #note we increment startDate by one day to avoid overlapping on previous endDate
-        #note we increment endDate by one day to catch tiles from the final day (less than or equal to doesn't work due to column datatype comparison)
-        startDate_frm = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
-        #endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
 
         #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
         #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check prog/survey match)
-        time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
+        time_sel = (MTLDT['TIMESTAMP'] > startDate_str) & (np.isin(MTLDT['TILEID'],TilesSel))
         TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
     TileIDs = []
@@ -708,6 +711,27 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TimesOfActions.append('2025-07-21T23:36:04+00:00')
         doneFlag.append(False)
         archiveDates.append(20250721)
+
+    #LGN 20260401: Adding New check of the per-obscon YAML file. This will see if we are past the date
+    #LGN 20260401: for adding new ledgers and add an "addnew" action to the actionlist if needed
+    #LGN 20260401: Current implementation requires the yaml files being in the altmtldir, seems better than /LSS/bin?
+    yaml_fp = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
+    with open(yaml_fp) as f:
+        HPYaml = yaml.safe_load(f)
+    #LGN 20260401: Get list of date in YAML, check dates after the first entry, which should always be 'Initial', could be explicit about this 
+    dates = list(HPYaml.keys())
+    
+    if len(dates) > 1:
+        for date in dates[1:]:
+            #LGN 20260401: If date is in the timeframe between startDate and endDate add a new action for it
+            if startDate_str < date and endDate_str > date:
+                log.info('Adding Ledger Addition Action')
+                TileIDs.append(-1)
+                TypeOfActions.append('addnew')
+                TimesOfActions.append(f'{date}T00:00:00+00:00')
+                doneFlag.append(False)
+                archiveDates.append(date.replace('-',''))
+    
 
             
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
@@ -1676,9 +1700,16 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp=action['ACTIONTIME'], donefile=False)
                 #record succesful update in ledger
                 retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
-                
+
+            #LGN 20260407: Adding new 'addnew' case for ledger addition actions
+            elif action['ACTIONTYPE'] == 'addnew':
+                log.info('Running ledger addition action')
+                #run action
+                add_new_ledgers(survey, obscon, altmtlbasedir)
+                #record success in the ledger
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
             else:
-                raise ValueError('actiontype must be `fa`, `update`, `reproc` or `lya1b`.')
+                raise ValueError('actiontype must be `fa`, `update`, `reproc`, `lya1b` or `addnew`.')
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
             #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
