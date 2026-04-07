@@ -1193,6 +1193,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     zcmb = common.mk_zcmbmap()
 
 
+if args.doimlin == 'y' or args.prep4sysnet == 'y':
     from LSS.imaging.systematics_linear_regression import (
         make_fit_maps_dictionary,
         produce_imweights,
