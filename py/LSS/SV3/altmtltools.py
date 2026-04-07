@@ -764,7 +764,52 @@ def trimToMTL(notMTL, MTL, debug = False, verbose = False):
             notMTL = rfn.drop_fields(notMTL, n)
     return notMTL
 
+# LGN 20260407 New function, designed to create a set of per-obscon yaml files, containing the dates at which ledgers
+# LGN 20260407 were added for the specified obscon. This file will be written at the altmtl root directory.
+def initializeYAML_HPTracker(obscon,outputMTLDir,real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'): 
+    import xml.etree.ElementTree as ET
+    from collections import defaultdict
 
+    # LGN 20260407 First use xml to parse the svn log for the directory
+    # LGN 20260407 creating a dictionary mapping dates 'YYYY-MM-DD' to the added healpixels
+    directory = os.path.join(real_mtl_dir,obscon)
+    result = subprocess.run(
+        ["svn", "log", "--verbose", "--xml", directory],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    root = ET.fromstring(result.stdout)
+    creation_dates = defaultdict(list)
+    
+    for logentry in root.findall("logentry"):
+        date = logentry.find("date").text  # ISO format
+    
+        paths = logentry.find("paths")
+        if paths is None:
+            continue
+    
+        for path in paths.findall("path"):
+            action = path.attrib.get("action")
+            filepath = path.text
+    
+            #Check for added files that match mtl ledger structure
+            if action == "A" and filepath[-5:] == '.ecsv':
+                #strip the healpixel from the path string and add it to the dictionary
+                hp = filepath.split('/')[-1].strip('.escv').split('-')[-1]
+                creation_dates[date[:10]].append(hp)
+    
+    #replace first date with 'Initial' for ledger initialization
+    creation_dates['Initial'] = creation_dates.pop(min(creation_dates.keys()))
+    
+    #re-sort the yaml file so Initial is the first entry (cosmetic)
+    out = {'Initial': creation_dates['Initial'], **{k: creation_dates[k] for k in sorted(creation_dates) if k != 'Initial'}}
+    out_path = os.path.join(outputMTLDir,f'{obscon.upper()}-ledgers.yaml')
+    
+    with open(f"{obscon.upper()}-ledgers.yaml", "w") as f:
+        yaml.dump(out, f, sort_keys=False)
+                             
 #@profile
 def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
     obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
