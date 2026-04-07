@@ -1193,7 +1193,6 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     zcmb = common.mk_zcmbmap()
 
 
-if args.doimlin == 'y' or args.prep4sysnet == 'y':
     from LSS.imaging.systematics_linear_regression import (
         make_fit_maps_dictionary,
         produce_imweights,
@@ -1235,6 +1234,8 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y':
 
     data_catalogs = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
     #common.printlog(str(np.unique(data_catalogs['PHOTSYS'],return_counts=True)),logger)
+
+if args.doimlin == 'y' or args.prep4sysnet == 'y':
 
     #randoms_catalogs = np.concatenate(
     randoms_catalogs = vstack(
