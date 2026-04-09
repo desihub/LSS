@@ -4,7 +4,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:00:00
-#SBATCH --array=552-649
+#SBATCH --array=383-499
 ##SBATCH --reservation=lss_catalogs
 #test
 source /global/common/software/desi/desi_environment.sh main
