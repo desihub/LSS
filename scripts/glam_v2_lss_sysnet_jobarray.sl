@@ -4,7 +4,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 00:40:00
-#SBATCH --array=559-648
+#SBATCH --array=552-555
 #SBATCH --dependency=afterany:51250511
 #test
 source /global/common/software/desi/desi_environment.sh main
