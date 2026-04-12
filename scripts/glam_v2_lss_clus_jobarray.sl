@@ -5,7 +5,7 @@
 #SBATCH -q regular
 #SBATCH -t 00:25:00
 #SBATCH --array=1000-1049
-#SBATCH --dependency=afterany:51444360
+#SBATCH --dependency=afterany:51444525
 #test
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
