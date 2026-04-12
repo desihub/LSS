@@ -4,8 +4,8 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 00:25:00
-#SBATCH --array=500-549
-#SBATCH --dependency=afterany:51358721
+#SBATCH --array=1000-1049
+#SBATCH --dependency=afterany:51444360
 #test
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
