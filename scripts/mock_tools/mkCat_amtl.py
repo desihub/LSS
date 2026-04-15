@@ -867,6 +867,14 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             else:
                 common.printlog(fn+' not found!')            
         common.printlog("cut method "+args.absmagmd, logger)
+        dcols = list(fin.dtype.names)
+        if 'R_MAG_ABS' not in dcols:
+            tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
+            td = fitsio.read(tarf,columns=['TARGETID','R_MAG_ABS'])
+            flen = len(fin)
+            fin = join(fin,td,keys=['TARGETID'])
+            if len(fin) != flen:
+                common.printlog('the lengths after join to get R_MAG_ABS changed!!!')
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
         elif args.absmagmd == 'redshiftdep' and abmagcut == -2:
