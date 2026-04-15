@@ -847,15 +847,25 @@ if args.add_nt_misspw == 'y':
 if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
     abmagcut = -float(args.tracer.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
-    ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    #ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.h5'
     common.printlog("path "+ffull, logger)
     if os.path.isfile(ffull) == False:
 
         if 'BGS_ANY-' in args.tracer:
-            fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+            fn = dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.h5'
+            if os.path.isfile(fn):
+                fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+            else:
+                common.printlog(fn+' not found!')
+            #fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
         elif 'BGS_BRIGHT-' in args.tracer:
-            fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
-            
+            #fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
+            fn = dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.h5'
+            if os.path.isfile(fn):
+                fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+            else:
+                common.printlog(fn+' not found!')            
         common.printlog("cut method "+args.absmagmd, logger)
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
@@ -878,7 +888,8 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             mock_z_cut = fit3_new(fin['Z_not4clus'])
             sel = fin['R_MAG_ABS'] < mock_z_cut
 
-        common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
+        #common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
+        common.write_LSShdf5_scratchcp(fin[sel],ffull,logger=logger)
 
 
 
