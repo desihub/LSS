@@ -979,7 +979,7 @@ if args.mkclusran == 'y':
 #             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
     
     fl = os.path.join(readdir, finaltracer) + '_'
-    common.printlog('adding tlobs to randoms with '+ fl,logger)
+    
     #clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
@@ -997,6 +997,7 @@ if args.mkclusran == 'y':
     ran_finaltracer = finaltracer
     if 'BGS_BRIGHT-' in args.tracer:
         ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+        common.printlog('adding tlobs to randoms with '+ fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits',logger)
     tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
     common.printlog('read in frac_tlobs file',logger)
 
