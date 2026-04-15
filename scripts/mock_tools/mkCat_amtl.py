@@ -982,10 +982,14 @@ if args.mkclusran == 'y':
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
-        common.printlog('about to read input random for '+str(rann),logger)        
-        ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
+        common.printlog('about to read input random for '+str(rann),logger) 
+        #files should be in the data directory; BGS with any absolute magnitude cut should read the file without that       
+        ran_finaltracer = finaltracer
+        if 'BGS_BRIGHT-' in args.tracer:
+            ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+        ranf = data_dir.replace('global','dvs_ro')+'/'+ ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
         if not os.path.isfile(ranf):
-            ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
+            ranf = data_dir.replace('global','dvs_ro')+'/'+ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
