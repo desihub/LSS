@@ -994,9 +994,9 @@ if args.mkclusran == 'y':
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
     if 'BGS_ANY' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_ANY') + '_'
-	ran_finaltracer = finaltracer
-	if 'BGS_BRIGHT-' in args.tracer:
-		ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+    ran_finaltracer = finaltracer
+    if 'BGS_BRIGHT-' in args.tracer:
+        ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
     tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
     common.printlog('read in frac_tlobs file',logger)
 
