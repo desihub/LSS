@@ -984,8 +984,6 @@ if args.mkclusran == 'y':
     clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
-    tlf = fitsio.read(fl+'frac_tlobs.fits')
-    common.printlog('read in frac_tlobs file',logger)
     #mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
     mockobs = common.read_hdf5_blosc(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5'),columns=['TILEID','LOCATION','PRIORITY'])
     mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
@@ -996,6 +994,11 @@ if args.mkclusran == 'y':
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
     if 'BGS_ANY' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_ANY') + '_'
+	ran_finaltracer = finaltracer
+	if 'BGS_BRIGHT-' in args.tracer:
+		ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
+    common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
     def _parfun4(rann):
@@ -1003,9 +1006,6 @@ if args.mkclusran == 'y':
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         common.printlog('about to read input random for '+str(rann),logger) 
         #files should be in the data directory; BGS with any absolute magnitude cut should read the file without that       
-        ran_finaltracer = finaltracer
-        if 'BGS_BRIGHT-' in args.tracer:
-            ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
         ranf = data_dir.replace('global','dvs_ro')+'/'+ ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
         if not os.path.isfile(ranf):
             ranf = data_dir.replace('global','dvs_ro')+'/'+ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
