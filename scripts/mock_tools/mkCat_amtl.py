@@ -940,24 +940,24 @@ if args.mkclusran == 'y':
     #if len(nztl) == 0:
     #    nztl.append('')
     
-    tsnrcol = 'TSNR2_ELG'
-    if args.tracer[:3] == 'BGS':
-        fl = os.path.join(readdir, finaltracer) + '_'
-        cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
-        if 'G_R_OBS' in cols_clustering:
-            rcols.append('G_R_OBS')
-        if 'G_R_REST' in cols_clustering:
-            rcols.append('G_R_REST')
-        if 'R_MAG_ABS' in cols_clustering:
-            rcols.append('R_MAG_ABS')
-
-        tsnrcol = 'TSNR2_BGS'
-        if args.ccut is not None:
-            for rn in range(rannum[0], rannum[1]):
-                if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
-                    os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
-                #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
-            os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
+#     tsnrcol = 'TSNR2_ELG'
+#     if args.tracer[:3] == 'BGS':
+#         fl = os.path.join(readdir, finaltracer) + '_'
+#         cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
+#         if 'G_R_OBS' in cols_clustering:
+#             rcols.append('G_R_OBS')
+#         if 'G_R_REST' in cols_clustering:
+#             rcols.append('G_R_REST')
+#         if 'R_MAG_ABS' in cols_clustering:
+#             rcols.append('R_MAG_ABS')
+# 
+#         tsnrcol = 'TSNR2_BGS'
+#         if args.ccut is not None:
+#             for rn in range(rannum[0], rannum[1]):
+#                 if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
+#                     os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
+#                 #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
+#             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
     
     fl = os.path.join(readdir, finaltracer) + '_'
     common.printlog('adding tlobs to randoms with '+ fl,logger)
