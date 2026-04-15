@@ -996,7 +996,7 @@ if args.mkclusran == 'y':
         ranin = os.path.join(readdir, 'BGS_ANY') + '_'
     ran_finaltracer = finaltracer
     if 'BGS_BRIGHT-' in args.tracer:
-        ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+        ran_finaltracer = ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
         common.printlog('changed ran base to '+ran_finaltracer,logger)
     common.printlog('adding tlobs to randoms with '+ fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits',logger)
     tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
