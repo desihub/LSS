@@ -456,7 +456,7 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
 
-def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
+def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'):
     """Update action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -503,6 +503,19 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     #is this effective? need to be sure we don't write multiple lya1b actions
     upd_lya1b = (prev_endDate <= 20250721) & (endDate > 20250721)
 
+    # 20260420 LGN - Adding new step here where the YAML file containing ledger addition dates is re-generated if necessary
+    # 20260420 LGN - This occurs if the number of ledgers in the real mtl directory differs from the number in the YAML file
+    yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
+    yaml_numledgers = sum(len(v) for v in yaml.safe_load(open(yaml_fn)).values())
+    # 20260420 LGN - Getting number of real mtl ledgers
+    real_mtl_numledgers = os.listdir(os.path.join(real_mtl_dir,obscon))
+
+    if yaml_numledgers != real_mtl_numledgers:
+        # 20260420 LGN - Deleted old YAML file
+        os.remove(yaml_fn)
+        # 20260420 LGN - Create new YAML file
+        initializeYAML_HPTracker(obscon,altmtldir)
+    
     #generate TileTracker update file
     makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b)
 
@@ -526,8 +539,8 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     #write new merged tiletracker
     combined_TT.write(TileTrackerFN, format='ascii.ecsv', overwrite=True)
 
-    #delete update tiletracker (going to leave this out for now, and assess if we want to delete this update files later)
-    #os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
+    #delete update tiletracker
+    os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
     
     return
     
@@ -807,8 +820,10 @@ def initializeYAML_HPTracker(obscon,outputMTLDir,real_mtl_dir='/global/cfs/cdirs
     out = {'Initial': creation_dates['Initial'], **{k: creation_dates[k] for k in sorted(creation_dates) if k != 'Initial'}}
     out_path = os.path.join(outputMTLDir,f'{obscon.upper()}-ledgers.yaml')
     
-    with open(f"{obscon.upper()}-ledgers.yaml", "w") as f:
+    with open(out_path, "w") as f:
         yaml.dump(out, f, sort_keys=False)
+
+    return out_path
                              
 #@profile
 def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
