@@ -35,7 +35,7 @@ parser.add_argument(
     "--prog", help="dark or bright is supported", default='dark')
 parser.add_argument("--verspec", help="version for redshifts", default='daily')
 parser.add_argument("--check_date_only",
-                    help="whether or not to stop after maximum night is found", default='n')
+                    help="whether or not to stop after maximum night is found", action='store_true')
 parser.add_argument("--make_tile_file",
                     help="whether or not to make a tile file", action='store_true')
 parser.add_argument(
@@ -100,7 +100,7 @@ wd &= mt['ZDONE'] == 'true'
 logger.info('number of tiles with zdone true '+str(len(mt[wd])))
 wd &= mt['ARCHIVEDATE'] > 0
 logger.info('and with archivedate > 0 '+str(len(mt[wd])))
-if args.doqso == 'y' or args.mkemlin == 'y':
+if args.doqso or args.mkemlin:
     wd &= ((mt['FAPRGRM'] == prog) | (mt['FAPRGRM'] == prog+'1b'))
     common.printlog('tiles being considered from fa programs ' +
                     str(np.unique(mt[wd]['FAPRGRM'])), logger)
