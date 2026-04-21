@@ -180,6 +180,8 @@ if not os.path.exists(ldirspec+'healpix'):
 if args.make_tile_file:
     tiles4comb.write(maindir+'tiles-'+prog.upper() +
                      '.fits', overwrite=True, format='fits')
+else:
+    print(args.make_tile_file, ' is False, not making tile file')
 
 logger.info('specrel is '+specrel)
 if specrel == 'daily':
