@@ -783,6 +783,7 @@ def initializeYAML_HPTracker(obscon,outputMTLDir,real_mtl_dir='/global/cfs/cdirs
     import xml.etree.ElementTree as ET
     from collections import defaultdict
 
+    obscon = obscon.lower()
     # LGN 20260407 First use xml to parse the svn log for the directory
     # LGN 20260407 creating a dictionary mapping dates 'YYYY-MM-DD' to the added healpixels
     directory = os.path.join(real_mtl_dir,obscon)
@@ -1765,7 +1766,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             elif action['ACTIONTYPE'] == 'addnew':
                 log.info('Running ledger addition action')
                 #run action
-                add_new_ledgers(survey, obscon, altmtlbasedir)
+                add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, nproc=nproc, survey=survey, obscon=obson)
                 #record success in the ledger
                 retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
             else:
@@ -1784,6 +1785,48 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
             
         return althpdirname, altmtltilefn, altMTLTileTrackerFN, actionList
+
+# 20260420 LGN - Adding new function to create new ledger files when needed
+def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out"):
+    # 20260420 LGN - Extract the date, and the list of new ledgers using the YAML file
+    date_short = action['ACTIONTIME'][:10]
+
+    yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
+    with open(yaml_fn) as f:
+        hp_tracker = yaml.safe_load(f)
+        new_hps = np.array(hp_tracker[date_short]).astype(int)
+
+    startDate = altMTLTileTracker.meta['StartDate']
+    endDate   = altMTLTileTracker.meta['EndDate']
+
+    # 20260420 LGN - We need some information from the initialization log file
+    Init_log = os.path.join(altmtlbasedir,InitLog_format.format(obscon.upper()))
+
+    log_keywords = {"seed", "reproducing", "shuffleSubpriorities", "shuffleBrightPriorities", "shuffleELGPriorities", "PromoteFracBGSFaint", "PromoteFracELG"}
+    keyword_vals = {}
+
+    # 20260420 LGN - Use some string methods to associate the needed keywords with their values
+    with open(Init_log) as f:
+        for line in f:
+            parts = line.split(':')
+            if len(parts) == 6:
+                key = parts[-2].strip()
+                if key in log_keywords:
+                    keyword_vals[key] = parts[-1].strip()
+
+    # 20260420 LGN - Run initialize ledger function for each new healpixel
+    # 20260420 LGN - Adapted from InitializeAltMTLsParallel script
+    for hpnum in new_hps:
+        exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon)
+
+        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = int(keyword_vals['seed']),obscon = obscon, survey = survey,\
+                        saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = keyword_vals['reproducing'],\
+                        shuffleSubpriorities = keyword_vals['shuffleSubpriorities'], startDate=startDate,endDate = endDate, profile = False, usetmp=False,\
+                        debug = debug, verbose = verbose, shuffleBrightPriorities = keyword_vals['shuffleBrightPriorities'],\
+                        shuffleELGPriorities = keyword_vals['shuffleELGPriorities'], PromoteFracBGSFaint = float(keyword_vals["PromoteFracBGSFaint"]),\
+                        PromoteFracELG = float(keyword_vals["PromoteFracELG"]))
+
+    return
 
 def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
     """Plots probability that targets were observed among {ndirs} alternate realizations
