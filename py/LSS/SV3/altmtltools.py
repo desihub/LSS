@@ -508,7 +508,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
     yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
     yaml_numledgers = sum(len(v) for v in yaml.safe_load(open(yaml_fn)).values())
     # 20260420 LGN - Getting number of real mtl ledgers
-    real_mtl_numledgers = os.listdir(os.path.join(real_mtl_dir,obscon))
+    real_mtl_numledgers = os.listdir(os.path.join(real_mtl_dir,obscon.lower()))
 
     if yaml_numledgers != real_mtl_numledgers:
         # 20260420 LGN - Deleted old YAML file
@@ -863,6 +863,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     fn = initMTL.split('/')[-1]
     log.info('reading initial MTL(s)')
     allentries = Table.read(initMTL) 
+    log.info('initial MTL size: {}'.format(len(allentries)))
     
     meta = allentries.meta
     if verbose or debug:
@@ -970,6 +971,8 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
              startDate = startDateShort, endDate = endDateShort)
             #makeTileTracker(outputMTLDir, survey = survey, obscon = obscon,overwrite = False,
             #startDate = startDateShort, endDate = endDateShort)
+        else:
+            log.info('tiletracker already exists, not overwriting')
         subpriors = initialentries['SUBPRIORITY']
 
         if (not reproducing) and shuffleSubpriorities:
@@ -1170,7 +1173,9 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
             initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
 
+        log.info('Initial Entries Size: {}'.format(len(initialentries)))
         retval = desitarget.io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
+        log.info('write_mtl return value: {}'.format(retval))
         if debug or verbose:
             log.info('(nowrite = False) ntargs, fn = {0}'.format(retval))
         log.info('wrote MTLs to {0}'.format(outputMTLDir))
@@ -1766,7 +1771,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             elif action['ACTIONTYPE'] == 'addnew':
                 log.info('Running ledger addition action')
                 #run action
-                add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, nproc=nproc, survey=survey, obscon=obson)
+                add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, nproc=nproc, survey=survey, obscon=obscon, debug=debug, verbose=verbose)
                 #record success in the ledger
                 retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
             else:
@@ -1787,7 +1792,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         return althpdirname, altmtltilefn, altMTLTileTrackerFN, actionList
 
 # 20260420 LGN - Adding new function to create new ledger files when needed
-def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out"):
+def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out"):
     # 20260420 LGN - Extract the date, and the list of new ledgers using the YAML file
     date_short = action['ACTIONTIME'][:10]
 
@@ -1796,8 +1801,9 @@ def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey,
         hp_tracker = yaml.safe_load(f)
         new_hps = np.array(hp_tracker[date_short]).astype(int)
 
-    startDate = altMTLTileTracker.meta['StartDate']
-    endDate   = altMTLTileTracker.meta['EndDate']
+    # initializeAlternateMTLs expects these to be strings
+    #startDate = str(altMTLTileTracker.meta['StartDate']) #actually we don't want to pass startDate, if we don't it just uses all initial entries.
+    endDate   = str(altMTLTileTracker.meta['EndDate'])
 
     # 20260420 LGN - We need some information from the initialization log file
     Init_log = os.path.join(altmtlbasedir,InitLog_format.format(obscon.upper()))
@@ -1814,17 +1820,26 @@ def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey,
                 if key in log_keywords:
                     keyword_vals[key] = parts[-1].strip()
 
+    # 20260420 LGN - Safe casting from string to boolean. Int/float converted in function call (probably a little wasteful)
+    for key in log_keywords:
+        if keyword_vals[key] == 'True':
+            keyword_vals[key] = True
+        elif keyword_vals[key] == 'False':
+            keyword_vals[key] = False
+        else:
+            continue
+
     # 20260420 LGN - Run initialize ledger function for each new healpixel
     # 20260420 LGN - Adapted from InitializeAltMTLsParallel script
     for hpnum in new_hps:
-        exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon)
+        exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon.lower())
 
-        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = int(keyword_vals['seed']),obscon = obscon, survey = survey,\
+        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = int(keyword_vals['seed']),obscon = obscon.lower(), survey = survey,\
                         saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = keyword_vals['reproducing'],\
-                        shuffleSubpriorities = keyword_vals['shuffleSubpriorities'], startDate=startDate,endDate = endDate, profile = False, usetmp=False,\
+                        shuffleSubpriorities = keyword_vals['shuffleSubpriorities'],endDate = endDate, profile = False, usetmp=False,\
                         debug = debug, verbose = verbose, shuffleBrightPriorities = keyword_vals['shuffleBrightPriorities'],\
                         shuffleELGPriorities = keyword_vals['shuffleELGPriorities'], PromoteFracBGSFaint = float(keyword_vals["PromoteFracBGSFaint"]),\
-                        PromoteFracELG = float(keyword_vals["PromoteFracELG"]))
+                        PromoteFracELG = float(keyword_vals["PromoteFracELG"]),finalDir=altmtlbasedir+'/Univ{0:03d}')
 
     return
 
