@@ -41,7 +41,7 @@ parser.add_argument('-d', '--debug', dest = 'debug', default=False, action='stor
 parser.add_argument('-nt', '--dontUseTemp', dest = 'usetmp', default=True, action='store_false', help = 'pass flag to NOT use local tmp directories on compute nodes for initial writing of alt MTLs.')
 parser.add_argument('-ow', '--overwrite', dest = 'overwrite', default=False, action='store_true', help = 'pass this flag to regenerate already existing alt MTLs.')
 parser.add_argument('-sb', '--saveBackup', dest = 'saveBackup', default=False, action='store_true', help = 'Save the initial MTLs post shuffling in a backup directory underneath the main alt MTL directories.')
-parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a yaml file with an entry named Initial whose values are the healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
+#parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a yaml file with an entry named Initial whose values are the healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
 
 parser.add_argument('--version', action='version', version='There are no version numbers.', help = 'There are no version numbers.')
 parser.add_argument('-sbp', '--shuffleBrightPriorities', action='store_true', dest='shuffleBrightPriorities', default=False, help = 'Pass this flag to shuffle top level PRIORITIES in BRIGHT survey Alt MTLs. If this argument is true, should also be setting PromoteFracBGSFaint.', required = False)
@@ -95,22 +95,6 @@ else:
 # 20260401 LGN - Leaving legacy code commented for reference
 #HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
 
-# 20260407 LGN - We now want to write the yaml file before reading it, as the 
-# 20260407 LGN - files are decentralized from the LSS repo, and can be purpose built
-yaml_path = initializeYAML_HPTracker(args.obscon,args.finalDir,real_mtl_dir=args.exampleLedgerBase)
-
-with open(yaml_path) as f:
-    HPYaml = yaml.safe_load(f)
-
-HPList = np.array(HPYaml['Initial'])
-
-if args.verbose or args.debug:
-    log.debug('HPList')
-    log.debug(HPList)
-    log.debug('First healpixel: {0:d}'.format(HPList[0]))
-    log.debug('Last healpixel: {0:d}'.format(HPList[-1]))
-    log.debug('Number of healpixels: {0:d}'.format(int(len(HPList))))
-
 #Dropping these
 #NodeID = int(os.getenv('SLURM_NODEID'))
 #SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
@@ -121,6 +105,27 @@ NProc = int(NNodes*args.ProcPerNode)
 outputMTLDir = args.outputMTLDirBase + "Univ{0:03d}/"
 
 def procFunc(nproc):
+    # 20260420 LGN - Moving YAML file generation into the procFunc loop
+    # 20260420 LGN - Such that the files can be accessed/updated per realization.
+    if not os.path.exists(args.finalDir.format(nproc)):
+        os.makedirs(args.finalDir.format(nproc))
+    
+    # 20260407 LGN - We now want to write the yaml file before reading it, as the 
+    # 20260407 LGN - files are decentralized from the LSS repo, and can be purpose built
+    yaml_path = initializeYAML_HPTracker(args.obscon,args.finalDir.format(nproc))
+    
+    with open(yaml_path) as f:
+        HPYaml = yaml.safe_load(f)
+    
+    HPList = np.array(HPYaml['Initial']).astype(int)
+    
+    if args.verbose or args.debug:
+        log.debug('HPList')
+        log.debug(HPList)
+        log.debug('First healpixel: {0:d}'.format(HPList[0]))
+        log.debug('Last healpixel: {0:d}'.format(HPList[-1]))
+        log.debug('Number of healpixels: {0:d}'.format(int(len(HPList))))
+        
     if 'sv' in args.survey.lower():
         log.info('sv survey')
         mtlprestr = args.survey.lower()
@@ -151,8 +156,17 @@ def procFunc(nproc):
             log.info(outputMTLDir)
             log.info('finalDir, nproc{0}'.format(nproc))
             log.info(args.finalDir)
-        log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
+
+        # 20260420 LGN - Adding some additional log statements here for reproducibility
+        # 20260420 LGN - And to aid in adding additional ledgers later
+        log.info('seed: {}'.format(args.seed))
         log.info('reproducing: {0}'.format(args.reproducing))
+        log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
+        log.info('shuffleBrightPriorities: {0}'.format(args.shuffleBrightPriorities))
+        log.info('shuffleELGPriorities: {0}'.format(args.shuffleELGPriorities))
+        log.info('PromoteFracBGSFaint: {0}'.format(args.PromoteFracBGSFaint))
+        log.info('PromoteFracELG: {0}'.format(args.PromoteFracELG))
+        
         initializeAlternateMTLs(exampleLedger, outputMTLDir, genSubset = nproc, seed = args.seed, obscon = args.obscon, survey = args.survey, saveBackup = args.saveBackup, hpnum = hpnum, overwrite = args.overwrite, reproducing = args.reproducing, shuffleSubpriorities = args.shuffleSubpriorities, startDate=args.startDate, endDate=args.endDate, profile = args.profile, usetmp=args.usetmp, finalDir=args.finalDir, debug = args.debug, verbose = args.verbose,
             shuffleBrightPriorities = args.shuffleBrightPriorities, shuffleELGPriorities = args.shuffleELGPriorities, PromoteFracBGSFaint = args.PromoteFracBGSFaint
             , PromoteFracELG = args.PromoteFracELG)
