@@ -183,16 +183,6 @@ if args.make_tile_file:
 else:
     print(args.make_tile_file, ' is False, not making tile file')
 
-logger.info('specrel is '+specrel)
-if specrel == 'daily':
-    specfo = basedir+'main/LSS/daily/datcomb_' + \
-        prog.replace('1b', '')+'_spec_zdone.fits'
-
-    if not os.path.isfile(specfo):
-        sys.exit('daily spec file '+specfo+' not found, exiting')
-
-    spec_cols_4tar = ['TARGETID', 'ZWARN', 'ZWARN_MTL', 'LOCATION', 'FIBER', 'TILEID',
-                      'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY']
     logger.info(str(spec_cols_4tar))
 
 regl = ['N', 'S']
@@ -432,6 +422,8 @@ if 'bright' in prog:
 
 if args.dotarspec and specrel == 'daily':
     specfo = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    spec_cols_4tar = ['TARGETID', 'ZWARN', 'ZWARN_MTL', 'LOCATION', 'FIBER', 'TILEID',
+                      'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY']
 
     specf = Table(fitsio.read(specfo, columns=spec_cols_4tar))
 
@@ -440,8 +432,10 @@ if args.dotarspec and specrel == 'daily':
     for tp, notqso in zip(tps, notqsos):
         logger.info('now doing '+tp+notqso)
         logger.info(len(tiles4comb['TILEID']))
-
-        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+        fnb = ''
+        if '1b' in prog:
+            fnb = '_1b'
+        outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup'+fnb+'_zdone.fits'
         if os.path.isfile(outfs) == False or args.dotarspec:
 
             tarfo = ldirspec+'/datcomb_'+prog+'_tarwdup_zdone.fits'
