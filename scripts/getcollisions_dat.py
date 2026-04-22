@@ -20,7 +20,7 @@ import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
-parser.add_argument("--survey", choices=['Y1','DA2'],default='DA2')
+parser.add_argument("--survey", choices=['Y1','DA2','DA3'],default='DA3')
 parser.add_argument("--outmode", choices=['test','prod'],default='test')
 
 args = parser.parse_args()
