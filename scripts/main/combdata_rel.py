@@ -183,7 +183,6 @@ if args.make_tile_file:
 else:
     print(args.make_tile_file, ' is False, not making tile file')
 
-    logger.info(str(spec_cols_4tar))
 
 regl = ['N', 'S']
 
