@@ -1,4 +1,5 @@
 #!/bin/bash
+source /global/common/software/desi/desi_environment.sh main
 start=`date +%s.%N`
 
 ##TEMPrealization=0
@@ -46,8 +47,7 @@ mock='--mock'
 #Uncomment the following line to set your own/nonscratch directory
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/altmtl/
 #ALTMTLHOME=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/
-#ALTMTLHOME=/pscratch/sd/d/desica/DA2/mocks/holi_v1/
-ALTMTLHOME=/pscratch/sd/d/desica/DA2/mocks/holi_v2/
+ALTMTLHOME=/pscratch/sd/d/desica/DA2/mocks/holi_v3/
 
 if [[ "${NERSC_HOST}" == "cori" ]]; then
     CVal='haswell'
@@ -93,12 +93,12 @@ seed=3593589
 
 # added by ZZ, but a better solution is to just remove --mockmin=$mockinit --mockmax=$mockend in the definition of argstring
 mockinit=0
-mockend=1
+mockend=50
 
 let ndir=$mockend-$mockinit 
 
 #mocklist="0,1,2,7,8,9,10,11,12,13,14,23,24,25,28,29,30,31,33,34,35,38,39,43,44,45,48,49,52,53,54,56,57,58,59,60,61,62,64,65,67,68,69,91,95,100,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223"
-mocklist="201,203,224,229,230,242,243,253,255,256,257,258,264,266,268,272,276,277,282,283,284,287,289,291,294,296,297,308,312,313"
+mocklist=""
 size=$(echo "$mocklist" | tr ',' ' ' | wc -w)
 
 if [ "$size" -ne 0 ]; then
@@ -215,9 +215,9 @@ secondary=''
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
 #targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
 #targfile="--targfile=/pscratch/sd/d/desica/DA2/mocks/holi_v1/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits'
-targfile="--targfile=/pscratch/sd/d/desica/DA2/mocks/holi_v2/forFA{mock_number}.fits"
+targfile="--targfile=/pscratch/sd/d/desica/DA2/mocks/holi_v3/forFA{mock_number}.fits"
 
-zfix="--zfix=/pscratch/sd/d/desica/DA2/mocks/holi_v2/qsos/qso{mock_number}.txt" 
+zfix="--zfix=/pscratch/sd/d/desica/DA2/mocks/holi_v3/qsos/qso{mock_number}.txt" 
 #zfix=''
 
 

@@ -20,32 +20,32 @@ parser.add_argument("--output_path", default='/pscratch/sd/d/desica/DA2/mocks/ho
 args = parser.parse_args()
 
 if args.mock == 'holi':
-    realization = str(args.realization).zfill(4)
+    realizationO = str(args.realization).zfill(4)
     
-    elg_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version_forELG, "seed%s" % realization, 'ELG', args.ELG_file_name)
+    elg_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version_forELG, "seed%s" % realizationO, 'ELG', args.ELG_file_name)
     elgs = Table.read(elg_path)
 
-    lrg_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version_forLRG, "seed%s" % realization, 'LRG', args.LRG_file_name)
+    lrg_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version_forLRG, "seed%s" % realizationO, 'LRG', args.LRG_file_name)
     lrgs = Table.read(lrg_path)
 
-    qso_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version_forQSO, "seed%s" % realization, 'QSO', args.QSO_file_name)
+    qso_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version_forQSO, "seed%s" % realizationO, 'QSO', args.QSO_file_name)
     qsos = Table.read(qso_path)
 
 elif args.mock == 'abacus':
 
-    realization = str(args.realization).zfill(3)
+    realizationO = str(args.realization).zfill(3)
 
-    elg_path = os.path.join("/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v2.0/AbacusSummit_base_c000_ph%s/CutSky" % realization, 'ELG', args.ELG_file_name)
+    elg_path = os.path.join("/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v2.0/AbacusSummit_base_c000_ph%s/CutSky" % realizationO, 'ELG', args.ELG_file_name)
     elgs = Table.read(elg_path)
 
-    lrg_path = os.path.join("/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v2.0/AbacusSummit_base_c000_ph%s/CutSky" % realization, 'LRG', args.LRG_file_name)
+    lrg_path = os.path.join("/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v2.0/AbacusSummit_base_c000_ph%s/CutSky" % realizationO, 'LRG', args.LRG_file_name)
     lrgs = Table.read(lrg_path)
 
-    qso_path = os.path.join("/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v2.0/AbacusSummit_base_c000_ph%s/CutSky" % realization, 'QSO', args.QSO_file_name)
+    qso_path = os.path.join("/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v2.0/AbacusSummit_base_c000_ph%s/CutSky" % realizationO, 'QSO', args.QSO_file_name)
     qsos = Table.read(qso_path)
 
 elif args.mock == 'uchuuref':
-    realization = str(args.realization).zfill(4)
+    realizationO = str(args.realization).zfill(4)
 
     elg_path = os.path.join("/global/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v2.0/0000/prep_altmtl", 'ELG', args.ELG_file_name)
     elgs = Table.read(elg_path)
@@ -59,7 +59,7 @@ elif args.mock == 'uchuuref':
     #ifil = os.path.join("/global/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v2.0/0000/prep_altmtl", args.tracer, args.file_name)
 
 
-output_path = os.path.join(args.output_path, 'forFA%s.fits' % realization)
+output_path = os.path.join(args.output_path, 'forFA%s.fits' % args.realization)
 
 if os.path.isfile(output_path):
     print('file', output_path, ' already exist')
@@ -69,7 +69,7 @@ if os.path.isfile(output_path):
 qso_path = os.path.join(args.output_path, 'qsos')
 
 os.makedirs(qso_path, exist_ok=True)
-qsofile = os.path.join(qso_path, 'qso%s.txt' % realization)
+qsofile = os.path.join(qso_path, 'qso%s.txt' % args.realization)
 
 np.savetxt(qsofile, np.array([qsos['TARGETID'], qsos['RSDZ']]).T, fmt='%d %.3f')
 print(f'saving qsos to {qsofile}')
@@ -83,7 +83,7 @@ del qsos
 cm.write_LSS_scratchcp(targets, output_path, extname = 'TARGETS')
 fits.setval(output_path, 'OBSCON', value='DARK', ext = 1)
 
-print('DONE', realization)
+print('DONE', realizationO)
 
 del targets
 
