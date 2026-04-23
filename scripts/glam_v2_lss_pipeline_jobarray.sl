@@ -4,8 +4,8 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:00:00
-#SBATCH --array=383-499
-##SBATCH --reservation=lss_catalogs
+#SBATCH --array=1250-1349
+#SBATCH --reservation=finish_dr2_mocks
 #test
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
