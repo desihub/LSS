@@ -6,6 +6,20 @@ rng = Generator(PCG64())
 path_to_nz = '/global/homes/d/desica/desi-cutsky-mock/nz_files/DA2/'
 #path_to_nz = '/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/'
 
+def get_nz_bgs(z_cat, tracer_type, nzfile, factor=None):
+    ''' The function where the n(z) is read and the NZ column is computed for the given redshifts.   '''
+    #nzfile = 'nz_reference_bgs_any.txt'
+
+    print('reading nz function', os.path.join(path_to_nz, nzfile))
+    z, nz = np.loadtxt(os.path.join(path_to_nz, nzfile), usecols=([0,3]), unpack=True)
+    if nz[0] == 0.:
+        nz[0] == nz[1]
+
+    if factor is not None:
+        nz *= factor
+    return np.interp(z_cat, z, nz, left=0, right=0)
+
+
 def get_nz(z_cat, tracer_type, ns=None):
     ''' The function where the n(z) is read and the NZ column is computed for the given redshifts.   '''
     if tracer_type == 'LRG':
@@ -119,6 +133,42 @@ def get_lop(z_cat, ran):
     return newbits
 
 
+def downsample_aux_bgs(z_cat, ran, n_mean, tracer_type,nzfile, val=1, factor=None):
+    """ downsample galaxies following n(z) model specified in galtype"""
+
+    nz = get_nz_bgs(z_cat, tracer_type, nzfile,factor=factor)
+    print('minimum,', np.min(z_cat))
+    if isinstance(n_mean, list) or isinstance(n_mean, np.ndarray):
+        n_mean_interp = np.interp(z_cat, n_mean[0], n_mean[1], left=0., right=0)
+        # downsample
+        nz_selected = ran < (nz) / (n_mean_interp)
+    else:
+        nz_selected = ran < (nz) / (n_mean)
+    ###nz_selected = ran < (1+nz) / (1+n_mean)
+
+    idx = np.where(nz_selected)
+
+    #idx is the ones to select
+    print("DOWNSAMPLE: Selected {} out of {} galaxies.".format(len(idx[0]), len(z_cat)), flush=True)
+
+    newbits = np.zeros(len(z_cat), dtype=np.int32)
+    newbits[idx] = val
+
+    return newbits, nz
+
+
+def downsample_bgs(z_cat, n_mean, tracer_type, nzfile, radec = None, factor=None):
+    """ downsample galaxies following n(z) model specified in galtype"""
+
+    ran_i = rng.random(len(z_cat))
+
+    outbits = []
+    outbits, nzgood = downsample_aux_bgs(z_cat, ran_i, n_mean, tracer_type, nzfile, factor=factor)
+    ran = [ran_i]
+
+
+    return outbits, ran
+
 
 def downsample(z_cat, n_mean, tracer_type, radec = None):
     """ downsample galaxies following n(z) model specified in galtype"""
@@ -145,6 +195,27 @@ def downsample(z_cat, n_mean, tracer_type, radec = None):
         os._exit(1)
 
     return outbits, ran
+
+def calibrate_nz_bgs(input_data, redshift_column = 'Z_RSD', tracer_type='BGS', n_mean=None, survey='DA2', namefile = None, save_mock_nz = 'n', nzfile='nz_reference_bgs_any.txt', factor=None):
+    print('Entering NZ calibration')
+
+    limits = {'BGS':[0.,.6]}
+    areas = {'DA2':13176.892}
+    areas_split = {'DA2': [3212.9032, 9963.9888]}  #primero north y luego south
+    ra = input_data['RA'][()]
+    dec = input_data['DEC'][()]
+    z = input_data[redshift_column][()]
+
+    print('enter', tracer_type)
+    #n_mean = [ztarget, n_mean]
+
+    print('entering downsample')
+    down_bit, ran_arr = downsample_bgs(z, n_mean, tracer_type, nzfile, radec=[ra, dec], factor=factor)
+
+
+    out_arr = down_bit.astype(np.int32)
+    input_data['STATUS'] = out_arr
+    return input_data
 
 
 
