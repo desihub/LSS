@@ -66,7 +66,7 @@ path = '/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.82'
 
 path_to_save_nz = '/pscratch/sd/d/desica/holi_bgs_nz_temp'
 
-ind = int(sys.argv[0])
+ind = int(sys.argv[1])
 out_file_name = os.path.join('/pscratch/sd/d/desica/DA2/mocks/holi_bgs', 'forFA%d.fits' %ind)
 if os.path.isfile(out_file_name):
     sys.exit(out_file_name + ' exists')
