@@ -11,5 +11,7 @@ source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
-python $LSS/scripts/mock_tools/prepare_holi_bgs_seed.py $SLURM_ARRAY_TASK_ID
+scriptdir=/global/homes/d/desica/LSScode/LSS/
+
+python $scriptdir/scripts/mock_tools/prepare_holi_bgs_seed.py $SLURM_ARRAY_TASK_ID
 
