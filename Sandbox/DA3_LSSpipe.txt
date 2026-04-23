@@ -1,0 +1,34 @@
+#steps for DA3
+#from desica $HOME/LSScode/LSS
+#April 22nd 2026
+source /global/common/software/desi/desi_environment.sh main
+module load LSS/main
+module swap desitarget/3.0.0
+python scripts/main/combdata_rel.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --dotarg --par --make_tile_file
+
+python scripts/main/combdata_rel.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --dotarg --par --make_tile_file --prog bright
+
+#on interactive node
+python scripts/main/combdata_rel.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --dotarspec
+
+python scripts/main/combdata_rel.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --dotarspec --prog bright
+
+#get randoms:
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/getpota_ran.py  --prog DARK --survey DA3 --outmode prod --maxr 1
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/getpota_ran.py  --prog DARK --survey DA3 --outmode prod --minr 1
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/getpota_ran.py  --prog BRIGHT --survey DA3 --outmode prod
+
+#data collisions
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/getcollisions_dat.py  --prog BRIGHT --survey DA3 --outmode prod
+
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/getcollisions_dat.py  --prog DARK --survey DA3 --outmode prod
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --survey DA3
+
+ ln -s /global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/emlin_catalog.fits /global/cfs/cdirs/desi/survey/catalogs//DA3/LSS/daily/emlin_catalog.fits
+ 
+ ln -s /global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog.fits /global/cfs/cdirs/desi/survey/catalogs//DA3/LSS/daily/QSO_catalog.fits
+ 
+scripts/dark_LSScat_pipe.sh test
