@@ -106,8 +106,14 @@ ndirs = None
 multiproc = True
 singleDate = not(args.multiDate)
 
-
 def procFunc(nproc):
+
+    if args.zfix == None
+        zfix = None
+    else:
+        zfix = args.zfix.format(mock_number=nproc)
+
+
     if args.verbose:
         log.debug('calling procFunc')
     if not(args.targfile is None):
@@ -122,7 +128,7 @@ def procFunc(nproc):
         print(targets['DEC'][0:5])
     else:
         targets = None
-    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing, debugOrig = True, zfix = args.zfix.format(mock_number=nproc))
+    retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing, debugOrig = True, zfix = zfix)
     gc.collect()
     if args.verbose:
         log.debug('finished with one iteration of procFunc')
