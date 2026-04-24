@@ -108,7 +108,7 @@ singleDate = not(args.multiDate)
 
 def procFunc(nproc):
 
-    if args.zfix == None
+    if args.zfix == None:
         zfix = None
     else:
         zfix = args.zfix.format(mock_number=nproc)
