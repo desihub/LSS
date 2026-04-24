@@ -17,7 +17,8 @@ module load LSS/main
 
 export OMP_NUM_THREADS=1
 
-path2LSS=$LSS/bin
+#path2LSS=$LSS/bin
+path2LSS=/global/homes/d/desica/LSScode/LSS/bin
 
 ALTMTLHOME="/pscratch/sd/d/desica/DA2/mocks/GLAM-Uchuu_v2/"
 simName="altmtl{mock_number}"
