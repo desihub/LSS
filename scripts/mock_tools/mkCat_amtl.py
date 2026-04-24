@@ -571,6 +571,11 @@ if args.tracer[:3] == 'BGS':
     pthresh = 2000
     zmin = 0.1
     zmax = 0.5
+    if args.survey == 'DA2':
+        subfrac = 0.98
+        if 'holi' in args.simName:
+            subfrac = 0.94
+
 #    if notqso == 'notqso':
 #        maxp = 3200
 
