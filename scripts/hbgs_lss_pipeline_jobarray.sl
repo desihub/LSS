@@ -6,7 +6,7 @@
 #SBATCH -t 02:00:00
 #SBATCH --array=0-49
 #SBATCH --reservation=finish_dr2_mocks
-#SBATCH --dependency=afterany:51966935
+##SBATCH --dependency=afterany:51966935
 #test
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
