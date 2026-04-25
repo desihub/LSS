@@ -1217,7 +1217,9 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     else:
         redshift_ranges = zrl
     common.printlog('the redshift bins that will be fit are '+str(redshift_ranges),logger)
-    fit_maps = mainp.fit_maps_allebv
+    fit_maps = mainp.fit_maps
+    if tracer_clus == 'LRG':
+        fit_maps = mainp.fit_maps_allebv
     use_maps = fit_maps
     debv = common.get_debv()
     zcmb = common.mk_zcmbmap()
