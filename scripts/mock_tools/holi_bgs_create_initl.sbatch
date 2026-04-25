@@ -4,9 +4,9 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 01:00:00
-#SBATCH --array=150-199,201-999
+#SBATCH --array=6-9
 #SBATCH --reservation=finish_dr2_mocks
-#SBATCH --dependency=afterany:51952224
+##SBATCH --dependency=afterany:51952224
 
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
