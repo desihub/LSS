@@ -4,8 +4,8 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:00:00
-#SBATCH --array=750-799
-#SBATCH --reservation=finish_dr2_mocks
+#SBATCH --array=756,760,761,764,767,768,770,771,773-776,778-799,1150-1199
+##SBATCH --reservation=finish_dr2_mocks
 ##SBATCH --dependency=afterany:51969064 
 #test
 source /global/common/software/desi/desi_environment.sh main
