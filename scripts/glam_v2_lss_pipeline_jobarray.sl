@@ -4,7 +4,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:00:00
-#SBATCH --array=950-999
+#SBATCH --array=322,324,342-345,347
 #SBATCH --reservation=finish_dr2_mocks
 #SBATCH --dependency=afterany:51969064 
 #test
