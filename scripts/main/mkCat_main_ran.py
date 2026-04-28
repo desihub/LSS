@@ -149,7 +149,7 @@ else:
 
 pd = pdir
 
-if '1b' in type:
+if '1b' in type or 'LGE' in type:
     pr += '1B'
     pdir += '1b'
 
