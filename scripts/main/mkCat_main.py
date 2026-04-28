@@ -338,6 +338,8 @@ if mketar: #concatenate target files for given type, with column selection hardc
 maxp = 3400
 if type[:3] == 'LRG' or notqso == 'notqso':
     maxp = 3200
+if type[:3] == 'LGE':
+    maxp = 3210
 if type[:3] == 'BGS':
     maxp = 2100
 
@@ -359,7 +361,10 @@ if mkfulld:
             if specrel == 'newQSOtemp_tagged':
                 azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
                 azfm = 'cumul'
-        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+        f1b = ''
+        if type[:3] == 'LGE':
+            f1b = '_1b'
+        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup'+f1b+'_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
     else:
