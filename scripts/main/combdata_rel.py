@@ -220,7 +220,7 @@ if args.dotarg:
             logger.info(str(tile_list[0].dtype.names))
             # vstack(tile_list,metadata_conflicts='silent')
             tarsn = np.concatenate(tile_list)
-            logger.info(str(len(tarsn)))+' rows'
+            logger.info(str(len(tarsn))+' rows')
             del tile_list
             logger.info('doing TARGETID sort')
             tarsn = Table(tarsn)

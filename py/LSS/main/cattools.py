@@ -1115,7 +1115,7 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
     
     tile = tile_row['TILEID'][0]
     ts = str(tile).zfill(6)
-    #print(ts)
+    print(ts)
     faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
     fht = fitsio.read_header(faf)
     mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
@@ -1124,11 +1124,11 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
     if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
         mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
     #wt = tiles['TILEID'] == tile
-    #print('reading targets for tile '+ts+' from '+mdir)
+    print('reading targets for tile '+ts+' from '+mdir)
     tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
     if 'MTL2' in fht.keys():
         mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
-        #print('reading targets for tile '+ts+' from '+mdir)
+        print('reading targets for tile '+ts+' from '+mdir)
         tars2 = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
         tars = np.concatenate([tars,tars2])
     #tars.keep_columns(tarcols)
