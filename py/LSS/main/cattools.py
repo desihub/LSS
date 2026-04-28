@@ -1124,6 +1124,10 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
         mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
     #wt = tiles['TILEID'] == tile
     tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+    if 'MTL2' in fht.keys():
+        mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
+        tars2 = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+        tars = np.concatenate([tars,tars2])
     #tars.keep_columns(tarcols)
     tars = tars[[b for b in tarcol]]
 

@@ -449,7 +449,7 @@ if args.dotarspec and specrel == 'daily':
             if notqso == 'notqso':
                 sel &= (tarf['DESI_TARGET'] & 4) == 0
             tarf = Table(tarf[sel])
-            logger.info('cut to target type')
+            logger.info('cut to target type '+tp+' has '+str(len(tarf)))
 
             tarf['TILELOCID'] = 10000*tarf['TILEID'] + tarf['LOCATION']
             logger.info('added TILELOCID, about to do joins')
