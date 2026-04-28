@@ -18,7 +18,7 @@ import fitsio
 import LSS.common_tools as common
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prog", choices=['DARK','BRIGHT'])
+parser.add_argument("--prog", choices=['DARK','BRIGHT','DARK1B','BRIGHT1B'])
 parser.add_argument("--survey", choices=['Y1','DA2','DA3'],default='DA3')
 parser.add_argument("--minr", default=0,type=int)
 parser.add_argument("--maxr", default=18,type=int)
