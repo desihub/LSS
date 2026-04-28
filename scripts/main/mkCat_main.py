@@ -361,9 +361,6 @@ if mkfulld:
             if specrel == 'newQSOtemp_tagged':
                 azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
                 azfm = 'cumul'
-        f1b = ''
-        if type[:3] == 'LGE' and args.survey != 'main':
-            f1b = '_1b'
         dz = ldirspec+'datcomb_'+progl+'_tarspecwdup'+f1b+'_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
@@ -374,7 +371,11 @@ if mkfulld:
             tracer_ts = 'ELG'
         if type[:3] == 'BGS':
             tracer_ts = 'BGS_ANY'
-        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup_zdone.fits'
+        f1b = ''
+        if type[:3] == 'LGE' and args.survey != 'main':
+            f1b = '_1b'
+
+        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup'+f1b+'_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
             azf = emlin_fn
