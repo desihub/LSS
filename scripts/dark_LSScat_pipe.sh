@@ -84,8 +84,9 @@ LSSCODE=$HOME/LSScode
 #srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-export LSSCODE=$HOME
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+LSSCODE=$HOME/LSScode
+#export LSSCODE=$HOME
+#PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 #srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO   --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n  --imsys y --survey $survey --verspec $verspec --imsys_zbin y --use_map_veto _HPmapcut --version $1
 
