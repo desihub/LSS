@@ -1374,7 +1374,7 @@ else:
     #zmin = 0.01
     #zmax = 1.61
 
-if type[:3] == 'LRG':
+if type[:3] == 'LRG' or type[:3] == 'LGE':
     P0 = 10000
 if type[:3] == 'ELG':
     P0 = 4000
