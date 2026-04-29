@@ -52,7 +52,7 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims2 = get_zlims(tracer2, option=option)
         return [zlim for zlim in zlims1 if zlim in zlims2]
 
-    if tracer.startswith('LRG'):
+    if tracer.startswith('LRG') or tracer.startswith('LGE'):
         zlims = [0.4, 0.6, 0.8, 1.1]
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
