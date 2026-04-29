@@ -4005,7 +4005,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
         #    common.printlog('length after tsnrcut '+str(len(ff[wz])),logger)
 
-    if tp[:3] == 'LRG':
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
         wz = ff['ZWARN'] == 0
