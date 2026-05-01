@@ -67,7 +67,9 @@ def expand_ran(in_ran_fn, parent_ran_fn=None, rancols=['TARGETID', 'RA', 'DEC'],
         else:
             print('Only DA2 is supported right now, code will fail if you do not explicitly set parent_ran_fn!!!')
         if 'BGS' in in_ran_fn:
-            parent_ran_fn = pdir + 'bright_'+ran_ind+'_full_noveto.ran.h5 
+            parent_ran_fn = pdir + 'bright_'+ran_ind+'_full_noveto.ran.h5'
+        else:
+            parent_ran_fn = pdir + 'dark_'+ran_ind+'_full_noveto.ran.h5' 
     print('loading '+parent_ran_fn+' as parent randoms from (real) data release')
     parent_ran = read_hdf5_blosc(parent_ran_fn, columns=rancols)
     in_table = read_hdf5_blosc(
