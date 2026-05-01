@@ -30,7 +30,7 @@ def thphi2radec(theta, phi):
     return 180./np.pi*phi, -(180./np.pi*theta-90)
 
 
-def expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot, rancols=['TARGETID', 'RA', 'DEC'], datacols=['TARGETID', 'Z'], logger=None):
+def expand_ran(in_ran_fn, parent_ran_fn=None, rancols=['TARGETID', 'RA', 'DEC'], datacols=['TARGETID', 'Z'], logger=None):
     # function to add columns to randoms, most useful for mock randoms where the same column values are used
     # assumes data is saved in the LSS h5 format; could edit to allow functionality for fits or other formats
     '''
@@ -39,9 +39,7 @@ def expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot, rancols=['TARGETID', 
     in_ran_fn : string 
         full path to input randoms to expand, in LSS h5 format, containing at least the columns 'TARGETID','TARGETID_DATA','WEIGHT','NX'
     parent_ran_fn : string 
-        full path to randoms that are a superset of data to expand and contain at least TARGETID, RA, DEC, in LSS h5 format
-    in_clus_fileroot : string
-        directory + tracer for clustering catalogs (allowing NGC/SGC to be loaded by simply adding +'_'+reg+'_clustering.dat.h5'), in LSS h5 format
+        full path to randoms that are a superset of data to expand and contain at least TARGETID, RA, DEC, in LSS h5 format; if None, found automatically
     rancols : list 
         a list of the column names to add to the input table from the parent random catalog via TARGETID match
     datacols : list 
@@ -52,6 +50,25 @@ def expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot, rancols=['TARGETID', 
     '''
 
     # t0 = time.time()
+    rfn_split = in_ran_fn.split('/')
+    input_dir = ''
+    for i in range(0,len(rfn_split)-1):
+        input_dir += rfn_split[i]+'/'
+    
+    ran_ind = rfn_split[-1].split('_')[-2]
+    reg = rfn_split[-1].split('_')[-3]
+    tracer = rfn_split[-1].split('_')[0]
+    if len(rfn_split[-1].split('_')) > 4:
+        tracer += '_'+rfn_split[-1].split('_')[1]
+    in_clus_fileroot = input_dir + tracer
+    if parent_ran_fn is None:
+        if 'DA2' in in_ran_fn:
+            pdir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'
+        else:
+            print('Only DA2 is supported right now, code will fail if you do not explicitly set parent_ran_fn!!!')
+        if 'BGS' in in_ran_fn:
+            parent_ran_fn = pdir + 'bright_'+ran_ind+'_full_noveto.ran.h5 
+    print('loading '+parent_ran_fn+' as parent randoms from (real) data release')
     parent_ran = read_hdf5_blosc(parent_ran_fn, columns=rancols)
     in_table = read_hdf5_blosc(
         in_ran_fn, columns=['TARGETID', 'TARGETID_DATA', 'WEIGHT', 'NX'])
