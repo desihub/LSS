@@ -10,7 +10,7 @@ import os
 setup_logging()
 logger = logging.getLogger('combine_BGS_BRIGHT_FAINT')
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description="Combines BGS_BRIGHT and BGS_FAINT (nonKP) catalogs, full or identical subsamples (use --ccut to specify subsamples; the corresponding BRIGHT and FAINT subsample clustering catalogs must exist before running this script, you can produce them with mkCat_subsamp.py)", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--ccut", help="if combining subsamples, the string that defines them (default is empty string for full catalogs)", default='')
 #arguments to find input data
 parser.add_argument("--basedir", help="base directory for input, note that a versioning structure is expected under this directory", default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/')
@@ -20,9 +20,9 @@ parser.add_argument("--verspec", help="version for redshifts", default='loa-v1')
 parser.add_argument("--outdir", help="directory for output", default=os.environ['SCRATCH'])
 
 parser.add_argument("--data", choices=['y', 'n'], help="write the data catalog?", default='y')
-parser.add_argument("--random_data_ratio", choices=['unity', 'first_original', 'first_subsampled'], help="how to set the random-to-data weight ratio for BRIGHT and FAINT (they must be equal). unity sets the ratio to 1; first_original is closer to the default from LSS catalogs, which takes the first ratio (in this case, BRIGHT) before subsampling; first_subsampled takes the first ratio after subsampling (this keeps the first tracer random weights untouched after subsampling, whereas the previous option upscales them)", default='first_original')
+parser.add_argument("--random_data_ratio", choices=['unity', 'first_original', 'first_subsampled'], help="how to set the random-to-data weight ratio for BRIGHT and FAINT (they must be equal). 'unity' sets the ratio to 1; 'first_original' is closer to the default from LSS catalogs, which takes the first ratio (in this case, BRIGHT) before subsampling; 'first_subsampled' takes the first ratio after subsampling (this keeps the first tracer random weights untouched after subsampling, whereas the previous option upscales them). the original choice was 'unity', but it turned out to cause issues with thecov analytical covariances", default='first_original')
 parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)
-parser.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (use parallel script for all)", default=18, type=int)
+parser.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (use parallel option for all)", default=18, type=int)
 
 parser.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel?", default='y')
 
