@@ -4,8 +4,8 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:00:00
-#SBATCH --array=1050-1099,1291,1329,1411-1449
-#SBATCH --reservation=glam_dark_lss
+#SBATCH --array=1220,1423,1426
+##SBATCH --reservation=glam_dark_lss
 ##SBATCH --dependency=afterany:51969064 
 #test
 source /global/common/software/desi/desi_environment.sh main
