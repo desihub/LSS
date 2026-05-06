@@ -813,9 +813,22 @@ def initializeYAML_HPTracker(obscon,outputMTLDir,real_mtl_dir='/global/cfs/cdirs
                 #strip the healpixel from the path string and add it to the dictionary
                 hp = filepath.split('/')[-1].strip('.escv').split('-')[-1]
                 creation_dates[date[:10]].append(hp)
-    
-    #replace first date with 'Initial' for ledger initialization
-    creation_dates['Initial'] = creation_dates.pop(min(creation_dates.keys()))
+
+    #special handling to define the 'Initial' category used to create initial set of ledgers
+    if obscon in ['bright','dark']:
+        creation_dates = {
+            'Initial': [v for k, vals in creation_dates.items()
+                        if datetime.fromisoformat(k).year < 2025
+                        for v in vals],
+            **{k: v for k, v in creation_dates.items()
+               if datetime.fromisoformat(k).year >= 2025}
+        }
+    elif obscon in ['dark1b','bright1b']:
+        #replace first date with 'Initial' for ledger initialization
+        creation_dates['Initial'] = creation_dates.pop(min(creation_dates.keys()))
+    else:
+        print(f'Obscon: {obscon} is not supported')
+        return
     
     #re-sort the yaml file so Initial is the first entry (cosmetic)
     out = {'Initial': creation_dates['Initial'], **{k: creation_dates[k] for k in sorted(creation_dates) if k != 'Initial'}}
