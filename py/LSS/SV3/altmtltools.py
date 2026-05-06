@@ -615,6 +615,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     MTLDTFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv'
     MTLDT = Table.read(MTLDTFN)
 
+    # 20260506 - LGN: We need to read veto actions in order to process vetoes for BRIGHT1B
+    MTLDVFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-vetoes.ecsv'
+    MTLDV = Table.read(MTLDVFN)
+
     #tiles-specstatus file filtered to only matching obscon and surveySURVEY FAPRGRM
     TSS_Sel = TSS[(TSS['SURVEY'] == surveyForTSS) & (TSS['FAPRGRM'] == obscon.lower())]
     
@@ -628,7 +632,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     #format startdate into string for comparisson to MTL DT timestamp column
     #note we increment startDate by one day to avoid overlapping on previous endDate
     #(less than or equal to doesn't work due to datatype comparison)
-    startDate_str = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+    startDate_str = (startDate_dt).strftime("%Y-%m-%d")
+    startDate_str_inc1 = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
     endDate_str = (endDate_dt).strftime("%Y-%m-%d") 
 
     #if we only want entries from tiles within the [startDate, endDate] window
@@ -641,8 +646,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
 
         #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
-        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check prog/survey match)
-        time_sel = (MTLDT['TIMESTAMP'] > startDate_str) & (np.isin(MTLDT['TILEID'],TilesSel))
+        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check program/survey match)
+        time_sel = (MTLDT['TIMESTAMP'] > startDate_str_inc1) & (np.isin(MTLDT['TILEID'],TilesSel))
         TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
     TileIDs = []
@@ -711,6 +716,16 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
                 doneFlag.append(False)
             archiveDates.append(update['ARCHIVEDATE'])
             reprocFlag = True
+
+    #LGN 20260506: adding new special actions for BRIGHT1B veto actions
+    veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str)
+
+    for veto_en in MTLDV[veto_in_daterange]:
+        TileIDs.append(-1)
+        TypeOfActions.append('veto')
+        TimesOfActions.append(veto_en['TIMESTAMP'])
+        doneFlag.append(False)
+        archiveDates.append(-1)
 
 
     #LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
