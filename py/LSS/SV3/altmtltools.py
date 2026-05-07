@@ -33,6 +33,8 @@ from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
 from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
 
+from desimodel.footprint import pix2tiles, radec2pix
+
 from desiutil.log import get_logger
 log = get_logger()
 
@@ -718,7 +720,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
             reprocFlag = True
 
     #LGN 20260506: adding new special actions for BRIGHT1B veto actions
-    veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str)
+    veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
 
     for veto_en in MTLDV[veto_in_daterange]:
         TileIDs.append(-1)
@@ -1802,8 +1804,17 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, nproc=nproc, survey=survey, obscon=obscon, debug=debug, verbose=verbose)
                 #record success in the ledger
                 retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
+
+            #LGN 20260506: Adding new 'veto' action for BRIGHT1B vetoes
+            elif action['ACTIONTYPE'] == 'veto':
+                log.info('Running veto action')
+                #run action
+                process_vetoes_altmtl(altmtldir, action, obscon = obscon, survey = survey)
+                #record action in tile tracker
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
+                
             else:
-                raise ValueError('actiontype must be `fa`, `update`, `reproc`, `lya1b` or `addnew`.')
+                raise ValueError('actiontype must be `fa`, `update`, `reproc`, `lya1b`, `addnew` or `veto`.')
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
             #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
@@ -1818,6 +1829,65 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
             
         return althpdirname, altmtltilefn, altMTLTileTrackerFN, actionList
+
+# 20260506 LGN - Adding new function to apply vetoes to alt mtl ledgers
+# 20260506 LGN - Modified from desitarget.mtl.process_vetoes https://github.com/desihub/desitarget/blob/main/py/desitarget/mtl.py#L1717
+def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl'):
+    
+    # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
+    MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
+    MTLDV = Table.read(MTLDVFN)
+    
+    # LGN Select appropriate set of vetoes based on timestamps of current and previous veto events
+    # LGN If this is the first veto action, set low timestamp
+    DV_idx = (action['ACTIONTIME'] == MTLDV['TIMESTAMP']).argmax()
+    
+    tslow = MTLDV[DV_idx-1]['TIMESTAMP']
+    tshigh = MTLDV[DV_idx]['TIMESTAMP']
+    
+    if DV_idx == 0:
+        tslow = "0000-00-00T00:00:00+00:00"
+    
+    # ADM grab the list of files in the veto directory.
+    vetodir = os.path.join(mtldir,survey,'veto',obscon.lower())
+    fns = sorted(glob.glob(os.path.join(vetodir, "*", "*ecsv")))
+    
+    # ADM read and concatenate the veto files, keeping only the relevant
+    # ADM columns and entries later than the most recent final TIMESTAMP.
+    vetocat = []
+    for fn in fns:
+        vetodat = read_mtl_veto_file(fn)
+        ii = (vetodat["TIMESTAMP"] > tslow) & (vetodat["TIMESTAMP"] < tshigh)
+        vetocat.append(vetodat[ii])
+    
+    # ADM stack all the stacks of objects to be vetoed into one catalog.
+    vetocat = vstack(vetocat)
+    
+    # ADM loop through and veto MTL entries in the pixel-based ledgers.
+    pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
+    
+    for hpx in pixnum:
+        altmtldir_srv = os.path.join(altmtldir, survey, obscon)
+        # ADM read each ledger that corresponds to a HEALPixel that
+        # ADM includes an RA, Dec in the veto catalog.
+        mtl = io.read_mtl_in_hp(altmtldir_srv, nside, hpx, unique=True,tabform=tabform)
+        # ADM match ledger targets to those in the veto catalog.
+        mii, vii = match(mtl["TARGETID"], vetocat["TARGETID"])
+        # ADM create a new set of entries that are updates to "turn off"
+        # ADM the targets that match the veto catalog.
+        updates = mtl[mii]
+        updates["NUMOBS_MORE"] = 0
+        updates["PRIORITY"] = 2
+        updates["TARGET_STATE"] = "VETO|DONE"
+        updates["TIMESTAMP"] = get_utc_date(survey=survey)
+        updates["VERSION"] = dt_version
+        # ADM finally, append the new updates to the ledger.
+        nups, fn = io.write_mtl(
+            altmtldir_srv, updates, ecsv=True, survey="main", obscon=obscon,
+            nsidefile=nside, hpxlist=hpx, append=True)
+
+    return
+    
 
 # 20260420 LGN - Adding new function to create new ledger files when needed
 def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out"):
