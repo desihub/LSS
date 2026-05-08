@@ -6,6 +6,9 @@ import numpy as np
 from astropy.table import Table,join
 # system
 import os
+#---DEBUG
+os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
+#---DEBUG
 import subprocess
 import sys
 import tempfile
@@ -23,8 +26,15 @@ from desitarget import io
 from desitarget.mtl import inflate_ledger
 from desiutil.log import get_logger
 
+
 log = get_logger()
 
+#---DEBUG
+os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
+
+import desimodel
+log.info(f'desimodel path = {desimodel.__path__}')
+#---DEBUG
 
 #hardcode target directories; these are fixed
 #JL - These change once at the very beginning of observations.
@@ -219,9 +229,11 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
         if 'main' in indir:
             assert(faver > 3.0)
         if faver == 2.4:
+            fo.write('module load desimodules/fuji\n')
             fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2\n')
 
         if faver < 2.4:
+                fo.write('module load desimodules/fuji\n')
             if int(indir[-7:-1]) > 210413:
                 fo.write("module swap fiberassign/2.3.0\n")
             else:
@@ -230,6 +242,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
             fo.write("module swap fiberassign/main")
         else:
             assert(faver < 5.0)
+            fo.write('module load desimodules/fuji\n')
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
     elif faver == 'current':
         faver = 5
@@ -272,7 +285,8 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
     fo.close()    
  
         
-def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,newdir=None, verbose = False, mock = False, targver = '1.1.1', reproducing = False):
+def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None, overwriteFA = False,
+    newdir=None, verbose = False, mock = False, targver = '1.1.1', reproducing = False):
     ts = str(tileid).zfill(6)
     #get info from origin fiberassign file
     fa_fn = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
@@ -315,6 +329,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         log.critical('indir')
         log.critical(indir)
         return('Error! tile file does not appear to exist for tile '+ts+' '+tilef)
+    log.info('ping A')
     skyf = indir+ts+'-sky.fits'
     try:
         fitsio.read(skyf)
@@ -327,6 +342,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     except:
         log.info(' secondary file does not appear to exist')
         scnd = False 
+    log.info('ping B')
     gfaf = indir+ts+'-gfa.fits'
     try:
         fitsio.read(gfaf)
@@ -347,6 +363,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             tarfn = outdir+ts+'-targ.fits'   
     else:
         tarfn = newdir+ts+'-targ.fits' 
+    log.info('ping C')
     prog = fht['FAPRGRM'].lower()
     gaiadr = None
     if np.isin('gaiadr2',fht['FAARGS'].split()):
@@ -358,6 +375,11 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         if 'sv3' in indir.lower():
             if verbose:
                 log.debug('sv3 survey')
+            log.info('ping C1')
+            log.info(f'tilef = {tilef}')
+            log.info(f'mtldir+prog = {mtldir+prog}')
+            log.info(f'tarfn = {tarfn}')
+            log.info(f'tdir+prog = {tdir+prog}')
             altcreate_mtl(tilef,
             mtldir+prog,        
             gaiadr,
@@ -398,7 +420,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
-            
+    log.info('ping D')        
     if getosubp:
         if tileid == 315:
             log.info('special tile 315 case triggered')
@@ -420,7 +442,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             ntar.remove_columns(['SUBPRIORITY'])
             ntar = join(ntar,otar,keys=['TARGETID'])
             ntar.write(tarfn,format='fits', overwrite=True)
-    
+    log.info('ping E')
     fo = open(outdir+'fa-'+ts+'.sh','w')
     fo.write('#!/bin/bash\n\n')
     fo.write('source /global/common/software/desi/desi_environment.sh main\n')
@@ -448,6 +470,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     else:
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
+    log.info('ping F')
     fo.write("fba_run")
     fo.write(" --targets "+tarfn)
     if scnd:
@@ -474,7 +497,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if faver >=5:
         fo.write(" --fafns_for_stucksky "+fa_fn)
     fo.close()    
-
+    log.info('ping G')
 #     if float(fht['FA_VER'][:3]) < 2.4:
 #         fo.write("module swap fiberassign/2.3.0\n")
 #     else:
@@ -545,6 +568,7 @@ def altcreate_mtl(
         20210526 : implementation of using subpriority=False in write_targets
                     to avoid an over-writting of the SUBPRIORITY; AJR changed to True reproduce SV3
     """
+    log.info('ping A')
     tiles = fitsio.read(tilesfn)
     tileIDs = tiles['TILEID']
     # AR mtl: read mtl
@@ -558,13 +582,15 @@ def altcreate_mtl(
             mtl=True,
             unique=False,
             isodate=None,
+            survey = survey,
         )
         mtltime = np.unique(d0[d0['ZTILEID'] == 314]['TIMESTAMP'])
 
         assert(mtltime.shape[0] == 1)
         
         mtltime = str(mtltime[0])
-        
+        log.info(f'mtldir1 = {mtldir}')
+        log.info(f'tiles1 = {tiles}')
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -573,6 +599,7 @@ def altcreate_mtl(
             unique=True,
             isodate=mtltime,
             verbose=verbose,
+            survey = survey,
         )
     elif (315 in tileIDs) and (len(tiles) > 1):
         log.critical('315 in tiles but multiple tiles provided')
@@ -580,7 +607,8 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-    
+        log.info(f'mtldir2 = {mtldir}')
+        log.info(f'tiles2 = {tiles}')
         d = io.read_targets_in_tiles(
             mtldir,
             tiles,
@@ -589,10 +617,11 @@ def altcreate_mtl(
             unique=True,
             isodate=mtltime,
             verbose=verbose,
-            tabform='ascii.ecsv'
+            tabform='ascii.ecsv', 
+            survey = survey
         )
         
-    
+    log.info('ping B')
     try:
         log.info('shape of read_targets_in_tiles output')
         log.info(d.shape)
@@ -602,6 +631,7 @@ def altcreate_mtl(
         log.info(len(d))
         ntargs = len(d)
     assert(ntargs)
+    log.info('ping C')
     # AR mtl: removing by hand BACKUP_BRIGHT for sv3/BACKUP
     # AR mtl: using an indirect way to find if program=backup,
     # AR mtl:   to avoid the need of an extra program argument
@@ -644,7 +674,7 @@ def altcreate_mtl(
                 d, gaia_ref_epochs[gaiadr]
             )
     d = Table(d)
-
+    log.info('ping D')
     outfndir = '/'.join(outfn.split('/')[:-1])
     if not os.path.exists(outfndir):
         os.makedirs(outfndir, exist_ok=True)
@@ -656,6 +686,7 @@ def altcreate_mtl(
         log.info(len(d))
     d.write(outfn,format='fits', overwrite=True)
     del d
+
     return True
     # AR mtl: write fits
     #n, tmpfn = io.write_targets(tmpoutdir, d, indir=mtldir, indir2=targdir, survey=survey, subpriority=True)
