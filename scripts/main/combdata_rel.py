@@ -485,9 +485,17 @@ if args.dotarspec and specrel == 'daily':
 
 
 if specrel != 'daily' and args.dospec:
-    specf.keep_columns(['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',
+    kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',
                         'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z',
-                        'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY', 'DESI_TARGET', 'BGS_TARGET', 'TARGET_RA', 'TARGET_DEC', 'LASTNIGHT'])
+                        'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY', 'DESI_TARGET', 'BGS_TARGET', 'TARGET_RA', 'TARGET_DEC', 'LASTNIGHT']
+    if specrell[1] == 2:
+        ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
+        specfe = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/' +
+                       specrell[0]+'/zcatalog/'+specrell[1]+'/ztile-main-'+prog+'-cumulative-extra.fits',columns=ml)
+        specf = join(specf,specf,keys=['TARGETID'])
+        kc += ['OII_FLUX', 'OII_FLUX_IVAR']
+        del specfe
+    specf.keep_columns(kc)
     specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     if args.redo_zmtl == 'y':
@@ -508,20 +516,23 @@ if specrel != 'daily' and args.dospec:
         notqsos = ['']
     else:
         # tar
+        notqso = ''
         if prog == 'dark':
+            
             if args.tracer == 'all':
-                tps = ['LRG', 'ELG', 'QSO', 'ELG_LOP', 'ELG_LOP']
-                notqsos = ['', '', '', '', 'notqso']
+                tps = ['LRG', 'ELG', 'QSO']#, 'ELG_LOP', 'ELG_LOP']
+                #notqsos = ['', '', '', '', 'notqso']
             else:
                 tps = [args.tracer.strip('notqso')]
-                notqsos = ['']
-                if 'notqso' in args.tracer:
-                    notqsos = ['notqso']
+                #notqsos = ['']
+                #if 'notqso' in args.tracer:
+                #    notqsos = ['notqso']
         if prog == 'bright':
-            tps = ['BGS_ANY', 'BGS_BRIGHT']  # ,'MWS_ANY']
-            notqsos = ['', '']
+            tps = ['BGS_ANY'}#, 'BGS_BRIGHT']  # ,'MWS_ANY']
+            #notqsos = ['', '']
     if args.dotarspec:
-        for tp, notqso in zip(tps, notqsos):
+        #for tp, notqso in zip(tps, notqsos):
+        for tp in tps:
             # first test to see if we need to update any
             logger.info('now doing '+tp+notqso)
             # logger.info(str(len(tiles4comb['TILEID'])))
