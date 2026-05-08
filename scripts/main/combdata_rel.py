@@ -51,6 +51,8 @@ parser.add_argument(
     "--dotarspec", help="whether or not to combine spec and tar data per type, for non-daily data", action='store_true')
 parser.add_argument(
     "--dospec", help="whether or not to combine spec data from beginning", action='store_true')
+parser.add_argument(
+    "--dozmtl", help="whether or not to make the zmtl file", action='store_true')
 
 parser.add_argument(
     "--redospec", help="whether or not to combine spec data from beginning", action='store_true')
@@ -499,7 +501,7 @@ if specrel != 'daily' and args.dospec:
     specf.keep_columns(kc)
     specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    if args.redo_zmtl == 'y':
+    if args.dozmtl:
         ct.combtile_spec(tiles4comb, specfo, md='zmtl', specver=specrell[0])
         fzmtl = fitsio.read(specfo)
         specf = join(specf, fzmtl, keys=['TARGETID', 'TILEID'])
