@@ -529,7 +529,7 @@ if specrel != 'daily' and args.dospec:
                 #if 'notqso' in args.tracer:
                 #    notqsos = ['notqso']
         if prog == 'bright':
-            tps = ['BGS_ANY'}#, 'BGS_BRIGHT']  # ,'MWS_ANY']
+            tps = ['BGS_ANY']#, 'BGS_BRIGHT']  # ,'MWS_ANY']
             #notqsos = ['', '']
     if args.dotarspec:
         #for tp, notqso in zip(tps, notqsos):
