@@ -33,6 +33,8 @@ from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
 from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
 
+from desitarget.geomask import match
+
 from desimodel.footprint import pix2tiles, radec2pix
 
 from desiutil.log import get_logger
@@ -1832,7 +1834,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
 # 20260506 LGN - Adding new function to apply vetoes to alt mtl ledgers
 # 20260506 LGN - Modified from desitarget.mtl.process_vetoes https://github.com/desihub/desitarget/blob/main/py/desitarget/mtl.py#L1717
-def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl'):
+def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
     
     # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
     MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
@@ -1856,7 +1858,7 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
     # ADM columns and entries later than the most recent final TIMESTAMP.
     vetocat = []
     for fn in fns:
-        vetodat = read_mtl_veto_file(fn)
+        vetodat = io.read_mtl_veto_file(fn)
         ii = (vetodat["TIMESTAMP"] > tslow) & (vetodat["TIMESTAMP"] < tshigh)
         vetocat.append(vetodat[ii])
     
@@ -1867,10 +1869,9 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
     pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
     
     for hpx in pixnum:
-        altmtldir_srv = os.path.join(altmtldir, survey, obscon)
         # ADM read each ledger that corresponds to a HEALPixel that
         # ADM includes an RA, Dec in the veto catalog.
-        mtl = io.read_mtl_in_hp(altmtldir_srv, nside, hpx, unique=True,tabform=tabform)
+        mtl = io.read_mtl_in_hp(altmtldir, nside, hpx, unique=True,tabform=tabform)
         # ADM match ledger targets to those in the veto catalog.
         mii, vii = match(mtl["TARGETID"], vetocat["TARGETID"])
         # ADM create a new set of entries that are updates to "turn off"
@@ -1880,10 +1881,10 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
         updates["PRIORITY"] = 2
         updates["TARGET_STATE"] = "VETO|DONE"
         updates["TIMESTAMP"] = get_utc_date(survey=survey)
-        updates["VERSION"] = dt_version
+        updates["VERSION"] = MTLDV[DV_idx]['VERSION']
         # ADM finally, append the new updates to the ledger.
         nups, fn = io.write_mtl(
-            altmtldir_srv, updates, ecsv=True, survey="main", obscon=obscon,
+            altmtldir, updates, ecsv=True, survey="main", obscon=obscon,
             nsidefile=nside, hpxlist=hpx, append=True)
 
     return
