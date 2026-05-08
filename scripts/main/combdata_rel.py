@@ -1,4 +1,5 @@
 # standard python
+#works for daily and DA3 onward
 import logging
 import sys
 import os
@@ -112,7 +113,7 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/' + \
         specrell[0]+'/tiles/cumulative/'
     specf = Table.read('/global/cfs/cdirs/desi/spectro/redux/' +
-                       specrell[0]+'/zcatalog/'+specrell[1]+'/ztile-main-'+prog+'-cumulative.fits')
+                       specrell[0]+'/main/zcatalog/'+specrell[1]+'/ztile-main-'+prog+'-cumulative.fits')
     wd &= np.isin(mt['TILEID'], np.unique(specf['TILEID']))
 else:
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'
@@ -491,7 +492,7 @@ if specrel != 'daily' and args.dospec:
     if specrell[1] == 2:
         ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
         specfe = fitsio.read('/global/cfs/cdirs/desi/spectro/redux/' +
-                       specrell[0]+'/zcatalog/'+specrell[1]+'/ztile-main-'+prog+'-cumulative-extra.fits',columns=ml)
+                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=ml)
         specf = join(specf,specf,keys=['TARGETID'])
         kc += ['OII_FLUX', 'OII_FLUX_IVAR']
         del specfe
