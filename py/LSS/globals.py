@@ -204,7 +204,12 @@ class main:
             #self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/loa/QSO_cat_loa_cumulative_v0.fits' #used for v1
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/loa/QSO_cat_loa_cumulative_v2.fits' #used for v1.1 onward
 
-
+        if specver == 'matterhorn-v2':
+            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt').readlines()
+            self.badfib_status  = [13,14]
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA3/QSO/matterhorn/QSO_cat_matterhorn_cumulative_v1.fits'
+            self.elgzf = None
+        
         #self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-dark-allTiles_v1.fits'
         #self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-bright-allTiles_v1.fits'
         
