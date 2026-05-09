@@ -3441,7 +3441,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
             emcat['TILEID'] = emcat['TILEID'].astype(int)
             dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
-    if tp[:3] == 'ELG' and azf != '':
+    if tp[:3] == 'ELG' and azf != '' and azf is not None:
         if logger is not None:
             logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
         else:
