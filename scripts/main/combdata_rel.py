@@ -267,7 +267,7 @@ if args.mkemlin:
                 print('completed '+str(ndone)+' tiles')
         ct.combtile_em(tiles4comb, outf)
     elif specrel != 'daily':
-        if args.par == 'y':
+        if args.par:
             tl = []
             if os.path.isfile(outf):
                 specd = fitsio.read(outf)
@@ -336,7 +336,7 @@ if args.mkemlin:
         else:
             ct.combtile_em_alt(tiles4comb, outf, prog='dark', coaddir=coaddir)
     else:
-        if args.par == 'y':
+        if args.par:
             tl = []
             if os.path.isfile(outf):
                 specd = fitsio.read(outf)
