@@ -2,7 +2,10 @@
 #Expectation is that users will copy this and create their own criteria, following the example
 #Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodel)
 #
-#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_ANY --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
+#works in either desihub or cosmodesi, e.g.:
+#source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+#PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
 #Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
 #
 #standard python
