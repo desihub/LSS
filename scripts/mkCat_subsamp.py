@@ -150,6 +150,7 @@ if args.mkfulldat == 'y':
     fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
     
     def is_float(s):
+        "Short check if an object (string) can be converted to a floating-point (real) number"
         try:
             float(s)
             return True
@@ -198,9 +199,8 @@ if args.mkfulldat == 'y':
                 sel &= ~sel_umz
             common.printlog('length after UMZ selection '+str(np.sum(sel)),logger)
 
-        #add any additional selections here
+    # add `elif`s for any additional selections here
         
-        #write output to new "full" catalog at your defined location
     elif is_float(args.ccut): # following the example of the -21.35 cut used for BGS_BRIGHT in DR2 BAO analysis, which yielded a ~constant density sample, this option allows you to apply a simple cut on absolute magnitude (below the given value) without any k-correction, which yields a ~constant density sample
         # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
         common.printlog('applying the '+args.ccut+' selection on absolute magnitude without k-correction',logger)
@@ -241,10 +241,11 @@ if args.mkfulldat == 'y':
         abr = r_dered -dm
         sel = abr < float(ccut_mag_str)
         sel &= z2use < 2
-        
 
     else:
         raise ValueError(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
+    
+    # write output to new "full" catalog at your defined location
     fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
     common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
     
