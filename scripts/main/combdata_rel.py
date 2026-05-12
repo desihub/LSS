@@ -521,7 +521,11 @@ if specrel != 'daily' and args.dospec:
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
                            specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID','TILEID']+ml)
             logger.info('joining base spec file')
-            specf = join(specf,specfe,keys=['TARGETID','TILEID'])
+            if np.array_equal(specf['TARGETID'],specfe['TARGETID']):
+                for col in ml:
+                    specf[col] = specfe[col]
+            else:
+                specf = join(specf,specfe,keys=['TARGETID','TILEID'])
             kc += ['OII_FLUX', 'OII_FLUX_IVAR']
             del specfe
         specf.keep_columns(kc)
