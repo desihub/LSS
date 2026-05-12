@@ -53,6 +53,8 @@ parser.add_argument(
     "--dospec", help="whether or not to combine spec data from beginning", action='store_true')
 parser.add_argument(
     "--dozmtl", help="whether or not to make the zmtl file", action='store_true')
+parser.add_argument(
+    "--redo_zmtljoin", help="whether or not to make rejoin to the zmtl file", action='store_true')
 
 parser.add_argument(
     "--redospec", help="whether or not to combine spec data from beginning", action='store_true')
@@ -490,17 +492,19 @@ if args.dotarspec and specrel == 'daily':
 if specrel != 'daily' and args.dospec:
     
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    if args.dozmtl:
-        kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',
+    kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',
                             'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z',
                             'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY', 'DESI_TARGET', 'BGS_TARGET', 'TARGET_RA', 'TARGET_DEC', 'LASTNIGHT']
+
+    logger.info('length of specf is '+str(len(specf)))
+    if args.dozmtl:
         if specrell[1] == 'v2':
             ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
             logger.info('reading extra file')
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                           specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID']+ml)
+                           specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID','TILEID','LOCATION']+ml)
             logger.info('joining base spec file')
-            specf = join(specf,specfe,keys=['TARGETID'])
+            specf = join(specf,specfe,keys=['TARGETID','TILEID','LOCATION'])
             kc += ['OII_FLUX', 'OII_FLUX_IVAR']
             del specfe
         specf.keep_columns(kc)
@@ -510,13 +514,27 @@ if specrel != 'daily' and args.dospec:
         fzmtl = fitsio.read(specfo)
         specf = join(specf, fzmtl, keys=['TARGETID', 'TILEID'])
         specf.write(outfs, format='fits', overwrite=True)
-
+    elif args.redo_zmtljoin:
+        if specrell[1] == 'v2':
+            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
+            logger.info('reading extra file')
+            specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
+                           specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID','TILEID','LOCATION']+ml)
+            logger.info('joining base spec file')
+            specf = join(specf,specfe,keys=['TARGETID','TILEID','LOCATION'])
+            kc += ['OII_FLUX', 'OII_FLUX_IVAR']
+            del specfe
+        specf.keep_columns(kc)
+        fzmtl = fitsio.read(specfo)
+        specf = join(specf, fzmtl, keys=['TARGETID', 'TILEID'])
+        specf.write(outfs, format='fits', overwrite=True)    
     else:
     # if os.path.isfile(outfs):
         logger.info('about to read '+outfs)
         specf = Table(fitsio.read(outfs.replace('global', 'dvs_ro')))
     # else:
     # remove these columns because they are in the targets already
+    logger.info('length of specf after join to zmtl info is '+str(len(specf)))
     specf.remove_columns(['DESI_TARGET', 'BGS_TARGET',
                          'TARGET_RA', 'TARGET_DEC', 'PRIORITY'])
     if specrel == 'everest' or specrel == 'guadalupe':
@@ -576,9 +594,6 @@ if specrel != 'daily' and args.dospec:
                     logger.info('column '+col +
                                 ' was not in stacked tarwdup table')
 
-            # tarf.remove_columns(['ZWARN_MTL'])
-            tarf['TILELOCID'] = 10000*tarf['TILEID'] + tarf['LOCATION']
-            # specf.remove_columns(['PRIORITY'])
             tj = join(tarf, specf, keys=[
                       'TARGETID', 'LOCATION', 'TILEID'], join_type='left')
             del tarf
