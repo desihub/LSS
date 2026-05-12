@@ -525,6 +525,7 @@ if specrel != 'daily' and args.dospec:
             kc += ['OII_FLUX', 'OII_FLUX_IVAR']
             del specfe
         specf.keep_columns(kc)
+        specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
         fzmtl = fitsio.read(specfo)
         specf = join(specf, fzmtl, keys=['TARGETID', 'TILEID'])
         specf.write(outfs, format='fits', overwrite=True)    
