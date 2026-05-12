@@ -523,8 +523,10 @@ if specrel != 'daily' and args.dospec:
             logger.info('joining base spec file')
             if np.array_equal(specf['TARGETID'],specfe['TARGETID']):
                 for col in ml:
+                    logger.info('adding column '+col)
                     specf[col] = specfe[col]
             else:
+                logger.info('doing astropy join because TARGETID are not row matched')
                 specf = join(specf,specfe,keys=['TARGETID','TILEID'])
             kc += ['OII_FLUX', 'OII_FLUX_IVAR']
             del specfe
