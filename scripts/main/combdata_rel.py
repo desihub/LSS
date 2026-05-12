@@ -533,6 +533,7 @@ if specrel != 'daily' and args.dospec:
         specf.keep_columns(kc)
         specfo = ldirspec+'datcomb_'+prog+'_zmtl_zdone.fits'
         fzmtl = fitsio.read(specfo)
+        logger.info('joing to zmtl file')
         specf = join(specf, fzmtl, keys=['TARGETID', 'TILEID'])
         specf.write(outfs, format='fits', overwrite=True)    
     else:
