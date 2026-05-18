@@ -1,12 +1,14 @@
-#Script to read in existing LSS catalog information for some tracer and create a sub-sample
-#Expectation is that users will copy this and create their own criteria, following the example
-#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodel)
-#
-#works in either desihub or cosmodesi, e.g.:
-#source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-#PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
-#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
-#Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
+Script to read in existing LSS catalog information for some tracer and create a subsample
+Expectation is that users will copy this and create their own criteria, following the example
+Example submission creates Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodal)
+
+works in either desihub or cosmodesi, e.g.:
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
+Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
 #
 #standard python
 import sys
@@ -46,12 +48,14 @@ import LSS.common_tools as common
 
 from LSS.globals import main
 
+class RawDescriptionArgumentsDefaultsHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+    "Help message formatter that both retains any formatting in descriptions and adds default values to argument help"
+    pass
 
-
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--ccut", help="a string that is used define your subsample", default='FSFABSmagwecorr-R-20.5-umzgper-50')
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentsDefaultsHelpFormatter)
+parser.add_argument("--ccut", help="a string that is used to define your subsample. the default is for a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35%% lowest star formation; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 #arguments to find input data
-parser.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
+parser.add_argument("--input_tracer", help="tracer type that the subsample will come from", required=True)
 parser.add_argument("--basedir", help="base directory for input, a versioning structure is expected under it", default='/global/cfs/cdirs/desi/survey/catalogs/')
 parser.add_argument("--outdir", help="directory for output, the catalogs will be saved directly under it", default=os.environ['SCRATCH'])
 parser.add_argument("--version", help="catalog version for input", default='v2')
