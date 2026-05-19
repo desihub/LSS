@@ -325,7 +325,7 @@ for tp in tps:
 
             dtf = dtf[wg]
             #print(reg,len(dtf))
-            if args.compmd == 'dat':
+            if args.compmd == 'dat' or args.compmd == 'iip':
                 rpix = gethpmap(rt)
             else:
                 rpix = gethpmap(rt,weights='FRAC_TLOBS_TILES')
