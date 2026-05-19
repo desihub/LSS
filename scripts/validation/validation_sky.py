@@ -209,9 +209,12 @@ for tp in tps:
         sel_gz = common.goodz_infull(tp[:3],dt)
         sel_obs = dt['ZWARN'] != 999999
         dt = dt[sel_obs&sel_gz]
-        dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
-            dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
+        if args.compmd == 'iip':
+            dt['WEIGHT_COMP'] = 129/(1+128(dt['PROB_OBS']))
+        else:
+            dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
+            if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
+                dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
         cols = list(dt.dtype.names)
         if args.weight_col not in cols:
             print('no '+args.weight_col+', getting set to 1 for plotting')
