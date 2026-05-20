@@ -67,7 +67,7 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
 parser.add_argument("--ext",help="h5 or fits",default='fits')
 
-arser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
+parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--zcmb", help="whether or not to correct redshifts based on cmb dipole",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
