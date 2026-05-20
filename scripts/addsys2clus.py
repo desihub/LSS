@@ -150,7 +150,7 @@ def read_file(fn,columns=None):
     if '.h5' in fn:
         data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'),columns=columns)
     return data
-
+nside=256
 tracer_clus = args.type
 if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     syscol = 'WEIGHT_IMLIN'
