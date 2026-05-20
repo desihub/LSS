@@ -136,6 +136,7 @@ maindir = basedir +'/'+args.survey+'/LSS/'
 ldirspec = maindir+specrel+'/'
 
 dirout = ldirspec+'LSScats/'+version+'/'+args.extra_clus_dir
+lssmapdirout = ldirspec+'LSScats/'+version+'/hpmaps'
 
 writefunc = common.write_LSS_scratchcp
 if args.ext == 'h5':
