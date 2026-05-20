@@ -150,10 +150,10 @@ def read_file(fn,columns=None):
         data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'),columns=columns)
     return data
 
-
+tracer_clus = args.type
 if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     syscol = 'WEIGHT_IMLIN'
-    tpstr = args.tracer
+    tpstr = args.type
     if "BGS" in tracer_clus:
         tpstr = "BGS_BRIGHT"
     if "LRG" in tracer_clus:
