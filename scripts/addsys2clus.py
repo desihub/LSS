@@ -85,9 +85,8 @@ parser.add_argument("--replace_syscol",help="whether to replace any existing wei
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
-
-#AJRM 
 parser.add_argument("--use_allsky_rands", help="if yes, use all sky randoms to get fractional area per pixel for SYSNet data preparation",default='n')
+parser.add_argument("--par", help="if yes, use multiprocessing",default='y')
 
 args = parser.parse_args()
 common.printlog(str(args),logger)
