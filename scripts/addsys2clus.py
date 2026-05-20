@@ -364,7 +364,7 @@ if args.doimlin == 'y':
         for rn in inds:  # range(rm,rx):
             _add2ran(rn)
 
-if args.prep4sysnet == 'y':
+if args.prepsysnet == 'y':
     common.printlog('preparing data to run sysnet regression for '+tracer_clus,logger)
     if not os.path.exists(dirout+'/sysnet'):
         os.mkdir(dirout+'/sysnet')
