@@ -107,10 +107,6 @@ rx = int(args.maxr)
 
 common.printlog('running catalogs for tracer type '+type,logger)
 
-notqso = ''
-if args.notqso == 'y':
-    notqso = 'notqso'
-
     
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
@@ -398,9 +394,6 @@ if args.prep4sysnet == 'y':
                         fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
-            #tpmap = tpstr
-            #if 'ELG' in tpstr and 'notqso' in tpstr:
-            #    tpmap = 'ELG_LOPnotqso'
             pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
