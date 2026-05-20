@@ -200,8 +200,9 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     if args.imsys_zbin == 'fine':
         dz = 0.1
         zm = zsysmin
-        zx = zm + dz
-        redshift_ranges = [(zm, zx)]
+        #zx = zm + dz
+        #redshift_ranges = [(zm, zx)]
+        redshift_ranges = []
         while zm < zsysmax:
             zx = zm + dz
             zx = round(zx, 1)
