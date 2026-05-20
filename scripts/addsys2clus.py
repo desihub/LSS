@@ -157,8 +157,10 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     tpstr = args.type
     if "BGS" in tracer_clus:
         tpstr = "BGS_BRIGHT"
+        
     if "LRG" in tracer_clus:
         tpstr = "LRG"
+    tpmap = tpstr
     inds = np.arange(rm, rx)
     print(tracer_clus[:3])
     if tracer_clus[:3] == "ELG":
