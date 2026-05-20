@@ -101,8 +101,6 @@ tp = type
 basedir = args.basedir
 version = args.version
 specrel = args.verspec
-ntile = args.ntile
-ccut = args.ccut
 rm = int(args.minr)
 rx = int(args.maxr)
 
