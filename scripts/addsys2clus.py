@@ -159,7 +159,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     if "LRG" in tracer_clus:
         tpstr = "LRG"
     inds = np.arange(rm, rx)
-    
+    print(tracer_clus[:3])
     if tracer_clus[:3] == "ELG":
         if args.imsys_zbin == "split":
             zrl = [(0.8, 1.1), (1.1, 1.6)]
