@@ -79,13 +79,9 @@ parser.add_argument("--prepsysnet",help="prepare data to get sysnet weights for 
 parser.add_argument("--add_sysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
-parser.add_argument("--imsys",help="add weights for imaging systematics using eboss method?",default='n')
-parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
-parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
+parser.add_argument("--doimlin",help="add weights for imaging systematics using eboss method?",default='n')
 parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
 parser.add_argument("--replace_syscol",help="whether to replace any existing weight_sys with new",default='n')
-parser.add_argument("--imsys_clus_fb_ran",help="add linear weight fits in fine redshift bins to randoms",default='n')
-
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
