@@ -7,7 +7,7 @@ module load LSS/main
 #module swap desitarget/3.0.0
 #export LSSCODE=$HOME ; do this before script, e.g., export LSSCODE=$HOME/LSScode for desica
 #PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
-
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 verspec=matterhorn-v2
 survey=DA3
 LSSCODE=$HOME/LSScode
