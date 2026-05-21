@@ -228,7 +228,7 @@ for tp in tps:
         #rtl = []
         #for gc in gcl:
         rf = indir+tpr+zdw+'_0_full'+args.use_map_veto+'.ran.fits'
-        rta = fitsio.read(rf,columns=['RA','DEC','FRAC_TLOBS_TILES'])
+        rta = fitsio.read(rf,columns=['RA','DEC','FRAC_TLOBS_TILES','PHOTSYS'])
 
         rara = rta['RA']
         wr = rara > 300
