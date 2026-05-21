@@ -237,11 +237,6 @@ for tp in tps:
         sindd = np.sin(dt['DEC']*np.pi/180.)
         sindr = np.sin(rta['DEC']*np.pi/180.)
 
-        vm = np.min(dt['COMP_TILE'])
-        vx = np.max(dt['COMP_TILE'])
-        titl  = tp+' COMP_TILE'
-        outf = outdir+tp+'_comptile.png'
-        plot_map_sindec(rada,sindd,dt['COMP_TILE'],vm,vx,titl,outf)
 
         vm = 0
         vx = 1
