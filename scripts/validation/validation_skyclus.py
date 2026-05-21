@@ -19,7 +19,7 @@ parser.add_argument("--tracers", help="all runs all for given survey",default='a
 parser.add_argument("--verspec",help="version for redshifts",default='iron')
 parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
-parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SN')
+parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SYS')
 parser.add_argument("--compmd",help="extra completeness on data or random",default='ran')
 parser.add_argument("--nran",help="number of random files to check for density",default=18,type=int)
 parser.add_argument("--ps",help="point size for density map",default=.1,type=float)
@@ -207,7 +207,7 @@ for tp in tps:
         odl_ochp = []
         dtl = []
         for gc in gcl:
-            dtl.append(fitsio.read(indir+'nonKP/'+tp+zdw+'_'+gc'_clustering.dat.fits'))
+            dtl.append(fitsio.read(indir+'nonKP/'+tp+zdw+'_'+gc+'_clustering.dat.fits'))
         dt = Table(np.concatenate(dtl))
         del dtl
         cols = list(dt.dtype.names)
