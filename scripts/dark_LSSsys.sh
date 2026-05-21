@@ -17,7 +17,9 @@ LSSCODE=$HOME/LSScode
 
 #srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/addsys2clus.py --type LRG   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --doimlin y --survey $survey --verspec $verspec --imsys_zbin fine  --version test --extra_clus_dir nonKP --replace_syscol
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version test --extra_clus_dir nonKP
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version test --extra_clus_dir nonKP
+
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version test --extra_clus_dir nonKP --replace_syscol
 
 #srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi $LSSCODE/LSS/scripts/Y3_sysnetELG_zbins_new.sh $1
 
