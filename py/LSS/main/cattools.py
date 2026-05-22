@@ -3668,7 +3668,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     needed_cols = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
     em_cols = ['TARGETID','LOCATION','TILEID']
     for col in needed_cols:
-    	if col not inlist(ff.dtype.names):
+    	if col not in list(ff.dtype.names):
     	    em_cols.append(col)
     if len(em_cols) > 3:
         common.printlog('adding info from emline file',logger)
