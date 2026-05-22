@@ -3,7 +3,7 @@
 set -e
 
 source /global/common/software/desi/desi_environment.sh main
-module load LSS/main
+#module load LSS/main
 module swap desitarget/3.0.0
 #export LSSCODE=$HOME ; do this before script, e.g., export LSSCODE=$HOME/LSScode for desica
 #PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
@@ -11,7 +11,7 @@ module swap desitarget/3.0.0
 verspec=matterhorn-v2
 survey=DA3
 LSSCODE=$HOME/LSScode
-#PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 #full_noveto
 #21 minutes
