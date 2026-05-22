@@ -3151,10 +3151,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     -----
     """
 
-	if emlin_fn is None:
-		logger.info('will not be adding emline info, because emlin_fn is None')
-	else:
-	    logger.info('will be adding emline info from '+emlin_fn)
+    if emlin_fn is None:
+        logger.info('will not be adding emline info, because emlin_fn is None')
+    else:
+        logger.info('will be adding emline info from '+emlin_fn)
 
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
