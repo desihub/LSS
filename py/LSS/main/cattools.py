@@ -3672,7 +3672,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     	    em_cols.append(col)
     if len(em_cols) > 3:
         common.printlog('adding info from emline file',logger)
-        em_fn = indir + emlin_catalog.fits
+        em_fn = indir + 'emlin_catalog.fits'
         emlin = fitsio.read(em_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR'])
             
         ff = join(ff,emlin,keys=['TARGETID','TILEID','LOCATION'])
