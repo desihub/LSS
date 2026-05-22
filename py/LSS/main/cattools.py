@@ -3437,11 +3437,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
         if emlin_fn is not None:
+            logger.info('adding info from '+emlin_fn)
             cols = ['TARGETID','LOCATION','TILEID']
             cols_needed = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
             for col in cols_needed:
                 if col not in list(dz.dtype.names):
                     cols.append(col)
+            logger.info('columns to use for match are '+str(cols))
             if len(cols) > 3:
                 emcat =  Table(fitsio.read(emlin_fn,columns=cols))
                 emcat['TILEID'] = emcat['TILEID'].astype(int)
