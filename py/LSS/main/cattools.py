@@ -3655,6 +3655,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     selobs = ff['ZWARN'] != 999999
     selobs &= ff['TSNR2_ELG'] > tsnrcut
     ff = ff[selobs]
+    ff = common.cut_specdat(ff)
     azf = qsocat
     arz = Table(fitsio.read(azf))
     arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
@@ -3664,7 +3665,17 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
     ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
     ff = common.addNS(ff)
-    ff = common.cut_specdat(ff)
+    needed_cols = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
+    em_cols = ['TARGETID','LOCATION','TILEID']
+    for col in needed_cols:
+    	if col not inlist(ff.dtype.names):
+    	    em_cols.append(col)
+    if len(em_cols) > 3:
+        common.printlog('adding info from emline file',logger)
+        em_fn = indir + emlin_catalog.fits
+        with emlin as fitsio.read(em_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR'):
+            
+            ff = join(ff,emlin,keys=['TARGETID','TILEID','LOCATION'])
     outdir = indir+'LSScats/'+version+'/'
     tp = 'QSO'
     ffv = Table.read(outdir+tp+'_full_noveto.dat.fits')
