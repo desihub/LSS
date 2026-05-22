@@ -3414,7 +3414,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
-        if azf is not None:
+        if azf is not None and 'OII_FLUX' not in list(dz.dtype.names):
             arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
             arz['TILEID'] = arz['TILEID'].astype(int)
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
@@ -3437,9 +3437,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
         if emlin_fn is not None:
-            emcat =  Table(fitsio.read(emlin_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']))
-            emcat['TILEID'] = emcat['TILEID'].astype(int)
-            dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            cols = ['TARGETID','LOCATION','TILEID']
+            cols_needed = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
+            for col in cols_needed:
+                if col not in list(dz.dtype.names):
+                    cols.append(col)
+            if len(cols) > 3:
+                emcat =  Table(fitsio.read(emlin_fn,columns=cols))
+                emcat['TILEID'] = emcat['TILEID'].astype(int)
+                dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
     if tp[:3] == 'ELG' and azf != '' and azf is not None:
         if logger is not None:

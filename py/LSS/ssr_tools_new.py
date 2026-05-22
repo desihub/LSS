@@ -242,7 +242,7 @@ class model_ssr:
     This class will fit a model based on TSNR2_<type> and FIBERFLUX_<band> for the redshift success and produce weights
     that are the inverse of the relative predicted redshift success
     '''
-    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False,overwrite_pars_ssrmaxflux=True):
+    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False,overwrite_pars_ssrmaxflux=True,emlincat_fn=''):
         self.cat = input_data
 
         mask = self.cat['TSNR2_'+tracer]>tsnr_min
@@ -254,8 +254,8 @@ class model_ssr:
         self.cat = self.cat[mask]
         if tracer == 'QSO':
             names = list(self.cat.dtype.names)
-            if 'OII_FLUX' not in names:
-                emline = fits.open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/emlin_catalog.fits')[1].data
+            if 'OII_FLUX' not in names or 'OIII_FLUX' not in names:
+                emline = fits.open(emlincat_fn)[1].data
         
                 ss = np.searchsorted(sorted(emline['TARGETID']), self.cat['TARGETID'])
         
