@@ -75,11 +75,13 @@ catalog_steps_group = parser.add_argument_group('catalog creation steps', descri
 catalog_steps_group.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
 catalog_steps_group.add_argument("--clusd", choices=['n', 'y'], help="make the 'clustering' catalog intended for paircounts", default='n')
 catalog_steps_group.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
-catalog_steps_group.add_argument("--minr", help="minimum number for random files", default=0, type=int)
-catalog_steps_group.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
-catalog_steps_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel? (recommended for processing multiple randoms, but typically requires a compute node with more memory, should not be run in parallel on a login node)", default='y')
 catalog_steps_group.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
 catalog_steps_group.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes (splitGC is required to have been done first)", default='n')
+
+random_group = parser.add_argument_group('random catalogs options')
+random_group.add_argument("--minr", help="minimum number for random files", default=0, type=int)
+random_group.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
+random_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel? (recommended for processing multiple randoms, but typically requires a compute node with more memory, should not be run in parallel on a login node)", default='y')
 
 imsys_group = parser.add_argument_group('imaging systematics regression options', description='options on linear regression for imaging systematics; the first two can be seen as additional catalog creation steps')
 imsys_group.add_argument("--imsys_clus", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs?", default='n')
