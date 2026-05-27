@@ -1,12 +1,14 @@
-#Script to read in existing LSS catalog information for some tracer and create a sub-sample
-#Expectation is that users will copy this and create their own criteria, following the example
-#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodel)
-#
-#works in either desihub or cosmodesi, e.g.:
-#source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-#PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
-#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
-#Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
+Script to read in existing LSS catalog information for some tracer and create a subsample
+Expectation is that users will copy this and create their own criteria, following the example
+Example submission creates Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodal)
+
+works in either desihub or cosmodesi, e.g.:
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
+Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
 #
 #standard python
 import sys
@@ -46,41 +48,48 @@ import LSS.common_tools as common
 
 from LSS.globals import main
 
+class RawDescriptionArgumentDefaultsHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+    "Help message formatter that both retains any formatting in descriptions and adds default values to argument help"
+    pass
 
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--ccut", help="a string that is used define your subsample", default='FSFABSmagwecorr-R-20.5-umzgper-50')
-#arguments to find input data
-parser.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
-parser.add_argument("--basedir", help="base directory for input, a versioning structure is expected under it", default='/global/cfs/cdirs/desi/survey/catalogs/')
-parser.add_argument("--outdir", help="directory for output, the catalogs will be saved directly under it", default=os.environ['SCRATCH'])
-parser.add_argument("--version", help="catalog version for input", default='v2')
-parser.add_argument("--survey", help="e.g., Y1, DA2", default='DA2')
-parser.add_argument("--verspec", help="version for redshifts", default='loa-v1')
-parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied", default='_HPmapcut')
-#parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentDefaultsHelpFormatter)
 
-parser.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
+subsample_group = parser.add_argument_group('subsample selection/cut options')
+subsample_group.add_argument("--ccut", help="a string that is used to define your subsample. the default is for a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35%% lowest star formation; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 
-#what steps to run (set all to y to get NGC/SGC clustering catalogs output)
-parser.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
-parser.add_argument("--clusd", choices=['n', 'y'], help="make the 'clustering' catalog intended for paircounts", default='n')
-parser.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
-parser.add_argument("--minr", help="minimum number for random files", default=0, type=int)
-parser.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
-parser.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
-parser.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes (splitGC is required to have been done first)", default='n')
+input_data_group = parser.add_argument_group('input data options', description='arguments to find input data')
+input_data_group.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
+input_data_group.add_argument("--basedir", help="base directory for input, a versioning structure is expected under it", default='/global/cfs/cdirs/desi/survey/catalogs/')
+input_data_group.add_argument("--outdir", help="directory for output, the catalogs will be saved directly under it", default=os.environ['SCRATCH'])
+input_data_group.add_argument("--version", help="catalog version for input", default='v2')
+input_data_group.add_argument("--survey", help="e.g., Y1, DA2", default='DA2')
+input_data_group.add_argument("--verspec", help="version for redshifts", default='loa-v1')
+input_data_group.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied", default='_HPmapcut')
+#input_data_group.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
+completeness_group = parser.add_argument_group('completeness mode', description='the method for completeness weight computations')
+completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
 
-#options for linear imaging systematic regressions
-parser.add_argument("--imsys_clus", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs?", default='n')
-parser.add_argument("--imsys_clus_ran", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?", default='n')
-parser.add_argument("--nran4imsys", help="number of random files to using for linear regression", default=1, type=int)
-parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*', default=None)
-parser.add_argument("--imsys_nside", help="healpix nside used for imaging systematic regressions", default=256, type=int)
-parser.add_argument("--imsys_zbin", choices=['n', 'y', 'hi'], help="use separate redshift bins for imaging systematic regressions? (or a wider redshift range for BGS)", default='n')
+catalog_steps_group = parser.add_argument_group('catalog creation steps', description='options for which steps to run (set all to y to get NGC/SGC clustering catalogs output). for finer selections, keep in mind that next steps often depend on previous steps')
+catalog_steps_group.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
+catalog_steps_group.add_argument("--clusd", choices=['n', 'y'], help="make the 'clustering' catalog intended for paircounts", default='n')
+catalog_steps_group.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
+catalog_steps_group.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
+catalog_steps_group.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes (splitGC is required to have been done first)", default='n')
 
-parser.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel?", default='y')
+random_group = parser.add_argument_group('random catalogs options')
+random_group.add_argument("--minr", help="minimum number for random files", default=0, type=int)
+random_group.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
+random_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel? (recommended for processing multiple randoms, but typically requires a compute node with more memory, should not be run in parallel on a login node)", default='y')
+
+imsys_group = parser.add_argument_group('imaging systematics regression options', description='options on linear regression for imaging systematics; the first two can be seen as additional catalog creation steps')
+imsys_group.add_argument("--imsys_clus", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs?", default='n')
+imsys_group.add_argument("--imsys_clus_ran", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?", default='n')
+imsys_group.add_argument("--nran4imsys", help="number of random files to using for linear regression", default=1, type=int)
+imsys_group.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*', default=None)
+imsys_group.add_argument("--imsys_nside", help="healpix nside used for imaging systematic regressions", default=256, type=int)
+imsys_group.add_argument("--imsys_zbin", choices=['n', 'y', 'hi'], help="use separate redshift bins for imaging systematic regressions? (or a wider redshift range for BGS)", default='n')
 
 
 args = parser.parse_args()
