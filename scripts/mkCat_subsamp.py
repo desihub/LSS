@@ -1,12 +1,14 @@
-#Script to read in existing LSS catalog information for some tracer and create a sub-sample
-#Expectation is that users will copy this and create their own criteria, following the example
-#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodel)
-#
-#works in either desihub or cosmodesi, e.g.:
-#source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-#PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
-#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
-#Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
+Script to read in existing LSS catalog information for some tracer and create a subsample
+Expectation is that users will copy this and create their own criteria, following the example
+Example submission creates Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodal)
+
+works in either desihub or cosmodesi, e.g.:
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+PYTHONPATH=$PYTHONPATH:$HOME/LSS/py #change $HOME to wherever you git clone the LSS rep
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
+Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
 #
 #standard python
 import sys
@@ -46,11 +48,15 @@ import LSS.common_tools as common
 
 from LSS.globals import main
 
+class RawDescriptionArgumentDefaultsHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+    "Help message formatter that both retains any formatting in descriptions and adds default values to argument help"
+    pass
 
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentDefaultsHelpFormatter)
+
 subsample_group = parser.add_argument_group('subsample selection/cut options')
-subsample_group.add_argument("--ccut", help="a string that is used define your subsample", default='FSFABSmagwecorr-R-20.5-umzgper-50')
+subsample_group.add_argument("--ccut", help="a string that is used to define your subsample. the default is for a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35%% lowest star formation; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 
 input_data_group = parser.add_argument_group('input data options', description='arguments to find input data')
 input_data_group.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
@@ -71,7 +77,7 @@ catalog_steps_group.add_argument("--clusd", choices=['n', 'y'], help="make the '
 catalog_steps_group.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
 catalog_steps_group.add_argument("--minr", help="minimum number for random files", default=0, type=int)
 catalog_steps_group.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
-catalog_steps_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel?", default='y')
+catalog_steps_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel? (recommended for processing multiple randoms, but typically requires a compute node with more memory, should not be run in parallel on a login node)", default='y')
 catalog_steps_group.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
 catalog_steps_group.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes (splitGC is required to have been done first)", default='n')
 
