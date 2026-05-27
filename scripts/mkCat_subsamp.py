@@ -48,11 +48,11 @@ import LSS.common_tools as common
 
 from LSS.globals import main
 
-class RawDescriptionArgumentsDefaultsHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+class RawDescriptionArgumentDefaultsHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
     "Help message formatter that both retains any formatting in descriptions and adds default values to argument help"
     pass
 
-parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentsDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentDefaultsHelpFormatter)
 parser.add_argument("--ccut", help="a string that is used to define your subsample. the default is for a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35%% lowest star formation; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 #arguments to find input data
 parser.add_argument("--input_tracer", help="tracer type that the subsample will come from", required=True)
