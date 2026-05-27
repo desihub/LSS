@@ -49,7 +49,8 @@ from LSS.globals import main
 
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--ccut", help="a string that is used define your subsample", default='FSFABSmagwecorr-R-20.5-umzgper-50')
+subsample_group = parser.add_argument_group('subsample selection/cut options')
+subsample_group.add_argument("--ccut", help="a string that is used define your subsample", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 
 input_data_group = parser.add_argument_group('input data options', description='arguments to find input data')
 input_data_group.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
@@ -61,7 +62,8 @@ input_data_group.add_argument("--verspec", help="version for redshifts", default
 input_data_group.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied", default='_HPmapcut')
 #input_data_group.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
-parser.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
+completeness_group = parser.add_argument_group('completeness mode', description='the method for completeness weight computations')
+completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
 
 catalog_steps_group = parser.add_argument_group('catalog creation steps', description='options for which steps to run (set all to y to get NGC/SGC clustering catalogs output). for finer selections, keep in mind that next steps often depend on previous steps')
 catalog_steps_group.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
@@ -69,6 +71,7 @@ catalog_steps_group.add_argument("--clusd", choices=['n', 'y'], help="make the '
 catalog_steps_group.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
 catalog_steps_group.add_argument("--minr", help="minimum number for random files", default=0, type=int)
 catalog_steps_group.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
+catalog_steps_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel?", default='y')
 catalog_steps_group.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
 catalog_steps_group.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes (splitGC is required to have been done first)", default='n')
 
@@ -79,8 +82,6 @@ imsys_group.add_argument("--nran4imsys", help="number of random files to using f
 imsys_group.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*', default=None)
 imsys_group.add_argument("--imsys_nside", help="healpix nside used for imaging systematic regressions", default=256, type=int)
 imsys_group.add_argument("--imsys_zbin", choices=['n', 'y', 'hi'], help="use separate redshift bins for imaging systematic regressions? (or a wider redshift range for BGS)", default='n')
-
-parser.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel?", default='y')
 
 
 args = parser.parse_args()
