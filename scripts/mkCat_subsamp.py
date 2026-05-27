@@ -84,7 +84,7 @@ parser.add_argument("--usemaps", help="the list of maps to use; defaults to what
 parser.add_argument("--imsys_nside", help="healpix nside used for imaging systematic regressions", default=256, type=int)
 parser.add_argument("--imsys_zbin", choices=['n', 'y', 'hi'], help="use separate redshift bins for imaging systematic regressions? (or a wider redshift range for BGS)", default='n')
 
-parser.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel?", default='y')
+parser.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel? (recommended for processing multiple randoms, but typically requires a compute node with more memory, should not be run in parallel on a login node)", default='y')
 
 
 args = parser.parse_args()
