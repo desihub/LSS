@@ -946,23 +946,23 @@ if args.mkclusran == 'y':
         if os.path.isfile(fullran_fn):
             datain = fitsio.read(fullran_fn,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION']) 
         else:
-			ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
-			if not os.path.isfile(ranf):
-				ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
-				datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
-			else:
-				datain = common.read_hdf5_blosc(ranf)
-			common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
-			in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
-			#datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
-			#common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
-			selpri = ~np.isin(in_tlid,bad_tlid)#datain['PRIORITY'] <= maxp
-			datain = datain[selpri]
-			common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
-			datain = unique(Table(datain),keys=['TARGETID'])
-			common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
-			datain = ct.add_tlobs_ran_array(datain,tlf,logger)
-			#common.printlog(str(datain.dtype),logger)
+            ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
+            if not os.path.isfile(ranf):
+                ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
+                datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
+            else:
+                datain = common.read_hdf5_blosc(ranf)
+            common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
+            in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
+            #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
+            #common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
+            selpri = ~np.isin(in_tlid,bad_tlid)#datain['PRIORITY'] <= maxp
+            datain = datain[selpri]
+            common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
+            datain = unique(Table(datain),keys=['TARGETID'])
+            common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
+            datain = ct.add_tlobs_ran_array(datain,tlf,logger)
+            #common.printlog(str(datain.dtype),logger)
         ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5')
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
         del datain
