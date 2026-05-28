@@ -37,7 +37,7 @@ e.g., if you git cloned from your $HOME directory
 
 .. code-block:: bash
 
-    PYTHONPATH=$HOME/LSS/py:$PYTHONPATH # put your LSS directory first because it may be already installed in other parts of PATH, e.g. the DESI environment
+    PYTHONPATH=$HOME/LSS/py:$PYTHONPATH # put your LSS directory first to be loaded with highest priority, because LSS modules may be already installed in other parts of PATH, e.g. the DESI environment
     PATH=$HOME/LSS/bin:$PATH # if needed
 
 Or (not actually recommended as this is less common usage)
