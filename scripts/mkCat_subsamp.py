@@ -1,7 +1,7 @@
 """
 Script to read in existing LSS catalog information for some tracer and create a subsample
 Expectation is that users will copy this and create their own criteria, following the example
-Example submission creates Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodal)
+Example submission below creates Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35% lowest star formation rate (percentile at which data looked bimodal)
 
 works in either desihub or cosmodesi, e.g.:
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
@@ -56,7 +56,7 @@ class RawDescriptionArgumentDefaultsHelpFormatter(argparse.RawDescriptionHelpFor
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentDefaultsHelpFormatter)
 
 subsample_group = parser.add_argument_group('subsample selection/cut options')
-subsample_group.add_argument("--ccut", help="a string that is used to define your subsample. the default is for a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35%% lowest star formation; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
+subsample_group.add_argument("--ccut", help="a string that is used to define your subsample. the default value encodes a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 50%% highest u-z color values; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 
 input_data_group = parser.add_argument_group('input data options', description='arguments to find input data')
 input_data_group.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
