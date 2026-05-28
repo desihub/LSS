@@ -942,10 +942,13 @@ if args.mkclusran == 'y':
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         common.printlog('about to read input random for '+str(rann),logger)        
+        #BGS_BRIGHT_9_full_HPmapcut.ran.fits
         fullran_fn = dirout.replace('global','dvs_ro')+'/'+ ranin+str(rann)+'_full_HPmapcut.ran.fits'
+        common.printlog('first looking for '+fullran_fn)
         if os.path.isfile(fullran_fn):
             datain = fitsio.read(fullran_fn,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION']) 
         else:
+            common.printlog('did not find '+fullran_fn)
             ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
             if not os.path.isfile(ranf):
                 ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
