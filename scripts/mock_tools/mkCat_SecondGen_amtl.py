@@ -946,7 +946,7 @@ if args.mkclusran == 'y':
         fullran_fn = ranin.replace('global','dvs_ro')+str(rann)+'_full_HPmapcut.ran.fits'
         common.printlog('first looking for '+fullran_fn)
         if os.path.isfile(fullran_fn):
-            datain = fitsio.read(fullran_fn,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION']) 
+            datain = Table(fitsio.read(fullran_fn,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])) 
         else:
             common.printlog('did not find '+fullran_fn)
             ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
