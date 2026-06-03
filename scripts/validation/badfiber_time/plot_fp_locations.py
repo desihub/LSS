@@ -10,7 +10,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-DATADIR = '/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/all-fibers-vs-time'
+DATADIR = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/redshift_assessment_plots'
 LRGCAT  = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/LSScats/test/LRG_full_noveto.dat.fits'
 
 # load the 41 flagged fibers

@@ -19,7 +19,7 @@ import datetime
 import time
 from collections import defaultdict
 
-OUTDIR  = '/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/all-fibers-vs-time'
+OUTDIR  = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/redshift_assessment_plots'
 LSSDIR  = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/LSScats/test'
 EXPCAT  = '/global/cfs/cdirs/desi/spectro/redux/matterhorn/exposures-matterhorn.fits'
 

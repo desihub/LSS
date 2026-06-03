@@ -13,7 +13,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import datetime
 
-DATADIR = '/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/all-fibers-vs-time'
+DATADIR = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/redshift_assessment_plots'
 NBINS   = 32
 
 MJD_EPOCH = datetime.date(1858, 11, 17)

@@ -13,7 +13,7 @@ Fully vectorized with np.bincount — runs in seconds.
 import numpy as np
 import time
 
-DATADIR = '/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/all-fibers-vs-time'
+DATADIR = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/redshift_assessment_plots'
 NBINS   = 32
 ZSIG    = 3.0
 MIN_OBS = 10   # minimum total obs per fiber per tracer
