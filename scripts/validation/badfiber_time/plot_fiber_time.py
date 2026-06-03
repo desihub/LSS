@@ -24,8 +24,8 @@ TRACERS = [t.upper() for t in sys.argv[2:]]
 NBINS   = 32
 PETAL   = FIBER // 500
 
-DATADIR = '/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/all-fibers-vs-time'
-SUMFILE = '/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/krolewski-pipeline/summaryscale/LRGfibersim_matterhorn-v2.txt'
+DATADIR = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/redshift_assessment_plots'
+SUMFILE = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/matterhorn-v2/redshift_assessment_plots/LRGfibersim_matterhorn-v2.txt'
 
 TRACER_COLOR = {
     'BGS': 'forestgreen',
@@ -183,7 +183,7 @@ ax2.tick_params(axis='x', which='minor', direction='in', length=5)
 
 plt.tight_layout()
 tracer_str = '_'.join(TRACERS).lower()
-outpng = f'{DATADIR}/fiber{FIBER}_time_{tracer_str}.png'
+outpng = f'fiber{FIBER}_time_{tracer_str}.png'
 fig.savefig(outpng, dpi=150, bbox_inches='tight')
 plt.close(fig)
 print(f'Saved {outpng}', flush=True)
