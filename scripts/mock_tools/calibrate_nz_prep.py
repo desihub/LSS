@@ -223,8 +223,8 @@ def calibrate_nz(input_data, redshift_column = 'Z_RSD', tracer_type='LRG', n_mea
     print('Entering NZ calibration')
 
     limits = {'LRG':[0., 1.6], 'ELG':[0.,2.1], 'QSO':[0.,3.5]}
-    areas = {'DA2':13176.892}
-    areas_split = {'DA2': [3212.9032, 9963.9888]}  #primero north y luego south
+    areas = {'DA2':13176.892, 'DA3': 15282.868}
+    areas_split = {'DA2': [3212.9032, 9963.9888], 'DA3': [4646.9348, 10635.9332]}  #primero north y luego south
     ra = input_data['RA'][()]
     dec = input_data['DEC'][()]
     z = input_data[redshift_column][()]
