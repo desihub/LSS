@@ -1272,15 +1272,15 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y':
     #randoms_catalogs = np.concatenate(
     testran = read_file(randoms_fnames_in[0])
     if 'PHOTSYS' in list(testran.dtype.names):
-		
-		randoms_catalogs = vstack(
-			[read_file(fname) for fname in randoms_fnames_in]
-		)
-	else:
-	    randoms_catalogs = vstack(
-	        [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z'], logger=logger) for fname in randoms_fnames_in]
-	    )
-	        
+        
+        randoms_catalogs = vstack(
+            [read_file(fname) for fname in randoms_fnames_in]
+        )
+    else:
+        randoms_catalogs = vstack(
+            [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z'], logger=logger) for fname in randoms_fnames_in]
+        )
+            
     del testran
     #common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
     
