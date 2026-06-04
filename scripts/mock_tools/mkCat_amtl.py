@@ -1272,11 +1272,12 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y':
     #randoms_catalogs = np.concatenate(
     testran = read_file(randoms_fnames_in[0])
     if 'PHOTSYS' in list(testran.dtype.names):
-        
+        write_ran = True
         randoms_catalogs = vstack(
             [read_file(fname) for fname in randoms_fnames_in]
         )
     else:
+        write_ran = False #this should only happen if one is already using the compressed randoms, and those will load the column from the data anyway, so don't add to the randoms
         randoms_catalogs = vstack(
             [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL'], logger=logger) for fname in randoms_fnames_in]
         )
@@ -1343,45 +1344,46 @@ if args.doimlin == 'y':
 
     #  also write the weights in the randoms
     #if args.imsys_clus_ran:
-    fname = os.path.join(
-        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
-    )
-    dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
-    fname = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
-    )
-    dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
-    dat = vstack([dat_sgc, dat_ngc])
-    dat.rename_column("TARGETID", "TARGETID_DATA")
-    regl = ["NGC", "SGC"]
-    syscolr = syscol
-
-    # if args.replace_syscol == 'y':
-    #    syscolr = 'WEIGHT_SYS'
-    def _add2ran(rann):
-        for reg in regl:
-            ran_fn = os.path.join(
-                dirout,
-                f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
-            )
-            ran = Table(read_file(ran_fn))
-            if syscolr in ran.colnames:
-                ran.remove_column(syscolr)
-            ran = join(ran, dat, keys=["TARGETID_DATA"])
-            if args.replace_syscol:
-                ran["WEIGHT"] /= ran["WEIGHT_SYS"]
-                ran["WEIGHT_SYS"] = ran[syscolr]
-                ran["WEIGHT"] *= ran["WEIGHT_SYS"]
-            common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
-
-    if args.par == "y":
-        from multiprocessing import Pool
-
-        with Pool() as pool:
-            res = pool.map(_add2ran, inds)
-    else:
-        for rn in inds:  # range(rm,rx):
-            _add2ran(rn)
+    if write_ran:
+        fname = os.path.join(
+            dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
+        )
+        dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
+        fname = os.path.join(
+            dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+        )
+        dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
+        dat = vstack([dat_sgc, dat_ngc])
+        dat.rename_column("TARGETID", "TARGETID_DATA")
+        regl = ["NGC", "SGC"]
+        syscolr = syscol
+    
+        # if args.replace_syscol == 'y':
+        #    syscolr = 'WEIGHT_SYS'
+        def _add2ran(rann):
+            for reg in regl:
+                ran_fn = os.path.join(
+                    dirout,
+                    f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
+                )
+                ran = Table(read_file(ran_fn))
+                if syscolr in ran.colnames:
+                    ran.remove_column(syscolr)
+                ran = join(ran, dat, keys=["TARGETID_DATA"])
+                if args.replace_syscol:
+                    ran["WEIGHT"] /= ran["WEIGHT_SYS"]
+                    ran["WEIGHT_SYS"] = ran[syscolr]
+                    ran["WEIGHT"] *= ran["WEIGHT_SYS"]
+                common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
+    
+        if args.par == "y":
+            from multiprocessing import Pool
+    
+            with Pool() as pool:
+                res = pool.map(_add2ran, inds)
+        else:
+            for rn in inds:  # range(rm,rx):
+                _add2ran(rn)
 
 if args.prep4sysnet == 'y':
     common.printlog('preparing data to run sysnet regression for '+tracer_clus,logger)
