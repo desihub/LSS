@@ -1278,9 +1278,9 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y':
         )
     else:
         randoms_catalogs = vstack(
-            [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z'], logger=logger) for fname in randoms_fnames_in]
+            [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL'], logger=logger) for fname in randoms_fnames_in]
         )
-            
+        randoms_catalogs['WEIGHT_FKP'] = 1/(1+randoms_catalogs['NX']*P0)    
     del testran
     #common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
     
