@@ -9,4 +9,6 @@ sim=holi_v3
 
 for ((i=$1;i<=$2;i++ )); do
   python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir /global/cfs/cdirs/desi/mocks/cai/LSS/ --outmd cfs --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y  --doimlin y --par y --imsys_zbin split
+  python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir /global/cfs/cdirs/desi/mocks/cai/LSS/ --outmd cfs --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG --notqso y  --doimlin y --par y --imsys_zbin split
+
 done
