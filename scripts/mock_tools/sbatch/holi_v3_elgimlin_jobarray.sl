@@ -4,7 +4,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 00:20:00
-#SBATCH --array=18-50
+#SBATCH --array=0,12,13,14
 #this can be used for any jobs that timed out
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
