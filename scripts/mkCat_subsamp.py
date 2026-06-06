@@ -369,7 +369,9 @@ if args.nz == 'y':
         if args.compmd == 'altmtl':
             extra_dir = 'PIP'
         clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits'
-        comp_ntl, weight_ntl = get_ntile_info(clus_orig)
+        comp_ntl, weight_ntl = None,None
+        if args.compmd == 'altmtl': #use original uncut data to get info, so that angular upweighting can be weighted consistently
+            comp_ntl, weight_ntl = get_ntile_info(clus_orig)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
 
 # determine linear weights for imaging systematics
