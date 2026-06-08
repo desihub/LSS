@@ -515,10 +515,23 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
     real_mtl_numledgers = os.listdir(os.path.join(real_mtl_dir,obscon.lower()))
 
     if yaml_numledgers != real_mtl_numledgers:
-        # 20260420 LGN - Deleted old YAML file
-        os.remove(yaml_fn)
-        # 20260420 LGN - Create new YAML file
-        initializeYAML_HPTracker(obscon,altmtldir)
+
+        #20260608 LGN - Write new YAML file (with -Update suffix)
+        initializeYAML_HPTracker(obscon,altmtldir,output_sfx='-UPDATE')
+
+        #Verify new YAML file
+        new_yaml_numledgers = sum(len(v) for v in yaml.safe_load(open(yaml_fn.replace('-ledgers','ledgers-UPDATE'))).values())
+
+        # 20260608 LGN - If verified, remove old YAML file, rename new file
+        if new_yaml_numledgers == real_mtl_numledgers:
+            os.remove(yaml_fn)
+            os.replace(yaml_fn.replace('-ledgers','ledgers-UPDATE'),yaml_fn)
+        else:
+            raise RuntimeError(
+                f"Generated YAML has {new_yaml_numledgers} ledgers, "
+                f"expected {real_mtl_numledgers}"
+            )
+
     
     #generate TileTracker update file
     makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b)
@@ -802,7 +815,7 @@ def trimToMTL(notMTL, MTL, debug = False, verbose = False):
 
 # LGN 20260407 New function, designed to create a set of per-obscon yaml files, containing the dates at which ledgers
 # LGN 20260407 were added for the specified obscon. This file will be written at the altmtl root directory.
-def initializeYAML_HPTracker(obscon,outputMTLDir,real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'): 
+def initializeYAML_HPTracker(obscon, outputMTLDir, output_sfx='', real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'): 
     import xml.etree.ElementTree as ET
     from collections import defaultdict
 
@@ -855,7 +868,7 @@ def initializeYAML_HPTracker(obscon,outputMTLDir,real_mtl_dir='/global/cfs/cdirs
     
     #re-sort the yaml file so Initial is the first entry (cosmetic)
     out = {'Initial': creation_dates['Initial'], **{k: creation_dates[k] for k in sorted(creation_dates) if k != 'Initial'}}
-    out_path = os.path.join(outputMTLDir,f'{obscon.upper()}-ledgers.yaml')
+    out_path = os.path.join(outputMTLDir,f'{obscon.upper()}-ledgers{output_sfx}.yaml')
     
     with open(out_path, "w") as f:
         yaml.dump(out, f, sort_keys=False)
