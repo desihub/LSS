@@ -166,7 +166,7 @@ def evaluateMask(bits, mask, evalMultipleBits = False):
 
 def flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
     #only works on single bits
-    assert( np.abs( np.log2(bit2Flip) - int(np.log2(bit2Flip)) ) < 0.001  )
+    assert( np.abs( np.log2(int(bit2Flip)) - np.log2(int(bit2Flip)) ) < 0.001  )
 
     if cond is None:
         if mode.lower() == 'on':
@@ -725,9 +725,13 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
 
     for veto_en in MTLDV[veto_in_daterange]:
+        #LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
+        veto_ts_dt = datetime.fromisoformat(veto_en['TIMESTAMP'])
+        veto_ts_inc2s = (veto_ts_dt+timedelta(seconds=2)).isoformat()
+        
         TileIDs.append(-1)
         TypeOfActions.append('veto')
-        TimesOfActions.append(veto_en['TIMESTAMP'])
+        TimesOfActions.append(veto_ts_inc2s)
         doneFlag.append(False)
         archiveDates.append(-1)
 
@@ -1523,6 +1527,13 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
         log.info('t = {0}'.format(t))
         zcat = make_zcat(zcatdir, [t], obscon, survey)
 
+        # LGN Bug fix - converting zcat from little to big endianness
+        def to_big_endian_table(tab):
+            arr = tab.as_array()
+            arr_be = arr.byteswap().view(arr.dtype.newbyteorder('>'))
+            return Table(arr_be)
+        zcat = to_big_endian_table(zcat)
+
         altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap, debug = debug, verbose = verbose)
         # ADM insist that for an MTL loop with real observations, the zcat
         # ADM must conform to the data model. In particular, it must include
@@ -1839,17 +1850,21 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
     # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
     MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
     MTLDV = Table.read(MTLDVFN)
+
+    # LGN 20260528 Subtracting 2 seconds from veto actiontime to align with mtl-done-vetoes
+    actiontime_dt = datetime.fromisoformat(action['ACTIONTIME'])
+    actiontime_ts_dec2s = (actiontime_dt-timedelta(seconds=2)).isoformat()
     
     # LGN Select appropriate set of vetoes based on timestamps of current and previous veto events
     # LGN If this is the first veto action, set low timestamp
-    DV_idx = (action['ACTIONTIME'] == MTLDV['TIMESTAMP']).argmax()
+    DV_idx = (actiontime_ts_dec2s == MTLDV['TIMESTAMP']).argmax()
     
     tslow = MTLDV[DV_idx-1]['TIMESTAMP']
     tshigh = MTLDV[DV_idx]['TIMESTAMP']
     
     if DV_idx == 0:
         tslow = "0000-00-00T00:00:00+00:00"
-    
+
     # ADM grab the list of files in the veto directory.
     vetodir = os.path.join(mtldir,survey,'veto',obscon.lower())
     fns = sorted(glob.glob(os.path.join(vetodir, "*", "*ecsv")))
@@ -1867,11 +1882,13 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
     
     # ADM loop through and veto MTL entries in the pixel-based ledgers.
     pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
-    
+
+    altmtldir_srv = os.path.join(altmtldir, survey, obscon.lower())
+
     for hpx in pixnum:
         # ADM read each ledger that corresponds to a HEALPixel that
         # ADM includes an RA, Dec in the veto catalog.
-        mtl = io.read_mtl_in_hp(altmtldir, nside, hpx, unique=True,tabform=tabform)
+        mtl = io.read_mtl_in_hp(altmtldir_srv, nside, hpx, unique=True, tabform=tabform)
         # ADM match ledger targets to those in the veto catalog.
         mii, vii = match(mtl["TARGETID"], vetocat["TARGETID"])
         # ADM create a new set of entries that are updates to "turn off"
@@ -1882,9 +1899,10 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
         updates["TARGET_STATE"] = "VETO|DONE"
         updates["TIMESTAMP"] = get_utc_date(survey=survey)
         updates["VERSION"] = MTLDV[DV_idx]['VERSION']
+
         # ADM finally, append the new updates to the ledger.
         nups, fn = io.write_mtl(
-            altmtldir, updates, ecsv=True, survey="main", obscon=obscon,
+            altmtldir, updates, ecsv=True, survey=survey, obscon=obscon,
             nsidefile=nside, hpxlist=hpx, append=True)
 
     return
