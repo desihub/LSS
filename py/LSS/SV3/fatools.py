@@ -619,52 +619,7 @@ def altcreate_mtl(
                 verbose=verbose,
                 tabform='ascii.ecsv',
                 maketwostyle = is_ext
-            )
-
-            # LGN 20260310 Temporary commenting this block out, Shouldn't be necessary after changes to fa actions in make/update TileTracker
-            '''
-            # LGN 20260223 Need to add a special case here for dark tiles fa'd before LyA1B date (20250721)
-            # LGN 20260223 But updated (and so run in the alt ledgers) afterwards
-            if 'dark' in mtldir: #this doesn't trigger for dark1b due to if/else structure
-                #Form tiletracker name using mtl directory
-                tiletracker_fp = '/'.join(mtldir.split('/')[:-2])+'/mainsurvey-DARKobscon-TileTracker.ecsv'
-                tiletracker = Table.read(tiletracker_fp)
-
-                #Get the timestamp for the fa and update actions for this tile
-                fa_time  = tiletracker[(tiletracker['TILEID'] == tileIDs) & (tiletracker['ACTIONTYPE'] == 'fa')]['ACTIONTIME']
-                upd_time = tiletracker[(tiletracker['TILEID'] == tileIDs) & (tiletracker['ACTIONTYPE'] == 'update')]['ACTIONTIME']
-
-                #Check if fa is before Lya1B and upd is after
-                if (fa_time < '2025-07-21T23:36:04+00:00') & (upd_time > '2025-07-21T23:36:04+00:00'):
-                    log.info('Replacing LyA1B entries for tile = {} fiberassigned before LyA1B date'.format(tileIDs))
-                    
-                    #Load the full set of targets in order to roll-back LyA1B entries
-                    d_all = io.read_targets_in_tiles(
-                    mtldir,
-                    tiles,
-                    quick=False,
-                    mtl=True,
-                    unique=False,
-                    isodate=mtltime,
-                    verbose=verbose,
-                    tabform='ascii.ecsv',
-                    maketwostyle = is_ext
-                    )
-
-                    #Select all targets with 4 OBS and TARGET STATE QSO|DONE or ELG_LOP|DONE
-                    lya1b_sel = ((d_all['TARGET_STATE'] == 'QSO|DONE') | (d_all['TARGET_STATE'] == 'ELG_LOP|DONE') | (d_all['TARGET_STATE'] == 'ELG_VLO|DONE')) & (d_all['NUMOBS'] == 4)
-                    
-                    #Use selection to find the final-preLya1B state of these targets
-                    pre_lya1b_states = d_all[(d_all['NUMOBS_MORE']==0) & np.isin(d_all['TARGETID'],d_all[lya1b_sel]['TARGETID'])]
-                    
-                    #Build lookup and mask for original targets
-                    idx = {val: i for i, val in enumerate(pre_lya1b_states['TARGETID'])}
-                    mask = np.isin(d['TARGETID'], pre_lya1b_states['TARGETID'])
-
-                    #Replace states, could be more optimal with no loop
-                    for i in np.where(mask)[0]:
-                        d[i] = pre_lya1b_states[idx[d['TARGETID'][i]]]
-               '''     
+            )    
                    
     try:
         log.info('shape of read_targets_in_tiles output')
