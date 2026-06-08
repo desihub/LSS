@@ -8,8 +8,9 @@ from desitarget.targetmask import zwarn_mask
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--night", help="use this if you want to specify the night, rather than just use the last one",default=None)
-parser.add_argument("--plotnz",default='y')
-parser.add_argument("--plottsnr2",default='y')
+parser.add_argument("--plotnz",default='n')
+parser.add_argument("--thresh",default=850,type=int)
+parser.add_argument("--plottsnr2",default='n')
 parser.add_argument("--redux",default='daily')
 
 parser.add_argument("--vis",default='n',help="whether to display plots when you run")
@@ -24,6 +25,7 @@ print('number of exposures found:')
 print(len(exps))
 #cut to dark tiles
 sel = exps['FAPRGRM']=='dark'
+sel |= exps['FAPRGRM']=='dark1b'
 print('number that are dark time:')
 print(len(exps[sel]))
 
@@ -44,17 +46,17 @@ for ii in range(0, len(tidl)):
 
 
 #sel &= exps['EFFTIME_ETC'] > 850 #select only tiles that should be near completion
-sel = exptl > 850
+sel = exptl > args.thresh
 ss = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv')
 selss = ss['LASTNIGHT'] == int(args.night)
-gt = ss[selss]['EFFTIME_SPEC'] > 850
+gt = ss[selss]['EFFTIME_SPEC'] > args.thresh
 tss = ss[selss][gt]['TILEID']
 sel |= np.isin(tidl,tss)
 tls_2mask = [9889,2693,3647,5958]
 sel &= ~np.isin(tidl,tls_2mask)
 tidl = tidl[sel]
 
-print('number dark tiles that have EFFTIME_ETC > 850 during the night:')
+print('number dark tiles that have EFFTIME_ETC > '+str(args.thresh)+' during the night:')
 print(len(tidl))
 
 
@@ -73,7 +75,10 @@ nzls = {x: [] for x in range(0,10)}
 tsnrlsg = {x: [] for x in range(0,10)}
 tsnrls = {x: [] for x in range(0,10)}
 nzla = []
+tilegzl = []
 for tid in tidl:
+    tile_good = 0
+    tile_tot = 0
     for pt in range(0,10):
         
         zmtlff = zdir+str(tid)+'/'+args.night+'/zmtl-'+str(pt)+'-'+str(tid)+'-thru'+args.night+'.fits'
@@ -90,8 +95,10 @@ for tid in tidl:
             print('number with bad qa '+str(num_badqa))
             nomtl = nodata | badqa
             wfqa = ~nomtl
+            wtsnr2 = rr['TSNR2_ELG'] > 80
+            
             wlrg = (zmtlf['DESI_TARGET'] & 1) > 0
-            zlrg = zmtlf[wfqa&wlrg]
+            zlrg = zmtlf[wfqa&wlrg&wtsnr2]
             if len(zlrg) > 0:
                 #drz = (10**(3 - 3.5*zmtlf['Z']))
                 #mask_bad = (drz>30) & (zmtlf['DELTACHI2']<30)
@@ -106,20 +113,23 @@ for tid in tidl:
                 wz &= (~mask_bad)
 
                 wzwarn = wz#zmtlf['ZWARN'] == 0
-                gzlrg = zmtlf[wzwarn&wlrg]
-                print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra')
+                gzlrg = zmtlf[wzwarn&wfqa&wlrg&wtsnr2]
+                print('The fraction of good LRGs is '+str(len(gzlrg)/len(zlrg))+' for '+str(len(zlrg))+' considered spectra with mean TSNR2_ELG '+str(np.mean(rr[wfqa&wlrg]['TSNR2_ELG'])))
                 gz[pt] += len(gzlrg)
                 tz[pt] += len(zlrg)
-                nzls[pt].append(zmtlf[wzwarn&wlrg]['Z'])
-                tsnrlsg[pt].append(rr[wzwarn&wlrg]['TSNR2_LRG'])
-                tsnrls[pt].append(rr[wfqa&wlrg]['TSNR2_LRG'])
-                nzla.append(zmtlf[wzwarn&wlrg]['Z'])
+                tile_good += len(gzlrg)
+                tile_tot += len(zlrg)
+                nzls[pt].append(zmtlf[wzwarn&wfqa&wlrg&wtsnr2]['Z'])
+                tsnrlsg[pt].append(rr[wzwarn&wfqa&wlrg&wtsnr2]['TSNR2_LRG'])
+                tsnrls[pt].append(rr[wfqa&wlrg&wtsnr2]['TSNR2_LRG'])
+                nzla.append(zmtlf[wzwarn&wfqa&wlrg&wtsnr2]['Z'])
             else:
                 print('no good lrg data')  
         else:
             print(zmtlff+' not found') 
-        
-
+    tilegzl.append(tile_good/tile_tot)
+print('tiles are:\n'+str(tidl))
+print('success rates are:\n'+str(tilegzl))
 print('the total number of LRG considered per petal for the night is:')
 print(tz)
 tzs = gz/tz

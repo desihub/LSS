@@ -58,7 +58,7 @@ parser.add_argument("--pota", help="base directory for target file",default=None
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
-parser.add_argument("--dataversion", help="version of LSS catalogs",default='v1.1')
+parser.add_argument("--dataversion", help="version of LSS catalogs",default='v2')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
 parser.add_argument("--usepota", help="use the already calculated potential assignments file instead of combining fiberassign files",default='n')
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
@@ -166,25 +166,30 @@ if args.targDir == None:
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
 tiles = fitsio.read(tile_fn)
 
+
 data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=survey, SPECVER=args.specdata,DATAVER=args.dataversion)
 
 gtl = None
 if args.add_gtl == 'y':
 
 
+    filena = f'unique_TILELOCID_{survey}_{args.specdata}_{args.dataversion}_{pdir}.txt'
+    if os.path.isfile(filena):
+        common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
+        gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    else:
+        common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
+        tsnrcut = mainp.tsnrcut
+        tnsrcol = mainp.tsnrcol        
 
-    common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
-    tsnrcut = mainp.tsnrcut
-    tnsrcol = mainp.tsnrcol        
-
-    specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
-    specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
+        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
+        specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
-    gtl = np.unique(specfc['TILELOCID'])
-
-
+        gtl = np.unique(specfc['TILELOCID'])
+        np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
 #    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 #logger.info('loading specf file '+specfo)
 #specf = Table(fitsio.read(specfo))
@@ -207,8 +212,8 @@ if args.add_gtl == 'y':
 #    gtl = np.unique(tlocid)#np.unique(specdat['TILELOCID'])
 #    del specdat
 #    print('*** DONE WITH ADD_GTL ***')
-
-
+print('this is lssdir')
+print(maindir, args.specdata, 'mock'+str(mocknum))
 lssdir = os.path.join(maindir,args.specdata, 'mock'+str(mocknum))#.format(MOCKNUM=mocknum)
 test_dir(lssdir)
 #if not os.path.exists(lssdir):
@@ -265,14 +270,15 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
     common.printlog('entering altmtl',logger)
     tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
+    #TEMP tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    ###fbadir = os.path.join(args.base_altmtl_dir,args.survey,args.simName,'altmtl'+str(mocknum),'Univ000/fa/MAIN/')
-    fbadir = args.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    fbadir = os.path.join(maindir, 'Univ000/fa/MAIN') #TEMPargs.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
     #else:
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
+    
     common.printlog('entering common.combtiles_wdup_altmtl for FASSIGN',logger)
 
     #asn = common.combtiles_wdup_altmtl('FASSIGN', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'), tarf, addcols=['TARGETID','RSDZ','TRUEZ','ZWARN'],logger=logger)
@@ -310,7 +316,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         fa['TILEID'] = int(tile)
         return fa
     pa_hdu = 'FASSIGN'
-    addcols=['TARGETID','RSDZ','TRUEZ','ZWARN']
+    addcols=['TARGETID','RSDZ','ZWARN']
     tl = []    
     tls = tiles['TILEID']
     if args.par == 'n':
@@ -336,6 +342,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
     common.printlog('entering common.combtiles_wdup_altmtl for FAVAIL',logger)
+    common.printlog('size of tiles '+ str(len(tiles)),logger)
     if args.usepota == 'n':
         pa_hdu = 'FAVAIL'
         addcols = ['TARGETID','RA','DEC','PRIORITY_INIT','DESI_TARGET']
@@ -347,6 +354,7 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         #pa = common.combtiles_wdup_altmtl('FAVAIL', tiles, fbadir, os.path.join(outdir, 'datcomb_' + pdir + 'wdup.fits'), tarf, addcols=cols,logger=logger)
         tl = []    
         tls = tiles['TILEID']
+        
         if args.par == 'n':
             for tile in tiles['TILEID']:
                 fa = _get_fa(tile)
@@ -375,7 +383,9 @@ if args.mockver == 'ab_secondgen' and args.combd == 'y':
         pota_cols = ['LOCATION','FIBER','TARGETID','TILEID','RA','DEC','PRIORITY_INIT','DESI_TARGET','COLLISION']
         if pdir == 'bright':
             pota_cols.append('BGS_TARGET')
-            #pota_cols.append('REST_GMR_0P1')
+            pota_cols.append('ABSMAG_R')
+            #pota_cols.append('R_MAG_ABS')
+            pota_cols.append('REST_GMR_0P1')
             
         #BGS_TARGET
         pa = fitsio.read(pota_fn,columns=pota_cols)
@@ -411,7 +421,8 @@ if args.joindspec == 'y':
 
 
     common.printlog('HERE!!!, about to join assignments and potential assignments',logger)
-    
+    print('pa',pa.columns, len(pa))
+    print('asn',asn.columns, len(asn))
     tj = join(pa, asn, keys = ['TARGETID', 'LOCATION', 'TILEID'], join_type = 'left')
     tj['ZWARN'] = tj['ZWARN'].filled(999999)
     sel = tj['ZWARN'] == 999999
@@ -433,6 +444,9 @@ if args.joindspec == 'y':
         common.printlog('length after masking collisions '+str(len(tj)),logger)
 
     outfs = os.path.join(lssdir, 'datcomb_' + pdir + '_tarspecwdup_zdone.fits')
+    if args.outmd == 'scratch':
+        outfs = outfs.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+
     common.write_LSS_scratchcp(tj,outfs,logger=logger)
     #tj.write(outfs, format = 'fits', overwrite = True)
     #common.print('wrote ' + outfs)
@@ -460,6 +474,9 @@ if args.fulld == 'y':
 
     ftar = None
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
+    if args.outmd == 'scratch':
+        dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
@@ -483,7 +500,10 @@ if tracer == 'QSO':
     if args.survey == 'Y1':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
     if args.survey == 'DA2':
-        subfrac = 0.675
+        subfrac = [0.97, 1.]
+        zsplit=2.1
+
+#        subfrac = 0.675 #1
 if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
 #        maxp = 3200
     P0 = 10000
@@ -493,7 +513,7 @@ if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
     if args.survey == 'Y1':
         subfrac = 0.976
     if args.survey == 'DA2':
-        subfrac = 0.966
+        subfrac = 0.99
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
@@ -503,8 +523,9 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
-        subfrac = [0.7,0.545]
+        subfrac = [0.91,0.7]
     zsplit=1.5
+
 if args.tracer[:3] == 'BGS':
     P0 = 7000
     dz_step = 0.01
@@ -516,9 +537,7 @@ if args.tracer[:3] == 'BGS':
 #        maxp = 3200
 
 nzmd = 'mock'
-mainp = main(args.tracer, args.specdata, survey=args.survey)
-imbits = mainp.imbits
-#tsnrcut = mainp.tsnrcut
+mainp = main(args.tracer, args.specdata, survey=args.survey, relax_zbounds='y')
     
 if args.fullr == 'y':
     print('Calculate GTL')
@@ -546,7 +565,7 @@ if args.fullr == 'y':
     specf = specf[sel]
     specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
 
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut, tsnr_col=mainp.tsnrcol,fibstatusbits=mainp.badfib_status)
+    specfc = common.cut_specdat(specf,badfib=mainp.badfib, tsnr_min=mainp.tsnrcut, tsnr_col=mainp.tsnrcol,fibstatusbits=mainp.badfib_status)
     gtl = np.unique(specfc['TILELOCID'])
     del specfc
 
@@ -572,7 +591,7 @@ if args.fullr == 'y':
         #ct.mkfullran(gtl, lznp, os.path.join(maindir, 'mock'+str(mocknum)).format(MOCKNUM=mocknum), rann, imbits, outf, args.tracer, pdir, notqso = notqso, maxp = maxp, min_tsnr2 = tsnrcut)
         outf = dirout+'/'+pdir+'_'+str(rann)+'_full_noveto.ran.fits'
         logger.info('about to make full ran '+outf)
-        ct.mkfullran_prog(gtl,os.path.join(maindir,args.specdata, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,imbits,outf,pdir)
+        ct.mkfullran_prog(gtl,os.path.join(maindir,args.specdata, 'mock'+str(mocknum)).format(MOCKNUM=mocknum),rann,mainp.imbits,outf,pdir)
 
         gc.collect() 
 ##        ct.mkfullran(gtlf,lznp,lssdir,rannum,imbits,outf,args.tracer,pdir,notqso=notqso,maxp=maxp,tlid_full=tlid_full)
@@ -654,7 +673,7 @@ if args.apply_veto == 'y':
             common.printlog('reading '+fin,logger)
             dataf = Table(fitsio.read(fin))
         if addlrg == 1:
-            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum))
+            lrgmask = Table.read(os.path.join(args.targDir.replace('global','dvs_ro'), 'forFA%d_matched_input_full_lrg_imask.fits' % mocknum)) 
             common.printlog('joining to LRG mask info',logger)
             dataf = join(dataf, lrgmask, keys=['TARGETID'])
             joinmask = 0 #LRGs shouldn't need other mask columns
@@ -795,7 +814,8 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             
         common.printlog("cut method "+args.absmagmd, logger)
         if args.absmagmd == 'simp':
-            sel = fin['R_MAG_ABS'] < abmagcut
+            sel = fin['ABSMAG_R'] < abmagcut
+            #sel = fin['R_MAG_ABS'] < abmagcut
         elif args.absmagmd == 'redshiftdep' and abmagcut == -2:
             common.printlog("using z dependent cut", logger)
             fit2_a = np.loadtxt("/pscratch/sd/z/zxzhai/DESI_LSS/BGS_ANY_zmagcut_a.dat")
@@ -816,8 +836,8 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             sel = fin['R_MAG_ABS'] < mock_z_cut
 
         common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
-
-
+    os.system('cp %s/BGS_BRIGHT_frac_tlobs.fits %s_frac_tlobs.fits' %(dirout, os.path.join(dirout, args.tracer)))
+    print('cp %s/BGS_BRIGHT_frac_tlobs.fits %s_frac_tlobs.fits' %(dirout, os.path.join(dirout, args.tracer)))
 
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
@@ -852,11 +872,10 @@ if args.mkclusdat == 'y':
 
        #readdir = dirout
     
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut) #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5') #, return_cat='y', write_cat='n')
+    #This is for bright Uchuu:  ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5', extracols=['ABSMAG_R', 'REST_GMR_0P1']) #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
-    ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
-    #ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), tp = args.tracer, dchi2 = None, tsnrcut = 0, zmin = zmin, zmax = zmax, use_map_veto = args.use_map_veto, subfrac=subfrac,zsplit=zsplit, ismock=True, ccut=args.ccut)#,ntilecut=ntile,ccut=ccut)
     common.printlog('*** END WITH MKCLUSDAT ***',logger)
 
     gc.collect()
@@ -878,7 +897,9 @@ if args.mkclusran == 'y':
     #    nztl.append('')
     
     tsnrcol = 'TSNR2_ELG'
+    
     if args.tracer[:3] == 'BGS':
+        '''
         fl = os.path.join(readdir, finaltracer) + '_'
         cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
         if 'G_R_OBS' in cols_clustering:
@@ -887,7 +908,9 @@ if args.mkclusran == 'y':
             rcols.append('G_R_REST')
         if 'R_MAG_ABS' in cols_clustering:
             rcols.append('R_MAG_ABS')
-
+        '''
+        rcols.append('ABSMAG_R')
+        rcols.append('REST_GMR_0P1')
         tsnrcol = 'TSNR2_BGS'
         if args.ccut is not None:
             for rn in range(rannum[0], rannum[1]):
@@ -898,7 +921,8 @@ if args.mkclusran == 'y':
     
     fl = os.path.join(readdir, finaltracer) + '_'
     common.printlog('adding tlobs to randoms with '+ fl,logger)
-    clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
+    #clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
+    clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
     tlf = fitsio.read(fl+'frac_tlobs.fits')
@@ -918,20 +942,31 @@ if args.mkclusran == 'y':
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
         common.printlog('about to read input random for '+str(rann),logger)        
-        ranf = finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
-        datain = fitsio.read(data_dir.replace('global','dvs_ro')+'/'+ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
-        common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
-        in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
-        #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
-        #common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
-        selpri = ~np.isin(in_tlid,bad_tlid)#datain['PRIORITY'] <= maxp
-        datain = datain[selpri]
-        common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
-        datain = unique(Table(datain),keys=['TARGETID'])
-        common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
+        #BGS_BRIGHT_9_full_HPmapcut.ran.fits
+        fullran_fn = ranin.replace('global','dvs_ro')+str(rann)+'_full_HPmapcut.ran.fits'
+        common.printlog('first looking for '+fullran_fn)
+        if os.path.isfile(fullran_fn):
+            datain = Table(fitsio.read(fullran_fn,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])) 
+        else:
+            common.printlog('did not find '+fullran_fn)
+            ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
+            if not os.path.isfile(ranf):
+                ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
+                datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
+            else:
+                datain = common.read_hdf5_blosc(ranf)
+            common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
+            in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
+            #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
+            #common.printlog(str(rann)+' length after join for PRIORITY '+str(len(datain)),logger=logger)
+            selpri = ~np.isin(in_tlid,bad_tlid)#datain['PRIORITY'] <= maxp
+            datain = datain[selpri]
+            common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
+            datain = unique(Table(datain),keys=['TARGETID'])
+            common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
-        
-        ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger)
+        #common.printlog(str(datain.dtype),logger)
+        ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5')
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
         del datain
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
@@ -964,28 +999,41 @@ regions = ['NGC', 'SGC']
 
 
 
-def splitGC(flroot,datran='.dat',rann=0):
+def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    app = 'clustering'+datran+'.fits'
+    app = 'clustering'+datran+ftp
     if datran == '.ran':
-        app = str(rann)+'_clustering'+datran+'.fits'
-
-    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+        app = str(rann)+'_clustering'+datran+ftp
+    if '.fits' in app:
+        fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    if '.h5' in app:
+        fn = common.read_hdf5_blosc(flroot.replace('global','dvs_ro') +app)
+    
     sel_ngc = common.splitGC(fn)#gc.b > 0
+
+
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    if '.fits' in outf_ngc:
+        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    if '.h5' in outf_ngc:
+        common.write_LSShdf5_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+
+
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+    if '.fits' in outf_sgc:
+        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+    if '.h5' in outf_sgc:
+        common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 if args.splitGC == 'y':
     fb_split = os.path.join(dirout,tracer_clus+'_')
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
-    splitGC(fb_split, '.dat')
+    splitGC(fb_split, '.dat',ftp='.h5')
     
     def _spran(rann):
-        splitGC(fb_split,'.ran',rann)
+        splitGC(fb_split,'.ran',rann,ftp='.h5')
     inds = np.arange(nran)
     try:
         if args.par == 'y':
@@ -1020,11 +1068,11 @@ if args.resamp == 'y':
 if args.nz == 'y':
     for reg in regions:#allreg:
         fb_nz = os.path.join(dirout,tracer_clus+'_'+reg)
-        fcr = fb_nz+'_0_clustering.ran.fits'
-        fcd = fb_nz+'_clustering.dat.fits'
+        fcr = fb_nz+'_0_clustering.ran.h5'#.fits'
+        fcd = fb_nz+'_clustering.dat.h5'
         fout = fb_nz+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,compmd=nzcompmd)
-        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
+        common.addnbar(fb_nz, bs=dz_step,zmin=mainp.zmin,zmax=mainp.zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger,exttp='.h5')
 
 
 

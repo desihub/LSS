@@ -15,6 +15,7 @@ from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
 import multiprocessing
 import gc
+import errno
 
 def create_dir(value):
     if not os.path.exists(value):
@@ -62,7 +63,7 @@ parser.add_argument("--base_output", help="base directory for output",default='/
 parser.add_argument("--apply_mask", help="apply the same mask as applied to desi targets?",default='n')
 parser.add_argument("--downsampling", help="downsample to Y1 target density in SecondGen Abacus mocks?",default='n')
 parser.add_argument("--isProduction", help="Say yes if you want to save in main production directory",default='n')
-parser.add_argument("--overwrite", help="Overwrite. if it is in production, this always will be no. You must delete by hand first", default=0, type=bool)
+parser.add_argument("--overwrite", help="Overwrite. if it is in production, this always will be no. You must delete by hand first", default=1, type=bool)
 parser.add_argument("--split_snapshot", help="apply different snapshots to different redshift ranges?",default='n')
 parser.add_argument("--new_version", help="If production, and this is a new version, set to name, for example, AbacusSummit_v3",default=None)
 

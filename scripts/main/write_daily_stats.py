@@ -24,7 +24,7 @@ fo.write('#####################\n')
 fo.write('as of '+today.strftime("%B %d, %Y")+'\n')
 fo.write('#####################\n')
 
-tps = ['QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
+tps = ['LGE','QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 
 zcol = 'Z_not4clus'
 for tp in tps:
@@ -32,6 +32,8 @@ for tp in tps:
     prog='dark'
     if 'BGS' in tp:
         prog = 'bright'
+    if 'LGE' in tp:
+        prog = 'dark1b'
     rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+prog+'_0_full_noveto.ran.fits',ext=1)
     areanv = rtnv['NAXIS2']/2500
     dtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+tp+'_full_noveto.dat.fits',ext=1)
@@ -60,6 +62,11 @@ for tp in tps:
     if tp[:3] == 'ELG':
         wg = dt['o2c'] > 0.9
 
+    if tp == 'LGE':
+        wg = dt['ZWARN'] == 0
+        wg &= dt['DELTACHI2']>10
+        #print(np.sum(wz),np.sum(wg))
+    
     if tp == 'LRG':
         # Custom DELTACHI2 vs z cut from Rongpu
         wg = dt['ZWARN'] == 0

@@ -3,7 +3,7 @@
 #SBATCH --qos=shared
 #SBATCH --cpus-per-task=128
 #SBATCH --constraint=cpu
-#SBATCH --array=6
+#SBATCH --array=1
 #SBATCH --account=desi
 #SBATCH --mem=40G
 

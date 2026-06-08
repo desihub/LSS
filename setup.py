@@ -15,11 +15,13 @@ from setuptools import setup, find_packages
 #
 # DESI support code.
 #
-have_desiutil = True
+have_desiutil = False
 try:
     import desiutil.setup as ds
 except ImportError:
     have_desiutil = False
+
+have_desiutil = False
 #
 # Begin setup
 #

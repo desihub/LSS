@@ -135,7 +135,7 @@ parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_al
 parser.add_argument("--addNtileweight2full",help="whether to add the NTILE weight to the full catalogs (necessary for consistent angular upweighting)",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
-parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n')
+#parser.add_argument("--resamp",help="resample radial info for different selection function regions",default='n') done automatically within mkclusran
 
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
@@ -216,6 +216,9 @@ if args.notqso == 'y':
 
 if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
     prog = 'BRIGHT'
+
+elif type[:3] == 'LGE':
+    prog = 'DARK1B'
 
 else:
     prog = 'DARK'
@@ -306,6 +309,7 @@ tarf = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9v'+ta
 
 mktar = True
 if os.path.isfile(tarf) and redotar == False or len(type.split('-'))>1:
+    
     mktar = False
 #if type == 'BGS_BRIGHT':
 #    mktar = False    
@@ -314,10 +318,11 @@ if mktar: #concatenate target files for given type, with column selection hardco
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
 
-mketar = True
+mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
 if os.path.isfile(etarf) and redotar == False: 
+    common.printlog('making '+tarf,logger)
     mketar = False
 
 if args.survey != 'main':
@@ -333,6 +338,8 @@ if mketar: #concatenate target files for given type, with column selection hardc
 maxp = 3400
 if type[:3] == 'LRG' or notqso == 'notqso':
     maxp = 3200
+if type[:3] == 'LGE':
+    maxp = 3210
 if type[:3] == 'BGS':
     maxp = 2100
 
@@ -354,7 +361,7 @@ if mkfulld:
             if specrel == 'newQSOtemp_tagged':
                 azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
                 azfm = 'cumul'
-        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup'+f1b+'_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
     else:
@@ -364,7 +371,11 @@ if mkfulld:
             tracer_ts = 'ELG'
         if type[:3] == 'BGS':
             tracer_ts = 'BGS_ANY'
-        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup_zdone.fits'
+        f1b = ''
+        if type[:3] == 'LGE' and args.survey != 'main':
+            f1b = '_1b'
+
+        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup'+f1b+'_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
             azf = emlin_fn
@@ -377,7 +388,7 @@ if mkfulld:
     ftar = fitsio.read(tarf)   
 
     from desitarget import targetmask
-    if type == 'BGS_BRIGHT':
+    if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
     else:
@@ -387,16 +398,22 @@ if mkfulld:
     maskcoll = False
     if args.survey != 'main':
         maskcoll = True
+    common.printlog('the emline file is '+emlin_fn)
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,emlin_fn=emlin_fn,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
 
 
 if args.add_veto == 'y':
     logf.write('added veto columns to data catalogs for '+tp+' '+str(datetime.now()))
     fin = dirout+type+notqso+'_full_noveto.dat.fits'
-    common.add_veto_col(fin,ran=False,tracer_mask=type[:3].lower(),redo=True)#,rann=0
+    mask_type = type[:3].lower()
+    tarver='targetsDR9v1.1.1'
+    if type == 'LGE':
+        mask_type = 'lrg'
+        tarver='targetsDR9v3.0.0'
+    common.add_veto_col(fin,type,ran=False,tracer_mask=mask_type,redo=True,tarver=tarver)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,ran=True,tracer_mask=type[:3].lower(),rann=rn)
+        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver)
         
 if args.join_etar == 'y':
     logf.write('added extra target columns to data catalogs for '+tp+' '+str(datetime.now()))
@@ -418,14 +435,14 @@ if args.fillran == 'y':
 
 
 if args.apply_veto == 'y':
-    print('applying vetos')
+    common.printlog('applying vetos',logger)
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
 
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
-    print('data veto done, now doing randoms')
+    common.printlog('data veto done, now doing randoms',logger)
     def _parfun(rn):
         #fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         fin = dirout.replace('global','dvs_ro')+progl+'_'+str(rn)+'_full_noveto.ran.fits'
@@ -484,7 +501,7 @@ if args.apply_map_veto == 'y':
     import healpy as hp
     tracer_clushp = tracer_clus
     #BGS_ANY and BGS_BRIGHT should essentially have same footprint
-    if tracer_clus == 'BGS_ANY':
+    if tracer_clus[:3] == 'BGS':
         tracer_clushp = 'BGS_BRIGHT'
     if 'ELG' in tracer_clus:
         tracer_clushp = 'ELG_LOPnotqso'
@@ -1358,7 +1375,7 @@ else:
     #zmin = 0.01
     #zmax = 1.61
 
-if type[:3] == 'LRG':
+if type[:3] == 'LRG' or type[:3] == 'LGE':
     P0 = 10000
 if type[:3] == 'ELG':
     P0 = 4000
@@ -1400,21 +1417,6 @@ if args.splitGC == 'y':
              _spran(rn)
 
 
-if args.resamp == 'y':
-            
-    for reg in regions:
-        flin = dirout + tracer_clus + '_'+reg    
-        def _parfun(rannum):
-            ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
-        
-        
-        if args.par == 'y':
-            from multiprocessing import Pool
-            with Pool() as pool:
-                res = pool.map(_parfun, inds)
-        else:
-            for rn in range(rm,rx):
-                _parfun(rn)
     
 #allreg = ['N','S','NGC', 'SGC']
 #allreg = ['NGC','SGC']
@@ -1648,6 +1650,23 @@ if args.imsys_clus_fb_ran == 'y':
     else:
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
+
+
+# if args.resamp == 'y':
+#             
+#     for reg in regions:
+#         flin = dirout + tracer_clus + '_'+reg    
+#         def _parfun(rannum):
+#             ct.clusran_resamp(flin,rannum,rcols=rcols)#,compmd=args.compmd)#, ntilecut=ntile, ccut=ccut)
+#         
+#         
+#         if args.par == 'y':
+#             from multiprocessing import Pool
+#             with Pool() as pool:
+#                 res = pool.map(_parfun, inds)
+#         else:
+#             for rn in range(rm,rx):
+#                 _parfun(rn)
 
 
 #if args.nz == 'y':

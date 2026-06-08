@@ -104,7 +104,9 @@ class main:
             self.imbits = [1,12,13]
         if tp[:3] == 'QSO':
             self.fit_maps = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']
+            self.fit_maps_allebvcmb = ['PSFDEPTH_W1','PSFDEPTH_W2','STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI','ZCMB']
             self.fit_maps_all = self.fit_maps
+            self.fit_maps_allebv = self.fit_maps
             self.ebits = [8,9,11]    
             self.tsnrcut = 80
             self.dchi2 = 0
@@ -114,7 +116,7 @@ class main:
             self.zmax = 3.5
             self.reccircmasks=['/global/cfs/cdirs/desi/users/rongpu/desi_mask/desi_custom_mask_v1.txt']
             #self.tsnrcol = 'TSNR2_QSO'
-        if tp[:3] == 'LRG':
+        if tp[:3] == 'LRG' or tp[:3] == 'LGE':
             self.fit_maps_all = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1'] #used up until v0.6
             self.fit_maps_allebv = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ']
             self.fit_maps_allebvcmb = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','HI','PSFDEPTH_W1','EBV_DIFF_GR','EBV_DIFF_RZ','ZCMB']
@@ -134,6 +136,8 @@ class main:
         if tp[:3] == 'ELG':
             self.fit_maps = ['STARDENS','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','GALDEPTH_G','GALDEPTH_R','GALDEPTH_Z','EBV_DIFF_GR','EBV_DIFF_RZ','HI']#,'EBV_DIFF_MPF']
             self.fit_maps_all = self.fit_maps
+            self.fit_maps_allebv = self.fit_maps
+            self.fit_maps_allebvcmb = self.fit_maps_allebv + ['ZCMB']
             self.tsnrcut = 80
             self.dchi2 = 0.9
             self.zmin = 0.8
@@ -200,7 +204,16 @@ class main:
             #self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/loa/QSO_cat_loa_cumulative_v0.fits' #used for v1
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/loa/QSO_cat_loa_cumulative_v2.fits' #used for v1.1 onward
 
-
+        #print('specver is '+specver)
+        if specver == 'matterhorn-v2':
+            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt').readlines()
+            self.badfib_status  = [13,14]
+            self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA3/QSO/matterhorn/QSO_cat_matterhorn_cumulative_v1.fits'
+            self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/emlin_catalog.fits'
+            
+            
+            #print(self.elgzf)
+        
         #self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-dark-allTiles_v1.fits'
         #self.brightbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-bright-allTiles_v1.fits'
         

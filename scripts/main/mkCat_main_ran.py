@@ -85,6 +85,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0)
 parser.add_argument("--maxr", help="maximum for random files, default is 1, but 18 are available (use parallel script for all)",default=4) 
 parser.add_argument("--par", help="run different random number in parallel?",default='y')
 parser.add_argument("--nproc", help="number to run in parallel",default=9)
+parser.add_argument("--ext4out", help="the extension for output (slowly being enabled for h5)",choices=['.fits','.h5'],default='.h5')
 
 parser.add_argument("--notqso",help="if y, do not include any qso targets",default='n')
 parser.add_argument("--newspec",help="if y, merge in redshift info even if no new tiles",default='n')
@@ -139,7 +140,7 @@ if args.notqso == 'y':
     notqso = 'notqso'
 
 
-if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
+if type[:3] == 'BGS' or ('bright' in type) or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
@@ -148,7 +149,9 @@ else:
 
 pd = pdir
 
-
+if '1b' in type or 'LGE' in type:
+    pr += '1B'
+    pdir += '1b'
 
 
 # tiles4comb = Table()
@@ -192,9 +195,9 @@ if not os.path.exists(dirout):
     logger.info('made '+dirout)
 
 globtype = args.type
-if args.type == 'dark':
+if 'dark' in args.type:
     globtype = 'LRG'
-if args.type == 'bright':
+if 'bright' in args.type:
     #print('changing globtype')
     globtype = 'BGS'
 #print(globtype,args.type)
@@ -255,7 +258,7 @@ del specfc
 
 if mkfullr and args.fullr_mode != 'prog':
     logger.info('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
-    specft = fitsio.read(ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
+    specft = fitsio.read(ldirspec.replace('global','dvs_ro')+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')#,columns=['TARGETID','ZWARN','TILELOCID'])
 
     wg = np.isin(specft['TILELOCID'],gtl)
     specft = Table(specft[wg])
@@ -265,7 +268,7 @@ if mkfullr and args.fullr_mode != 'prog':
     logger.info('finished finding znotposs')
     del specft
 
-    if type == 'BGS_BRIGHT':
+    if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
         bit = targetmask.bgs_mask[type]
         desitarg='BGS_TARGET'
     else:
@@ -366,7 +369,7 @@ def doran(ii):
         #tc.write(ldirspec+'/rancomb_'+str(ii)+type+'_Alltilelocinfo.fits',format='fits', overwrite=True)
 
     if args.mkdupranmasked == 'y':
-        outf = dirout+type+notqso+'_'+str(ii)+'_dupran_masked'+args.hpmapcut+'.fits'
+        outf = dirout+type+notqso+'_'+str(ii)+'_dupran_masked'+args.hpmapcut+args.ext4out
         mapn = None
         maps = None
         mapcuts = None

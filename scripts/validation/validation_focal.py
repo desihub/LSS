@@ -77,10 +77,12 @@ for tp in tps:
     err = np.sqrt(cnts_good*nfail/cnts_tot)/cnts_tot
     bs = bins[1]-bins[0]
     fig = plt.figure()
-    plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
+    plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko',label='with zfail weight')
+    plt.errorbar(bins[:-1]+bs/2,cnts_good/cnts_tot,err,fmt='rd',label='without zfail weight')
     plt.grid()
     plt.xlabel('focal plane radius (mm)')
-    plt.ylabel('relative z success (with zfail weight)')
+    plt.ylabel('relative z success ')
+    plt.legend()
     plt.title(tp+' all petals')
     figs.append(fig)
     #plt.savefig(outdir+tp+'_allpetals_focalr_relsuccess.png')
@@ -100,10 +102,12 @@ for tp in tps:
         err = np.sqrt(cnts_good*nfail/cnts_tot)/cnts_tot
         bs = bins[1]-bins[0]
         fig = plt.figure()
-        plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko')
+        plt.errorbar(bins[:-1]+bs/2,cnts_wt/cnts_tot,err,fmt='ko',label='with zfail weight')
+        plt.errorbar(bins[:-1]+bs/2,cnts_good/cnts_tot,err,fmt='rd',label='without zfail weight')
         plt.grid()
         plt.xlabel('focal plane radius (mm)')
-        plt.ylabel('relative z success (with zfail weight)')
+        plt.ylabel('relative z success')
+        plt.legend()
         plt.title(tp+' petal '+str(pt))
         figs.append(fig)
         #plt.savefig(outdir+tp+'_petal'+str(pt)+'_focalr_relsuccess.png')

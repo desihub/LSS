@@ -122,7 +122,11 @@ wd &= mt['ZDONE'] == 'true'
 logger.info('number of tiles with zdone true '+str(len(mt[wd])))
 wd &= mt['ARCHIVEDATE'] > 0
 logger.info('and with archivedate > 0 '+str(len(mt[wd])))
-wd &= mt['FAPRGRM'] == prog
+if args.doqso == 'y' or args.mkemlin == 'y':
+    wd &=  ((mt['FAPRGRM'] == prog) | (mt['FAPRGRM'] == prog+'1b'))
+    common.printlog('tiles being considered from fa programs '+str(np.unique(mt[wd]['FAPRGRM'])),logger)
+else:
+    wd &= mt['FAPRGRM'] == prog
 logger.info('and in '+prog+' '+str(len(mt[wd])))
 if specrel != 'daily':
     #wd &= mt['LASTNIGHT'] < 20210801
@@ -297,11 +301,22 @@ if specrel == 'daily' and args.survey == 'main':
     
         common.printlog('will combine pixels for '+str(len(tiles4hp))+' new tiles',logger)
         if len(tiles4hp) > 0:
-            for px in hpxs:
-                common.printlog('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)),logger)
-                tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
-                ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
-                npx += 1
+            if args.par == 'y':
+                def _process_hpx_tar(px):
+                    common.printlog('combining target data for pixel '+str(px),logger)
+                    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                    ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+                from multiprocessing import Pool
+                with Pool() as pool:
+
+                    pool.map(_process_hpx_tar,hpxs)#,reduce=reduce)
+
+            else:
+                for px in hpxs:
+                    common.printlog('combining target data for pixel '+str(px)+' '+str(npx)+' out of '+str(len(hpxs)),logger)
+                    tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                    ct.combtiles_wdup_hp(px,tiles4hp,tarfo)
+                    npx += 1
             tiles4comb.write(processed_tiles_file,format='fits',overwrite=True)
 
 if specrel == 'daily' and args.survey == 'DA2':
@@ -372,6 +387,8 @@ if specrel == 'daily' and args.survey == 'DA2':
             
 if  args.doqso == 'y':
     outf = ldirspec+'QSO_catalog.fits'
+    print('making/adding to QSO catalog '+outf)
+    print(tiles4comb.dtype)
     if specrel == 'daily':# and args.survey == 'main':
         ct.combtile_qso(tiles4comb,outf,restart=redoqso)
     else:
@@ -724,14 +741,14 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     newspec = ct.combtile_spec(tiles4comb,specfo,redo=args.redospec,prog=prog)
     
     if newspec:
-        common.printlog('new tiles were found for spec dataso there were updates to '+specfo,logger)
+        common.printlog('new tiles were found for spec data so there were updates to '+specfo,logger)
     else:
         common.printlog('no new tiles were found for spec data, so no updates to '+specfo,logger)
-    specf = fitsio.read(specfo,columns=spec_cols_4tar)
+    specf = fitsio.read(specfo.replace('global','dvs_ro'),columns=spec_cols_4tar)
     common.printlog('spec file '+specfo+' has '+str(len(specf))+' rows',logger)
     if '1b' in prog:
         common.printlog('adding '+specfo.replace('1b','') +' to spec info',logger)
-        specfnb = fitsio.read(specfo.replace('1b',''),columns=spec_cols_4tar)
+        specfnb = fitsio.read(specfo.replace('1b','').replace('global','dvs_ro'),columns=spec_cols_4tar)
         specf = np.concatenate([specf,specfnb])
         del specfnb
     specf = Table(specf)
@@ -774,7 +791,7 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
     for tp,notqso in zip(tps,notqsos):
         #first test to see if we need to update any
         common.printlog('now doing '+tp+notqso,logger)
-        print(len(tiles4comb['TILEID']))
+        #print(len(tiles4comb['TILEID']))
         outf = ldirspec+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
         outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
         outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
@@ -784,28 +801,29 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
         hpxsn = hpxs
         s = 0
         if os.path.isfile(outf):
-            fo = fitsio.read(outf,columns=['TARGETID','TILEID'])
+            fo = fitsio.read(outf.replace('global','dvs_ro'),columns=['TARGETID','TILEID'])
+            common.printlog(outf +' has '+str(len(fo))+ ' rows',logger)
             nstid = len(tiles4comb['TILEID'])
             notid = len(np.unique(fo['TILEID']))
             test_tid = np.isin(tiles4comb['TILEID'],np.unique(fo['TILEID']))
             common.printlog('there are '+str(nstid-np.sum(test_tid))+ ' tiles that need to be added to '+outf,logger)
             if nstid == np.sum(test_tid):
                 update = False
-                print('we will not update '+outf+' because there are no new tiles')
+                common.printlog('we will not update '+outf+' because there are no new tiles',logger)
             else:
                 
                 tidc = ~np.isin(tiles4comb['TILEID'],np.unique(fo['TILEID']))
                 #print('the new tileids are '+str(tiles4comb['TILEID'][tidc]))
-                print(len(tiles4comb[tidc]))
+                #print(len(tiles4comb[tidc]))
                 hpxsn = foot.tiles2pix(8, tiles=tiles4comb[tidc])
             del fo
         if os.path.isfile(outfs):
-            fo = fitsio.read(outfs,columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
+            fo = fitsio.read(outfs.replace('global','dvs_ro'),columns=['TARGETID','TILEID','ZWARN','ZWARN_MTL'])
             stids = np.unique(fo['TILEID'])
             if len(stids) == notid:      
                 dotarspec = False   
             if os.path.isfile(outtc) and update == False and redotarspec == False and dotarspec == False:
-                ftc = fitsio.read(outtc,columns=['TARGETID'])
+                ftc = fitsio.read(outtc.replace('global','dvs_ro'),columns=['TARGETID'])
                 fc = ct.cut_specdat(fo)
                 ctid = np.isin(fc['TARGETID'],ftc['TARGETID'])
                 if len(ctid) == sum(ctid):
@@ -818,32 +836,45 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
             common.printlog('updating '+outf,logger)
             cols = None
             if os.path.isfile(outf):
-                tarfn = fitsio.read(outf)
+                tarfn = fitsio.read(outf.replace('global','dvs_ro'),rows=1)
                 cols = tarfn.dtype.names
-                if np.isin('TILELOCID',tarfn.dtype.names):
-                    print('reloading '+outf+' without reading TILELOCID column')
+                #if np.isin('TILELOCID',tarfn.dtype.names):
+                    #common.printlog('reloading '+outf+' without reading TILELOCID column',logger)
                     #sel = cols != 'TILELOCID'
                     #cols = cols[sel]
-                    cols = []
-                    for col in tarfn.dtype.names:
-                        if col != 'TILELOCID':
-                            cols.append(col)
-                    tarfn = fitsio.read(outf,columns=cols)
-                    print(tarfn.dtype.names)
+                cols = []
+                for col in tarfn.dtype.names:
+                    if col != 'TILELOCID':
+                        cols.append(col)
+                tarfn = fitsio.read(outf.replace('global','dvs_ro'),columns=cols)
+                    #print(tarfn.dtype.names)
                 theta, phi = np.radians(90-tarfn['DEC']), np.radians(tarfn['RA'])
                 tpix = hp.ang2pix(8,theta,phi,nest=True)
                 pin = np.isin(tpix,hpxsn)
                 tarfn = tarfn[~pin] #remove the rows for the healpix that will updated
                 s = 1
-            
+            common.printlog('after removing healpix to update, has '+str(len(tarfn)),logger)
             npx =0 
+            tarfl = []
+            if s == 1:
+                tarfl = [tarfn]
+
             for px in hpxsn:                
                 tarfo = ldirspec+'healpix/datcomb_'+prog+'_'+str(px)+'_tarwdup_zdone.fits'
+                if '1b' in prog:
+                    tarfonb = tarfo.replace('1b','')
+                    
                 if os.path.isfile(tarfo):
                     if cols is not None:
-                        tarf = fitsio.read(tarfo,columns=cols)
+                        tarf = fitsio.read(tarfo.replace('global','dvs_ro'),columns=cols)
+                        if '1b' in prog and os.path.isfile(tarfonb):
+                            tarfnb = fitsio.read(tarfonb.replace('global','dvs_ro'),columns=cols)
                     else:
-                        tarf = fitsio.read(tarfo)
+                        tarf = fitsio.read(tarfo.replace('global','dvs_ro'))
+                        if '1b' in prog and os.path.isfile(tarfonb):
+                            tarfnb = fitsio.read(tarfonb.replace('global','dvs_ro'))
+                    if '1b' in prog and os.path.isfile(tarfonb):
+                        tarf = np.hstack((tarf,tarfnb))
                     #tarf['TILELOCID'] = 10000*tarf['TILEID'] +tarf['LOCATION']
                     if tp == 'BGS_BRIGHT':
                         sel = tarf['BGS_TARGET'] & targetmask.bgs_mask[tp] > 0
@@ -851,29 +882,33 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                         sel = tarf['DESI_TARGET'] & targetmask.desi_mask[tp] > 0
                     if notqso == 'notqso':
                         sel &= (tarf['DESI_TARGET'] & 4) == 0
-                    if s == 0:
-                        tarfn = tarf[sel]
-                        s = 1
-                    else:
+                    tarfl.append(tarf[sel])
+                    #if s == 0:
+                    #    tarfn = tarf[sel]
+                    #    s = 1
+                    #else:
                         #tarfn = vstack([tarfn,tarf[sel]],metadata_conflicts='silent')
-                        common.printlog(tarfn.dtype.names,logger)
-                        common.printlog(tarf.dtype.names,logger)
-                        tarfn = np.hstack((tarfn,tarf[sel]))
-                    common.printlog(str(len(tarfn))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
+                        #common.printlog(tarfn.dtype.names,logger)
+                        #common.printlog(tarf.dtype.names,logger)
+                    #    tarfn = np.hstack((tarfn,tarf[sel]))
+                    common.printlog(str(len(tarf[sel]))+','+tp+notqso+','+str(npx)+','+str(len(hpxsn)),logger)
                 else:
                     common.printlog('file '+tarfo+' not found',logger)
                 npx += 1    
+            common.printlog('concatenating',logger)
+            tarfn = np.hstack(tarfl)
+            common.printlog('now length '+str(len(tarfn)),logger)
             tarfn = Table(tarfn)           
-            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL']
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL','PRIORITY']
             for col in remcol:
                 try:
                     tarfn.remove_columns([col] )#we get this where relevant from spec file
                 except:
-                    print('column '+col +' was not in stacked tarwdup table')    
+                    common.printlog('column '+col +' was not in stacked tarwdup table',logger)    
 
             common.write_LSS_scratchcp(tarfn,outf,logger=logger)
             #tarfn.write(outf,format='fits', overwrite=True)
-            common.printlog('wrote out '+outf,logger)
+            common.printlog('wrote out '+outf+' '+str(len(tarfn))+' rows',logger)
             
             #try:
             #    specf.remove_columns(['PRIORITY'])
@@ -911,17 +946,24 @@ if specrel == 'daily' and args.dospec == 'y' and args.survey == 'main':
                 else:
                     tj = tjl[0]
                 del tjl
-                common.printlog('stacked now writing out',logger)
+                common.printlog('stacked now writing out has '+str(len(tj))+ ' rows',logger)
                 #for reg in regl:                
                 #    sel = tarfn['PHOTSYS'] == reg
                 #    tjr = join(tarfn,specf,keys=['TARGETID','LOCATION','TILEID','TILELOCID'],join_type='left') 
                 #tj.write(outfs,format='fits', overwrite=True)
                 common.write_LSS_scratchcp(tj,outfs,logger=logger)
                 common.printlog('joined to spec data and wrote out to '+outfs,logger)
-        elif redotarspec or dotarspec:
+        elif (redotarspec or dotarspec) and '1b' in prog:
             common.printlog('joining spec info to target info',logger)
-            tarfn = fitsio.read(outf)
+            tarfn = fitsio.read(outf.replace('global','dvs_ro'))
             tarfn = Table(tarfn)
+            remcol = ['Z','ZWARN','FIBER','ZWARN_MTL','PRIORITY']
+            for col in remcol:
+                try:
+                    tarfn.remove_columns([col] )#we get this where relevant from spec file
+                except:
+                    common.printlog('column '+col +' was not in stacked tarwdup table',logger)    
+
             tarfn['TILELOCID'] = 10000*tarfn['TILEID'] +tarfn['LOCATION']
             remcol = ['LOCATION','TILEID']
             for col in remcol:

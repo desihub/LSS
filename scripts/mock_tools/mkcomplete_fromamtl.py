@@ -1,0 +1,151 @@
+import os
+import sys
+import numpy as np
+import fitsio
+import glob
+import argparse
+from astropy.table import Table,join,unique,vstack
+import LSS.common_tools as common
+
+def read_file(fn, columns=None):
+    if '.fits' in fn:
+        data = Table(fitsio.read(fn.replace('global', 'dvs_ro')))
+        if columns is not None:
+            data.keep_columns(columns)
+    elif '.h5' in fn:
+        data = common.read_hdf5_blosc(fn.replace(
+            'global', 'dvs_ro'), columns=columns)
+    return data
+
+def get_ran(tracer,rann,realization,reg,base_dir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/',
+                             mockver='GLAM-Uchuu_v1',datadir='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'):
+    tardir = base_dir+mockver
+    LSSdir = tardir+'/altmtl'+str(realization)+'/loa-v1/mock'+str(realization)+'/LSScats/'
+    in_ran_fn = LSSdir+tracer+'_'+reg+'_'+str(rann)+'_clustering.ran.h5' 
+    in_clus_fileroot = LSSdir+tracer
+    if 'BGS' in tracer:
+        parent_ran_fn = datadir+'bright_'+str(rann)+'_full_noveto.ran.h5'
+    else:
+        parent_ran_fn = datadir+'dark_'+str(rann)+'_full_noveto.ran.h5' 
+    ran = common.expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot)    
+    return ran
+       
+
+
+def get_parent_clus_fromfull(tracer,realization,reg,base_dir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/',
+                             mockver='GLAM-Uchuu_v1'):
+    tardir = base_dir+mockver
+    tar_data_fn = tardir+'/forFA'+str(realization)+'.fits'
+    tar_data = read_file(tar_data_fn,columns=['TARGETID','RSDZ'])
+    tar_data.rename_column('RSDZ','Z')
+    LSSdir = tardir+'/altmtl'+str(realization)+'/loa-v1/mock'+str(realization)+'/LSScats/'
+    if tracer == 'QSO':
+        P0 = 6000
+        zmin = 0.8
+        zmax = 3.5
+    if tracer[:3] == 'LRG':
+        P0 = 10000
+        zmin = 0.4
+        zmax = 1.1
+    if tracer[:3] == 'ELG':
+        P0 = 4000
+        zmin = 0.8
+        zmax = 1.6
+    in_data_fn = LSSdir+tracer+'_full_HPmapcut.dat.h5'    
+    print(in_data_fn)
+    in_data = read_file(in_data_fn,columns=['TARGETID','RA','DEC','NTILE','ZWARN','FRACZ_TILELOCID','FRAC_TLOBS_TILES'])
+    
+    sel_con = in_data['TARGETID'] < 419430400000000 #remove contaminants
+    in_data = in_data[sel_con]
+    ld = len(in_data)
+    tids, in_ind, orig_ind = np.intersect1d(in_data['TARGETID'], tar_data['TARGETID'], return_indices=True)
+    in_data = in_data[in_ind]
+    print('input length was '+str(ld)+' and new length is '+str(len(in_data))+', should not have changed')
+    tar_data = tar_data[orig_ind]
+    in_data['Z'] = tar_data['Z']
+    if 'ELG' in tracer:
+        rans = np.random.random(len(in_data))
+        subzhz = rans < 0.76
+        subzlz = rans < 0.96
+        zsplit = in_data['Z'] < 1.49
+        subz = subzhz 
+        subz |= (subzlz & zsplit)
+        
+        print('for zfail, keeping '+str(np.sum(subz)/len(in_data)))
+        in_data =in_data[subz]
+              
+    #cntl = np.zeros(8)
+    sela = in_data['ZWARN'] != 999999
+    in_data['WEIGHT'] = np.ones(len(in_data))
+    in_data['WEIGHT_SYS'] = np.ones(len(in_data))
+    in_data['WEIGHT_COMP'] = np.ones(len(in_data))                             
+    in_data['WEIGHT_ZFAIL'] = np.ones(len(in_data))
+    #in_data['FRAC_TLOBS_TILES'] = np.ones(len(in_data))
+    #fracz_ntl = np.bincount(in_data['NTILE'], weights=in_data['FRACZ_TILELOCID']) / np.bincount(in_data['NTILE'])
+    #fttl = np.bincount(in_data['NTILE'], weights=in_data['FRAC_TLOBS_TILES']) / np.bincount(in_data['NTILE'])
+    #cntl = fttl*fracz_ntl
+    cntl = np.bincount(in_data[sela]['NTILE'])/np.bincount(in_data['NTILE'])
+    #for nt in range(0,8):
+    #    seld = in_data['NTILE'] == nt
+    #    comp = np.sum(sela&seld)/np.sum(seld)		
+    #    cntl[nt] = comp
+    in_data['WEIGHT'] = cntl[in_data['NTILE']]
+        
+    print('completeness as a function of NTILE is '+str(cntl))
+    sel_ngc = common.splitGC(in_data)
+    if reg == 'NGC':
+        in_data = in_data[sel_ngc]
+    if reg == 'SGC':
+        in_data = in_data[~sel_ngc]
+        
+    nzf = np.loadtxt(LSSdir+tracer+'_'+reg+'_nz.txt').transpose()
+    
+    bs = nzf[2][0]-nzf[1][0]
+    nzd = nzf[3] #column with nbar values
+    zl = in_data['Z']
+    nl = np.zeros(len(zl))
+    zind = ((zl - zmin) / bs).astype(int)
+    valid = (zl > zmin) & (zl < zmax) & (zind >= 0) & (zind < len(nzd))
+    nl[valid] = nzd[zind[valid]]
+    in_data['NX'] = nl*cntl[in_data['NTILE']]
+    in_data['WEIGHT_FKP'] = 1/(1+P0*in_data['NX'])
+    return in_data
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--realization", default=1,
+                    help="which realization to use, default is 1", type=int)
+parser.add_argument("--base_dir", help="base directory for input/output",
+                    default='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/')
+parser.add_argument("--mock_ver", help="type and version of mocks",
+                    default='GLAM-Uchuu_v1')
+
+parser.add_argument("--tracer", default='all')
+parser.add_argument("--outloc", default=os.getenv('SCRATCH'))
+parser.add_argument("--doran", action='store_true')
+parser.add_argument("--ranmin", default=0,type=int)
+parser.add_argument("--ranmax", default=4,type=int)
+
+
+
+args = parser.parse_args()
+
+if args.tracer == 'all':
+    tracers = ['ELG_LOPnotqso','LRG','QSO']
+else:
+    tracers = [args.tracer]
+regl = ['NGC','SGC']
+outdir = args.outloc+'/'+args.mock_ver+'/complete'+str(args.realization)+'/'
+if not os.path.exists(outdir):
+    os.makedirs(outdir)
+for tracer in tracers:
+    for reg in regl:
+        out_fname = outdir+tracer+'_'+reg+'_clustering.dat.h5'
+        data = get_parent_clus_fromfull(tracer,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
+        common.write_LSShdf5_scratchcp(data, out_fname)
+        if args.doran:
+            #easy way to speed up code would be to do different random realizations in parallel
+            for i in range(args.ranmin,args.ranmax):
+                ran = get_ran(tracer,i,args.realization,reg,base_dir=args.base_dir,mockver=args.mock_ver)
+                out_fname = outdir+tracer+'_'+reg+'_'+str(i)+'_clustering.ran.h5'
+                common.write_LSShdf5_scratchcp(ran, out_fname)
+                

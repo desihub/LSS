@@ -52,7 +52,7 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims2 = get_zlims(tracer2, option=option)
         return [zlim for zlim in zlims1 if zlim in zlims2]
 
-    if tracer.startswith('LRG'):
+    if tracer.startswith('LRG') or tracer.startswith('LGE'):
         zlims = [0.4, 0.6, 0.8, 1.1]
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
@@ -108,7 +108,8 @@ def select_region(ra, dec, region):
     elif 'GC' in region:
         from astropy.coordinates import SkyCoord
         import astropy.units as u
-        c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        #c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        c = SkyCoord(ra,dec,frame='icrs',unit='deg')
         gc = c.transform_to('galactic')
         sel_ngc = gc.b > 0
         if region == 'NGC':
@@ -128,7 +129,7 @@ def catalog_dir(survey='Y1', verspec='iron', version='v1.2', base_dir='/global/c
 def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw='',recon_dir='n',rec_type=False, nrandoms=4, cat_dir=None, survey='Y1', **kwargs):
     #print(kwargs)
     if cat_dir is None:
-        cat_dir = catalog_dir(survey=survey, **kwargs)
+        cat_dir = catalog_dir(survey=survey, **kwargs).replace('global','dvs_ro')
     #if survey in ['main', 'DA02']:
     #    tracer += 'zdone'
     if 'edav1' in cat_dir:
@@ -136,15 +137,27 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     #if ctype == 'clustering':
     #    cat_dir += '/unblinded/'           
     if 'full' in ctype:# == 'full':
+        # For subsamples, the tracer name is augmented with details about the subsample
+        # That will be needed in most places, but for angular upweighting we use the parent sample, not the subsample to find the angular weights.
+        # So strip it off just here
+        # You may need to adjust this
         region = ''
         cat_dir = cat_dir.replace('/unblinded','')
         cat_dir = cat_dir.replace('/blinded','')
-        if 'BGS_BRIGHT' in tracer:
-            tracer = 'BGS_BRIGHT'
-            logger.info('reset tracer name to BGS_BRIGHT for reading full file')
-        if 'LRG' in tracer:
-            tracer = 'LRG'
-            logger.info('reset tracer name to LRG for reading full file')
+        cat_dir = cat_dir.replace('PIP','')
+        logger.info('cat_dir for full file is '+cat_dir)
+        if 'BGS' in tracer:
+            if 'BGS_BRIGHT' in tracer:
+                tracer = 'BGS_BRIGHT'
+                logger.info('reset tracer name to BGS_BRIGHT for reading full file')
+            else:
+                logger.error('NEED TO FIX THE CODE, TELL ASHLEY TO FIX IT')
+        else:
+            tracer = tracer[:3]
+            logger.info('reset tracer name to '+tracer+' for reading full file')
+        #if 'LRG' in tracer:
+        #    tracer = 'LRG'
+        #    logger.info('reset tracer name to LRG for reading full file')
         
     dat_or_ran = name[:3]
     if name == 'randoms' and tracer == 'LRG_main' and ctype == 'full':
@@ -156,9 +169,21 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
     if rec_type:
         dat_or_ran = '{}.{}'.format(rec_type, dat_or_ran)
     if name == 'data':
-        return os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
+        fname = os.path.join(cat_dir, '{}{}_{}.{}.fits'.format(tracer, region, ctype, dat_or_ran))
+        fname5 = os.path.join(cat_dir, '{}{}_{}.{}.h5'.format(tracer, region, ctype, dat_or_ran))
+        if os.path.isfile(fname):
+            return fname
+        elif os.path.isfile(fname5):
+            return fname5
+        else:
+            return fname +' (or .h5) file_not_found!!!'
     #print(nrandoms)
-    return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+    test_fname = os.path.join(cat_dir, '{}{}{}_0_{}.{}.fits'.format(tracer, ran_sw, region, ctype, dat_or_ran))
+    test_fname5 = os.path.join(cat_dir, '{}{}{}_0_{}.{}.h5'.format(tracer, ran_sw, region, ctype, dat_or_ran))
+    if os.path.isfile(test_fname):
+        return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.fits'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
+    elif os.path.isfile(test_fname5):
+        return [os.path.join(cat_dir, '{}{}{}_{:d}_{}.{}.h5'.format(tracer, ran_sw, region, iran, ctype, dat_or_ran)) for iran in range(nrandoms)]
 
 
 def _format_bitweights(bitweights):
@@ -167,7 +192,7 @@ def _format_bitweights(bitweights):
 
 
 def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_ntmp=None,maglim=None, weight_type='default', name='data', return_mask=False, option=None,P0=None):
-    logger.info('get pos P0 is '+str(P0))
+    #logger.info('get pos P0 is '+str(P0))
     if maglim is None:
         mask = (catalog['Z'] >= zlim[0]) & (catalog['Z'] < zlim[1])
     if maglim is not None:
@@ -254,6 +279,9 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
     elif 'IMLIN_ALL' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_ALL'][mask]/catalog['WEIGHT_SYS'][mask]
 
+    if 'IMLIN_NODEBV' in weight_type:
+        weights *=  catalog['WEIGHT_IMLIN_NODEBV'][mask]/catalog['WEIGHT_SYS'][mask]
+
 
     if 'IMLIN_1ZBIN' in weight_type:
         weights *=  catalog['WEIGHT_IMLIN_1ZBIN'][mask]/catalog['WEIGHT_SYS'][mask]
@@ -286,6 +314,8 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
         #assumes no imaging systematic weights were in default
         weights *=  catalog['WEIGHT_IMLIN'][mask]
 
+    if 'data_compup' in weight_type and name == 'data':
+        weights = catalog['WEIGHT_COMP'][mask]/catalog['FRAC_TLOBS_TILES'][mask]
     if 'completeness_only' in weight_type:
         weights = catalog['WEIGHT_COMP'][mask]
         print('weights set to WEIGHT_COMP')
@@ -336,13 +366,6 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
     if name == 'randoms':
         #if 'default' in weight_type:
         #    weights *= catalog['WEIGHT'][mask]
-        if 'NTMP' in weight_type:
-            if fac_ntmp is not None:
-                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
-                weights *= wts[0]
-                logger.info('multiplied randoms by NTMP weights')
-            else:
-                logger.info('fac_ntmp was None, so nothing happening with it')
         if 'bitwise' in weight_type:# and 'default' in weight_type:
             if 'default' in weight_type:
                 weights = np.ones_like(positions[0])#catalog['WEIGHT_SYS'][mask]*catalog['WEIGHT_ZFAIL'][mask]
@@ -362,6 +385,14 @@ def get_clustering_positions_weights(catalog, distance, zlim=(0., np.inf),fac_nt
 
             #weights /= catalog['FRAC_TLOBS_TILES'][mask]
             #print('dividing weights by FRAC_TLOBS_TILES')
+        if 'NTMP' in weight_type:
+            if fac_ntmp is not None:
+                wts = common.apply_wntmp(catalog['NTILE'][mask], fac_ntmp[0], fac_ntmp[1])
+                weights *= wts[0]
+                logger.info('multiplied randoms by NTMP weights')
+            else:
+                logger.info('fac_ntmp was None, so nothing happening with it')
+
 #         if 'RF' in weight_type:
 #             weights *= catalog['WEIGHT_RF'][mask]*catalog['WEIGHT_COMP'][mask]
 #         if 'zfail' in weight_type:
@@ -400,18 +431,19 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
     
     if cat_read == None:
 
-        cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
-#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
-        fac_ntmp =  None
-        if name != 'data' and 'NTMP' in weight_type:
-            getntmp = 'getntmp'
-            logger.info('getting NTMP info')
-            ff = fitsio.read(cat_full,columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
-            fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
-            del ff
-        else:
-            logger.info(str(name)+' '+str(weight_type))
         def read_positions_weights(name):
+            cat_full = catalog_fn(ctype='full_HPmapcut', name='data', **kwargs)
+#                    cat_full = catalog_fn(ctype='full', name=name, **kwargs)
+            fac_ntmp =  None
+            if name != 'data' and 'NTMP' in weight_type:
+                getntmp = 'getntmp'
+                logger.info('getting NTMP info')
+                ff = fitsio.read(cat_full.replace('PIP/',''),columns=['BITWEIGHTS','PROB_OBS','LOCATION_ASSIGNED','NTILE'])
+                fac_ntmp = common.compute_wntmp(ff['BITWEIGHTS'], ff['PROB_OBS'], ff['LOCATION_ASSIGNED'], ff['NTILE'])
+                del ff
+            else:
+                logger.info(str(name)+' '+str(weight_type))
+
             positions, weights = [], []
             for reg in region:
                 cat_fns = catalog_fn(ctype='clustering', name=name, region=reg, **kwargs)
@@ -425,12 +457,15 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                     cat_fns = [cat_fns]
                 if name=='data':
                     def _get_tab(cat_fn):
-                        tab = Table.read(cat_fn)
+                        if '.fits' in cat_fn:
+                            tab = Table.read(cat_fn)
+                        if '.h5' in cat_fn:
+                            tab = common.read_hdf5_blosc(cat_fn)
                         if 'bitwise' in weight_type:
                             if 'BITWEIGHTS' in list(tab.dtype.names):
                                 pass
                             else:   
-                                tab = join(Table.read(cat_fn), Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
+                                tab = join(tab, Table.read(cat_full)['TARGETID', 'BITWEIGHTS'], keys='TARGETID', join_type='left')
                         #else:
                         if option is not None:
                             if 'RSDZ' in option:
@@ -440,7 +475,11 @@ def read_clustering_positions_weights(distance, zlim =(0., np.inf), maglim=None,
                         return tab
                     positions_weights = [get_clustering_positions_weights(_get_tab(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0) for cat_fn in cat_fns]
                 else:
-                    positions_weights = [get_clustering_positions_weights(Table.read(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0,fac_ntmp=fac_ntmp) for cat_fn in cat_fns]
+                    if '.fits' in cat_fns[0]:
+                        read_func = Table.read
+                    elif '.h5' in cat_fns[0]:
+                        read_func = common.read_hdf5_blosc
+                    positions_weights = [get_clustering_positions_weights(read_func(cat_fn), distance, zlim=zlim, maglim=maglim, weight_type=weight_type, name=name, option=option,P0=P0,fac_ntmp=fac_ntmp) for cat_fn in cat_fns]
                 
                 if isscalar:
                     positions.append(positions_weights[0][0])
@@ -529,17 +568,18 @@ def read_full_positions_weights(name='data', weight_type='default', fibered=Fals
             #cat_fn = catalog_fn(ctype='full', name=name, **kwargs)
             logger.info('Loading {}.'.format(cat_fn))
             if isinstance(cat_fn, (tuple, list)):
-                catalog = vstack([Table.read(fn.replace('PIP/','')) for fn in cat_fn])
+                #catalog = vstack([Table.read(fn.replace('PIP/','')) for fn in cat_fn])
+                catalog = vstack([Table.read(fn) for fn in cat_fn])
             else:
-                catalog = Table.read(cat_fn.replace('PIP/',''))
+                #catalog = Table.read(cat_fn.replace('PIP/',''))
+                catalog = Table.read(cat_fn)
             p, w = get_full_positions_weights(catalog, name=name, weight_type=weight_type, fibered=fibered, region=reg, weight_attrs=weight_attrs)
             positions.append(p)
             weights.append(w)
             if fibered:
-                logger.info('loaded fibered full for '+name + ' for region '+reg)
+                logger.info('loaded fibered full for '+name + ' for region '+reg + ' with '+str(len(p))+' entries')
             else:
-                logger.info('loaded parent full for '+name+ ' for region '+reg)    
-            logger.info(str(len(p))+' entries')
+                logger.info('loaded parent full for '+name+ ' for region '+reg + ' with '+str(len(p))+' entries')    
         return positions, weights
 
     if isinstance(name, (tuple, list)):

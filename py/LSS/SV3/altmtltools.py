@@ -1488,6 +1488,11 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
     zcatdir = get_zcat_dir(zcatdir)
     # ADM And contruct the associated ZTILE filename.
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
+
+    if zfix is not None:
+        log.info('zfix is not None, therefore we will fix Z for sources in {zfix}'.format(zfix=zfix))
+        idqso, zalt = np.loadtxt(zfix, unpack=True)
+
     #if len(UpdateTiles):
     #    pass 
     #else:
@@ -1540,6 +1545,23 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
         # ADM ZTILEID, and other columns addes for the Main Survey. These
         # ADM columns may not be needed for non-ledger simulations.
         # ADM Note that the data model differs with survey type.
+        
+        if zfix is not None:
+            #idqso, zalt = np.loadtxt(zfix, unpack=True)
+            idqso = idqso.astype(altZCat['TARGETID'].dtype)
+            zalt = zalt.astype(altZCat['Z'].dtype)
+            sort_idx = np.argsort(idqso)
+            sorted_src_ids = idqso[sort_idx]
+            sorted_src_zalt = zalt[sort_idx]
+
+            mask = np.isin(altZCat['TARGETID'], sorted_src_ids)
+            pos = np.searchsorted(sorted_src_ids, altZCat['TARGETID'][mask])
+
+
+            altZCat['Z'][mask] = sorted_src_zalt[pos]
+            altZCat['Z_QN'][mask] = 0.
+        
+
         zcatdm = survey_data_model(zcatdatamodel, survey=survey)
         if zcat.dtype.descr != zcatdm.dtype.descr:
             msg = "zcat data model must be {} not {}!".format(
@@ -1622,7 +1644,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                     getosubp = False, quickRestart = False, redoFA = False,
                     multiproc = False, nproc = None, testDoubleDate = False, 
                     changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False, reproducing = False, single_action = False):
+                    debug = False, verbose = False, reproducing = False, single_action = False, zfix = None):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -1671,6 +1693,11 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         directory of alternate MTLs to update.
     single_action : :class:`bool`, optional, defaults to False
         If ``True`` then run a single dateloop iteration. Used in profiling.
+    zfix : :class:`str`, optional, defaults to ``None``
+        txt filename with 2 columns, TARGETID and z. These will be fixed 
+        during update_ledger when creating the Altzcat, which normally reads 
+        from the zmtl files. Use these redshifts instead
+
 
     Returns
     -------

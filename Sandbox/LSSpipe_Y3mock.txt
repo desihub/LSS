@@ -1,0 +1,47 @@
+let's assume 50 realizations of mock=Holi (realizations are based on seed, other mocks will named realizations differently)
+
+Setting script:
+
+1) Work on DESI enviroment (if it doesnt work use cosmodesi enviroment)
+2) You need to calibrate the nz using the n(z)s from https://github.com/cosmodesi/desi-cutsky-mock. 
+3) Define path in script calibrate_nz_prep.py
+
+
+1) For realization = 0 do:
+
+For QSO, for example:
+
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/seed0201/ --input_mockfile holi_QSO_v4.00_GCcomb_clustering.dat.h5 --tracer QSO --zrsdcol Z --output_fullpathfn /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/seed0201/QSO/forFA0_Y3_noimagingmask_applied.fits --save_mock_nz y --nzfilename /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/nzref_da2_qso.txt --need_nz_calib y
+
+This will generate, as well as first realization, the nzref for the given mocks, defined by the variable args.nzfilename
+In the case of ELG, you must select two names, north and south, separated by come, for example: --nzfilename /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/nzref_da2_elgN.txt,/global/cfs/cdirs/desi/mocks/cai/holi/v4.00/nzref_da2_elgS.txt
+
+2) After running first realization, you must now run in the following realizations, reading nzfilename, but setting args.save_mock_nz to 'n'
+There is an script called script_prepare_holi_lrg.sh showing this step, run with sbatch
+
+
+3) Add NOBS, MASKBITS and apply imaging mask to the resultant mocks
+x3 ELG, QSO, LRG separately  
+
+Check if Cheng's code actually applies the selection or not. If not, do something like: join_imaging_mask.py
+
+
+4) Over the resultant mocks, we need to add the contaminants to QSO and ELG
+Let's say you applied the mask to your QSO sample, and generate a file named GLAM_rea0_QSO.fits
+
+you use the script: add_contaminants_to_mock.py and define the path accordingly, for QSO
+At the moment this script works in 1 realization only (names are hardwired)
+
+Contaminants are saved in /global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/QSO/noveto/ for QSO, similar path for ELGnotqso
+For ELG, there are less realizations, you can repeat to reach all 50 realizations
+
+
+5) Concatenate everything and output QSO redshifts in txt file.
+
+concatenate_tracers_to_fba.py
+
+
+6) Run ALTMTL as usual
+
+*) for testing:
+python test_target_density.py --dataversion v2 --mockname holi --input_mockpath /global/cfs/cdirs/desicollab/mocks/cai/GLAM-Uchuu/lightcones/prep_altmtl/ELG/ --input_mockfile GLAM-Uchuu_ELG_013_Y3_cut_sky_clustering.h5 --tracer ELG --ELGsplit n

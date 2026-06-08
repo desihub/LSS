@@ -21,6 +21,7 @@ parser.add_argument("--data",help="LSS or mock directory",default='LSS')
 parser.add_argument("--use_map_veto",help="string to add on the end of full file reflecting if hp maps were used to cut",default='_HPmapcut')
 parser.add_argument("--weight_col", help="column name for weight",default='WEIGHT_SN')
 parser.add_argument("--compmd",help="extra completeness on data or random",default='ran')
+parser.add_argument("--nran",help="number of random files to check for density",default=18,type=int)
 parser.add_argument("--ps",help="point size for density map",default=.1,type=float)
 parser.add_argument("--nside",help="point size for density map",default=64,type=int)
 parser.add_argument("--dpi",help="resolution in saved density map in dots per inch",default=90,type=int)
@@ -42,7 +43,7 @@ qt = 'COMP_TILE'
 nside = args.nside
 nest = True
 zcol = 'Z_not4clus'
-nran = 18
+nran = args.nran
 
 tps = [args.tracers]
 if args.tracers == 'all':
@@ -209,9 +210,12 @@ for tp in tps:
         sel_gz = common.goodz_infull(tp[:3],dt)
         sel_obs = dt['ZWARN'] != 999999
         dt = dt[sel_obs&sel_gz]
-        dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
-            dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
+        if args.compmd == 'iip':
+            dt['WEIGHT_COMP'] = 129/(1+128*(dt['PROB_OBS']))
+        else:
+            dt['WEIGHT_COMP'] = 1./dt['FRACZ_TILELOCID']
+            if 'FRAC_TLOBS_TILES' in cols and args.compmd == 'dat':
+                dt['WEIGHT_COMP'] *= 1/dt['FRAC_TLOBS_TILES']
         cols = list(dt.dtype.names)
         if args.weight_col not in cols:
             print('no '+args.weight_col+', getting set to 1 for plotting')
@@ -321,7 +325,7 @@ for tp in tps:
 
             dtf = dtf[wg]
             #print(reg,len(dtf))
-            if args.compmd == 'dat':
+            if args.compmd == 'dat' or args.compmd == 'iip':
                 rpix = gethpmap(rt)
             else:
                 rpix = gethpmap(rt,weights='FRAC_TLOBS_TILES')

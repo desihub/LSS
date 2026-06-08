@@ -15,6 +15,8 @@ from astropy import wcs
 from multiprocessing import Pool
 import argparse
 
+import LSS.common_tools as common
+
 
 time_start = time.time()
 
@@ -48,7 +50,7 @@ version_dict = {'lrg': 'v1.1', 'elg': 'v1'}
 if version=='none':
     version = version_dict[tracer]
 
-bitmask_dir = '/global/cfs/cdirs/desi/survey/catalogs/brickmasks/{}/{}'.format(tracer.upper(), version)
+bitmask_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/brickmasks/{}/{}'.format(tracer.upper(), version)
 
 # input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
@@ -106,7 +108,7 @@ def wrapper(bid_index):
 
 
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
-bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
+bricks = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
 
 
 cat1row = fitsio.read(input_path,rows=1)
@@ -121,7 +123,7 @@ for col in cols:
 
 del cat1row
 
-cat = Table(fitsio.read(input_path,columns=cols2read))
+cat = Table(fitsio.read(input_path.replace('global','dvs_ro'),columns=cols2read))
 
 print(len(cat))
 
@@ -154,7 +156,7 @@ res.sort('idx')
 res.remove_column('idx')
 
 if output_path.endswith('.fits'):
-    res.write(output_path)
+    common.write_LSS_scratchcp(res,output_path)
 else:
     np.write(output_path, np.array(res['{}_mask'.format(tracer)]))
 

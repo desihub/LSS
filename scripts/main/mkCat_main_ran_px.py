@@ -139,20 +139,26 @@ if args.notqso == 'y':
     notqso = 'notqso'
 
 
-if type[:3] == 'BGS' or type == 'bright' or type == 'MWS_ANY':
+if type[:3] == 'BGS' or ('bright' in type) or type == 'MWS_ANY':
     pr = 'BRIGHT'
     pdir = 'bright'
 else:
     pr = 'DARK'
     pdir = 'dark'
 
+if '1b' in args.type:
+    pr += '1B'
+    pdir += '1b'
+
 pd = pdir
 
 globtype = args.type
-if args.type == 'dark':
+if 'dark' in args.type:
     globtype = 'LRG'
-if args.type == 'bright':
-    globtype == 'BGS'
+if 'bright' in args.type:
+    print('changing globtype to BGS')
+    globtype = 'BGS'
+print(globtype)
 mainp = main(globtype,args.verspec)
 
 mt = mainp.mtld

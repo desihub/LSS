@@ -72,6 +72,7 @@ parser.add_argument("--mockcatver", default=None, help = "if not None, gets adde
 
 parser.add_argument("--tracer", default = 'all')
 parser.add_argument("--outloc", default = None)
+parser.add_argument("--outmd", help='write out in h5 or fits',choices=['.h5','.fits'],default = '.h5')
 parser.add_argument("--par", default = 'y',help='whether to run random steps in parallel or not')
 parser.add_argument("--mkdat", default = 'y')
 parser.add_argument("--mkran", default = 'y')
@@ -111,25 +112,40 @@ else:
 logger.info(tracers)
 
 
+def read_file(fn,columns=None):
+    if '.fits' in fn:
+        data = Table(fitsio.read(fn.replace('global','dvs_ro')))
+        if columns is not None:
+            data.keep_columns(columns)
+    if '.h5' in fn:
+        data = common.read_hdf5_blosc(fn.replace('global','dvs_ro'),columns=columns)
+    return data
+
+
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
     from astropy.coordinates import SkyCoord
     import astropy.units as u
-    app = 'clustering'+datran+'.fits'
+    app = 'clustering'+datran+args.outmd
     if datran == '.ran':
-        app = str(rann)+'_clustering'+datran+'.fits'
+        app = str(rann)+'_clustering'+datran+args.outmd
 
-    fn = Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
-    if datran == '.ran':
-        fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA','TARGETID','NTILE'])
+    fn = read_file(flroot.replace('global','dvs_ro') +app)#Table(fitsio.read(flroot.replace('global','dvs_ro') +app))
+    #if datran == '.ran':
+    #    fn.keep_columns(['RA', 'DEC', 'Z', 'WEIGHT', 'WEIGHT_FKP', 'TARGETID_DATA','TARGETID','NTILE'])
     #c = SkyCoord(fn['RA']* u.deg,fn['DEC']* u.deg,frame='icrs')
     #gc = c.transform_to('galactic')
     sel_ngc = common.splitGC(fn)#gc.b > 0
     outf_ngc = flroot+'NGC_'+app
-    common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+    
     outf_sgc = flroot+'SGC_'+app
-    common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
+    if args.outmd == '.fits':
+        common.write_LSS_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+        common.write_LSS_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
+    if args.outmd == '.h5':
+        common.write_LSShdf5_scratchcp(fn[sel_ngc],outf_ngc,logger=logger)
+        common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 
 def ran_col_assign(randoms,data,sample_columns,tracer,seed=0):
@@ -251,13 +267,6 @@ cols = ['LOCATION',
 if args.prog == 'BRIGHT':
     cols.append('R_MAG_ABS')
     mainp = main('BGS_BRIGHT',args.specrel,args.survey)
-logger.info('reading '+in_data_fn)
-mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'),columns=cols)
-logger.info('read '+in_data_fn)
-selcoll = mock_data['COLLISION'] == False
-mock_data = mock_data[selcoll]
-ndattot = len(mock_data)
-lmockdat_noveto = len(mock_data)
 
 if args.prog == 'DARK':
     bittest = targetmask.desi_mask
@@ -268,44 +277,56 @@ mapcuts = mainp.mapcuts
 tsnrcut = mainp.tsnrcut
 tnsrcol = mainp.tsnrcol        
 
-tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
-specfo =  '/global/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
-logger.info('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo))
-logger.info(len(np.unique(specf['TILEID'])))
-specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-logger.info('loaded specf file '+specfo)
+if args.mkdat == 'y':
+    logger.info('reading '+in_data_fn)
+    mock_data = fitsio.read(in_data_fn.replace('global','dvs_ro'))#,columns=cols)
+    logger.info('read '+in_data_fn.replace('global','dvs_ro'))
+    selcoll = mock_data['COLLISION'] == False
+    mock_data = mock_data[selcoll]
+    ndattot = len(mock_data)
+    lmockdat_noveto = len(mock_data)
 
-specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
-gtl = np.unique(specfc['TILELOCID'])
-goodtl = np.isin(tilelocid,gtl)
-mock_data = mock_data[goodtl]
-logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
 
-mock_data = Table(mock_data)
-mock_data = unique(mock_data,keys=['TARGETID'])
-mock_data.rename_column('RSDZ', 'Z')
+
+if args.mkdat == 'y' or args.mkran == 'y':
+    tilelocid = 10000*mock_data['TILEID']+mock_data['LOCATION']
+    if args.specrel == 'kibo-v1':
+        specfo =  '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/datcomb_'+args.prog.lower()+'_spec_zdone.fits'
+        logger.info('loading specf file '+specfo)
+        specf = Table(fitsio.read(specfo))
+        logger.info(len(np.unique(specf['TILEID'])))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        logger.info('loaded specf file '+specfo)
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)#common.cut_specdat(specf,badfib=mainp.badfib)
+        gtl = np.unique(specfc['TILELOCID'])
+
+    #if args.specrel == 'loa-v1' and 'v2' in args.data_dir:
+    #    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    else:
+        filena = args.data_dir+'/'+args.prog.lower()+'_unique_good_TILELOCID.txt'
+        gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+
+    goodtl = np.isin(tilelocid,gtl)
+
+if args.mkdat == 'y':
+    mock_data = mock_data[goodtl]
+    logger.info(str(lmockdat_noveto)+','+str(len(mock_data)))
+
+    mock_data = Table(mock_data)
+    mock_data = unique(mock_data,keys=['TARGETID'])
+    mock_data.rename_column('RSDZ', 'Z')
+
 
 
     
 for tracer in tracers:
     mainp = main(tracer,args.specrel,args.survey)
-    if args.prog == 'DARK':
-        
-        bit = bittest[tracer]#targetmask.desi_mask[tracer]
-        seltar = mock_data[desitarg] & bit > 0
-        mock_data_tr = mock_data[seltar]
-        lmockdat_noveto = len(mock_data_tr)
-        logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
-        logger.info(str(ndattot)+','+str(len(mock_data_tr)))
-    else:
-        mock_data_tr = mock_data
    
     tracerd = tracer
     #if tracer == 'BGS_BRIGHT-21.5':
     #    tracerd = 'BGS'
 
-    out_data_fn = outdir+tracerd+'_complete_clustering.dat.fits'
+    out_data_fn = outdir+tracerd+'_complete_clustering.dat'+args.outmd
     out_data_froot = outdir+tracerd+'_complete_'
     
    
@@ -325,7 +346,21 @@ for tracer in tracers:
         zmax = 0.4
     ebits = mainp.ebits
     if args.mkdat == 'y':
-    
+        if args.prog == 'DARK':
+        
+            bit = bittest[tracer]#targetmask.desi_mask[tracer]
+            seltar = mock_data[desitarg] & bit > 0
+            mock_data_tr = mock_data[seltar]
+            lmockdat_noveto = len(mock_data_tr)
+            logger.info('length before/after cut to target type '+tracer+' using bit '+str(bit)+' and column '+desitarg)
+            logger.info(str(ndattot)+','+str(len(mock_data_tr)))
+        else:
+            mock_data_tr = mock_data
+        lwcontam = len(mock_data_tr)
+        
+        sel_contam = mock_data_tr['TARGETID'] > 1e13
+        mock_data_tr = mock_data_tr[~sel_contam]
+        logger.info(tracer+' length before removing contaminants is '+str(lwcontam)+' and after is '+str(len(mock_data_tr)))
         if tracer == 'BGS_BRIGHT-21.5':
             if args.mockver == 'AbacusSummitBGS_v2':
                 selm = (mock_data_tr['R_MAG_ABS']) < -21.5
@@ -361,7 +396,10 @@ for tracer in tracers:
         place to add imaging systematic weights and redshift failure weights would be here
         '''
         mock_data_tr['WEIGHT'] = mock_data_tr['WEIGHT_SYS']*mock_data_tr['WEIGHT_COMP']*mock_data_tr['WEIGHT_ZFAIL']
-        common.write_LSS_scratchcp(mock_data_tr,out_data_fn,logger=logger)
+        if args.outmd == '.fits':
+            common.write_LSS_scratchcp(mock_data_tr,out_data_fn,logger=logger)
+        if args.outmd == '.h5':
+            common.write_LSShdf5_scratchcp(mock_data_tr,out_data_fn,logger=logger)
 
         #splitGC(out_data_froot,'.dat')
 
@@ -371,8 +409,9 @@ for tracer in tracers:
     tracerr = tracer
     if tracer[:3] == 'BGS':
         tracerr = 'BGS_BRIGHT'
-    ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
-
+    #ran_fname_base = args.base_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
+    ran_fname_base = args.data_dir.replace('global','dvs_ro') +tracerr+'_ffa_imaging_HPmapcut'
+    
     if args.mk_inputran == 'y':
         def _mk_inputran(rann):
             outfn = ran_fname_base.replace('dvs_ro','global')+str(rann)+'_full.ran.fits'
@@ -398,7 +437,7 @@ for tracer in tracers:
             
     if args.mkran == 'y':
         if args.mkdat == 'n':
-            mock_data_tr = Table(fitsio.read(out_data_fn))
+            mock_data_tr = read_file(out_data_fn)#Table(fitsio.read(out_data_fn))
         mock_data_tr.rename_column('TARGETID', 'TARGETID_DATA')
         def _mkran(rann):
             
@@ -410,12 +449,15 @@ for tracer in tracers:
             if tracer == 'BGS_BRIGHT-21.5':
                 tracerr = 'BGS_BRIGHT'
             in_ran_fn = ran_fname_base+str(rann)+'_full.ran.fits' 
-            out_ran_fn = out_data_froot+str(rann)+'_clustering.ran.fits'
+            out_ran_fn = out_data_froot+str(rann)+'_clustering.ran'+args.outmd
             rcols = ['RA','DEC','PHOTSYS','TARGETID','NTILE']
             ran = Table(fitsio.read(in_ran_fn,columns=rcols))
 
             ran = ran_col_assign(ran,mock_data_tr,ran_samp_cols,tracer,seed=rann)
-            common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
+            if args.outmd == '.fits':
+                common.write_LSS_scratchcp(ran,out_ran_fn,logger=logger)
+            if args.outmd == '.h5':
+                common.write_LSShdf5_scratchcp(ran,out_ran_fn,logger=logger)    
             del ran
             return True
             #splitGC(out_data_froot,'.ran',rann)
@@ -452,11 +494,11 @@ for tracer in tracers:
         #this calculates the n(z) and then adds nbar(completeness) and FKP weights to the catalogs
         #for reg in allreg:
         fb = out_data_froot[:-1]
-        fcr = fb+'_0_clustering.ran.fits'
-        fcd = fb+'_clustering.dat.fits'
+        fcr = fb+'_0_clustering.ran'+args.outmd
+        fcd = fb+'_clustering.dat'+args.outmd
         fout = fb+'_nz.txt'
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd='')
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc,logger=logger)
+        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,compmd='',par=args.par,nproc=nproc,logger=logger,exttp=args.outmd)
     
     if args.splitGC == 'y':
         splitGC(out_data_froot,'.dat')
