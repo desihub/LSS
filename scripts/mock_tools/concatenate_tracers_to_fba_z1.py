@@ -16,6 +16,7 @@ parser.add_argument("--LRG_file_name", default='forFA0.fits')
 parser.add_argument("--ELG_file_name", default='forFA0_withcontaminants.fits')
 parser.add_argument("--QSO_file_name", default='forFA0_withcontaminants.fits')
 parser.add_argument("--output_path", default='/pscratch/sd/d/desica/DA2/mocks/holi_v1/')
+parser.add_argument("--input_path", default=None)
 
 args = parser.parse_args()
 
@@ -58,13 +59,22 @@ elif args.mock == 'uchuuref':
 
     #ifil = os.path.join("/global/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v2.0/0000/prep_altmtl", args.tracer, args.file_name)
 
+elif args.mock == 'generic':
+    realizationO = str(args.realization).zfill(4)
+    elg_path = os.path.join(args.input_path, 'ELG', args.mock_version_forELG, "seed%s" % realizationO, args.ELG_file_name)
+    elgs = Table.read(elg_path)
+
+    lrg_path = os.path.join(args.input_path, 'LRG', args.mock_version_forLRG, "seed%s" % realizationO, args.LRG_file_name)
+    lrgs = Table.read(lrg_path)
+
+    qso_path = os.path.join(args.input_path, 'QSO', args.mock_version_forQSO, "seed%s" % realizationO, args.QSO_file_name)
+    qsos = Table.read(qso_path)
 
 output_path = os.path.join(args.output_path, 'forFA%s.fits' % args.realization)
 
 if os.path.isfile(output_path):
     print('file', output_path, ' already exist')
     sys.exit()
-
 
 qso_path = os.path.join(args.output_path, 'qsos')
 

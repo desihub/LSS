@@ -72,6 +72,7 @@ def read_parent_mock(filename):
     if filename.endswith('.h5'):
         print('should read')
         import h5py
+        import hdf5plugin 
         data = Table(h5py.File(filename, 'r+'))
     elif filename.endswith('.fits'):
         data = Table.read(filename)
@@ -83,9 +84,9 @@ def read_parent_mock(filename):
     return data
 
 
-#if args.mockname == 'abacushf':
-#    args.need_footprint = 'n'
-#    args.need_nz_calib = 'n'
+if args.mockname == 'abacushf':
+    args.need_footprint = 'n'
+    args.need_nz_calib = 'n'
 
 desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG, 'BGS': desi_mask.BGS_ANY}
 #AURE PRIORITY for BGS, is BRIGHT or what??? BGS_ANY? Shall we make same as ELG?
