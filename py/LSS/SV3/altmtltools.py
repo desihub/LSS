@@ -1485,6 +1485,18 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
         log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
     return A2RMap, R2AMap
+
+# LGN 20260609 Moving endian conversion helper outside of update_alt_ledger 
+def to_big_endian_table(tab):
+    arr = tab.as_array()
+
+    # LGN 20260609 Checking if table is already big endian 
+    if arr.dtype.byteorder in ('>', '|'):
+        # already big-endian or byte-order independent
+        return tab.copy()
+    
+    arr_be = arr.byteswap().view(arr.dtype.newbyteorder('>'))
+    return Table(arr_be)
     
 # LGN 20260220 Adding tiletracker as a passed argument
 # LGN 20260220 Necessary to check the fa date of an update action
@@ -1546,10 +1558,6 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
         zcat = make_zcat(zcatdir, [t], obscon, survey)
 
         # LGN Bug fix - converting zcat from little to big endianness
-        def to_big_endian_table(tab):
-            arr = tab.as_array()
-            arr_be = arr.byteswap().view(arr.dtype.newbyteorder('>'))
-            return Table(arr_be)
         zcat = to_big_endian_table(zcat)
 
         altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap, debug = debug, verbose = verbose)
