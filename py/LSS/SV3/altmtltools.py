@@ -1502,7 +1502,7 @@ def to_big_endian_table(tab):
 # LGN 20260220 Necessary to check the fa date of an update action
 # LGN 20260220 In order to check if we should pass the ext keyword
 def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracker, survey = 'sv3', obscon = 'dark', today = None, 
-    getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False):
+    getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False, zfix = None):
     if verbose or debug:
         log.info('today = {0}'.format(today))
         log.info('obscon = {0}'.format(obscon))
