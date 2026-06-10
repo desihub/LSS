@@ -18,6 +18,7 @@ Two catalogs are produced:
 
 Redshift convention (matching QSOcat_dev.ipynb):
     * QSO-target subsample : Z = Z_QSO (from the extra catalog), used where GOOD_Z_QSO.
+                          Note that Z_QSO is the QuasarNET corrected redshift
     * ELG / WISE-VAR / BGS : Z = "zelg", i.e. the redrock Z with Z_NEW substituted in
                              wherever IS_QSO_QN_NEW_RR is set.
     * ZERR / ZWARN are taken straight from the extra (redrock) catalog, no substitution.
@@ -28,7 +29,9 @@ catalogs are written.
 
 import os
 import sys
+import getpass
 import argparse
+import datetime
 import logging
 
 import numpy as np
@@ -202,10 +205,13 @@ def main():
 
     # ----- read zcat (basic catalog) ----------------------------------------- #
     zcat_avail = get_colnames(zcat_path)
-    has_healpix = 'HEALPIX' in zcat_avail
     read_cols = list(ZCAT_COLS)
+    has_healpix = 'HEALPIX' in zcat_avail
     if has_healpix:
         read_cols.append('HEALPIX')
+    has_uniqpix = 'UNIQPIX' in zcat_avail
+    if has_uniqpix:
+        read_cols.append('UNIQPIX')
 
     logger.info(f'reading {len(read_cols)} columns from {ZCAT_FN}')
     zcat = fitsio.read(zcat_path, columns=read_cols)
@@ -228,6 +234,11 @@ def main():
         logger.info(f'computing HEALPIX (nside={HPX_NSIDE}, nested) from RA/DEC')
         hpxpixel = hp.ang2pix(HPX_NSIDE, zcat['TARGET_RA'], zcat['TARGET_DEC'],
                               lonlat=True, nest=True)
+
+    # ----- uniqpix ----------------------------------------------------------- #
+    if has_uniqpix:
+        logger.info('UNIQPIX column present in the input catalog')
+        uniqpix = np.asarray(zcat['UNIQPIX'])
 
     # ----- QuasarNet confidence selections ----------------------------------- #
     max_c = np.max(np.array([zextra[name] for name in C_COLS]), axis=0)
@@ -327,6 +338,9 @@ def main():
         out[name] = zextra[name]
     out['QSO_MASKBITS'] = qso_maskbits
     out['HPXPIXEL'] = hpxpixel
+    if has_uniqpix:
+        out['UNIQPIX'] = uniqpix
+        OUTPUT_COLS.insert(OUTPUT_COLS.index('HPXPIXEL'), 'UNIQPIX')
     out['SURVEY'] = np.full(n, SURVEY)
     out['PROGRAM'] = np.full(n, PROGRAM)
     out['TSNR2_ELG'] = zextra['TSNR2_ELG']
@@ -344,11 +358,18 @@ def main():
     qsos_fn = os.path.join(
         outdir, f'QSO_cat_{args.release}_main_dark_healpix_{version}.fits')
 
+    header_comments = [
+        f"Created on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"Created by {getpass.getuser()} with {os.path.basename(__file__)}",
+    ]
+
     logger.info(f'writing "QSO targets" catalog ({int(member_qso.sum())} rows) to {targets_fn}')
-    common.write_LSS_scratchcp(out[member_qso], targets_fn, extname=EXTNAME, logger=logger)
+    common.write_LSS_scratchcp(out[member_qso], targets_fn, extname=EXTNAME,
+                               comments=header_comments, logger=logger)
 
     logger.info(f'writing "all QSOs" catalog ({int(member_all.sum())} rows) to {qsos_fn}')
-    common.write_LSS_scratchcp(out[member_all], qsos_fn, extname=EXTNAME, logger=logger)
+    common.write_LSS_scratchcp(out[member_all], qsos_fn, extname=EXTNAME,
+                               comments=header_comments, logger=logger)
 
     logger.info('done')
 
