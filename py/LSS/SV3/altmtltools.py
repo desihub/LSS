@@ -1317,11 +1317,21 @@ def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, sur
 def to_big_endian_table(tab):
     arr = tab.as_array()
 
-    # LGN 20260609 Checking if table is already big endian 
-    if arr.dtype.byteorder in ('>', '|'):
-        # already big-endian or byte-order independent
+    # Determine whether any field needs conversion
+    needs_conversion = False
+    for name in arr.dtype.names:
+        dt = arr.dtype[name]
+
+        if dt.byteorder == '<':
+            needs_conversion = True
+            break
+        if dt.byteorder == '=' and np.little_endian:
+            needs_conversion = True
+            break
+
+    if not needs_conversion:
         return tab.copy()
-    
+
     arr_be = arr.byteswap().view(arr.dtype.newbyteorder('>'))
     return Table(arr_be)
     
