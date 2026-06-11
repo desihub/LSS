@@ -20,8 +20,8 @@ Redshift convention (matching QSOcat_dev.ipynb):
     * QSO-target subsample : Z = Z_QSO (from the extra catalog), used where GOOD_Z_QSO.
                           Note that Z_QSO is the QuasarNET corrected redshift
     * ELG / WISE-VAR / BGS : Z = "zelg", i.e. the redrock Z with Z_NEW substituted in
-                             wherever IS_QSO_QN_NEW_RR is set.
-    * ZERR / ZWARN are taken straight from the extra (redrock) catalog, no substitution.
+                             wherever IS_QSO_QN_NEW_RR is set; ZERR, ZWARN, and SPECTYPE
+                             are likewise substituted with their _NEW counterparts.
 
 Output columns: only those present (or trivially derivable) in the two input
 catalogs are written. 
@@ -44,8 +44,8 @@ from LSS import common_tools as common
 
 # ----------------------------------------------------------------------------- #
 # logging
-logname = 'mkQSOcat'
-logger = logging.getLogger(logname)
+SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
+logger = logging.getLogger(SCRIPTNAME)
 logger.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
@@ -83,6 +83,9 @@ EXTRA_COLS = ['TARGETID',
               'C_Hbeta',
               'C_Halpha',
               'Z_NEW',
+              'ZERR_NEW',
+              'ZWARN_NEW',
+              'SPECTYPE_NEW',
               'GOOD_Z_QSO',
               'Z_QSO',
               'IS_QSO_MGII',
@@ -191,12 +194,21 @@ def main():
     parser.add_argument('--version', default=None,
                         help="catalog version string (e.g. 'v0'); default auto-increments from 'v0'")
     args = parser.parse_args()
-    logger.info(f'arguments: {args}')
 
     outdir = os.path.abspath(args.outdir)
     if not os.path.isdir(outdir):
         logger.info(f'creating output directory {outdir}')
         os.makedirs(outdir, exist_ok=True)
+
+    version = determine_version(outdir, args.release, explicit=args.version)
+    logfile = os.path.join(outdir, f'{SCRIPTNAME}_{args.release}_{version}.log')
+    fh = logging.FileHandler(logfile)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(ch.formatter)
+    logger.addHandler(fh)
+    logger.info(f'logging to {logfile}')
+    logger.info(f'arguments: {args}')
+    logger.info(f'using catalog version {version}')
 
     catdir = get_catdir(args.release)
     zcat_path = dvs_ro(os.path.join(catdir, ZCAT_FN))
@@ -241,6 +253,7 @@ def main():
         uniqpix = np.asarray(zcat['UNIQPIX'])
 
     # ----- QuasarNet confidence selections ----------------------------------- #
+    # QN threshold changed from 0.95 to 0.99 starting with loa
     max_c = np.max(np.array([zextra[name] for name in C_COLS]), axis=0)
     QN6 = max_c > 0.6
     QN99 = max_c > 0.99
@@ -300,8 +313,12 @@ def main():
     logger.info(f'QSO targets (all): {int(selqso.sum())}')
 
     # ----- redshift assembly ------------------------------------------------- #
-    # zelg: redrock Z with Z_NEW substituted where IS_QSO_QN_NEW_RR
+    # Substitute QN-afterburner rerun values where IS_QSO_QN_NEW_RR is set.
     z_out = np.where(is_qn_new_rr, zextra['Z_NEW'], zextra['Z']).astype(zextra['Z'].dtype)
+    zerr_out = np.where(is_qn_new_rr, zextra['ZERR_NEW'], zextra['ZERR'])
+    zwarn_out = np.where(is_qn_new_rr, zextra['ZWARN_NEW'], zextra['ZWARN'])
+    spectype_out = zextra['SPECTYPE'].copy()
+    spectype_out[is_qn_new_rr] = zextra['SPECTYPE_NEW'][is_qn_new_rr]
     # QSO-target subsample uses the dedicated QSO redshift where it is good
     z_out[member_qso] = zextra['Z_QSO'][member_qso]
 
@@ -321,9 +338,9 @@ def main():
     out = Table()
     out['TARGETID'] = zcat['TARGETID']
     out['Z'] = z_out
-    out['ZERR'] = zextra['ZERR']
-    out['ZWARN'] = zextra['ZWARN']
-    out['SPECTYPE'] = zextra['SPECTYPE']
+    out['ZERR'] = zerr_out
+    out['ZWARN'] = zwarn_out
+    out['SPECTYPE'] = spectype_out
     out['COADD_FIBERSTATUS'] = zcat['COADD_FIBERSTATUS']
     out['TARGET_RA'] = zcat['TARGET_RA']
     out['TARGET_DEC'] = zcat['TARGET_DEC']
@@ -350,9 +367,6 @@ def main():
     out = out[OUTPUT_COLS]
 
     # ----- write outputs ----------------------------------------------------- #
-    version = determine_version(outdir, args.release, explicit=args.version)
-    logger.info(f'using catalog version {version}')
-
     targets_fn = os.path.join(
         outdir, f'QSO_cat_{args.release}_main_dark_healpix_only_qso_targets_{version}.fits')
     qsos_fn = os.path.join(
