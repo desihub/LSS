@@ -3,7 +3,8 @@
 
 """
 Build the two main-survey dark-time QSO catalogs (healpix-based) directly from the
-zcatalog ``zpix-main-dark.fits`` and ``zpix-main-dark-extra.fits`` files.
+zcatalog ``zpix-main-dark.fits``, ``zpix-main-dark-extra.fits``,
+``zpix-main-dark-imaging.fits``, and (for v2) ``exp_fibermap/zpix-main-dark-expfibermap.fits``.
 
 Two catalogs are produced:
     * "QSO targets"     : QSO-targeted objects confirmed as QSOs, i.e.
@@ -23,8 +24,10 @@ Redshift convention (matching QSOcat_dev.ipynb):
                              wherever IS_QSO_QN_NEW_RR is set; ZERR, ZWARN, and SPECTYPE
                              are likewise substituted with their _NEW counterparts.
 
-Output columns: only those present (or trivially derivable) in the two input
-catalogs are written. 
+Coadd MJDs (``COADD_FIRSTMJD``, ``COADD_LASTMJD``, ``COADD_MEANMJD``) are taken from
+``MIN_MJD``, ``MAX_MJD``, and ``MEAN_MJD`` in the main zpix catalog. Coadd nights
+(``COADD_FIRSTNIGHT``, ``COADD_LASTNIGHT``) are derived from EXP_FIBERMAP for the
+identified QSOs only.
 """
 
 import os
@@ -37,7 +40,7 @@ import logging
 import numpy as np
 import fitsio
 import healpy as hp
-from astropy.table import Table
+from astropy.table import Table, join, unique
 
 from desitarget import targetmask
 from LSS import common_tools as common
@@ -64,7 +67,11 @@ ZCAT_COLS = ['TARGETID',
              'DESI_TARGET',
              'SCND_TARGET',
              'COADD_NUMEXP',
-             'COADD_EXPTIME']
+             'COADD_EXPTIME',
+             'EFFTIME_SPEC',
+             'MIN_MJD',
+             'MAX_MJD',
+             'MEAN_MJD']
 
 # columns to read from zpix-main-dark-extra.fits
 EXTRA_COLS = ['TARGETID',
@@ -75,7 +82,6 @@ EXTRA_COLS = ['TARGETID',
               'TSNR2_LYA',
               'TSNR2_QSO',
               'TSNR2_ELG',
-              'TSNR2_LRG',
               'C_LYA',
               'C_CIV',
               'C_CIII',
@@ -91,16 +97,39 @@ EXTRA_COLS = ['TARGETID',
               'IS_QSO_MGII',
               'IS_QSO_QN_NEW_RR']
 
+# columns to read from zpix-main-dark-imaging.fits
+IMAGE_COLS = ['TARGETID',
+              'EBV',
+              'FLUX_G',
+              'FLUX_R',
+              'FLUX_Z',
+              'FLUX_W1',
+              'FLUX_W2',
+              'FLUX_IVAR_G',
+              'FLUX_IVAR_R',
+              'FLUX_IVAR_Z',
+              'FLUX_IVAR_W1',
+              'FLUX_IVAR_W2']
+
+# imaging columns written to the output (TARGETID used only for matching)
+IMAGE_OUT_COLS = [col for col in IMAGE_COLS if col != 'TARGETID']
+
 # afterburner confidence columns used to build the QN selections
 C_COLS = ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']
 
 # final output column order (intersection of the requested schema with what the two
 # input catalogs can provide)
-OUTPUT_COLS = ['TARGETID', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE', 'COADD_FIBERSTATUS',
-               'TARGET_RA', 'TARGET_DEC', 'OBJTYPE', 'DESI_TARGET', 'SCND_TARGET',
-               'COADD_NUMEXP', 'COADD_EXPTIME', 'TSNR2_LYA', 'TSNR2_QSO',
-               'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha',
-               'QSO_MASKBITS', 'HPXPIXEL', 'SURVEY', 'PROGRAM', 'TSNR2_ELG', 'TSNR2_LRG']
+OUTPUT_COLS = ['TARGETID', 'HPXPIXEL', 'SURVEY', 'PROGRAM',
+               'Z', 'ZERR', 'ZWARN', 'SPECTYPE',
+               'TARGET_RA', 'TARGET_DEC', 'OBJTYPE', 'EBV',
+               'FLUX_G', 'FLUX_R', 'FLUX_Z', 'FLUX_W1', 'FLUX_W2',
+               'FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2',
+               'DESI_TARGET', 'SCND_TARGET',
+               'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'EFFTIME_SPEC',
+               'TSNR2_LYA', 'TSNR2_QSO', 'TSNR2_ELG',
+               'QSO_MASKBITS', 'LASTNIGHT',
+               'COADD_FIRSTNIGHT', 'COADD_FIRSTMJD', 'COADD_LASTNIGHT', 'COADD_LASTMJD',
+               'COADD_MEANMJD']
 
 # healpix resolution used for the main-survey healpix grouping
 HPX_NSIDE = 64
@@ -110,6 +139,9 @@ PROGRAM = 'dark'
 
 ZCAT_FN = 'zpix-main-dark.fits'
 EXTRA_FN = 'zpix-main-dark-extra.fits'
+IMAG_FN = 'zpix-main-dark-imaging.fits'
+ZTILE_FN = 'ztile-main-dark-cumulative.fits'
+EXPFIBERMAP_FN = 'exp_fibermap/zpix-main-dark-expfibermap.fits'
 
 EXTNAME = 'QSO_CAT'
 
@@ -163,6 +195,82 @@ def align_to(reference_tids, tids, data):
     return data[idx]
 
 
+def get_expfibermap_path(catdir, zcat_path):
+    """Return path to EXP_FIBERMAP data (v2 separate file, or v1 extension in zpix)."""
+    exp_path = dvs_ro(os.path.join(catdir, EXPFIBERMAP_FN))
+    if os.path.isfile(exp_path):
+        return exp_path, 'EXP_FIBERMAP'
+    zcat_path = dvs_ro(zcat_path)
+    with fitsio.FITS(zcat_path) as f:
+        for hdu in f:
+            if hdu.get_extname().upper() == 'EXP_FIBERMAP':
+                return zcat_path, 'EXP_FIBERMAP'
+    raise FileNotFoundError(
+        f'EXP_FIBERMAP not found in {exp_path} or as an extension of {zcat_path}')
+
+
+def add_lastnight(qf, catdir):
+    """Add LASTNIGHT from the tiles zcatalog (left join on TARGETID)."""
+    tilefn = dvs_ro(os.path.join(catdir, ZTILE_FN))
+    logger.info(f'reading LASTNIGHT from {tilefn}')
+    t = Table(fitsio.read(tilefn, columns=['TARGETID', 'LASTNIGHT']))
+    t.sort('TARGETID')
+    qf_tids = qf['TARGETID']
+    pos = np.searchsorted(t['TARGETID'], qf_tids)
+    pos = np.clip(pos, 0, len(t) - 1)
+    match = t['TARGETID'][pos] == qf_tids
+    lastnight = np.zeros(len(qf), dtype=t['LASTNIGHT'].dtype)
+    lastnight[match] = t['LASTNIGHT'][pos[match]]
+    qf['LASTNIGHT'] = lastnight
+    n_missing = int(np.sum(lastnight == 0))
+    logger.info(f'{n_missing} entries without LASTNIGHT info')
+    return qf
+
+
+def read_exp_nights_for_targets(exp_path, extname, targetids, chunk_size=5_000_000):
+    """Read NIGHT from EXP_FIBERMAP, keeping only rows matching ``targetids``."""
+    targetids = np.unique(targetids)
+    chunks = []
+    with fitsio.FITS(exp_path) as f:
+        hdu = f[extname]
+        nrows = hdu.get_info()['nrows']
+        logger.info(f'scanning {nrows} EXP_FIBERMAP rows in chunks of {chunk_size}')
+        for start in range(0, nrows, chunk_size):
+            end = min(start + chunk_size, nrows)
+            block = hdu.read(rows=range(start, end), columns=['TARGETID', 'NIGHT'])
+            sel = np.isin(block['TARGETID'], targetids)
+            if np.any(sel):
+                chunks.append(block[sel])
+    if not chunks:
+        return Table(np.zeros(0, dtype=[('TARGETID', 'i8'), ('NIGHT', 'i4')]))
+    return Table(np.concatenate(chunks))
+
+
+def add_coadd_nights(qf, catdir, zcat_path):
+    """Add COADD_FIRSTNIGHT and COADD_LASTNIGHT from EXP_FIBERMAP for output targets."""
+    exp_path, extname = get_expfibermap_path(catdir, zcat_path)
+    logger.info(f'reading EXP_FIBERMAP nights for {len(qf)} targets from {exp_path}')
+    expinfo = read_exp_nights_for_targets(exp_path, extname, qf['TARGETID'])
+    logger.info(f'found {len(expinfo)} exposure rows for output targets')
+    if len(expinfo) == 0:
+        qf['COADD_FIRSTNIGHT'] = np.zeros(len(qf), dtype=int)
+        qf['COADD_LASTNIGHT'] = np.zeros(len(qf), dtype=int)
+        return qf
+    logger.info('getting FIRST night info')
+    expinfo.sort('NIGHT')
+    expinfo_first = unique(expinfo, keys=['TARGETID'])
+    expinfo_first['NIGHT'].name = 'COADD_FIRSTNIGHT'
+    expinfo_first.keep_columns(['TARGETID', 'COADD_FIRSTNIGHT'])
+    qf = join(qf, expinfo_first, keys=['TARGETID'], join_type='left')
+    del expinfo_first
+    logger.info('getting LAST night info')
+    expinfo_last = unique(expinfo, keys=['TARGETID'], keep='last')
+    expinfo_last['NIGHT'].name = 'COADD_LASTNIGHT'
+    expinfo_last.keep_columns(['TARGETID', 'COADD_LASTNIGHT'])
+    qf = join(qf, expinfo_last, keys=['TARGETID'], join_type='left')
+    return qf
+
+
 def determine_version(outdir, release, explicit=None):
     """
     Determine the catalog version string. If ``explicit`` is given, use it as-is.
@@ -213,6 +321,7 @@ def main():
     catdir = get_catdir(args.release)
     zcat_path = dvs_ro(os.path.join(catdir, ZCAT_FN))
     extra_path = dvs_ro(os.path.join(catdir, EXTRA_FN))
+    imag_path = dvs_ro(os.path.join(catdir, IMAG_FN))
     logger.info(f'reading inputs from {catdir}')
 
     # ----- read zcat (basic catalog) ----------------------------------------- #
@@ -234,8 +343,14 @@ def main():
     zextra = fitsio.read(extra_path, columns=EXTRA_COLS)
     logger.info(f'read {len(zextra)} rows from {EXTRA_FN}')
 
-    # ----- align the two catalogs on TARGETID -------------------------------- #
+    # ----- read zimag (imaging catalog) -------------------------------------- #
+    logger.info(f'reading {len(IMAGE_COLS)} columns from {IMAG_FN}')
+    zimag = fitsio.read(imag_path, columns=IMAGE_COLS)
+    logger.info(f'read {len(zimag)} rows from {IMAG_FN}')
+
+    # ----- align the catalogs on TARGETID ------------------------------------ #
     zextra = align_to(zcat['TARGETID'], zextra['TARGETID'], zextra)
+    zimag = align_to(zcat['TARGETID'], zimag['TARGETID'], zimag)
     n = len(zcat)
 
     # ----- healpix (HPXPIXEL) ------------------------------------------------ #
@@ -334,37 +449,50 @@ def main():
     qso_maskbits[is_VAR & is_OK_for_VAR] += 2**7
     qso_maskbits[bad_qso] = 0
 
+    # ----- subset to identified QSOs before building the output table ---------- #
+    idx = np.where(member_all)[0]
+    n_out = len(idx)
+    member_qso_out = member_qso[idx]
+    logger.info(f'building output table for {n_out} identified QSOs')
+
     # ----- assemble the output table ----------------------------------------- #
     out = Table()
-    out['TARGETID'] = zcat['TARGETID']
-    out['Z'] = z_out
-    out['ZERR'] = zerr_out
-    out['ZWARN'] = zwarn_out
-    out['SPECTYPE'] = spectype_out
-    out['COADD_FIBERSTATUS'] = zcat['COADD_FIBERSTATUS']
-    out['TARGET_RA'] = zcat['TARGET_RA']
-    out['TARGET_DEC'] = zcat['TARGET_DEC']
-    out['OBJTYPE'] = zcat['OBJTYPE']
-    out['DESI_TARGET'] = zcat['DESI_TARGET']
-    out['SCND_TARGET'] = zcat['SCND_TARGET']
-    out['COADD_NUMEXP'] = zcat['COADD_NUMEXP']
-    out['COADD_EXPTIME'] = zcat['COADD_EXPTIME']
-    out['TSNR2_LYA'] = zextra['TSNR2_LYA']
-    out['TSNR2_QSO'] = zextra['TSNR2_QSO']
-    for name in C_COLS:
-        out[name] = zextra[name]
-    out['QSO_MASKBITS'] = qso_maskbits
-    out['HPXPIXEL'] = hpxpixel
+    out['TARGETID'] = zcat['TARGETID'][idx]
+    out['Z'] = z_out[idx]
+    out['ZERR'] = zerr_out[idx]
+    out['ZWARN'] = zwarn_out[idx]
+    out['SPECTYPE'] = spectype_out[idx]
+    out['COADD_FIBERSTATUS'] = zcat['COADD_FIBERSTATUS'][idx]
+    out['TARGET_RA'] = zcat['TARGET_RA'][idx]
+    out['TARGET_DEC'] = zcat['TARGET_DEC'][idx]
+    out['OBJTYPE'] = zcat['OBJTYPE'][idx]
+    for name in IMAGE_OUT_COLS:
+        out[name] = zimag[name][idx]
+    out['DESI_TARGET'] = zcat['DESI_TARGET'][idx]
+    out['SCND_TARGET'] = zcat['SCND_TARGET'][idx]
+    out['COADD_NUMEXP'] = zcat['COADD_NUMEXP'][idx]
+    out['COADD_EXPTIME'] = zcat['COADD_EXPTIME'][idx]
+    out['EFFTIME_SPEC'] = zcat['EFFTIME_SPEC'][idx]
+    out['COADD_FIRSTMJD'] = zcat['MIN_MJD'][idx]
+    out['COADD_LASTMJD'] = zcat['MAX_MJD'][idx]
+    out['COADD_MEANMJD'] = zcat['MEAN_MJD'][idx]
+    out['TSNR2_LYA'] = zextra['TSNR2_LYA'][idx]
+    out['TSNR2_QSO'] = zextra['TSNR2_QSO'][idx]
+    out['TSNR2_ELG'] = zextra['TSNR2_ELG'][idx]
+    out['QSO_MASKBITS'] = qso_maskbits[idx]
+    out['HPXPIXEL'] = hpxpixel[idx]
+    output_cols = list(OUTPUT_COLS)
     if has_uniqpix:
-        out['UNIQPIX'] = uniqpix
-        OUTPUT_COLS.insert(OUTPUT_COLS.index('HPXPIXEL'), 'UNIQPIX')
-    out['SURVEY'] = np.full(n, SURVEY)
-    out['PROGRAM'] = np.full(n, PROGRAM)
-    out['TSNR2_ELG'] = zextra['TSNR2_ELG']
-    out['TSNR2_LRG'] = zextra['TSNR2_LRG']
+        out['UNIQPIX'] = uniqpix[idx]
+        output_cols.insert(output_cols.index('HPXPIXEL'), 'UNIQPIX')
+    out['SURVEY'] = np.full(n_out, SURVEY)
+    out['PROGRAM'] = np.full(n_out, PROGRAM)
+
+    out = add_lastnight(out, catdir)
+    out = add_coadd_nights(out, catdir, zcat_path)
 
     # keep only the requested columns, in the requested order
-    out = out[OUTPUT_COLS]
+    out = out[output_cols]
 
     # ----- write outputs ----------------------------------------------------- #
     targets_fn = os.path.join(
@@ -377,12 +505,12 @@ def main():
         f"Created by {getpass.getuser()} with {os.path.basename(__file__)}",
     ]
 
-    logger.info(f'writing "QSO targets" catalog ({int(member_qso.sum())} rows) to {targets_fn}')
-    common.write_LSS_scratchcp(out[member_qso], targets_fn, extname=EXTNAME,
+    logger.info(f'writing "QSO targets" catalog ({int(member_qso_out.sum())} rows) to {targets_fn}')
+    common.write_LSS_scratchcp(out[member_qso_out], targets_fn, extname=EXTNAME,
                                comments=header_comments, logger=logger)
 
-    logger.info(f'writing "all QSOs" catalog ({int(member_all.sum())} rows) to {qsos_fn}')
-    common.write_LSS_scratchcp(out[member_all], qsos_fn, extname=EXTNAME,
+    logger.info(f'writing "all QSOs" catalog ({n_out} rows) to {qsos_fn}')
+    common.write_LSS_scratchcp(out, qsos_fn, extname=EXTNAME,
                                comments=header_comments, logger=logger)
 
     logger.info('done')
