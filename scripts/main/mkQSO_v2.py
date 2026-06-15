@@ -127,7 +127,7 @@ OUTPUT_COLS = ['TARGETID', 'HPXPIXEL', 'SURVEY', 'PROGRAM',
                'DESI_TARGET', 'SCND_TARGET',
                'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'EFFTIME_SPEC',
                'TSNR2_LYA', 'TSNR2_QSO', 'TSNR2_ELG',
-               'QSO_MASKBITS', 'LASTNIGHT',
+               'QSO_MASKBITS',
                'COADD_FIRSTNIGHT', 'COADD_FIRSTMJD', 'COADD_LASTNIGHT', 'COADD_LASTMJD',
                'COADD_MEANMJD']
 
@@ -210,17 +210,26 @@ def get_expfibermap_path(catdir, zcat_path):
 
 
 def add_lastnight(qf, catdir):
-    """Add LASTNIGHT from the tiles zcatalog (left join on TARGETID)."""
+    """Add LASTNIGHT from the tiles zcatalog (max LASTNIGHT per TARGETID across tiles)."""
     tilefn = dvs_ro(os.path.join(catdir, ZTILE_FN))
     logger.info(f'reading LASTNIGHT from {tilefn}')
-    t = Table(fitsio.read(tilefn, columns=['TARGETID', 'LASTNIGHT']))
-    t.sort('TARGETID')
+    t = fitsio.read(tilefn, columns=['TARGETID', 'LASTNIGHT'])
     qf_tids = qf['TARGETID']
-    pos = np.searchsorted(t['TARGETID'], qf_tids)
-    pos = np.clip(pos, 0, len(t) - 1)
-    match = t['TARGETID'][pos] == qf_tids
-    lastnight = np.zeros(len(qf), dtype=t['LASTNIGHT'].dtype)
-    lastnight[match] = t['LASTNIGHT'][pos[match]]
+    sel = np.isin(t['TARGETID'], qf_tids)
+    if not np.any(sel):
+        logger.warning('no intersection between output TARGETIDs and tiles zcatalog')
+        qf['LASTNIGHT'] = np.zeros(len(qf), dtype=int)
+        return qf
+    t = t[sel]
+    # A TARGETID may appear on multiple tiles; keep the latest LASTNIGHT.
+    uniq_tids, inverse = np.unique(t['TARGETID'], return_inverse=True)
+    max_night = np.zeros(len(uniq_tids), dtype=t['LASTNIGHT'].dtype)
+    np.maximum.at(max_night, inverse, t['LASTNIGHT'])
+    pos = np.searchsorted(uniq_tids, qf_tids)
+    pos = np.clip(pos, 0, len(uniq_tids) - 1)
+    match = uniq_tids[pos] == qf_tids
+    lastnight = np.zeros(len(qf), dtype=max_night.dtype)
+    lastnight[match] = max_night[pos[match]]
     qf['LASTNIGHT'] = lastnight
     n_missing = int(np.sum(lastnight == 0))
     logger.info(f'{n_missing} entries without LASTNIGHT info')
@@ -488,7 +497,7 @@ def main():
     out['SURVEY'] = np.full(n_out, SURVEY)
     out['PROGRAM'] = np.full(n_out, PROGRAM)
 
-    out = add_lastnight(out, catdir)
+    # out = add_lastnight(out, catdir)  # LASTNIGHT omitted from output for now
     out = add_coadd_nights(out, catdir, zcat_path)
 
     # keep only the requested columns, in the requested order
