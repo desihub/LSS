@@ -82,6 +82,7 @@ EXTRA_COLS = ['TARGETID',
               'TSNR2_LYA',
               'TSNR2_QSO',
               'TSNR2_ELG',
+              'TSNR2_LRG',
               'C_LYA',
               'C_CIV',
               'C_CIII',
@@ -126,7 +127,7 @@ OUTPUT_COLS = ['TARGETID', 'HPXPIXEL', 'SURVEY', 'PROGRAM',
                'FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FLUX_IVAR_W1', 'FLUX_IVAR_W2',
                'DESI_TARGET', 'SCND_TARGET',
                'COADD_FIBERSTATUS', 'COADD_NUMEXP', 'COADD_EXPTIME', 'EFFTIME_SPEC',
-               'TSNR2_LYA', 'TSNR2_QSO', 'TSNR2_ELG',
+               'TSNR2_LYA', 'TSNR2_QSO', 'TSNR2_ELG', 'TSNR2_LRG',
                'QSO_MASKBITS',
                'COADD_FIRSTNIGHT', 'COADD_FIRSTMJD', 'COADD_LASTNIGHT', 'COADD_LASTMJD',
                'COADD_MEANMJD']
@@ -460,9 +461,10 @@ def main():
 
     # ----- subset to identified QSOs before building the output table ---------- #
     idx = np.where(member_all)[0]
+    idx_qso = np.where(member_qso)[0]
     n_out = len(idx)
-    member_qso_out = member_qso[idx]
-    logger.info(f'building output table for {n_out} identified QSOs')
+    logger.info(f'building output table for {n_out} identified QSOs '
+                f'({len(idx_qso)} QSO targets)')
 
     # ----- assemble the output table ----------------------------------------- #
     out = Table()
@@ -488,6 +490,7 @@ def main():
     out['TSNR2_LYA'] = zextra['TSNR2_LYA'][idx]
     out['TSNR2_QSO'] = zextra['TSNR2_QSO'][idx]
     out['TSNR2_ELG'] = zextra['TSNR2_ELG'][idx]
+    out['TSNR2_LRG'] = zextra['TSNR2_LRG'][idx]
     out['QSO_MASKBITS'] = qso_maskbits[idx]
     out['HPXPIXEL'] = hpxpixel[idx]
     output_cols = list(OUTPUT_COLS)
@@ -514,8 +517,19 @@ def main():
         f"Created by {getpass.getuser()} with {os.path.basename(__file__)}",
     ]
 
-    logger.info(f'writing "QSO targets" catalog ({int(member_qso_out.sum())} rows) to {targets_fn}')
-    common.write_LSS_scratchcp(out[member_qso_out], targets_fn, extname=EXTNAME,
+    # "only QSO targets" file: identified QSOs with the DESI QSO target bit set.
+    # Matches qso_cat_utils.build_qso_catalog_from_healpix (keep_qso_targets=True):
+    #   QSO_cat[DESI_TARGET & 2**2 != 0]  on the QSO_MASKBITS > 0 catalog.
+    # Filter on the final output table so row order/columns from add_coadd_nights
+    # cannot desynchronize a precomputed boolean mask.
+    is_qso_target = (np.asarray(out['DESI_TARGET']) & qsobit) > 0
+    n_targets = int(is_qso_target.sum())
+    if n_targets != len(idx_qso):
+        logger.warning(
+            f'QSO-target row count mismatch: {n_targets} in output table vs '
+            f'{len(idx_qso)} from member_qso selection')
+    logger.info(f'writing "QSO targets" catalog ({n_targets} rows) to {targets_fn}')
+    common.write_LSS_scratchcp(out[is_qso_target], targets_fn, extname=EXTNAME,
                                comments=header_comments, logger=logger)
 
     logger.info(f'writing "all QSOs" catalog ({n_out} rows) to {qsos_fn}')
