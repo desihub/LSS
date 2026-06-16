@@ -23,7 +23,8 @@ def get_nz_bgs(z_cat, tracer_type, nzfile, factor=None):
 def get_nz(z_cat, tracer_type, ns=None):
     ''' The function where the n(z) is read and the NZ column is computed for the given redshifts.   '''
     if tracer_type == 'LRG':
-        nzfile = 'nz_lrg_da2_mocks.txt'
+        nzfile = 'LRG_SGC_nz.txt'
+        #nzfile = 'nz_lrg_da2_mocks.txt'
     elif tracer_type == 'QSO':
         nzfile = 'nz_qso_da2_mocks.txt'
     elif tracer_type == 'BGS':
@@ -200,8 +201,8 @@ def calibrate_nz_bgs(input_data, redshift_column = 'Z_RSD', tracer_type='BGS', n
     print('Entering NZ calibration')
 
     limits = {'BGS':[0.,.6]}
-    areas = {'DA2':13176.892}
-    areas_split = {'DA2': [3212.9032, 9963.9888]}  #primero north y luego south
+    areas = {'DA2':13176.892, 'DA3':15178.4364}
+    areas_split = {'DA2': [3212.9032, 9963.9888], 'DA3': [4623.44, 10554.9964]}  #primero north y luego south
     ra = input_data['RA'][()]
     dec = input_data['DEC'][()]
     z = input_data[redshift_column][()]

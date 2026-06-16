@@ -14,17 +14,42 @@ import LSS.common_tools as common
 from LSS.imaging import get_pixel_bitmasknobs as bitmask #get_nobsandmask
 from LSS.main.cattools import count_tiles_better
 from LSS.globals import main
-tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/tiles-DARK.fits')
+
+tiletab = Table.read('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/tiles-BRIGHT.fits')
+
 #just using 1 random file for now
-ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/imaging_mask_applied/rands_intiles_DARK_with_imagingmask_{ID}.fits'
-ranNOMASK= '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/raw/rands_intiles_DARK_NO_imagingmask_{ID}.fits'
-mainp = main(tp = 'LRG', specver = 'loa-v1')
+#ranf = '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/imaging_mask_applied/rands_intiles_DARK_with_imagingmask_{ID}.fits'
+#ranNOMASK= '/global/cfs/projectdirs/desi/mocks/cai/abacus_HF/DR2_v1.0/randoms/raw/rands_intiles_DARK_NO_imagingmask_{ID}.fits'
+#mainp = main(tp = 'LRG', specver = 'loa-v1')
+
+
+def return_north(ra, dec):
+    '''
+    given a table that already includes RA,DEC, add PHOTSYS column denoting whether
+    the data is in the DECaLS ('S') or BASS/MzLS ('N') photometric region
+    '''
+    from astropy.coordinates import SkyCoord
+    import astropy.units as u
+    c = SkyCoord(ra* u.deg, dec* u.deg,frame='icrs')
+    gc = c.transform_to('galactic')
+    sel_ngc = gc.b > 0
+
+    seln = dec > 32.375
+
+    sel = seln&sel_ngc
+    return sel
 
 for i in range(18):
     input_ran = fitsio.read('/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-allsky-1-{ID}.fits'.format(ID=i),
                             columns=['RA','DEC','BRICKNAME','BRICKID','NOBS_R','NOBS_G','NOBS_Z','MASKBITS'])
     sel_tiles = is_point_in_desi(tiletab,input_ran['RA'],input_ran['DEC'])
     input_ran = input_ran[sel_tiles]
+
+    print(len(input_ran))
+    sela = return_north(input_ran['RA'], input_ran['DEC'])
+    print(len(input_ran[sela]))
+    print(len(input_ran[~sela]))
+    exit()
     common.write_LSS_scratchcp(input_ran, ranNOMASK.format(ID=i))
     #continue
     print(len(input_ran))

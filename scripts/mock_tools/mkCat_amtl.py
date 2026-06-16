@@ -51,6 +51,7 @@ parser.add_argument("--mocknum", help="number for the realization",default=1,typ
 parser.add_argument("--ccut", help="extra-cut",default=None)
 parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cut",default='simp')
 parser.add_argument("--base_output", help="base directory for output")
+parser.add_argument("--fbadir", help="base directory for output", default=None)
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--pota", help="base directory for target file",default=None)
@@ -187,7 +188,12 @@ gtl = None
 if args.add_gtl == 'y':
 
     filena = data_dir+'/'+pdir+'_unique_good_TILELOCID.txt'
-    gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    if os.path.isfile(filena):
+        gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    else:
+        common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
+        tsnrcut = mainp.tsnrcut
+        tnsrcol = mainp.tsnrcol
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
     #    filena = f'unique_TILELOCID_{survey}_{args.specdata}.txt'
     #    common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
@@ -197,15 +203,19 @@ if args.add_gtl == 'y':
     #    tsnrcut = mainp.tsnrcut
     #    tnsrcol = mainp.tsnrcol        
 
-    #    specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
-    #    specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
-    #    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
+        specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
-    #    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
-    #    gtl = np.unique(specfc['TILELOCID'])
-    #    np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
-
+        gtl = np.unique(specfc['TILELOCID'])
+        try:
+            np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
+        except:
+            print('saving in scratch')
+            np.savetxt(os.path.join(args.targDir, os.path.basename(filena)), np.array([gtl]).astype(np.int64).T, fmt='%d')
+            
 #    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 #logger.info('loading specf file '+specfo)
 #specf = Table(fitsio.read(specfo))
@@ -293,8 +303,10 @@ if args.combd == 'y':
     #TEMP tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    fbadir = os.path.join(maindir, 'Univ000/fa/MAIN') #TEMPargs.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
-    #else:
+    if args.fbadir == None:
+        fbadir = os.path.join(maindir, 'Univ000/fa/MAIN') #TEMPargs.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    else:
+        fbadir = os.path.join(args.fbadir, 'Univ000/fa/MAIN')
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
