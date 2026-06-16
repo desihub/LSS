@@ -375,7 +375,7 @@ if tracer == 'BGS':
         targets = targets[nz_mask]
 
     if args.mockname.lower() == 'abacus_phot':
-        mask_bright = targets["R_MAG_APP"]< ### PUT MAGNITUDE VALUE
+        mask_bright = targets["R_MAG_APP"]<19.5 ### PUT MAGNITUDE VALUE
         dat_bright = data[mask_bright]
         dat_faint = data[~mask_faint]
 
