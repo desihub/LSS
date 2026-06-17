@@ -22,12 +22,24 @@ from astropy.table import Table,join,vstack
 #import memory_profiler
 #from memory_profiler import profile
 
+from desiutil.log import get_logger
+log = get_logger()
+
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
 from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
-from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date, update_lya_1b
+from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+
+#LGN 20260617 - Adding a T/E wrapping around the update_lya_1b import
+#             - This should enable the this code to be used with older desitarget versions.
+try:
+    from desitarget.mtl import update_lya_1b
+    log.info('desitarget.mtl.update_lya_1b() succesfully imported')
+except ImportError:
+    log.info('Unable to import desitarget.mtl.update_lya_1b()')
+    log.info('You are using a desitarget version < 3.4.0')
 
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
@@ -36,9 +48,6 @@ from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
 from desitarget.geomask import match
 
 from desimodel.footprint import pix2tiles, radec2pix
-
-from desiutil.log import get_logger
-log = get_logger()
 
 import fitsio
 import LSS.common_tools as common
