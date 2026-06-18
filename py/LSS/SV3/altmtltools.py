@@ -1634,8 +1634,6 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
             
         # ADM update the appropriate ledger.
         # LGN 20250909 Revising this section to update for 1B changes and simplifying
-        if mock and targets is None:
-            raise ValueError('If processing mocks, you MUST specify a target file')
 
         if is_1b:
             #getting abbreviated obscon/path for non 1B survey (i.e. dark1b -> dark)
@@ -1758,9 +1756,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     """
 
 
-    if mock:
-        if targets is None:
-            raise ValueError('If processing mocks, you MUST specify a target file')
     if debug:
         log.info('getosubp value: {0}'.format(getosubp))
     if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
