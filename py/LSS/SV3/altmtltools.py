@@ -1640,7 +1640,6 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
             althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
             obscon_short = obscon.replace('1B','')
 
-            # LGN: CHECK WITH AURELIO ABOUT TARGETS KEYWORD FOR MOCKS
 
             #Updating the non-1b ledger
             update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
