@@ -72,7 +72,8 @@ def read_parent_mock(filename):
     if filename.endswith('.h5'):
         print('should read')
         import h5py
-        data = Table(h5py.File(filename, 'r+'))
+        #data = Table(h5py.File(filename, 'r+'))
+        data =  common.read_hdf5_blosc(filename, extname=None)
     elif filename.endswith('.fits'):
         data = Table.read(filename)
     elif filename.endswith('.fits.gz'):

@@ -3,7 +3,9 @@ import os
 from numpy.random import Generator, PCG64
 rng = Generator(PCG64())
 
-path_to_nz = '/global/homes/d/desica/desi-cutsky-mock/nz_files/DA2/'
+# JMC
+path_to_nz = '/global/cfs/cdirs/desi/users/acarnero/nz_da2'
+#path_to_nz = '/global/homes/d/desica/desi-cutsky-mock/nz_files/DA2/'
 #path_to_nz = '/pscratch/sd/a/acarnero/codes/desi-cutsky-mock/nz_files/DA2/'
 
 def get_nz_bgs(z_cat, tracer_type, nzfile, factor=None):
