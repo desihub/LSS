@@ -1115,15 +1115,22 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
     
     tile = tile_row['TILEID'][0]
     ts = str(tile).zfill(6)
+    #print(ts)
     faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
     fht = fitsio.read_header(faf)
-    mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
+    mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
     if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/dark/':
         mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/dark/'
     if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
         mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
     #wt = tiles['TILEID'] == tile
+    #print('reading targets for tile '+ts+' from '+mdir)
     tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+    if 'MTL2' in fht.keys():
+        mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
+        #print('reading targets for tile '+ts+' from '+mdir)
+        tars2 = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+        tars = np.concatenate([tars,tars2])
     #tars.keep_columns(tarcols)
     tars = tars[[b for b in tarcol]]
 
@@ -3144,16 +3151,24 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     -----
     """
 
+    if emlin_fn is None:
+        logger.info('will not be adding emline info, because emlin_fn is None')
+    else:
+        logger.info('will be adding emline info from '+emlin_fn)
 
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
         #CHANGE TO HANDLE MOCK PATHS PROPERLY
-        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
+        collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
+    elif tp[:3] == 'LGE':
+        pd = 'dark1b'
+        tscol = 'TSNR2_ELG'
+        collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK1B.fits'
     else:
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
+        collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
 
     
     if mockz and mask_coll:
@@ -3403,9 +3418,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
-        arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
-        arz['TILEID'] = arz['TILEID'].astype(int)
-        dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+        if azf is not None and 'OII_FLUX' not in list(dz.dtype.names):
+            arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
+            arz['TILEID'] = arz['TILEID'].astype(int)
+            dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
         w |= dz['OII_FLUX'] < 0
@@ -3417,6 +3433,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
             print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
+        logger.info('adding extra redshift info to QSO with '+azf)
+        if emlin_fn is None:
+            logger.info('will not be adding emline info, because emlin_fn is None')
         arz = Table(fitsio.read(azf))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
@@ -3425,11 +3444,19 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
         if emlin_fn is not None:
-            emcat =  Table(fitsio.read(emlin_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']))
-            emcat['TILEID'] = emcat['TILEID'].astype(int)
-            dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            logger.info('adding info from '+emlin_fn)
+            cols = ['TARGETID','LOCATION','TILEID']
+            cols_needed = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
+            for col in cols_needed:
+                if col not in list(dz.dtype.names):
+                    cols.append(col)
+            logger.info('columns to use for match are '+str(cols))
+            if len(cols) > 3:
+                emcat =  Table(fitsio.read(emlin_fn,columns=cols))
+                emcat['TILEID'] = emcat['TILEID'].astype(int)
+                dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
-    if tp[:3] == 'ELG' and azf != '':
+    if tp[:3] == 'ELG' and azf != '' and azf is not None:
         if logger is not None:
             logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
         else:
@@ -3628,6 +3655,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     selobs = ff['ZWARN'] != 999999
     selobs &= ff['TSNR2_ELG'] > tsnrcut
     ff = ff[selobs]
+    ff = common.cut_specdat(ff)
     azf = qsocat
     arz = Table(fitsio.read(azf))
     arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
@@ -3637,7 +3665,18 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
     ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
     ff = common.addNS(ff)
-    ff = common.cut_specdat(ff)
+    needed_cols = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
+    em_cols = ['TARGETID','LOCATION','TILEID']
+    for col in needed_cols:
+    	if col not in list(ff.dtype.names):
+    	    em_cols.append(col)
+    if len(em_cols) > 3:
+        common.printlog('adding info from emline file',logger)
+        em_fn = indir + 'emlin_catalog.fits'
+        emlin = fitsio.read(em_fn,columns=em_cols)
+            
+        ff = join(ff,emlin,keys=['TARGETID','TILEID','LOCATION'])
+        del emlin
     outdir = indir+'LSScats/'+version+'/'
     tp = 'QSO'
     ffv = Table.read(outdir+tp+'_full_noveto.dat.fits')
@@ -3994,7 +4033,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
         #    common.printlog('length after tsnrcut '+str(len(ff[wz])),logger)
 
-    if tp[:3] == 'LRG':
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
         wz = ff['ZWARN'] == 0

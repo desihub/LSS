@@ -83,9 +83,9 @@ def read_parent_mock(filename):
     return data
 
 
-if args.mockname == 'abacushf':
-    args.need_footprint = 'n'
-    args.need_nz_calib = 'n'
+#if args.mockname == 'abacushf':
+#    args.need_footprint = 'n'
+#    args.need_nz_calib = 'n'
 
 desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG, 'BGS': desi_mask.BGS_ANY}
 #AURE PRIORITY for BGS, is BRIGHT or what??? BGS_ANY? Shall we make same as ELG?
@@ -93,7 +93,7 @@ desitar = {'LRG':desi_mask.LRG, 'QSO': desi_mask.QSO, 'ELG':desi_mask.ELG, 'BGS'
 priority = {'LRG': desi_mask.LRG.priorities['UNOBS'],
             'QSO': desi_mask.QSO.priorities['UNOBS'],
             'ELG': desi_mask.ELG.priorities['UNOBS'],
-            'BGS': bgs_mask.BGS_FAINT.priorities['UNOBS']}
+            'BGS': bgs_mask.BGS_BRIGHT.priorities['UNOBS']}
 
 #AURE            'ELG_VLO': desi_mask.ELG.priorities['UNOBS'],
 #    AURE        'ELG_LOP': desi_mask.ELG_LOP.priorities['UNOBS'],
@@ -374,6 +374,25 @@ if tracer == 'BGS':
         nz_mask = (targets['STATUS']&2)>0   # match Y3 LRG/ELG/QSO n(z)
         targets = targets[nz_mask]
 
+    if args.mockname.lower() == 'abacus_phot':
+        mask_bright = targets["R_MAG_APP"]<19.5 ### PUT MAGNITUDE VALUE
+        dat_bright = data[mask_bright]
+        dat_faint = data[~mask_faint]
+
+        dat_bright['BGS_TARGET'] = 2**1
+        dat_faint['BGS_TARGET'] = 2**0
+
+        PromoteFracBGSFaint=0.2
+
+        ran_hip = np.random.uniform(size = len(dat_faint))
+        faint_hip_mask = (ran_hip <= PromoteFracBGSFaint)
+
+        dat_faint['BGS_TARGET'][faint_hip_mask] += 2**3   # for high-priority BGS faint
+
+        dat_faint['PRIORITY_INIT'][~faint_hip_mask] = 2000
+        dat_faint['PRIORITY'][~faint_hip_mask] = 2000
+
+        data = vstack([dat_faint, dat_bright])
 
 
 

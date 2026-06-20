@@ -338,6 +338,8 @@ if mketar: #concatenate target files for given type, with column selection hardc
 maxp = 3400
 if type[:3] == 'LRG' or notqso == 'notqso':
     maxp = 3200
+if type[:3] == 'LGE':
+    maxp = 3210
 if type[:3] == 'BGS':
     maxp = 2100
 
@@ -359,7 +361,7 @@ if mkfulld:
             if specrel == 'newQSOtemp_tagged':
                 azf = '/global/cfs/cdirs/desi/survey/catalogs/DA02/LSS/newQSOtemp_tagged/QSO_catalog.fits'
                 azfm = 'cumul'
-        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup_zdone.fits' #new
+        dz = ldirspec+'datcomb_'+progl+'_tarspecwdup'+f1b+'_zdone.fits' #new
         tlf = ldirspec+'Alltiles_'+progl+'_tilelocs.dat.fits'
 
     else:
@@ -369,7 +371,11 @@ if mkfulld:
             tracer_ts = 'ELG'
         if type[:3] == 'BGS':
             tracer_ts = 'BGS_ANY'
-        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup_zdone.fits'
+        f1b = ''
+        if type[:3] == 'LGE' and args.survey != 'main':
+            f1b = '_1b'
+
+        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup'+f1b+'_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
             azf = emlin_fn
@@ -392,6 +398,7 @@ if mkfulld:
     maskcoll = False
     if args.survey != 'main':
         maskcoll = True
+    common.printlog('the emline file is '+emlin_fn)
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,emlin_fn=emlin_fn,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
 
 
@@ -428,14 +435,14 @@ if args.fillran == 'y':
 
 
 if args.apply_veto == 'y':
-    print('applying vetos')
+    common.printlog('applying vetos',logger)
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
 
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
-    print('data veto done, now doing randoms')
+    common.printlog('data veto done, now doing randoms',logger)
     def _parfun(rn):
         #fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
         fin = dirout.replace('global','dvs_ro')+progl+'_'+str(rn)+'_full_noveto.ran.fits'
@@ -1368,7 +1375,7 @@ else:
     #zmin = 0.01
     #zmax = 1.61
 
-if type[:3] == 'LRG':
+if type[:3] == 'LRG' or type[:3] == 'LGE':
     P0 = 10000
 if type[:3] == 'ELG':
     P0 = 4000

@@ -236,6 +236,60 @@ def compute_correlation_function(corr_type, edges, distance, nthreads=8, gpu=Fal
 
 
 def get_edges(corr_type='smu', bin_type='lin'):
+    """
+    Return bin-edge arrays for the requested 2-point correlation-function measurement.
+
+    This helper centralizes the definition (or loading) of the bin edges used by
+    :class:`pycorr.TwoPointCorrelationFunction` within this script.
+
+    Parameters
+    ----------
+    corr_type : {{'smu', 'rppi', 'theta'}}, default='smu'
+        The correlation-function parameterization
+    bin_type : str, default='lin'
+        Binning specification. Supported values depend on ``corr_type``:
+        **Built-in presets**
+            - ``'lin'``: use the script's default linear binning for the given ``corr_type``.
+            - ``'log'``: use the script's default logarithmic binning (where applicable).
+        **Custom binning from files**
+            - Path to an ``.npz`` file:
+                Load edges from a NumPy archive created with ``numpy.savez``.
+                The archive must contain 1D edge arrays with names depending on ``corr_type``:
+
+                - ``corr_type == 'rppi'``: arrays ``'rp'`` and ``'pi'``
+                - ``corr_type == 'smu'`` : arrays ``'s'`` and ``'mu'``
+                - ``corr_type == 'theta'``: array ``'theta'``
+                This mode supports edge arrays of different lengths
+            - Path to a text file readable by ``numpy.loadtxt``:
+                If the file loads as a 1D array, it is interpreted as the edges for the
+                primary axis (``s`` for ``smu``, ``rp`` for ``rppi``, or ``theta`` for ``theta``),
+                with the secondary axis falling back to the default for that ``corr_type``.
+                If the file loads as a 2D array, the first two rows are interpreted as
+                the edges for the two axes (e.g. ``(rp_edges, pi_edges)`` for ``rppi``).
+                The two rows must be the same length.
+
+
+    Returns
+    -------
+    edges : tuple of ndarray
+        Tuple of one or two 1D NumPy arrays containing bin edges:
+        - for ``'smu'`` : ``(s_edges, mu_edges)``
+        - for ``'rppi'``: ``(rp_edges, pi_edges)``
+        - for ``'theta'``: ``(theta_edges,)``
+        Edge arrays are monotonically increasing and define ``N-1`` bins for ``N`` edges.
+    """
+
+
+    if isinstance(bin_type, str) and bin_type.endswith('.npz'):
+        dat = np.load(bin_type)
+        if corr_type == 'rppi':
+            return (dat['rp'], dat['pi'])
+        elif corr_type == 'smu':
+            return (dat['s'], dat['mu'])
+        elif corr_type == 'theta':
+            return (dat['theta'],)
+        else:
+            raise ValueError('corr_type must be one of ["smu", "rppi", "theta"]')
 
     if corr_type == 'smu':
         if bin_type == 'log':

@@ -122,6 +122,7 @@ for mp in starmaps:
     
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
 do_lrgmask = 'n'
+do_elgmask = 'n'
 if args.mapmd == 'all':
     maps = all_maps
     dmaps = all_dmaps

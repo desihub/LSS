@@ -523,12 +523,12 @@ if tracer == 'QSO':
     zmax = 2.1
     if args.survey == 'Y1':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
-    if args.survey == 'DA2':
+    if args.survey == 'DA2' and args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
         subfrac = 0.675 #1
-    if 'holi' in args.simName:
-        subfrac = 1
-    if 'GLAM' in args.simName:
-        subfrac = 1
+    #if 'holi' in args.simName:
+    #    subfrac = 1
+    #if 'GLAM' in args.simName:
+    #    subfrac = 1
         #subfrac = [0.97,1]
         #zsplit = 2.1
         
@@ -543,8 +543,8 @@ if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
         subfrac = 0.976
     if args.survey == 'DA2':
         subfrac = 0.966
-    if 'holi' in args.simName:
-        subfrac = 0.985
+        if 'holi' in args.simName:
+            subfrac = 0.985
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
@@ -554,13 +554,15 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
-        subfrac = [0.7,0.545]
-    if 'GLAM' in args.simName:
         subfrac = [0.96,0.76]
+        if args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
+            subfrac = [0.7,0.545]
+    #if 'GLAM' in args.simName:
+    #    subfrac = [0.96,0.76]
         #if int(args.mocknum) < 10 or int(args.mocknum) > 12:
         #    subfrac = [0.96*.97,0.84*.97] #rest of glam has 3% higher ELG for some reason
-    if 'holi' in args.simName:
-        subfrac = [0.96,.76]
+    #if 'holi' in args.simName:
+    #    subfrac = [0.96,.76]
     zsplit=1.49
 if args.tracer[:3] == 'BGS':
     P0 = 7000
@@ -569,6 +571,11 @@ if args.tracer[:3] == 'BGS':
     pthresh = 2000
     zmin = 0.1
     zmax = 0.5
+    if args.survey == 'DA2':
+        subfrac = 0.98
+        if 'holi' in args.simName:
+            subfrac = 0.94
+
 #    if notqso == 'notqso':
 #        maxp = 3200
 
@@ -845,16 +852,34 @@ if args.add_nt_misspw == 'y':
 if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
     abmagcut = -float(args.tracer.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
-    ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    #ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.h5'
     common.printlog("path "+ffull, logger)
     if os.path.isfile(ffull) == False:
 
         if 'BGS_ANY-' in args.tracer:
-            fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+            fn = dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.h5'
+            if os.path.isfile(fn):
+                fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+            else:
+                common.printlog(fn+' not found!')
+            #fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
         elif 'BGS_BRIGHT-' in args.tracer:
-            fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
-            
+            #fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
+            fn = dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.h5'
+            if os.path.isfile(fn):
+                fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+            else:
+                common.printlog(fn+' not found!')            
         common.printlog("cut method "+args.absmagmd, logger)
+        dcols = list(fin.dtype.names)
+        if 'R_MAG_ABS' not in dcols:
+            tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
+            td = fitsio.read(tarf,columns=['TARGETID','R_MAG_ABS'])
+            flen = len(fin)
+            fin = join(fin,td,keys=['TARGETID'])
+            if len(fin) != flen:
+                common.printlog('the lengths after join to get R_MAG_ABS changed!!!')
         if args.absmagmd == 'simp':
             sel = fin['R_MAG_ABS'] < abmagcut
         elif args.absmagmd == 'redshiftdep' and abmagcut == -2:
@@ -876,14 +901,15 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             mock_z_cut = fit3_new(fin['Z_not4clus'])
             sel = fin['R_MAG_ABS'] < mock_z_cut
 
-        common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
+        #common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
+        common.write_LSShdf5_scratchcp(fin[sel],ffull,logger=logger)
 
 
 
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
-    
+    common.printlog('using subfrac '+str(subfrac),logger)
     if args.add_extracols is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
         columns_extra = ['TARGETID']
@@ -938,33 +964,31 @@ if args.mkclusran == 'y':
     #if len(nztl) == 0:
     #    nztl.append('')
     
-    tsnrcol = 'TSNR2_ELG'
-    if args.tracer[:3] == 'BGS':
-        fl = os.path.join(readdir, finaltracer) + '_'
-        cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
-        if 'G_R_OBS' in cols_clustering:
-            rcols.append('G_R_OBS')
-        if 'G_R_REST' in cols_clustering:
-            rcols.append('G_R_REST')
-        if 'R_MAG_ABS' in cols_clustering:
-            rcols.append('R_MAG_ABS')
-
-        tsnrcol = 'TSNR2_BGS'
-        if args.ccut is not None:
-            for rn in range(rannum[0], rannum[1]):
-                if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
-                    os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
-                #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
-            os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
+#     tsnrcol = 'TSNR2_ELG'
+#     if args.tracer[:3] == 'BGS':
+#         fl = os.path.join(readdir, finaltracer) + '_'
+#         cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
+#         if 'G_R_OBS' in cols_clustering:
+#             rcols.append('G_R_OBS')
+#         if 'G_R_REST' in cols_clustering:
+#             rcols.append('G_R_REST')
+#         if 'R_MAG_ABS' in cols_clustering:
+#             rcols.append('R_MAG_ABS')
+# 
+#         tsnrcol = 'TSNR2_BGS'
+#         if args.ccut is not None:
+#             for rn in range(rannum[0], rannum[1]):
+#                 if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
+#                     os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
+#                 #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
+#             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
     
     fl = os.path.join(readdir, finaltracer) + '_'
-    common.printlog('adding tlobs to randoms with '+ fl,logger)
+    
     #clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
     clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
-    tlf = fitsio.read(fl+'frac_tlobs.fits')
-    common.printlog('read in frac_tlobs file',logger)
     #mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
     mockobs = common.read_hdf5_blosc(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5'),columns=['TILEID','LOCATION','PRIORITY'])
     mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
@@ -975,15 +999,23 @@ if args.mkclusran == 'y':
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
     if 'BGS_ANY' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_ANY') + '_'
+    ran_finaltracer = finaltracer
+    if 'BGS_BRIGHT-' in args.tracer:
+        ran_finaltracer = ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+        common.printlog('changed ran base to '+ran_finaltracer,logger)
+    common.printlog('adding tlobs to randoms with '+ fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits',logger)
+    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
+    common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
-        common.printlog('about to read input random for '+str(rann),logger)        
-        ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
+        common.printlog('about to read input random for '+str(rann),logger) 
+        #files should be in the data directory; BGS with any absolute magnitude cut should read the file without that       
+        ranf = data_dir.replace('global','dvs_ro')+'/'+ ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
         if not os.path.isfile(ranf):
-            ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
+            ranf = data_dir.replace('global','dvs_ro')+'/'+ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
@@ -1185,7 +1217,9 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     else:
         redshift_ranges = zrl
     common.printlog('the redshift bins that will be fit are '+str(redshift_ranges),logger)
-    fit_maps = mainp.fit_maps_allebv
+    fit_maps = mainp.fit_maps
+    if tracer_clus == 'LRG':
+        fit_maps = mainp.fit_maps_allebv
     use_maps = fit_maps
     debv = common.get_debv()
     zcmb = common.mk_zcmbmap()
@@ -1233,10 +1267,22 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     data_catalogs = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
     #common.printlog(str(np.unique(data_catalogs['PHOTSYS'],return_counts=True)),logger)
 
+if args.doimlin == 'y' or args.prep4sysnet == 'y':
+
     #randoms_catalogs = np.concatenate(
-    randoms_catalogs = vstack(
-        [read_file(fname) for fname in randoms_fnames_in]
-    )
+    testran = read_file(randoms_fnames_in[0])
+    if 'PHOTSYS' in list(testran.dtype.names):
+        write_ran = True
+        randoms_catalogs = vstack(
+            [read_file(fname) for fname in randoms_fnames_in]
+        )
+    else:
+        write_ran = False #this should only happen if one is already using the compressed randoms, and those will load the column from the data anyway, so don't add to the randoms
+        randoms_catalogs = vstack(
+            [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL'], logger=logger) for fname in randoms_fnames_in]
+        )
+        randoms_catalogs['WEIGHT_FKP'] = 1/(1+randoms_catalogs['NX']*P0)    
+    del testran
     #common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
     
 if args.doimlin == 'y':
@@ -1298,45 +1344,46 @@ if args.doimlin == 'y':
 
     #  also write the weights in the randoms
     #if args.imsys_clus_ran:
-    fname = os.path.join(
-        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
-    )
-    dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
-    fname = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
-    )
-    dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
-    dat = vstack([dat_sgc, dat_ngc])
-    dat.rename_column("TARGETID", "TARGETID_DATA")
-    regl = ["NGC", "SGC"]
-    syscolr = syscol
-
-    # if args.replace_syscol == 'y':
-    #    syscolr = 'WEIGHT_SYS'
-    def _add2ran(rann):
-        for reg in regl:
-            ran_fn = os.path.join(
-                dirout,
-                f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
-            )
-            ran = Table(read_file(ran_fn))
-            if syscolr in ran.colnames:
-                ran.remove_column(syscolr)
-            ran = join(ran, dat, keys=["TARGETID_DATA"])
-            if args.replace_syscol:
-                ran["WEIGHT"] /= ran["WEIGHT_SYS"]
-                ran["WEIGHT_SYS"] = ran[syscolr]
-                ran["WEIGHT"] *= ran["WEIGHT_SYS"]
-            common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
-
-    if args.par == "y":
-        from multiprocessing import Pool
-
-        with Pool() as pool:
-            res = pool.map(_add2ran, inds)
-    else:
-        for rn in inds:  # range(rm,rx):
-            _add2ran(rn)
+    if write_ran:
+        fname = os.path.join(
+            dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
+        )
+        dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
+        fname = os.path.join(
+            dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+        )
+        dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
+        dat = vstack([dat_sgc, dat_ngc])
+        dat.rename_column("TARGETID", "TARGETID_DATA")
+        regl = ["NGC", "SGC"]
+        syscolr = syscol
+    
+        # if args.replace_syscol == 'y':
+        #    syscolr = 'WEIGHT_SYS'
+        def _add2ran(rann):
+            for reg in regl:
+                ran_fn = os.path.join(
+                    dirout,
+                    f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
+                )
+                ran = Table(read_file(ran_fn))
+                if syscolr in ran.colnames:
+                    ran.remove_column(syscolr)
+                ran = join(ran, dat, keys=["TARGETID_DATA"])
+                if args.replace_syscol:
+                    ran["WEIGHT"] /= ran["WEIGHT_SYS"]
+                    ran["WEIGHT_SYS"] = ran[syscolr]
+                    ran["WEIGHT"] *= ran["WEIGHT_SYS"]
+                common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
+    
+        if args.par == "y":
+            from multiprocessing import Pool
+    
+            with Pool() as pool:
+                res = pool.map(_add2ran, inds)
+        else:
+            for rn in inds:  # range(rm,rx):
+                _add2ran(rn)
 
 if args.prep4sysnet == 'y':
     common.printlog('preparing data to run sysnet regression for '+tracer_clus,logger)

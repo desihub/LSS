@@ -30,7 +30,7 @@ def thphi2radec(theta, phi):
     return 180./np.pi*phi, -(180./np.pi*theta-90)
 
 
-def expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot, rancols=['TARGETID', 'RA', 'DEC'], datacols=['TARGETID', 'Z'], logger=None):
+def expand_ran(in_ran_fn, parent_ran_fn=None, rancols=['TARGETID', 'RA', 'DEC'], datacols=['TARGETID', 'Z'], logger=None):
     # function to add columns to randoms, most useful for mock randoms where the same column values are used
     # assumes data is saved in the LSS h5 format; could edit to allow functionality for fits or other formats
     '''
@@ -39,9 +39,7 @@ def expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot, rancols=['TARGETID', 
     in_ran_fn : string 
         full path to input randoms to expand, in LSS h5 format, containing at least the columns 'TARGETID','TARGETID_DATA','WEIGHT','NX'
     parent_ran_fn : string 
-        full path to randoms that are a superset of data to expand and contain at least TARGETID, RA, DEC, in LSS h5 format
-    in_clus_fileroot : string
-        directory + tracer for clustering catalogs (allowing NGC/SGC to be loaded by simply adding +'_'+reg+'_clustering.dat.h5'), in LSS h5 format
+        full path to randoms that are a superset of data to expand and contain at least TARGETID, RA, DEC, in LSS h5 format; if None, found automatically
     rancols : list 
         a list of the column names to add to the input table from the parent random catalog via TARGETID match
     datacols : list 
@@ -52,6 +50,27 @@ def expand_ran(in_ran_fn, parent_ran_fn, in_clus_fileroot, rancols=['TARGETID', 
     '''
 
     # t0 = time.time()
+    rfn_split = in_ran_fn.split('/')
+    input_dir = ''
+    for i in range(0,len(rfn_split)-1):
+        input_dir += rfn_split[i]+'/'
+    
+    ran_ind = rfn_split[-1].split('_')[-2]
+    reg = rfn_split[-1].split('_')[-3]
+    tracer = rfn_split[-1].split('_')[0]
+    if len(rfn_split[-1].split('_')) > 4:
+        tracer += '_'+rfn_split[-1].split('_')[1]
+    in_clus_fileroot = input_dir + tracer
+    if parent_ran_fn is None:
+        if 'DA2' in in_ran_fn:
+            pdir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/'
+        else:
+            print('Only DA2 is supported right now, code will fail if you do not explicitly set parent_ran_fn!!!')
+        if 'BGS' in in_ran_fn:
+            parent_ran_fn = pdir + 'bright_'+ran_ind+'_full_noveto.ran.h5'
+        else:
+            parent_ran_fn = pdir + 'dark_'+ran_ind+'_full_noveto.ran.h5' 
+    print('loading '+parent_ran_fn+' as parent randoms from (real) data release')
     parent_ran = read_hdf5_blosc(parent_ran_fn, columns=rancols)
     in_table = read_hdf5_blosc(
         in_ran_fn, columns=['TARGETID', 'TARGETID_DATA', 'WEIGHT', 'NX'])
@@ -642,19 +661,19 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
     zmax is the upper edge of the last bin
     '''
     # cd = distance(om,1-om)
+    headers = []
     if '.fits' in fcr:
         # should have originally had 2500/deg2 density, so can convert to area
         ranf = fitsio.read_header(fcr, ext=1)
         area = ranf['NAXIS2']/randens
 
         print('area is '+str(area))
-        outf = open(fout, 'w')
-        outf.write('#area is '+str(area)+'square degrees\n')
+        headers.append('#area is '+str(area)+'square degrees')
 
         if compmd == 'ran':
             ranf = fitsio.read(fcr)
             area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
-            outf.write('#effective area is '+str(area)+'square degrees\n')
+            headers.append('#effective area is '+str(area)+'square degrees')
 
     if '.h5' in fcr:
         # should have originally had 2500/deg2 density, so can convert to area
@@ -662,12 +681,11 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
         area = len(ranf)/randens
 
         print('area is '+str(area))
-        outf = open(fout, 'w')
-        outf.write('#area is '+str(area)+'square degrees\n')
+        headers.append('#area is '+str(area)+'square degrees')
 
         if compmd == 'ran':
             area = np.sum(ranf['FRAC_TLOBS_TILES'])/randens
-            outf.write('#effective area is '+str(area)+'square degrees\n')
+            headers.append('#effective area is '+str(area)+'square degrees')
 
     del ranf
     if '.fits' in fcd:
@@ -679,18 +697,15 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
     if wtmd == 'clus':
         # this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
         wts = df['WEIGHT_COMP']*df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']
+    else: wts = None # no weights, if relevant at all
     zhist = np.histogram(df['Z'], bins=nbin, range=(zmin, zmax), weights=wts)
-    outf.write('#zmid zlow zhigh n(z) Nbin Vol_bin\n')
-    for i in range(0, nbin):
-        zl = zhist[1][i]
-        zh = zhist[1][i+1]
-        zm = (zh+zl)/2.
-        voli = area/(360.*360./np.pi)*4.*np.pi/3. * \
-            (dis_dc(zh)**3.-dis_dc(zl)**3.)
-        nbarz = zhist[0][i]/voli
-        outf.write(str(zm)+' '+str(zl)+' '+str(zh)+' '+str(nbarz) +
-                   ' '+str(zhist[0][i])+' '+str(voli)+'\n')
-    outf.close()
+    headers.append('#zmid zlow zhigh n(z) Nbin Vol_bin')
+    zl = zhist[1][:-1]
+    zh = zhist[1][1:]
+    zm = (zh+zl)/2.
+    voli = area/(360.*360./np.pi)*4.*np.pi/3. * np.diff(dis_dc(zhist[1])**3.)
+    nbarz = zhist[0]/voli
+    np.savetxt(fout, np.column_stack([zm, zl, zh, nbarz, zhist[0], voli]), fmt='%.18g', header='\n'.join(headers), comments='')
     return True
 
 
@@ -957,7 +972,7 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
     from desitarget.internal import sharedmem
     nzf = np.loadtxt(fb.replace(ran_sw, '')+'_nz.txt').transpose()
     bsold = bs
-    bs = nzf[2][0]-nzf[1][0]
+    bs = round(nzf[2][0]-nzf[1][0],5)
     printlog('nz bin size is actually '+str(bs), logger)
     nzd = nzf[3]  # column with nbar values
     fn = fb.replace(ran_sw, '')+'_clustering.dat'+exttp
@@ -977,9 +992,10 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
         fd['NTILE'] = np.ones(len(fd), dtype=int)
         printlog('added NTILE = 1 column because column did not exist', logger=logger)
         nont = 1
-    if comp_ntl is None:
+    if weight_ntl is None:
         weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
-        comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    if comp_ntl is None:
+        comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
 
         if compmd == 'ran':
             if exttp == '.fits':
@@ -993,7 +1009,7 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
         else:
             fttl = np.ones_like(comp_ntl) # the f_tile factor should not apply for altmtl completeness
         print(comp_ntl, fttl)
-        comp_ntl = comp_ntl*fttl
+        comp_ntl = comp_ntl*fttl # indexed by NTILE-1
 
     printlog('completeness per ntile:', logger)
     printlog(str(comp_ntl), logger)
@@ -1858,7 +1874,7 @@ def convert_fits2h5(filename):
     write_LSShdf5_scratchcp(ff, filename.replace('.fits', '.h5'))
 
 
-def write_LSShdf5_scratchcp(ff, outf, logger=None):
+def write_LSShdf5_scratchcp(ff, outf, logger=None, mode=0o660, group='desi'):
     import h5py
     import hdf5plugin  # need to be in the cosmodesi test environment, as of Sep 4th 25
 
@@ -1866,6 +1882,8 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None):
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
+    mode is the chmod permissions to set on the output file, default is octal 660 for user and group read/write but no permissions for others
+    group is the group owner to set on the output file, default is 'desi' (for NERSC). if blank or None, the group ownership will not be changed
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     will return 'FAIL' or 'SUCCESS'
     '''
@@ -1877,7 +1895,7 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None):
     rng = np.random.default_rng()  # seed=rann)
     ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/' + \
-        outf.split('/')[-1] + '.tmp'+str(ranstring)
+        os.path.basename(outf) + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         # os.system('rm ' + tmpfn)
         os.remove(tmpfn)
@@ -1900,7 +1918,9 @@ def write_LSShdf5_scratchcp(ff, outf, logger=None):
     shutil.copy2(tmpfn, outftmp)
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    os.chmod(outf, 0o775)
+    if group: # blank group will cause problems with chown
+        shutil.chown(outf, group=group) # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
+    os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
     printlog('moved output to ' + outf, logger)
     df = 0
     # printlog('checking read of column ' + testcol, logger)
@@ -1944,11 +1964,13 @@ def read_hdf5_blosc(filename, columns=None, extname='LSS'):
     return data
 
 
-def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None):
+def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None, mode=0o660, group='desi'):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
     outf is the full path to write out
     comments is a list of comments to include in the header
+    mode is the chmod permissions to set on the output file, default is octal 660 for user and group read/write but no permissions for others
+    group is the group owner to set on the output file, default is 'desi' (for NERSC). if blank or None, the group ownership will not be changed
     this will write to a temporary file on scratch and then copy it, then delete the temporary file once verify a successful copy
     '''
     import shutil
@@ -1956,7 +1978,7 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None):
     rng = np.random.default_rng()  # seed=rann)
     ranstring = int(rng.random()*1e10)
     tmpfn = os.getenv('SCRATCH')+'/' + \
-        outf.split('/')[-1] + '.tmp'+str(ranstring)
+        os.path.basename(outf) + '.tmp'+str(ranstring)
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
     fd = fitsio.FITS(tmpfn, "rw")
@@ -1982,7 +2004,9 @@ def write_LSS_scratchcp(ff, outf, comments=None, extname='LSS', logger=None):
     shutil.copy2(tmpfn, outftmp)
     os.rename(outftmp, outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group
-    os.chmod(outf, 0o775)
+    if group: # blank group will cause problems with chown
+        shutil.chown(outf, group=group) # essentially chgrp desi. good to ensure at NERSC, but may fail elsewhere, do we need to account for that?
+    os.chmod(outf, mode) # now that the file's group is desi, could set permissions to 660 for more security
 
     # os.system('cp ' + tmpfn + ' ' + outf)
     # os.system('chmod 775 ' + outf) #this should fix permissions for the group

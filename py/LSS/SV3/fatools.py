@@ -437,14 +437,9 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
         elif faver >= 2.4 and faver < 4.0:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
-        elif faver >= 4.0 and faver < 5.0:
-            #fo.write("module swap fiberassign/5.0.0\n")
-            fo.write("export PATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/bin:$PATH\n")
-            fo.write("export PYTHONPATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/py:$PYTHONPATH\n")
-            fo.write("export SKYHEALPIXS_DIR=$DESI_ROOT/target/skyhealpixs/v1\n")
         else:
-            #with fiberassign refactor as of May 2025, it is no longer necessary to specify a module swap for faver > 5.00
-            assert faver >= 5.0
+            # 20260610 LGN - Testing shows that we can now use the standard desi environment for all main survey tiles
+            assert faver >= 4.0
     else:
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
@@ -471,7 +466,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
         fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
-    if faver >=5:
+
+    if faver >=4:
         fo.write(" --fafns_for_stucksky "+fa_fn)
     fo.close()    
 

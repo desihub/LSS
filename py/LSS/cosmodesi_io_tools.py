@@ -52,7 +52,7 @@ def get_zlims(tracer, tracer2=None, option=None):
         zlims2 = get_zlims(tracer2, option=option)
         return [zlim for zlim in zlims1 if zlim in zlims2]
 
-    if tracer.startswith('LRG'):
+    if tracer.startswith('LRG') or tracer.startswith('LGE'):
         zlims = [0.4, 0.6, 0.8, 1.1]
 
     if tracer.startswith('ELG'):# or type == 'ELG_HIP':
@@ -108,7 +108,8 @@ def select_region(ra, dec, region):
     elif 'GC' in region:
         from astropy.coordinates import SkyCoord
         import astropy.units as u
-        c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        #c = SkyCoord(ra* u.deg,dec* u.deg,frame='icrs')
+        c = SkyCoord(ra,dec,frame='icrs',unit='deg')
         gc = c.transform_to('galactic')
         sel_ngc = gc.b > 0
         if region == 'NGC':
@@ -145,12 +146,18 @@ def catalog_fn(tracer='ELG', region='', ctype='clustering', name='data', ran_sw=
         cat_dir = cat_dir.replace('/blinded','')
         cat_dir = cat_dir.replace('PIP','')
         logger.info('cat_dir for full file is '+cat_dir)
-        if 'BGS_BRIGHT' in tracer:
-            tracer = 'BGS_BRIGHT'
-            logger.info('reset tracer name to BGS_BRIGHT for reading full file')
-        if 'LRG' in tracer:
-            tracer = 'LRG'
-            logger.info('reset tracer name to LRG for reading full file')
+        if 'BGS' in tracer:
+            if 'BGS_BRIGHT' in tracer:
+                tracer = 'BGS_BRIGHT'
+                logger.info('reset tracer name to BGS_BRIGHT for reading full file')
+            else:
+                logger.error('NEED TO FIX THE CODE, TELL ASHLEY TO FIX IT')
+        else:
+            tracer = tracer[:3]
+            logger.info('reset tracer name to '+tracer+' for reading full file')
+        #if 'LRG' in tracer:
+        #    tracer = 'LRG'
+        #    logger.info('reset tracer name to LRG for reading full file')
         
     dat_or_ran = name[:3]
     if name == 'randoms' and tracer == 'LRG_main' and ctype == 'full':

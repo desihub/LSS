@@ -2,17 +2,18 @@
 >> script_prepare_holi.sh
 
 
-2) Discover Holi realizations not done yet. It checks in /global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/holi_v1 if altmtlXX exist and if not, it checks if the seeds are available for all 3 dark tracers.
->> python discover_holi.py
 
-
-3) Run brickmask on all noimaging catalogs. 
+3) Run brickmask on all noimaging catalogs.  Run with cosmodesi enviroment branch dr1   !!!
 3.1) Create input list, based on the catalogs we have prepared in advance, for example with: ls /global/cfs/cdirs/desi/mocks/cai/holi/v4.00/see*/QSO/forFA0_Y3_noimagingmask_applied.fits > list_qso.txt. 
 ** Be aware many realizations have been done already for LRG, QSO. In ELG.
-3.2) split into batches of 60 files (if needed): (split -l 60 list_qso.txt qso_list_)
+3.2) split into batches of 70 files (if needed): (split -l 70 list_qso.txt qso_list_)
 3.3) Create output (sed 's/forFA/imforFA/g' qso_list_aa > out_list_aa.txt)
 3.4) Execute brickmask/script_holi.sbatch with config brickmask_holi.conf   (maybe several times depending on the number of lists) Need to change INPUT_FILES and OUTPUT_FILES command to the list of files
 ** Remeber to change parameters INPUT_FILES and OUTPUT_FILES!!!
+
+
+
+********** run 4,5,6 with combine_step456_z1.sl *****
 
 4) Apply NOBS, MASKBIT mask on files created in step 2
 >> python join_imaging_mask.py
@@ -27,6 +28,8 @@
 >> python concatenate_tracers_to_fba.py
 
 
+***** run 4,5,6 with combine_step456_z1.sl *****
+
 7) Initialize the altmtl directories (this will done over the whole list discovered previously. Or if you want, just select the first 100 that we are going to test together)
 >> nohup ./script_init_holi.sh &
 
@@ -34,7 +37,7 @@
 8) Run altMTL with DA2ALTMTLRealizationsDARK_holi.sh in LSS/bin  The list of 100 realizations is already preprated. Just execute it normaly. It will save to scratch directory
 
 
-9) In parallel, create pota and lrg mask files (put realizations accordingly)
+9) In parallel, create pota and lrg mask files (put realizations accordingly): /global/homes/d/desica/LSScode/LSS/scripts/mock_tools/lrgmask_pota_holi.sh
 using scripts: abamtl_getpota_sbatch_da2_holi.sh and abamtl_lrgmask_sbatch_da2_holi.sh
 
 AFTER IT FINISHES
