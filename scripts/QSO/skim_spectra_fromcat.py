@@ -15,7 +15,8 @@ from desiutil.log import get_logger
 
 
 def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
-                        catalog, specprod_dir, pixel_scheme_in, nside_in, available_upix):
+                        catalog, specprod_dir, pixel_scheme_in, 
+                        include_single_exp, nside_in, available_upix):
     """
     Produce a (single) skimmed spectra file.
 
@@ -23,14 +24,18 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
     ----------
     pix_out : int
         pixel number for the output file
-    catalog : Table
-        input catalog, must include 'TARGETID' and 'OUTPUT_PIX' columns
     outdir : str
         output base directory
+    skip_resolution : bool
+        if true, do not incluse resolution matrix in new coadd files
+    catalog : Table
+        input catalog, must include 'TARGETID' and 'OUTPUT_PIX' columns
     specprod_dir : str
         input base directory for spectra
     pixel_scheme_in : str
         HEALPIX64 or UNIQPIX
+    include_single_exp : bool
+        if true, spectra files containing individual exposures are also written
     nside_in, available_upix
         information associated to the input pixellization
     """       
@@ -53,25 +58,42 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
                                 pix_cat['TARGET_DEC'], available_upix)
     pixels_in = np.unique(pixels_in)
 
-    #- Read spectra and produce a single skimmed file
-    spectra_list = []
+    #- Read coadd spectra files and produce a single skimmed coadd file
+    coadd_list = []
+    if include_single_exp:
+        spectra_list = []
     for pix_in in pixels_in:
-        spectra_file = os.path.join(specprod_dir, str(pix_in//100), str(pix_in),
-                        f'coadd-main-dark-{pix_in}.fits')  # TODO un-hardcode + handle single-exp spectra
+        coadd_file = os.path.join(specprod_dir, str(pix_in//100), str(pix_in),
+                        f'coadd-main-dark-{pix_in}.fits')
         skip_hdus = None
         if skip_resolution:
             skip_hdus = ['RESOLUTION']
-        spectra = desispec.io.read_spectra(spectra_file,
+        coadd = desispec.io.read_spectra(coadd_file,
                                      targetids=pix_cat['TARGETID'],
                                      skip_hdus=skip_hdus)
-        spectra_list.append(spectra)
+        coadd_list.append(coadd)
 
-    if len(spectra_list)>0:
-        spectra_out = desispec.spectra.stack(spectra_list)
+        #- Optionally read spectra files and produce single skimmed spectra file
+        if include_single_exp:
+            spectra_file = os.path.join(specprod_dir, str(pix_in//100), str(pix_in),
+                            f'spectra-main-dark-{pix_in}.fits')
+            #- Assume same skipped hdus as coadd files
+            spectra = desispec.io.read_spectra(spectra_file,
+                                         targetids=pix_cat['TARGETID'],
+                                         skip_hdus=skip_hdus)
+            spectra_list.append(spectra)
+
+
+    if len(coadd_list)>0:
+        coadd_out = desispec.spectra.stack(coadd_list)
         subdir_out = os.path.join(outdir, str(pix_out//100), str(pix_out))
         os.makedirs(subdir_out)
-        # TODO un-hardcode name + handle single-exp spectra
         desispec.io.write_spectra(f'{subdir_out}/coadd-main-dark-{pix_out}.fits',
+                                    coadd_out)
+
+        if include_single_exp:
+            spectra_out = desispec.spectra.stack(spectra_list)
+            desispec.io.write_spectra(f'{subdir_out}/spectra-main-dark-{pix_out}.fits',
                                     spectra_out)
 
     return 0
@@ -137,9 +159,8 @@ def _parse(options=None):
         help='number of CPUs for pool (default: 1)')
     parser.add_argument('--skip-resolution', action="store_true",
         help='do not include resolution matrices in skimmed spectra')
-    # TODO: implement
-    # parser.add_argument('--include-single-exposures', action='store_true',
-    #     help='produce skimmed files from both coadds and (single-exposure) spectra files')
+    parser.add_argument('--include-single-exposures', action='store_true',
+        help='produce skimmed files from both coadds and (single-exposure) spectra files')
 
     if options is None:
         args = parser.parse_args()
@@ -167,6 +188,11 @@ if __name__ == "__main__":
     skimming_catalog = Table(fitsio.read(args.catalog, ext=1))
     log.info("Catalog loaded.")
 
+    if args.include_single_exposures:
+        log.info("Both skimmed spectra and coadd files will be produced")
+    else:
+        log.info("Only skimmed coadd files will be produced")
+
     skimming_catalog['OUTPUT_PIX'] = _pixels_from_catalog(skimming_catalog,
                                         args.nside_out, nside_in=nside_in)
     output_pixels = np.unique(skimming_catalog['OUTPUT_PIX'])
@@ -176,12 +202,14 @@ if __name__ == "__main__":
         for pix_out in output_pixels:
             res = _filter_spectra_single_pixout(pix_out, args.outdir,
                         args.skip_resolution, skimming_catalog, args.specprod_dir,
-                        args.pixel_scheme_in, nside_in, available_upix)
+                        args.pixel_scheme_in, args.include_single_exposures, 
+                        nside_in, available_upix)
     else:
         list_args = [
             [pix_out, args.outdir,
             args.skip_resolution, skimming_catalog, args.specprod_dir,
-            args.pixel_scheme_in, nside_in, available_upix]
+            args.pixel_scheme_in, args.include_single_exposures, nside_in, 
+            available_upix]
             for pix_out in output_pixels
         ]
         with Pool(args.ncpu) as pool:
