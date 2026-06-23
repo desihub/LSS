@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, time
+import os
 import argparse
 from multiprocessing import Pool
 import numpy as np
@@ -62,12 +62,13 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
     coadd_list = []
     if include_single_exp:
         spectra_list = []
+    # list of which hdus to skip
+    skip_hdus = None
+    if skip_resolution:
+        skip_hdus = ['RESOLUTION']
     for pix_in in pixels_in:
         coadd_file = os.path.join(specprod_dir, str(pix_in//100), str(pix_in),
                         f'coadd-main-dark-{pix_in}.fits')
-        skip_hdus = None
-        if skip_resolution:
-            skip_hdus = ['RESOLUTION']
         coadd = desispec.io.read_spectra(coadd_file,
                                      targetids=pix_cat['TARGETID'],
                                      skip_hdus=skip_hdus)
@@ -87,7 +88,7 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
     if len(coadd_list)>0:
         coadd_out = desispec.spectra.stack(coadd_list)
         subdir_out = os.path.join(outdir, str(pix_out//100), str(pix_out))
-        os.makedirs(subdir_out)
+        os.makedirs(subdir_out, exist_ok=True)
         desispec.io.write_spectra(f'{subdir_out}/coadd-main-dark-{pix_out}.fits',
                                     coadd_out)
 
