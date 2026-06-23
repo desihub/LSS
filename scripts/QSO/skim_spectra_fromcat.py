@@ -39,6 +39,9 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
         if true, spectra files containing individual exposures are also written
     nside_in, available_upix
         information associated to the input pixellization
+    survey_program : str
+        survey (sv1,main,etc.) and program (bright,dark,special) of coadd files
+        separated by dash, e.g. main-dark
     """       
     m = (catalog['OUTPUT_PIX'] == pix_out)
     pix_cat = catalog[m]
