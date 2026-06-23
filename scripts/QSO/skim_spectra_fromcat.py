@@ -16,7 +16,8 @@ from desiutil.log import get_logger
 
 def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
                         catalog, specprod_dir, pixel_scheme_in, 
-                        include_single_exp, nside_in, available_upix):
+                        include_single_exp, nside_in,
+                        available_upix, survey_program):
     """
     Produce a (single) skimmed spectra file.
 
@@ -89,12 +90,12 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
         coadd_out = desispec.spectra.stack(coadd_list)
         subdir_out = os.path.join(outdir, str(pix_out//100), str(pix_out))
         os.makedirs(subdir_out, exist_ok=True)
-        desispec.io.write_spectra(f'{subdir_out}/coadd-main-dark-{pix_out}.fits',
+        desispec.io.write_spectra(f'{subdir_out}/coadd-{survey_program}-{pix_out}.fits',
                                     coadd_out)
 
         if include_single_exp:
             spectra_out = desispec.spectra.stack(spectra_list)
-            desispec.io.write_spectra(f'{subdir_out}/spectra-main-dark-{pix_out}.fits',
+            desispec.io.write_spectra(f'{subdir_out}/spectra-{survey_program}-{pix_out}.fits',
                                     spectra_out)
 
     return 0
@@ -162,6 +163,9 @@ def _parse(options=None):
         help='do not include resolution matrices in skimmed spectra')
     parser.add_argument('--include-single-exposures', action='store_true',
         help='produce skimmed files from both coadds and (single-exposure) spectra files')
+    parser.add_argument('--survey-program', type=str, default='main-dark',
+        help='output filenames, eg. coadds, are of the form "coadd-[survey-program]-[pixel].fits" '
+             '(default: main-dark)')
 
     if options is None:
         args = parser.parse_args()
@@ -204,13 +208,13 @@ if __name__ == "__main__":
             res = _filter_spectra_single_pixout(pix_out, args.outdir,
                         args.skip_resolution, skimming_catalog, args.specprod_dir,
                         args.pixel_scheme_in, args.include_single_exposures, 
-                        nside_in, available_upix)
+                        nside_in, available_upix, args.survey_program)
     else:
         list_args = [
             [pix_out, args.outdir,
             args.skip_resolution, skimming_catalog, args.specprod_dir,
             args.pixel_scheme_in, args.include_single_exposures, nside_in, 
-            available_upix]
+            available_upix, args.survey_program]
             for pix_out in output_pixels
         ]
         with Pool(args.ncpu) as pool:
