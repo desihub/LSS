@@ -92,6 +92,7 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
         os.makedirs(subdir_out, exist_ok=True)
         desispec.io.write_spectra(f'{subdir_out}/coadd-{survey_program}-{pix_out}.fits',
                                     coadd_out)
+        del coadd_list[:], coadd_out
 
         if include_single_exp:
             spectra_out = desispec.spectra.stack(spectra_list)
