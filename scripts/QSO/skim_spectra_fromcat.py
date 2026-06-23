@@ -60,7 +60,6 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
         else:  # slower, but should give the same
             pixels_in = desiutil.healpix.find_upix(pix_cat['TARGET_RA'], 
                                 pix_cat['TARGET_DEC'], available_upix)
-    pixels_in = np.unique(pixels_in)
 
     #- Read coadd spectra files and produce a single skimmed coadd file
     coadd_list = []
@@ -70,11 +69,13 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
     skip_hdus = None
     if skip_resolution:
         skip_hdus = ['RESOLUTION']
-    for pix_in in pixels_in:
+    for pix_in in np.unique(pixels_in):
+        # list of targets on pix_in files
+        targets_on_pix = pix_cat['TARGETID'][pixels_in == pix_in]
         coadd_file = os.path.join(specprod_dir, str(pix_in//100), str(pix_in),
                         f'coadd-main-dark-{pix_in}.fits')
         coadd = desispec.io.read_spectra(coadd_file,
-                                     targetids=pix_cat['TARGETID'],
+                                     targetids=targets_on_pix,
                                      skip_hdus=skip_hdus)
         coadd_list.append(coadd)
 
@@ -84,7 +85,7 @@ def _filter_spectra_single_pixout(pix_out, outdir, skip_resolution,
                             f'spectra-main-dark-{pix_in}.fits')
             #- Assume same skipped hdus as coadd files
             spectra = desispec.io.read_spectra(spectra_file,
-                                         targetids=pix_cat['TARGETID'],
+                                         targetids=targets_on_pix,
                                          skip_hdus=skip_hdus)
             spectra_list.append(spectra)
 
@@ -205,7 +206,7 @@ if __name__ == "__main__":
     skimming_catalog['OUTPUT_PIX'] = _pixels_from_catalog(skimming_catalog,
                                         args.nside_out, nside_in=nside_in)
     output_pixels = np.unique(skimming_catalog['OUTPUT_PIX'])
-    #output_pixels = output_pixels[12:18]  # debug
+    #output_pixels = output_pixels[12:14]  # debug
 
     if args.ncpu==1:
         for pix_out in output_pixels:
