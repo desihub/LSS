@@ -516,6 +516,8 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
     #is this effective? need to be sure we don't write multiple lya1b actions
     upd_lya1b = (prev_endDate <= 20250721) & (endDate > 20250721)
 
+    # 20260623 LGN - Temporarily Removing this YAML update step as we re-evaluate the YAML workflow
+    '''
     # 20260420 LGN - Adding new step here where the YAML file containing ledger addition dates is re-generated if necessary
     # 20260420 LGN - This occurs if the number of ledgers in the real mtl directory differs from the number in the YAML file
     yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
@@ -540,7 +542,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
                 f"Generated YAML has {new_yaml_numledgers} ledgers, "
                 f"expected {real_mtl_numledgers}"
             )
-
+    ''';
     
     #generate TileTracker update file
     makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b)
@@ -575,7 +577,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True, update_only = False, lya1b = True):
+    endDate = None, overwrite = True, update_only = False, lya1b = True, YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -773,7 +775,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     #LGN 20260401: Adding New check of the per-obscon YAML file. This will see if we are past the date
     #LGN 20260401: for adding new ledgers and add an "addnew" action to the actionlist if needed
     #LGN 20260401: Current implementation requires the yaml files being in the altmtldir, seems better than /LSS/bin?
-    yaml_fp = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
+    yaml_fp = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
     with open(yaml_fp) as f:
         HPYaml = yaml.safe_load(f)
     #LGN 20260401: Get list of date in YAML, check dates after the first entry, which should always be 'Initial', could be explicit about this 
@@ -1970,11 +1972,11 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
     
 
 # 20260420 LGN - Adding new function to create new ledger files when needed
-def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out"):
+def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out", YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
     # 20260420 LGN - Extract the date, and the list of new ledgers using the YAML file
     date_short = action['ACTIONTIME'][:10]
 
-    yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
+    yaml_fn = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
     with open(yaml_fn) as f:
         hp_tracker = yaml.safe_load(f)
         new_hps = np.array(hp_tracker[date_short]).astype(int)
