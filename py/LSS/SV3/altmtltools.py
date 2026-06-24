@@ -1987,7 +1987,7 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
     
 
 # 20260420 LGN - Adding new function to create new ledger files when needed
-def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', InitLog_format = "Initialize{}AltMTLsParallelOutput_mainRepro.out", YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
+def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
     # 20260420 LGN - Extract the date, and the list of new ledgers using the YAML file
     date_short = action['ACTIONTIME'][:10]
 
@@ -1998,43 +1998,28 @@ def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey,
 
     # initializeAlternateMTLs expects these to be strings
     #startDate = str(altMTLTileTracker.meta['StartDate']) #actually we don't want to pass startDate, if we don't it just uses all initial entries.
-    endDate   = str(altMTLTileTracker.meta['EndDate'])
+    endDate = str(altMTLTileTracker.meta['EndDate'])
 
-    # 20260420 LGN - We need some information from the initialization log file
-    Init_log = os.path.join(altmtlbasedir,InitLog_format.format(obscon.upper()))
-
-    log_keywords = {"seed", "reproducing", "shuffleSubpriorities", "shuffleBrightPriorities", "shuffleELGPriorities", "PromoteFracBGSFaint", "PromoteFracELG"}
-    keyword_vals = {}
-
-    # 20260420 LGN - Use some string methods to associate the needed keywords with their values
-    with open(Init_log) as f:
-        for line in f:
-            parts = line.split(':')
-            if len(parts) == 6:
-                key = parts[-2].strip()
-                if key in log_keywords:
-                    keyword_vals[key] = parts[-1].strip()
-
-    # 20260420 LGN - Safe casting from string to boolean. Int/float converted in function call (probably a little wasteful)
-    for key in log_keywords:
-        if keyword_vals[key] == 'True':
-            keyword_vals[key] = True
-        elif keyword_vals[key] == 'False':
-            keyword_vals[key] = False
-        else:
-            continue
-
+    # 20260624 LGN - We can now read the other necessary keywords directly from the tile tracker meta info. No type casting necessary
+    seed = altMTLTileTracker.meta['seed']
+    reproducing = altMTLTileTracker.meta['reproducing']
+    shuffleSubpriorities = altMTLTileTracker.meta['shuffleSubpriorities']
+    shuffleBrightPriorities = altMTLTileTracker.meta['shuffleBrightPriorities']
+    shuffleELGPriorities = altMTLTileTracker.meta['shuffleELGPriorities']
+    PromoteFracBGSFaint = altMTLTileTracker.meta['PromoteFracBGSFaint']
+    PromoteFracELG = altMTLTileTracker.meta['PromoteFracELG']
+    
     # 20260420 LGN - Run initialize ledger function for each new healpixel
     # 20260420 LGN - Adapted from InitializeAltMTLsParallel script
     for hpnum in new_hps:
         exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon.lower())
 
-        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = int(keyword_vals['seed']),obscon = obscon.lower(), survey = survey,\
-                        saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = keyword_vals['reproducing'],\
-                        shuffleSubpriorities = keyword_vals['shuffleSubpriorities'],endDate = endDate, profile = False, usetmp=False,\
-                        debug = debug, verbose = verbose, shuffleBrightPriorities = keyword_vals['shuffleBrightPriorities'],\
-                        shuffleELGPriorities = keyword_vals['shuffleELGPriorities'], PromoteFracBGSFaint = float(keyword_vals["PromoteFracBGSFaint"]),\
-                        PromoteFracELG = float(keyword_vals["PromoteFracELG"]),finalDir=altmtlbasedir+'/Univ{0:03d}')
+        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = seed,obscon = obscon.lower(), survey = survey,\
+                        saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = reproducing,\
+                        shuffleSubpriorities = shuffleSubpriorities,endDate = endDate, profile = False, usetmp=False,\
+                        debug = debug, verbose = verbose, shuffleBrightPriorities = shuffleBrightPriorities,\
+                        shuffleELGPriorities = shuffleELGPriorities, PromoteFracBGSFaint = PromoteFracBGSFaint,\
+                        PromoteFracELG = PromoteFracELG,finalDir=altmtlbasedir+'/Univ{0:03d}')
 
     return
 
