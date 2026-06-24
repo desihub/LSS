@@ -204,14 +204,9 @@ secondary=''
 #secondary='--secondary'
 
 
-#If running from mocks, must set target directory. 
-#Otherwise this is optional
-#targfile='' #CHANGEME IF RUNNING ON MOCKS
-#targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
-#targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA10.fits"
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit_v4/forFA0.fits"
-#targfile='--targfile=/cscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA1.fits' 
-#targfile='--targfile=CHANGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
+#ACR: we deactivate this option since is not used for mocks, it is not needed
+targfile='' 
+#targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
 
 
 #Default is use numobs from ledger. Uncomment second option to set numobs NOT from ledger
