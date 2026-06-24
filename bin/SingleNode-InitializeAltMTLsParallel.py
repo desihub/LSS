@@ -110,10 +110,6 @@ def procFunc(nproc):
     if not os.path.exists(args.finalDir.format(nproc)):
         os.makedirs(args.finalDir.format(nproc))
     
-    # 20260407 LGN - We now want to write the yaml file before reading it, as the 
-    # 20260407 LGN - files are decentralized from the LSS repo, and can be purpose built
-    yaml_path = initializeYAML_HPTracker(args.obscon,args.finalDir.format(nproc))
-    
     with open(yaml_path) as f:
         HPYaml = yaml.safe_load(f)
     
