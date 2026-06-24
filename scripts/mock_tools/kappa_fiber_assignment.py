@@ -101,8 +101,11 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
         return count2(*all_particles, battrs=battrs, norm=norm)['weight']
 
     result = {}
-    fibered_data, parent_data, complete_data, data, complete_randoms, randoms, kappamap = [copy(
-        catalog) for catalog in [fibered_data, parent_data, complete_data, data, complete_randoms, randoms, kappamap]]
+    # fibered_data, parent_data, complete_data, data, complete_randoms, randoms, kappamap = [copy(
+    #    catalog) for catalog in [fibered_data, parent_data, complete_data, data, complete_randoms, randoms, kappamap]]
+    complete_data, data, complete_randoms, randoms, kappamap = [copy(
+        catalog) for catalog in [complete_data, data, complete_randoms, randoms, kappamap]]
+
     # result['GfGf'] = get_counts(lambda: {'data': fibered_data})
     result['KK'] = get_counts(lambda: {'data': kappamap})
     # result['GpGp'] = get_counts(lambda: {'data': parent_data})
