@@ -775,6 +775,9 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TimesOfActions.append('2025-07-21T23:36:04+00:00')
         doneFlag.append(False)
         archiveDates.append(20250721)
+    else:
+        log.info('NOT adding QSO NUMOBS Increase Action')
+        log.info('You will not mimic real survey decisions after 2025-07-21T23:36:04+00:00')
 
     #LGN 20260401: Adding New check of the per-obscon YAML file. This will see if we are past the date
     #LGN 20260401: for adding new ledgers and add an "addnew" action to the actionlist if needed
