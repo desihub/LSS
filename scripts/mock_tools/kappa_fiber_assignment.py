@@ -69,8 +69,8 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     if weightu == 'simpcompondata':
         data['INDWEIGHT'] = data['WEIGHT_COMP']/data['FRAC_TLOBS_TILES']
         randoms['INDWEIGHT'] = np.ones(len(randoms))
-        fibered_data['INDWEIGHT'] = fibered_data['WEIGHT_COMP'] / \
-            fibered_data['FRAC_TLOBS_TILES']
+        fibered_data['INDWEIGHT'] = 1 / \
+            (fibered_data['FRAC_TLOBS_TILES']*fibered_data['FRACZ_TILELOCID'])
         parent_data['INDWEIGHT'] = np.ones(len(parent_data))
         complete_data['INDWEIGHT'] = np.ones(len(complete_data))
         complete_randoms['INDWEIGHT'] = np.ones(len(complete_randoms))
