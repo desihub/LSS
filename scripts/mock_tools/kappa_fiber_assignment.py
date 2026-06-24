@@ -39,8 +39,8 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     kappamap['RA'] = np.degrees(phi)
     kappamap['DEC'] = 90.0 - np.degrees(theta)
     weightu = weight
-    if weight == 'simpcompondata':
-        weightu = 'simpcompondata'
+    if weight == 'simpcompondata' or weight == 'simpnocomp':
+        weightu = weight
         weight = 'default'
     kw_catalog = dict(version='glam-uchuu-v2-altmtl', tracer=tracer, weight=weight,
                       region='NGC', nran=2, keep_columns=True, imock=imock, FKP_P0=FKP_P0)
@@ -66,8 +66,11 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     complete_randoms = tools.prepare_catalog(tools.read_catalog(
         kind='randoms', expand=expand, complete=complete, reshuffle=reshuffle, **kw_catalog), kind='randoms', zrange=zrange, **kw_catalog)
 
-    if weightu == 'simpcompondata':
-        data['INDWEIGHT'] = data['WEIGHT_COMP']/data['FRAC_TLOBS_TILES']
+    if weightu == 'simpcompondata' or weightu == 'simpnocomp':
+        if weightu == 'simpcompondata':
+            data['INDWEIGHT'] = data['WEIGHT_COMP']/data['FRAC_TLOBS_TILES']
+        if weightu == 'simpnocomp':
+            data['INDWEIGHT'] = np.ones(len(data))
         randoms['INDWEIGHT'] = np.ones(len(randoms))
         # fibered_data['INDWEIGHT'] = 1 / \
         #    (fibered_data['FRAC_TLOBS_TILES']*fibered_data['FRACZ_TILELOCID'])
@@ -148,6 +151,6 @@ if __name__ == '__main__':
     setup_logging()
 
     imock = 150
-    compute_auw(imock, weight='simpcompondata')
+    compute_auw(imock, weight='simpnocomp')
     # compute_auw(imock)
     # compute_auw(imock, weight='default')
