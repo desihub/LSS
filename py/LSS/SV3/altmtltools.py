@@ -791,7 +791,7 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     if len(dates) > 1:
         for date in dates[1:]:
             #LGN 20260401: If date is in the timeframe between startDate and endDate add a new action for it
-            if startDate_str < date and endDate_str > date:
+            if startDate_str < date and endDate_str >= date:
                 log.info('Adding Ledger Addition Action')
                 TileIDs.append(-1)
                 TypeOfActions.append('addnew')
