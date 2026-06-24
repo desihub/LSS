@@ -74,13 +74,13 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
         # parent_data['INDWEIGHT'] = np.ones(len(parent_data))
         complete_data['INDWEIGHT'] = np.ones(len(complete_data))
         complete_randoms['INDWEIGHT'] = np.ones(len(complete_randoms))
-    tools.renormalize_randoms_over_data(
-        fibered_randoms, fibered_data, tracer=tracer)
-    tools.renormalize_randoms_over_data(
-        parent_randoms, parent_data, tracer=tracer)
-    tools.renormalize_randoms_over_data(randoms, data, tracer=tracer)
-    tools.renormalize_randoms_over_data(
-        complete_randoms, complete_data, tracer=tracer)
+    # tools.renormalize_randoms_over_data(
+    #    fibered_randoms, fibered_data, tracer=tracer)
+    # tools.renormalize_randoms_over_data(
+    #    parent_randoms, parent_data, tracer=tracer)
+    # tools.renormalize_randoms_over_data(randoms, data, tracer=tracer)
+    # tools.renormalize_randoms_over_data(
+    #    complete_randoms, complete_data, tracer=tracer)
 
     def copy(catalog):
         catalog = catalog[['RA', 'DEC', 'INDWEIGHT']]
