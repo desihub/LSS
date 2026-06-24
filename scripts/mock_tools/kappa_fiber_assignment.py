@@ -40,19 +40,13 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     kappamap['DEC'] = 90.0 - np.degrees(theta)
 
     kw_catalog = dict(version='glam-uchuu-v2-altmtl', tracer=tracer, weight=weight,
-                      region='NGC', nran=2, keep_columns=True, imock=imock, FKP_P0=4e3)
+                      region='NGC', nran=2, keep_columns=True, imock=imock, FKP_P0=FKP_P0)
     expand = {'parent_randoms_fn': tools.get_catalog_fn(
         kind='parent_randoms', version='data-dr2-v2', tracer=kw_catalog['tracer'], nran=kw_catalog['nran'])}
-    if 'compondata' in kw_catalog['weight']:
-        expand['from_data'] = ['Z', 'WEIGHT_SYS', 'FRAC_TLOBS_TILES']
-
-    raw_data = tools.read_catalog(kind='data', **kw_catalog)
-    data = tools.prepare_catalog(
-        raw_data, kind='data', zrange=zrange, **kw_catalog)
-    raw_randoms = tools.read_catalog(
-        kind='randoms', expand=expand, **kw_catalog)
-    randoms = tools.prepare_catalog(
-        raw_randoms, kind='randoms', zrange=zrange, **kw_catalog)
+    data = tools.prepare_catalog(tools.read_catalog(
+        kind='data', **kw_catalog), kind='data', zrange=zrange, **kw_catalog)
+    randoms = tools.prepare_catalog(tools.read_catalog(
+        kind='randoms', expand=expand, **kw_catalog), kind='randoms', zrange=zrange, **kw_catalog)
     binned_weight = {}
     binned_weight['weight_ntile'] = {column: _compute_binned_weight(
         data[column], data['INDWEIGHT'] / data['WEIGHT_COMP'], mpicomm=data.mpicomm) for column in ['NTILE']}
@@ -60,27 +54,14 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     raw_full_data = tools.read_catalog(kind='full_data', **kw_catalog)
     fibered_data = tools.prepare_catalog(
         raw_full_data, kind='fibered_data', **kw_catalog, binned_weight=binned_weight)
-    parent_data = tools.prepare_catalog(
-        raw_full_data, kind='parent_data', **kw_catalog, binned_weight=binned_weight)
-    fibered_randoms = tools.prepare_catalog(
-        raw_randoms, kind='fibered_randoms', **kw_catalog, binned_weight=binned_weight)
-    parent_randoms = tools.prepare_catalog(
-        raw_randoms, kind='parent_randoms', **kw_catalog, binned_weight=binned_weight)
+    parent_data = tools.prepare_catalog(tools.read_catalog(
+        kind='full_data', **kw_catalog, concatenate=True), kind='parent_data', **kw_catalog, binned_weight=binned_weight)
 
     complete, reshuffle = {}, {}
-    kw_catalog['weight'] = kw_catalog['weight'].replace('-compondata', '')
     complete_data = tools.prepare_catalog(tools.read_catalog(
         kind='data', complete=complete, **kw_catalog), kind='data', zrange=zrange, **kw_catalog)
     complete_randoms = tools.prepare_catalog(tools.read_catalog(
         kind='randoms', expand=expand, complete=complete, reshuffle=reshuffle, **kw_catalog), kind='randoms', zrange=zrange, **kw_catalog)
-
-    tools.renormalize_randoms_over_data(
-        fibered_randoms, fibered_data, tracer=tracer)
-    tools.renormalize_randoms_over_data(
-        parent_randoms, parent_data, tracer=tracer)
-    tools.renormalize_randoms_over_data(randoms, data, tracer=tracer)
-    tools.renormalize_randoms_over_data(
-        complete_randoms, complete_data, tracer=tracer)
 
     def copy(catalog):
         catalog = catalog[['RA', 'DEC', 'INDWEIGHT']]
@@ -106,12 +87,6 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     result['GfGf'] = get_counts(lambda: {'data': fibered_data})
     result['KK'] = get_counts(lambda: {'data': kappamap})
     result['GpGp'] = get_counts(lambda: {'data': parent_data})
-    result['GpGf'] = get_counts(
-        lambda: {'data': parent_data}, lambda: {'data': fibered_data})
-    result['GpRp'] = get_counts(lambda: {'data': parent_data}, lambda: {
-                                'data': parent_randoms})
-    result['GfRf'] = get_counts(lambda: {'data': fibered_data}, lambda: {
-                                'data': fibered_randoms})
     result['GpK'] = get_counts(
         lambda: {'data': parent_data}, lambda: {'data': kappamap})
     result['GfK'] = get_counts(
@@ -120,26 +95,18 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
         lambda: {'data': complete_data}, lambda: {'data': kappamap})
     result['GK'] = get_counts(
         lambda: {'data': data}, lambda: {'data': kappamap})
-    result['GcGc'] = get_counts(lambda: {'data': complete_data})
-    result['GG'] = get_counts(lambda: {'data': data})
-    result['GR'] = get_counts(
-        lambda: {'data': data}, lambda: {'data': randoms})
-    result['GcRc'] = get_counts(lambda: {'data': complete_data}, lambda: {
+    result['GcGc'] = get_counts(lambda: {'data': complete_data}, lambda: {
+                                'data': complete_data})
+    result['GG'] = get_counts(lambda: {'data': data}, lambda: {'data': data})
+    result['RcRc'] = get_counts(lambda: {'data': complete_randoms}, lambda: {
                                 'data': complete_randoms})
-    result['RcRc'] = get_counts(lambda: {'data': complete_randoms})
-    result['RR'] = get_counts(lambda: {'data': randoms})
+    result['RR'] = get_counts(
+        lambda: {'data': randoms}, lambda: {'data': randoms})
     result['RcK'] = get_counts(
         lambda: {'data': complete_randoms}, lambda: {'data': kappamap})
     result['RK'] = get_counts(
         lambda: {'data': randoms}, lambda: {'data': kappamap})
-    result['RcK1'] = get_counts(lambda: {'data': complete_randoms}, lambda: {
-                                'data': kappamap.clone(INDWEIGHT=kappamap.ones())})
-    result['RK1'] = get_counts(lambda: {'data': randoms}, lambda: {
-                               'data': kappamap.clone(INDWEIGHT=kappamap.ones())})
-    result['K1K1'] = get_counts(
-        lambda: {'data': kappamap.clone(INDWEIGHT=kappamap.ones())})
     result = ObservableTree(list(result.values()), pairs=list(result.keys()))
-
     result.write(get_output_fn('all_counts_'+tracer+'_'+weight +
                  '_zr'+str(zrange[0])+'_'+str(zrange[1]), imock=imock))
 
@@ -159,6 +126,6 @@ if __name__ == '__main__':
     setup_logging()
 
     imock = 150
-    compute_auw(imock, weight='compondata')
+    # compute_auw(imock, weight='compondata')
     compute_auw(imock)
     compute_auw(imock, weight='default')
