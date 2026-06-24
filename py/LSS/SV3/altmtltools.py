@@ -32,12 +32,12 @@ from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_fo
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
 from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
 
-#LGN 20260617 - Adding a T/E wrapping around the update_lya_1b import
+#LGN 20260624 - Replacing T/E wrapping with a hasattr check for update_lya_1b import
 #             - This should enable the this code to be used with older desitarget versions.
-try:
-    from desitarget.mtl import update_lya_1b
-    log.info('desitarget.mtl.update_lya_1b() succesfully imported')
-except ImportError:
+if hasattr(mtl, 'update_lya_1b'):
+    update_lya_1b = mtl.update_lya_1b
+    log.info('desitarget.mtl.update_lya_1b() successfully imported')
+else:
     log.info('Unable to import desitarget.mtl.update_lya_1b()')
     log.info('You are using a desitarget version < 3.4.0')
 
