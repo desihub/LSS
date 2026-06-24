@@ -38,7 +38,10 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     theta, phi = hp.pix2ang(nside, pix, nest=False)
     kappamap['RA'] = np.degrees(phi)
     kappamap['DEC'] = 90.0 - np.degrees(theta)
-
+    weightu = weight
+    if weight == 'simpcompondata':
+        weightu = 'simpcompondata'
+        weight = 'default'
     kw_catalog = dict(version='glam-uchuu-v2-altmtl', tracer=tracer, weight=weight,
                       region='NGC', nran=2, keep_columns=True, imock=imock, FKP_P0=FKP_P0)
     expand = {'parent_randoms_fn': tools.get_catalog_fn(
@@ -63,7 +66,7 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     complete_randoms = tools.prepare_catalog(tools.read_catalog(
         kind='randoms', expand=expand, complete=complete, reshuffle=reshuffle, **kw_catalog), kind='randoms', zrange=zrange, **kw_catalog)
 
-    if weight == 'simpcompondata':
+    if weightu == 'simpcompondata':
         data['INDWEIGHT'] = data['WEIGHT_COMP']/data['FRAC_TLOBS_TILES']
         randoms['INDWEIGHT'] = np.ones(len(randoms))
         fibered_data['INDWEIGHT'] = fibered_data['WEIGHT_COMP'] / \
@@ -123,7 +126,7 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     result['RK'] = get_counts(
         lambda: {'data': randoms}, lambda: {'data': kappamap})
     result = ObservableTree(list(result.values()), pairs=list(result.keys()))
-    result.write(get_output_fn('all_counts_'+tracer+'_'+weight +
+    result.write(get_output_fn('all_counts_'+tracer+'_'+weightu +
                  '_zr'+str(zrange[0])+'_'+str(zrange[1]), imock=imock))
 
 
