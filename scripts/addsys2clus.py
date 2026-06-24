@@ -76,7 +76,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0,t
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 
 parser.add_argument("--prep4sysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
-parser.add_argument("--addsysnet",help="add sysnet weights for imaging systematics to full files?",default='n')
+parser.add_argument("--addsysnet",help="add sysnet weights for imaging systematics to clustering files?",default='n')
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
 parser.add_argument("--doimlin",help="add weights for imaging systematics using eboss method?",default='n')
