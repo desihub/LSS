@@ -933,8 +933,9 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     ztilefn = ztilefile.split('/')[-1]
     fn = initMTL.split('/')[-1]
     log.info('reading initial MTL(s)')
-    allentries = Table.read(initMTL) 
-    log.info('initial MTL size: {}'.format(len(allentries)))
+    allentries = Table.read(initMTL)
+    if verbose or debug:
+        log.info('initial MTL size: {}'.format(len(allentries)))
     
     meta = allentries.meta
     if verbose or debug:
@@ -1049,7 +1050,7 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
             makeTileTracker(finalDir.format(n), survey = survey, obscon = obscon,overwrite = False,
              startDate = startDateShort, endDate = endDateShort, meta_info = tt_meta)
             
-        else:
+        elif (verbose or debug):
             log.info('tiletracker already exists, not overwriting')
         subpriors = initialentries['SUBPRIORITY']
 
@@ -1250,10 +1251,12 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
             initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
-
-        log.info('Initial Entries Size: {}'.format(len(initialentries)))
+        
+        if (verbose or debug):
+            log.info('Initial Entries Size: {}'.format(len(initialentries)))
         retval = desitarget.io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
-        log.info('write_mtl return value: {}'.format(retval))
+        if (verbose or debug):
+            log.info('write_mtl return value: {}'.format(retval))
         if debug or verbose:
             log.info('(nowrite = False) ntargs, fn = {0}'.format(retval))
         log.info('wrote MTLs to {0}'.format(outputMTLDir))
