@@ -52,6 +52,7 @@ parser.add_argument('-pfbf', '--PromoteFracBGSFaint', dest='PromoteFracBGSFaint'
 parser.add_argument('-pfe', '--PromoteFracELG', dest='PromoteFracELG', default=0.1, help = 'What (decimal) percentage of ELG_LOP targets to promote to ELG_HIP. This argument is only used if shuffleELGPriorities is passed and if obscon = DARK.', required = False, type = float)
 parser.add_argument('-elb', '--exampleLedgerBase', dest='exampleLedgerBase', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-p2L', '--path2LSS', dest='path2LSS', default='~/.local/desicode/LSS/', help = 'location where LSS repository is cloned.', required = False, type = str)
+parser.add_argument('-yp', '--yamlpath', dest = 'yamlpath', default='/global/cfs/cdirs/desi/survey/fiberassign/AltMTL/', help = 'location of yaml tiletracker files', required = False, type = str)
 
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 args = parser.parse_args()
@@ -91,26 +92,21 @@ else:
     with open(args.outputMTLDirBase + 'SeedFile', 'w') as f:
         f.write(str(args.seed))
 
-# 20260401 LGN - Modifying HPList to be read from a YAML file, not a csv
-# 20260401 LGN - Leaving legacy code commented for reference
-#HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
-
-#Dropping these
-#NodeID = int(os.getenv('SLURM_NODEID'))
-#SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
-
 NNodes = 1
 NProc = int(NNodes*args.ProcPerNode)
 
 outputMTLDir = args.outputMTLDirBase + "Univ{0:03d}/"
 
 def procFunc(nproc):
-    # 20260420 LGN - Moving YAML file generation into the procFunc loop
-    # 20260420 LGN - Such that the files can be accessed/updated per realization.
+    
     if not os.path.exists(args.finalDir.format(nproc)):
         os.makedirs(args.finalDir.format(nproc))
+
+    # 20260624 LGN - YAML files are now centralized
+    # 20260624 LGN - Accesed using new yamlpath argument
+    obscon_yaml = os.path.join(args.yamlpath, f'{args.obscon}-ledgers.yaml')
     
-    with open(yaml_path) as f:
+    with open(obscon_yaml) as f:
         HPYaml = yaml.safe_load(f)
     
     HPList = np.array(HPYaml['Initial']).astype(int)
