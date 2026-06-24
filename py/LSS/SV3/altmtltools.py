@@ -543,9 +543,13 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
                 f"expected {real_mtl_numledgers}"
             )
     ''';
+
+    #accesing TT meta data and updating endDate
+    ttupd_meta = current_TT.meta
+    ttupd_meta['EndDate'] = endDate
     
     #generate TileTracker update file
-    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b)
+    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b, meta_info = ttupd_meta)
 
     #read into memory
     update_TT = Table.read(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
@@ -577,7 +581,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True, update_only = False, lya1b = True, YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
+    endDate = None, overwrite = True, update_only = False, lya1b = True, YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL', meta_info = None):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -793,11 +797,15 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
                 archiveDates.append(date.replace('-',''))
     
 
+    #LGN 20260426: Adding default meta info if meta info not supplied
+    if meta_info is None:
+        meta_info = {'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir}
+    
             
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
     t = Table(ActionList,
            names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir},
+           meta=meta_info,
            dtype=('<i8', '<U6', '<U25', 'bool', '<i8'))
     t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
     
@@ -1027,10 +1035,17 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         thisTileTrackerFN = makeTileTrackerFN(finalDir.format(n), survey, obscon)
         log.info('path to tiletracker = {0}'.format(thisTileTrackerFN))
         if not os.path.isfile(thisTileTrackerFN):
+
+            #LGN 20260624 - Building tiletracker meta object here.
+            #              - Allows access to initialization keywords
+            tt_meta={'Name': 'AltMTLTileTracker', 'StartDate': startDateShort, 'EndDate': endDateShort, 'amtldir':finalDir.format(n),\
+                    'seed': seed, 'reproducing': reproducing, 'shuffleSubpriorities': shuffleSubpriorities, 'shuffleBrightPriorities': shuffleBrightPriorities,\
+                    'shuffleELGPriorities': shuffleELGPriorities, 'PromoteFracBGSFaint': PromoteFracBGSFaint, 'PromoteFracELG': PromoteFracELG}
+
+            
             makeTileTracker(finalDir.format(n), survey = survey, obscon = obscon,overwrite = False,
-             startDate = startDateShort, endDate = endDateShort)
-            #makeTileTracker(outputMTLDir, survey = survey, obscon = obscon,overwrite = False,
-            #startDate = startDateShort, endDate = endDateShort)
+             startDate = startDateShort, endDate = endDateShort, meta_info = tt_meta)
+            
         else:
             log.info('tiletracker already exists, not overwriting')
         subpriors = initialentries['SUBPRIORITY']
