@@ -151,13 +151,14 @@ def procFunc(nproc):
 
         # 20260420 LGN - Adding some additional log statements here for reproducibility
         # 20260420 LGN - And to aid in adding additional ledgers later
-        log.info('seed: {}'.format(args.seed))
-        log.info('reproducing: {0}'.format(args.reproducing))
-        log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
-        log.info('shuffleBrightPriorities: {0}'.format(args.shuffleBrightPriorities))
-        log.info('shuffleELGPriorities: {0}'.format(args.shuffleELGPriorities))
-        log.info('PromoteFracBGSFaint: {0}'.format(args.PromoteFracBGSFaint))
-        log.info('PromoteFracELG: {0}'.format(args.PromoteFracELG))
+        if (args.debug or args.verbose):
+            log.info('seed: {}'.format(args.seed))
+            log.info('reproducing: {0}'.format(args.reproducing))
+            log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
+            log.info('shuffleBrightPriorities: {0}'.format(args.shuffleBrightPriorities))
+            log.info('shuffleELGPriorities: {0}'.format(args.shuffleELGPriorities))
+            log.info('PromoteFracBGSFaint: {0}'.format(args.PromoteFracBGSFaint))
+            log.info('PromoteFracELG: {0}'.format(args.PromoteFracELG))
         
         initializeAlternateMTLs(exampleLedger, outputMTLDir, genSubset = nproc, seed = args.seed, obscon = args.obscon, survey = args.survey, saveBackup = args.saveBackup, hpnum = hpnum, overwrite = args.overwrite, reproducing = args.reproducing, shuffleSubpriorities = args.shuffleSubpriorities, startDate=args.startDate, endDate=args.endDate, profile = args.profile, usetmp=args.usetmp, finalDir=args.finalDir, debug = args.debug, verbose = args.verbose,
             shuffleBrightPriorities = args.shuffleBrightPriorities, shuffleELGPriorities = args.shuffleELGPriorities, PromoteFracBGSFaint = args.PromoteFracBGSFaint
