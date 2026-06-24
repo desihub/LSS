@@ -63,6 +63,22 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     complete_randoms = tools.prepare_catalog(tools.read_catalog(
         kind='randoms', expand=expand, complete=complete, reshuffle=reshuffle, **kw_catalog), kind='randoms', zrange=zrange, **kw_catalog)
 
+    if weight == 'simpcompondata':
+        data['INDWEIGHT'] = data['WEIGHT_COMP']/data['FRAC_TLOBS_TILES']
+        randoms['INDWEIGHT'] = np.ones(len(randoms))
+        fibered_data['INDWEIGHT'] = fibered_data['WEIGHT_COMP'] / \
+            fibered_data['FRAC_TLOBS_TILES']
+        parent_data['INDWEIGHT'] = np.ones(len(parent_data))
+        complete_data['INDWEIGHT'] = np.ones(len(complete_data))
+        complete_randoms['INDWEIGHT'] = np.ones(len(complete_randoms))
+    tools.renormalize_randoms_over_data(
+        fibered_randoms, fibered_data, tracer=tracer)
+    tools.renormalize_randoms_over_data(
+        parent_randoms, parent_data, tracer=tracer)
+    tools.renormalize_randoms_over_data(randoms, data, tracer=tracer)
+    tools.renormalize_randoms_over_data(
+        complete_randoms, complete_data, tracer=tracer)
+
     def copy(catalog):
         catalog = catalog[['RA', 'DEC', 'INDWEIGHT']]
         for name in catalog:
@@ -126,6 +142,6 @@ if __name__ == '__main__':
     setup_logging()
 
     imock = 150
-    # compute_auw(imock, weight='compondata')
-    compute_auw(imock)
-    compute_auw(imock, weight='default')
+    compute_auw(imock, weight='simpcompondata')
+    # compute_auw(imock)
+    # compute_auw(imock, weight='default')
