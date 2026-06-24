@@ -54,11 +54,11 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     binned_weight['weight_ntile'] = {column: _compute_binned_weight(
         data[column], data['INDWEIGHT'] / data['WEIGHT_COMP'], mpicomm=data.mpicomm) for column in ['NTILE']}
 
-    raw_full_data = tools.read_catalog(kind='full_data', **kw_catalog)
-    fibered_data = tools.prepare_catalog(
-        raw_full_data, kind='fibered_data', **kw_catalog, binned_weight=binned_weight)
-    parent_data = tools.prepare_catalog(tools.read_catalog(
-        kind='full_data', **kw_catalog, concatenate=True), kind='parent_data', **kw_catalog, binned_weight=binned_weight)
+    # raw_full_data = tools.read_catalog(kind='full_data', **kw_catalog)
+    # fibered_data = tools.prepare_catalog(
+    #    raw_full_data, kind='fibered_data', **kw_catalog, binned_weight=binned_weight)
+    # parent_data = tools.prepare_catalog(tools.read_catalog(
+    #    kind='full_data', **kw_catalog, concatenate=True), kind='parent_data', **kw_catalog, binned_weight=binned_weight)
 
     complete, reshuffle = {}, {}
     complete_data = tools.prepare_catalog(tools.read_catalog(
@@ -69,9 +69,9 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     if weightu == 'simpcompondata':
         data['INDWEIGHT'] = data['WEIGHT_COMP']/data['FRAC_TLOBS_TILES']
         randoms['INDWEIGHT'] = np.ones(len(randoms))
-        fibered_data['INDWEIGHT'] = 1 / \
-            (fibered_data['FRAC_TLOBS_TILES']*fibered_data['FRACZ_TILELOCID'])
-        parent_data['INDWEIGHT'] = np.ones(len(parent_data))
+        # fibered_data['INDWEIGHT'] = 1 / \
+        #    (fibered_data['FRAC_TLOBS_TILES']*fibered_data['FRACZ_TILELOCID'])
+        # parent_data['INDWEIGHT'] = np.ones(len(parent_data))
         complete_data['INDWEIGHT'] = np.ones(len(complete_data))
         complete_randoms['INDWEIGHT'] = np.ones(len(complete_randoms))
     tools.renormalize_randoms_over_data(
@@ -103,13 +103,13 @@ def compute_auw(imock, tracer='ELG_LOPnotqso', weight='default-FKP', FKP_P0=4e3,
     result = {}
     fibered_data, parent_data, complete_data, data, complete_randoms, randoms, kappamap = [copy(
         catalog) for catalog in [fibered_data, parent_data, complete_data, data, complete_randoms, randoms, kappamap]]
-    result['GfGf'] = get_counts(lambda: {'data': fibered_data})
+    # result['GfGf'] = get_counts(lambda: {'data': fibered_data})
     result['KK'] = get_counts(lambda: {'data': kappamap})
-    result['GpGp'] = get_counts(lambda: {'data': parent_data})
-    result['GpK'] = get_counts(
-        lambda: {'data': parent_data}, lambda: {'data': kappamap})
-    result['GfK'] = get_counts(
-        lambda: {'data': fibered_data}, lambda: {'data': kappamap})
+    # result['GpGp'] = get_counts(lambda: {'data': parent_data})
+    # result['GpK'] = get_counts(
+    #    lambda: {'data': parent_data}, lambda: {'data': kappamap})
+    # result['GfK'] = get_counts(
+    #    lambda: {'data': fibered_data}, lambda: {'data': kappamap})
     result['GcK'] = get_counts(
         lambda: {'data': complete_data}, lambda: {'data': kappamap})
     result['GK'] = get_counts(
