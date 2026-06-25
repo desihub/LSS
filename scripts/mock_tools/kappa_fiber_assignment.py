@@ -151,6 +151,6 @@ if __name__ == '__main__':
     setup_logging()
 
     imock = 150
-    compute_auw(imock, weight='simpnocomp')
+    compute_auw(imock, weight='simpnocomp', zrange=(0.8, 1.1))
     # compute_auw(imock)
     # compute_auw(imock, weight='default')
