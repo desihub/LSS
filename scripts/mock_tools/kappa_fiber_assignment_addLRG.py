@@ -100,6 +100,9 @@ def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6)):
     lrgaroundelg = lrgaroundelg[['TARGETID',
                                  'ZWARN', 'FRACZ_TILELOCID', 'TILELOCID']]
     elgpualrg = Catalog.concatenate([raw_full_data, lrgaroundelg])
+    # do it 8 (18?) more times because only 10% of ELGs should have LRG priority
+    for i in range(8):
+        elgpualrg = Catalog.concatenate([elgpualrg, lrgaroundelg])
     sel_eplfib = elgpualrg['ZWARN'] != 999999
     new_fracz = get_fracz_tilelocid(elgpualrg)
     elgpualrg['FRACZ_NEW'] = new_fracz
@@ -175,7 +178,7 @@ def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6)):
         lambda: {'data': randoms}, lambda: {'data': kappamap})
     result = ObservableTree(list(result.values()), pairs=list(result.keys()))
     result.write(get_output_fn('all_counts_'+tracer+'_'+weightu +
-                 '_zr'+str(zrange[0])+'_'+str(zrange[1]), imock=imock))
+                 '9x_zr'+str(zrange[0])+'_'+str(zrange[1]), imock=imock))
 
 
 if __name__ == '__main__':
@@ -193,6 +196,6 @@ if __name__ == '__main__':
     setup_logging()
 
     imock = 150
-    compute_auw(imock, zrange=(0.8, 1.1))
-    # compute_auw(imock)
+    # compute_auw(imock, zrange=(0.8, 1.1))
+    compute_auw(imock)
     # compute_auw(imock, weight='default')
