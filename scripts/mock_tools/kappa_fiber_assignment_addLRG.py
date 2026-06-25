@@ -71,10 +71,8 @@ def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6)):
     theta, phi = hp.pix2ang(nside, pix, nest=False)
     kappamap['RA'] = np.degrees(phi)
     kappamap['DEC'] = 90.0 - np.degrees(theta)
-    weightu = weight
-    if weight == 'simpcompondata' or weight == 'simpnocomp':
-        weightu = weight
-        weight = 'default'
+    weightu = 'simpcompondatawLRG'
+
     kw_catalog = dict(version='glam-uchuu-v2-altmtl', tracer=tracer, weight=weight,
                       region='NGC', nran=2, keep_columns=True, imock=imock, FKP_P0=FKP_P0)
     expand = {'parent_randoms_fn': tools.get_catalog_fn(
