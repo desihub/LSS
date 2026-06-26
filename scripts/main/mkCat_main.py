@@ -1311,6 +1311,7 @@ if args.ran_utlid == 'y':
 
 #needs to happen before randoms so randoms can get z and weights
 weightileloc=True
+redo_fracz=False
 if args.redo_fracz == 'y':
     redo_fracz=True
 if args.compmd == 'altmtl':
