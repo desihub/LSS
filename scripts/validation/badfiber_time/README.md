@@ -110,3 +110,51 @@ Exposure timestamps from:
 
 LRG nsig values (MC significance of fiber badness) from:
 `krolewski-pipeline/summaryscale/LRGfibersim_matterhorn-v2.txt`
+
+---
+
+## Interactive Focal Plane Viewer (LRG)
+
+*J. Rohlf & Claude Sonnet 4.6 (2026)*
+
+A self-contained HTML viewer showing all 5000 DESI fibers on the focal plane with clickable time plots.
+
+- **Green dots** — active fibers; **orange dots** — Krolewski bad fibers (nsig ≤ −4)
+- Hover over a dot to see fiber number, petal, and σ
+- Click a dot to display its failure rate vs time plot (with survey average and model prediction)
+- Goto box: jump to any fiber by number
+- Save plot button: opens current time plot as PNG for saving
+
+### Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `make_petal_focal_data.py` | Extracts per-petal time series + all focal plane positions into JSON |
+| `make_focal_viewer_multi.py` | Builds self-contained HTML viewer for one or more petals |
+| `plot_petal_mosaic.py` | 5×100 mosaic of all 500 fibers in a petal (PNG + PDF) |
+
+### Build
+
+```bash
+# Extract focal data for all petals (~2 min each)
+for p in 0 1 2 3 4 5 6 7 8 9; do
+    python make_petal_focal_data.py --petal $p
+done
+
+# Interactive viewer (all 10 petals, ~3.9 MB HTML)
+python make_focal_viewer_multi.py --petals 0 1 2 3 4 5 6 7 8 9
+
+# Per-petal mosaics (~8 min each, PNG + PDF)
+for p in 0 1 2 3 4 5 6 7 8 9; do
+    python plot_petal_mosaic.py --petal $p
+done
+```
+
+### Outputs (written to `/global/u1/r/rohlf/bao_jr/dr3-matterhorn-checks/all-fibers-vs-time/`)
+
+| File | Description |
+|------|-------------|
+| `lrg_petal{0..9}_focal_data.json` | Per-petal JSON (~470 KB each) |
+| `lrg_petals0_1_2_3_4_5_6_7_8_9_focal_viewer.html` | All-10-petal interactive viewer |
+| `lrg_petal{0..9}_mosaic.png` | 5×100 mosaic per petal |
+| `lrg_petal{0..9}_mosaic.pdf` | 5×100 mosaic per petal (PDF, ~1.5 MB each) |
