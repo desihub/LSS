@@ -30,6 +30,80 @@ def thphi2radec(theta, phi):
     return 180./np.pi*phi, -(180./np.pi*theta-90)
 
 
+def get_nearest_neighbor_weight(ra, dec, mask_assigned, mask_4NNweight):
+    from scipy.spatial import cKDTree
+    """
+    Compute nearest-neighbor upweights.
+
+    Parameters
+    ----------
+    ra, dec : array
+        Sky coordinates in degrees.
+    mask_assigned : bool array
+        True for galaxies assigned a fiber.
+    mask_4NNweight : bool array
+        True for galaxies that should upweight their nearest neighbor.
+
+    Returns
+    -------
+    weight : array
+        Nearest-neighbor weights. Starts at one; each unassigned galaxy
+        increments the weight of its nearest assigned neighbor by one.
+    """
+    weight = np.ones(len(ra), dtype=float)
+
+    if np.all(mask_assigned):
+        return weight
+
+    assigned = np.flatnonzero(mask_assigned)
+    unassigned = np.flatnonzero(mask_4NNweight)
+
+    ra_rad = np.deg2rad(ra)
+    dec_rad = np.deg2rad(dec)
+
+    xyz = np.column_stack([np.cos(dec_rad) * np.cos(ra_rad),
+                          np.cos(dec_rad) * np.sin(ra_rad), np.sin(dec_rad)])
+
+    tree = cKDTree(xyz[assigned])
+    _, index = tree.query(xyz[unassigned], k=1)
+
+    np.add.at(weight, assigned[index], 1.)
+    return weight
+
+
+def get_fracz_pNNweight(dz, get_nnweight=False,logger=None):
+    probl = np.zeros(len(dz))
+    locl, nlocl = np.unique(dz['TILELOCID'], return_counts=True)
+    # wz = dz['LOCATION_ASSIGNED'] == 1
+    wz = dz['ZWARN'] != 999999
+    dzz = dz[wz]
+
+    loclz, nloclz = np.unique(dzz['TILELOCID'], return_counts=True)
+    natloc = ~np.isin(dz['TILELOCID'], loclz)
+    nnweight = np.ones(len(dz))
+    if get_nnweight:
+        nnweight = get_nearest_neighbor_weight(dz['RA'], dz['DEC'], wz, natloc)
+    printlog('number of unique targets around unassigned locations is ' +
+          str(np.sum(natloc)),logger)
+
+    printlog('getting fraction assigned for each tilelocid',logger)
+    nm = 0
+    nmt = 0
+    pd = []
+    nloclt = len(locl)
+    lzs = np.isin(locl, loclz)
+    for i in range(0, len(locl)):
+        if i % 1000000 == 0:
+            print('at row '+str(i)+' of '+str(nloclt))
+        nt = nlocl[i]
+        nz = lzs[i]
+        loc = locl[i]
+        pd.append((loc, nt))
+    pd = dict(pd)
+    for i in range(0, len(dz)):
+        probl[i] = pd[dz['TILELOCID'][i]]
+    return probl+(nnweight-1)
+
 def expand_ran(in_ran_fn, parent_ran_fn=None, rancols=['TARGETID', 'RA', 'DEC'], datacols=['TARGETID', 'Z'], logger=None):
     # function to add columns to randoms, most useful for mock randoms where the same column values are used
     # assumes data is saved in the LSS h5 format; could edit to allow functionality for fits or other formats
