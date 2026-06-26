@@ -138,6 +138,10 @@ def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6), weightu='fracz_pNN'):
             raw_full_data['RA'], raw_full_data['DEC'], mask_assigned, mask_4NNweight)
     else:
         print('weightu not recognized, new_compweight not set...')
+    tids, data_ind, full_ind = np.intersect1d(
+        data['TARGETID'], raw_full_data['TARGETID'], return_indices=True)
+    data = data[data_ind]
+    new_compweight = new_compweight[full_ind]
     complete, reshuffle = {}, {}
     complete_data = tools.prepare_catalog(tools.read_catalog(
         kind='data', complete=complete, **kw_catalog), kind='data', zrange=zrange, **kw_catalog)
