@@ -12,6 +12,8 @@ import numpy as np
 import healpy as hp
 import jax
 from jax import config
+from scipy.spatial import cKDTree
+
 from lsstypes import ObservableTree
 
 from mpytools import Catalog
