@@ -3997,7 +3997,7 @@ def mkclusdat(fl,redo_fracz=False,NN=False,weighttileloc=True,zmask=False,correc
         common.printlog('reading '+in_fn+'.fits',logger)
         ff = Table.read(in_fn.replace('global', 'dvs_ro')+'.fits')
     if redo_fracz:
-        dz['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(dz, get_nnweight=NN,logger=logger)
+        ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
         
     #ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
