@@ -102,7 +102,7 @@ def get_fracz_pNNweight(dz, get_nnweight=False):
     return probl+(nnweight-1)
 
 
-def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6), weightu='fraz_pNN'):
+def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6), weightu='fracz_pNN'):
     mock_dir = Path(
         '/dvs_ro/cfs/cdirs/desi/mocks/cai/GLAM-Uchuu/lightcones/lensing/')
     fn = mock_dir / f'{imock:04d}/maps/kappa_CMB_Born.fits'
@@ -129,12 +129,13 @@ def compute_auw(imock, FKP_P0=4e3, zrange=(1.1, 1.6), weightu='fraz_pNN'):
 
     if weightu == 'fracz_pNN':
         new_compweight = get_fracz_pNNweight(raw_full_data, get_nnweight=True)
-    if weightu == 'NN':
+    elif weightu == 'NN':
         mask_assigned = raw_full_data['LOCATION_ASSIGNED'] == 1
         mask_4NNweight = raw_full_data['LOCATION_ASSIGNED'] == 0
         new_compweight = get_nearest_neighbor_weight(
             raw_full_data['RA'], raw_full_data['DEC'], mask_assigned, mask_4NNweight)
-
+    else:
+        print('weightu not recognized, new_compweight not set...')
     complete, reshuffle = {}, {}
     complete_data = tools.prepare_catalog(tools.read_catalog(
         kind='data', complete=complete, **kw_catalog), kind='data', zrange=zrange, **kw_catalog)
