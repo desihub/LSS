@@ -6,7 +6,28 @@ Each petal gets its own accent colour; bad fibers are orange regardless of petal
 Usage:
   python make_focal_viewer_multi.py --petals 0 7
 """
-import argparse, json, os
+import argparse, json, os, datetime
+
+MJD_EPOCH = datetime.date(1858, 11, 17)
+def date_to_mjd(yyyymmdd):
+    s = str(yyyymmdd)
+    d = datetime.date(int(s[:4]), int(s[4:6]), int(s[6:8]))
+    return (d - MJD_EPOCH).days
+
+CCD_SWAPS_ALL = {
+    0: [(date_to_mjd(20260106), 'r')],
+    1: [(date_to_mjd(20220613), 'b'), (date_to_mjd(20230727), 'b'),
+        (date_to_mjd(20231129), 'z'), (date_to_mjd(20241119), 'r')],
+    2: [(date_to_mjd(20201113), 'r')],
+    3: [(date_to_mjd(20250514), 'z')],
+    4: [(date_to_mjd(20221108), 'b'), (date_to_mjd(20221108), 'r')],
+    5: [(date_to_mjd(20210622), 'b'), (date_to_mjd(20221108), 'z')],
+    6: [],
+    7: [(date_to_mjd(20240724), 'r'), (date_to_mjd(20251007), 'r'),
+        (date_to_mjd(20251007), 'z')],
+    8: [(date_to_mjd(20230507), 'b')],
+    9: [(date_to_mjd(20210615), 'r'), (date_to_mjd(20260429), 'r')],
+}
 parser = argparse.ArgumentParser()
 parser.add_argument('--petals', type=int, nargs='+', default=[0, 7])
 args = parser.parse_args()
@@ -130,6 +151,9 @@ main{display:flex;flex:1;overflow:hidden}
       <div class="leg"><div class="lsw lsw-sv"></div>survey avg ± 1σ</div>
       <div class="leg"><div class="lsw lsw-md"></div>model prediction</div>
       <div class="leg"><div class="lsw" id="fb-swatch" style="background:#c03030"></div>fiber fail rate</div>
+      <div class="leg"><div class="lsw lsw-md" style="background:repeating-linear-gradient(90deg,#4169e1 0,#4169e1 4px,transparent 4px,transparent 7px)"></div>CCD b swap</div>
+      <div class="leg"><div class="lsw lsw-md" style="background:repeating-linear-gradient(90deg,#dc143c 0,#dc143c 4px,transparent 4px,transparent 7px)"></div>CCD r swap</div>
+      <div class="leg"><div class="lsw lsw-md" style="background:repeating-linear-gradient(90deg,#9932cc 0,#9932cc 4px,transparent 4px,transparent 7px)"></div>CCD z swap</div>
     </div>
     <div style="margin-top:8px">
       <button class="save-btn" id="save-plot-btn">Save plot</button>
@@ -141,6 +165,8 @@ main{display:flex;flex:1;overflow:hidden}
 const DATA         = __JSON__;
 const PETALS       = DATA.petals;
 const PETAL_COLORS = __COLORS__;
+const CCD_SWAPS    = __CCD_SWAPS__;
+const CCD_COLOR    = {'b': '#4169e1', 'r': '#dc143c', 'z': '#9932cc'};
 
 
 const fpCanvas   = document.getElementById('fp-canvas');
@@ -386,6 +412,16 @@ function drawTimePlot(fib) {
     ctx.fillText(yr, x + 2, PAD.t + ph - 3);
   }
 
+  // CCD swap lines
+  ctx.setLineDash([4, 3]); ctx.lineWidth = 1.2;
+  for (const [mjd, ch] of (CCD_SWAPS[String(fd.petal)] || [])) {
+    if (mjd < xmin || mjd > xmax) continue;
+    const x = xScale(mjd);
+    ctx.strokeStyle = CCD_COLOR[ch] + 'bb';
+    ctx.beginPath(); ctx.moveTo(x, PAD.t); ctx.lineTo(x, PAD.t + ph); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
   // time plot always red
   const fcolor = '#c03030';
   document.getElementById('fb-swatch').style.background = fcolor;
@@ -455,10 +491,12 @@ document.getElementById('save-plot-btn').addEventListener('click', () => showCan
 </script>
 """
 
-colors_js = json.dumps([PETAL_COLORS[i % len(PETAL_COLORS)] for i in range(len(PETALS))])
+colors_js    = json.dumps([PETAL_COLORS[i % len(PETAL_COLORS)] for i in range(len(PETALS))])
+ccd_swaps_js = json.dumps({str(k): v for k, v in CCD_SWAPS_ALL.items()})
 html = HTML.replace('__JSON__', raw_json) \
            .replace('__LABEL__', label) \
-           .replace('__COLORS__', colors_js)
+           .replace('__COLORS__', colors_js) \
+           .replace('__CCD_SWAPS__', ccd_swaps_js)
 
 with open(out_path, 'w') as f:
     f.write(html)
