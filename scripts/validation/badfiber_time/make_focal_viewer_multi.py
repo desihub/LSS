@@ -73,7 +73,8 @@ PETAL_COLORS = ['#7878a0', '#4a9a6a', '#6a9aca', '#ca7a4a',
                 '#9a6aca', '#ca4a6a', '#4acaaa', '#caaa4a',
                 '#aa4aca', '#4a7aca']
 
-HTML = """<title>DESI Focal Plane — LRG redshift failures</title>
+HTML = """<meta charset="UTF-8">
+<title>DESI Focal Plane — LRG redshift failures</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#13131a;color:#c8c8d8;font-family:ui-monospace,'SF Mono',Menlo,monospace;
@@ -261,6 +262,8 @@ function hitTest(mx, my) {
 }
 
 let lastHov = null;
+let currentView = 'timePlot';  // 'timePlot' or 'histogram'
+
 fpCanvas.addEventListener('mousemove', e => {
   const r = fpCanvas.getBoundingClientRect();
   const fib = hitTest(e.clientX - r.left, e.clientY - r.top);
@@ -285,7 +288,7 @@ fpCanvas.addEventListener('mouseleave', () => {
 fpCanvas.addEventListener('click', e => {
   const r = fpCanvas.getBoundingClientRect();
   const fib = hitTest(e.clientX - r.left, e.clientY - r.top);
-  if (fib !== null) { selectedFiber = fib; drawFP(lastHov); drawTimePlot(fib); }
+  if (fib !== null) { currentView = 'timePlot'; selectedFiber = fib; drawFP(lastHov); drawTimePlot(fib); }
 });
 
 // ── go-to fiber box ───────────────────────────────────────────────────────────
@@ -298,6 +301,7 @@ function goToFiber(val) {
     return;
   }
   inp.classList.remove('error');
+  currentView = 'timePlot';
   selectedFiber = fib;
   drawFP(null);
   drawTimePlot(fib);
@@ -320,19 +324,41 @@ plotCanvas.addEventListener('mousemove', e => {
     const d2 = dx * dx + dy * dy;
     if (d2 < bestD) { bestD = d2; best = dot; }
   }
-  if (best) {
+  if (best && currentView === 'timePlot') {
     tooltip.textContent = mjdToDate(best.mjd_lo) + ' – ' + mjdToDate(best.mjd_hi) +
-                          '   fail = ' + (best.fr * 100).toFixed(1) + '%';
+                          '   fail = ' + (best.fr * 100).toFixed(1) + '%  · click for run histogram';
     tooltip.style.left    = (e.clientX + 14) + 'px';
     tooltip.style.top     = (e.clientY - 10) + 'px';
     tooltip.style.opacity = '1';
-    plotCanvas.style.cursor = 'crosshair';
+    plotCanvas.style.cursor = 'pointer';
+  } else if (currentView === 'histogram') {
+    tooltip.textContent   = 'click to return to time plot';
+    tooltip.style.left    = (e.clientX + 14) + 'px';
+    tooltip.style.top     = (e.clientY - 10) + 'px';
+    tooltip.style.opacity = '1';
+    plotCanvas.style.cursor = 'pointer';
   } else {
     tooltip.style.opacity   = '0';
     plotCanvas.style.cursor = 'default';
   }
 });
 plotCanvas.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+plotCanvas.addEventListener('click', e => {
+  if (selectedFiber === null) return;
+  if (currentView === 'histogram') {
+    currentView = 'timePlot';
+    drawTimePlot(selectedFiber);
+    return;
+  }
+  const r  = plotCanvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  let best = null, bestD = 15 * 15;
+  for (const dot of plotDots) {
+    const dx = dot.x - mx, dy = dot.y - my;
+    if (dx * dx + dy * dy < bestD) { bestD = dx * dx + dy * dy; best = dot; }
+  }
+  if (best) { currentView = 'histogram'; drawClickView(selectedFiber, best); }
+});
 
 // ── time plot ─────────────────────────────────────────────────────────────────
 function drawTimePlot(fib) {
@@ -475,6 +501,290 @@ function drawTimePlot(fib) {
     '<span style="color:' + titleColor + '">fiber ' + fib +
     ' &nbsp;·&nbsp; petal ' + fd.petal +
     ' &nbsp;·&nbsp; n_obs = ' + fd.n_obs + ns + bad + '</span>';
+}
+
+function drawClickView(fib, dot) {
+  const fd    = DATA.fibers[fib];
+  const wrap  = document.getElementById('plot-wrap');
+  const CW    = wrap.clientWidth - 32;
+  const failM = fd.obs_fail_m || [];
+  const failR = fd.obs_fail_r || [];
+  const rl    = fd.rl || [];
+
+  const totalRuns = rl.reduce((a, b) => a + b, 0);
+  let meanRL = 0;
+  for (let i = 0; i < rl.length; i++) meanRL += (i + 1) * rl[i];
+  if (totalRuns > 0) meanRL /= totalRuns;
+  const maxRL  = failR.length > 0 ? Math.max(...failR) : 3;
+  const yRLmax = maxRL + 0.8;
+
+  // Canvas layout
+  const TH  = Math.min(Math.round(CW * 0.33), 220);   // top panel height
+  const BH  = Math.min(Math.round(CW * 0.38), 260);   // bottom panels height
+  const GY  = 26;                                       // gap between rows
+  const CH  = TH + GY + BH;
+  plotCanvas.width = CW; plotCanvas.height = CH;
+
+  const ctx  = plotCtx;
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, CW, CH);
+
+  const bins = DATA.bins_mjd;
+  const xmin = bins[0], xmax = bins[bins.length - 1];
+
+  // ── helper: draw RLE lines ────────────────────────────────────────────────
+  function drawRLElines(xS, yS, x0, y0, w, h, tlo, thi, highlightDot) {
+    ctx.save(); ctx.beginPath();
+    ctx.rect(x0, y0, w, h + 1); ctx.clip();
+    for (let i = 0; i < failM.length; i++) {
+      if (failM[i] < tlo || failM[i] > thi) continue;
+      const x  = xS(failM[i]);
+      const inW = highlightDot && failM[i] >= highlightDot.mjd_lo && failM[i] < highlightDot.mjd_hi;
+      ctx.lineWidth   = inW ? 1.3 : 0.8;
+      ctx.strokeStyle = inW ? 'rgba(139,26,26,.90)' : 'rgba(139,26,26,.55)';
+      ctx.beginPath(); ctx.moveTo(x, yS(0)); ctx.lineTo(x, yS(failR[i])); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ── helper: draw integer y-ticks ─────────────────────────────────────────
+  function drawIntYticks(ctx, x0, yS, maxV) {
+    ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.textAlign = 'right';
+    ctx.font = '9px ui-monospace,Menlo,monospace';
+    for (let v = 1; v <= maxV; v++) {
+      const py = yS(v);
+      ctx.beginPath(); ctx.moveTo(x0 - 3, py); ctx.lineTo(x0, py);
+      ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillText(v, x0 - 5, py + 3.5);
+    }
+  }
+
+  // ── TOP PANEL: full-survey RLE timeline ──────────────────────────────────
+  const T  = { x0: 52, y0: 22, w: CW - 70, h: TH - 57 };
+  const txS = v => T.x0 + (v - xmin) / (xmax - xmin) * T.w;
+  const tyS = v => T.y0 + T.h - (v / yRLmax) * T.h;
+
+  // gold highlight
+  if (dot) {
+    const hx0 = txS(dot.mjd_lo), hx1 = txS(dot.mjd_hi);
+    ctx.fillStyle = 'rgba(255,200,50,.18)';
+    ctx.fillRect(hx0, T.y0, hx1 - hx0, T.h);
+  }
+
+  // year grid
+  ctx.strokeStyle = 'rgba(0,0,0,.10)'; ctx.lineWidth = 0.5;
+  ctx.fillStyle   = 'rgba(0,0,0,.30)';
+  ctx.font = '9px ui-monospace,Menlo,monospace'; ctx.textAlign = 'left';
+  for (let yr = 2021; yr <= 2026; yr++) {
+    const mjd = Math.round((Date.UTC(yr, 0, 1) - Date.UTC(1858, 10, 17)) / 86400000);
+    if (mjd < xmin || mjd > xmax) continue;
+    const x = txS(mjd);
+    ctx.beginPath(); ctx.moveTo(x, T.y0); ctx.lineTo(x, T.y0 + T.h); ctx.stroke();
+    ctx.fillText(yr, x + 2, T.y0 + T.h - 2);
+  }
+
+  // CCD swaps
+  ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+  for (const [mjd, ch] of (CCD_SWAPS[String(fd.petal)] || [])) {
+    if (mjd < xmin || mjd > xmax) continue;
+    ctx.strokeStyle = CCD_COLOR[ch] + 'bb';
+    const x = txS(mjd);
+    ctx.beginPath(); ctx.moveTo(x, T.y0); ctx.lineTo(x, T.y0 + T.h); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // mean line
+  if (meanRL > 0) {
+    const ym = tyS(meanRL);
+    ctx.setLineDash([4, 3]); ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(0,0,0,.28)';
+    ctx.beginPath(); ctx.moveTo(T.x0, ym); ctx.lineTo(T.x0 + T.w, ym); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  drawRLElines(txS, tyS, T.x0, T.y0, T.w, T.h, xmin, xmax, dot);
+
+  // axes
+  ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(T.x0, T.y0); ctx.lineTo(T.x0, T.y0 + T.h); ctx.lineTo(T.x0 + T.w, T.y0 + T.h);
+  ctx.stroke();
+  drawIntYticks(ctx, T.x0, tyS, maxRL);
+  ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '10px ui-monospace,Menlo,monospace';
+  ctx.fillText('MJD', T.x0 + T.w / 2, TH - 5);
+  ctx.save(); ctx.translate(10, T.y0 + T.h / 2); ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center'; ctx.fillText('Run length', 0, 0); ctx.restore();
+  ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.textAlign = 'center';
+  ctx.fillText('Run-length encoding — full survey  (' + fd.n_obs + ' obs, ' + totalRuns + ' failure runs)', T.x0 + T.w / 2, T.y0 - 6);
+
+  // ── BOTTOM-LEFT PANEL: zoomed RLE ────────────────────────────────────────
+  const BLW = Math.round(CW * 0.56);
+  const BY0 = TH + GY;
+  const BL  = { x0: 52, y0: BY0 + 22, w: BLW - 60, h: BH - 57 };
+
+  let tlo = xmin, thi = xmax;
+  if (dot) {
+    const span = dot.mjd_hi - dot.mjd_lo;
+    tlo = dot.mjd_lo - span * 0.8;
+    thi = dot.mjd_hi + span * 0.8;
+  }
+  const blxS = v => BL.x0 + (v - tlo) / (thi - tlo) * BL.w;
+  const blyS = v => BL.y0 + BL.h - (v / yRLmax) * BL.h;
+
+  // gold highlight
+  if (dot) {
+    ctx.fillStyle = 'rgba(255,200,50,.18)';
+    ctx.fillRect(blxS(dot.mjd_lo), BL.y0, blxS(dot.mjd_hi) - blxS(dot.mjd_lo), BL.h);
+  }
+
+  // month labels
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  ctx.strokeStyle = 'rgba(0,0,0,.10)'; ctx.lineWidth = 0.5;
+  ctx.fillStyle   = 'rgba(0,0,0,.30)'; ctx.font = '8px ui-monospace,Menlo,monospace';
+  for (let yr = 2020; yr <= 2027; yr++) {
+    for (let mo = 0; mo < 12; mo++) {
+      const mjd = Math.round((Date.UTC(yr, mo, 1) - Date.UTC(1858, 10, 17)) / 86400000);
+      if (mjd < tlo || mjd > thi) continue;
+      const x = blxS(mjd);
+      if (x < BL.x0 || x > BL.x0 + BL.w) continue;
+      ctx.beginPath(); ctx.moveTo(x, BL.y0); ctx.lineTo(x, BL.y0 + BL.h); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.fillText(MONTHS[mo], x, BL.y0 + BL.h + 10);
+    }
+  }
+
+  // CCD swaps
+  ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+  for (const [mjd, ch] of (CCD_SWAPS[String(fd.petal)] || [])) {
+    if (mjd < tlo || mjd > thi) continue;
+    ctx.strokeStyle = CCD_COLOR[ch] + 'bb';
+    const x = blxS(mjd);
+    ctx.beginPath(); ctx.moveTo(x, BL.y0); ctx.lineTo(x, BL.y0 + BL.h); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // mean line
+  if (meanRL > 0) {
+    const ym = blyS(meanRL);
+    ctx.setLineDash([4, 3]); ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(0,0,0,.28)';
+    ctx.beginPath(); ctx.moveTo(BL.x0, ym); ctx.lineTo(BL.x0 + BL.w, ym); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '8px ui-monospace,Menlo,monospace'; ctx.textAlign = 'left';
+    ctx.fillText('mean=' + meanRL.toFixed(1), BL.x0 + 3, ym - 3);
+  }
+
+  let nFail = 0;
+  for (let i = 0; i < failM.length; i++) {
+    if (dot && failM[i] >= dot.mjd_lo && failM[i] < dot.mjd_hi) nFail++;
+  }
+  drawRLElines(blxS, blyS, BL.x0, BL.y0, BL.w, BL.h, tlo, thi, dot);
+
+  // axes
+  ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(BL.x0, BL.y0); ctx.lineTo(BL.x0, BL.y0 + BL.h); ctx.lineTo(BL.x0 + BL.w, BL.y0 + BL.h);
+  ctx.stroke();
+  drawIntYticks(ctx, BL.x0, blyS, maxRL);
+  ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '10px ui-monospace,Menlo,monospace';
+  ctx.fillText('MJD', BL.x0 + BL.w / 2, BY0 + BH - 5);
+  ctx.save(); ctx.translate(10, BL.y0 + BL.h / 2); ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center'; ctx.fillText('Run length', 0, 0); ctx.restore();
+  const zTitle = dot ? mjdToDate(dot.mjd_lo) + ' – ' + mjdToDate(dot.mjd_hi) + '   (' + nFail + ' fails in window)'
+                     : 'Full survey';
+  ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.textAlign = 'center'; ctx.font = '10px ui-monospace,Menlo,monospace';
+  ctx.fillText(zTitle, BL.x0 + BL.w / 2, BY0 + 12);
+
+  // ── BOTTOM-RIGHT PANEL: histogram (for clicked window) ─────────────────────
+  const BRX0 = BLW + 20;
+  const BR   = { x0: BRX0 + 36, y0: BY0 + 22, w: CW - BRX0 - 48, h: BH - 57 };
+
+  // Compute run-length counts for the window using run IDs to avoid double-counting
+  const failRid = fd.obs_fail_rid || [];
+  const winCounts = {};
+  const seenRids  = new Set();
+  for (let i = 0; i < failM.length; i++) {
+    if (!dot || (failM[i] >= dot.mjd_lo && failM[i] < dot.mjd_hi)) {
+      if (!seenRids.has(failRid[i])) {
+        seenRids.add(failRid[i]);
+        winCounts[failR[i]] = (winCounts[failR[i]] || 0) + 1;
+      }
+    }
+  }
+  const winMaxLen   = Object.keys(winCounts).length > 0 ? Math.max(...Object.keys(winCounts).map(Number)) : 0;
+  const winRL       = winMaxLen > 0 ? Array.from({length: winMaxLen}, (_, i) => winCounts[i+1] || 0) : [];
+  const winTotal    = winRL.reduce((a, b) => a + b, 0);
+
+  if (winRL.length > 0) {
+    const maxCount = Math.max(...winRL);
+    const yHmax = maxCount * 1.25;
+    const brxS  = i => BR.x0 + (i / winRL.length) * BR.w;
+    const bryS  = v => BR.y0 + BR.h - (v / yHmax) * BR.h;
+    const barW  = BR.w / winRL.length * 0.72;
+
+    const rawStep3 = Math.max(yHmax / 4, 1);
+    const mag3  = Math.pow(10, Math.floor(Math.log10(rawStep3)));
+    const step3 = [1, 2, 5].map(f => f * mag3).find(s => s >= rawStep3) || 1;
+    const yticks3 = [];
+    for (let v = step3; v <= yHmax * 1.05; v = Math.round((v + step3) * 1e6) / 1e6) yticks3.push(v);
+
+    ctx.strokeStyle = 'rgba(0,0,0,.08)'; ctx.lineWidth = 0.6;
+    for (const y of yticks3) {
+      ctx.beginPath(); ctx.moveTo(BR.x0, bryS(y)); ctx.lineTo(BR.x0 + BR.w, bryS(y)); ctx.stroke();
+    }
+
+    for (let i = 0; i < winRL.length; i++) {
+      if (winRL[i] === 0) continue;
+      const cx = brxS(i + 0.5);
+      ctx.fillStyle = '#8b1a1a';
+      ctx.fillRect(cx - barW / 2, bryS(winRL[i]), barW, bryS(0) - bryS(winRL[i]));
+      ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.font = '10px ui-monospace,Menlo,monospace'; ctx.textAlign = 'center';
+      ctx.fillText(winRL[i], cx, bryS(winRL[i]) - 4);
+    }
+
+    // mean line
+    let meanH = 0;
+    for (let i = 0; i < winRL.length; i++) meanH += (i + 1) * winRL[i];
+    if (winTotal > 0) meanH /= winTotal;
+    const mxH = brxS(meanH);
+    ctx.setLineDash([4, 3]); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath(); ctx.moveTo(mxH, BR.y0); ctx.lineTo(mxH, BR.y0 + BR.h); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '8px ui-monospace,Menlo,monospace'; ctx.textAlign = 'left';
+    ctx.fillText('μ=' + meanH.toFixed(1), mxH + 2, BR.y0 + 10);
+
+    // axes
+    ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(BR.x0, BR.y0); ctx.lineTo(BR.x0, BR.y0 + BR.h); ctx.lineTo(BR.x0 + BR.w, BR.y0 + BR.h);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.textAlign = 'right'; ctx.font = '9px ui-monospace,Menlo,monospace';
+    for (const y of yticks3) {
+      const py = bryS(y);
+      ctx.beginPath(); ctx.moveTo(BR.x0 - 3, py); ctx.lineTo(BR.x0, py);
+      ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.stroke();
+      ctx.fillText(y, BR.x0 - 5, py + 3.5);
+    }
+    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '10px ui-monospace,Menlo,monospace';
+    for (let i = 0; i < winRL.length; i++) {
+      const cx = brxS(i + 0.5);
+      ctx.beginPath(); ctx.moveTo(cx, BR.y0 + BR.h); ctx.lineTo(cx, BR.y0 + BR.h + 4);
+      ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.stroke();
+      ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillText(i + 1, cx, BR.y0 + BR.h + 14);
+    }
+    ctx.fillStyle = 'rgba(0,0,0,.4)';
+    ctx.fillText('Run length', BR.x0 + BR.w / 2, BY0 + BH - 5);
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.textAlign = 'center';
+    ctx.fillText('Run-length dist — window  (' + winTotal + ' runs)', BR.x0 + BR.w / 2, BY0 + 12);
+  } else {
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.font = '11px ui-monospace,Menlo,monospace';
+    ctx.textAlign = 'center'; ctx.fillText('No failure runs in window', BR.x0 + BR.w / 2, BR.y0 + BR.h / 2);
+  }
+
+  // ── Fiber title ───────────────────────────────────────────────────────────
+  const ns    = fd.nsig !== null ? '   σ = ' + fd.nsig.toFixed(1) : '';
+  const bad   = fd.is_bad ? '   ★ BAD' : '';
+  const tcolor = fd.is_bad ? '#e8910a' : '#e0e0f0';
+  fiberTitle.innerHTML =
+    '<span style="color:' + tcolor + '">fiber ' + fib +
+    ' &nbsp;·&nbsp; petal ' + fd.petal + ns + bad +
+    ' &nbsp;·&nbsp; click to return</span>';
 }
 
 const overlay     = document.getElementById('img-overlay');
