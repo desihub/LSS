@@ -1310,18 +1310,23 @@ if args.ran_utlid == 'y':
 
 
 #needs to happen before randoms so randoms can get z and weights
+nzcompmd = 'ran'
+if args.compmd == 'altmtl':
+    nzcompmd = args.compmd
+
 weightileloc=True
 redo_fracz=False
 if args.redo_fracz == 'y':
     redo_fracz=True
+NN = False
+if args.nearestneighbor == 'y':
+    NN = True
+    nzcompmd = 'dat'
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,redo_fracz=redo_fracz,NN=False,weighttileloc=weightileloc,tp=type,dchi2=dchi2,zmin=mainp.zmin,zmax=mainp.zmax,correct_zcmb=args.zcmb,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
+    ct.mkclusdat(dirout+type+notqso,redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc,tp=type,dchi2=dchi2,zmin=mainp.zmin,zmax=mainp.zmax,correct_zcmb=args.zcmb,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
 
-nzcompmd = 'ran'
-if args.compmd == 'altmtl':
-    nzcompmd = args.compmd
 
 
 inds = np.arange(rm,rx)
