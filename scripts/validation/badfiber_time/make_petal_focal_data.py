@@ -95,6 +95,42 @@ def get_fiber(fib):
         return np.array([]), np.array([], dtype=bool), np.array([])
     return d['mjd'][s:e], d['zsuc'][s:e], d['mod_success_rate'][s:e]
 
+def run_length_counts(sucs_sorted):
+    counts = {}
+    in_run, run_len = False, 0
+    for s in sucs_sorted:
+        if not s:
+            in_run = True; run_len += 1
+        else:
+            if in_run:
+                counts[run_len] = counts.get(run_len, 0) + 1
+                run_len = 0; in_run = False
+    if in_run:
+        counts[run_len] = counts.get(run_len, 0) + 1
+    if not counts:
+        return []
+    return [counts.get(i, 0) for i in range(1, max(counts) + 1)]
+
+def run_length_annotate(sucs_sorted, mjds_sorted):
+    """Return (fail_mjds, fail_run_lengths, fail_run_ids) — one entry per failure observation."""
+    fail_m, fail_r, fail_rid = [], [], []
+    i, n, run_id = 0, len(sucs_sorted), 0
+    while i < n:
+        if not sucs_sorted[i]:
+            j = i
+            while j < n and not sucs_sorted[j]:
+                j += 1
+            run_len = j - i
+            for k in range(i, j):
+                fail_m.append(round(float(mjds_sorted[k]), 1))
+                fail_r.append(run_len)
+                fail_rid.append(run_id)
+            run_id += 1
+            i = j
+        else:
+            i += 1
+    return fail_m, fail_r, fail_rid
+
 def binned(mjds, sucs, mods):
     fr, er, pred = [], [], []
     for b0, b1 in zip(bins[:-1], bins[1:]):
@@ -128,15 +164,26 @@ print(f'Computing binned rates for petal {PETAL} fibers...', flush=True)
 for fib in range(fib_lo, fib_hi):
     mjds, sucs, mods = get_fiber(fib)
     fr, er, pred = binned(mjds, sucs, mods) if len(mjds) >= 5 else ([None]*NBINS, [None]*NBINS, [None]*NBINS)
+    if len(mjds) >= 2:
+        sort_idx = np.argsort(mjds)
+        mjds_s, sucs_s = mjds[sort_idx], sucs[sort_idx]
+        rl = run_length_counts(sucs_s)
+        fail_m, fail_r, fail_rid = run_length_annotate(sucs_s, mjds_s)
+    else:
+        rl = []; fail_m = []; fail_r = []; fail_rid = []
     out['fibers'][str(fib)] = {
-        'x':      round(fiber_x[fib], 2) if np.isfinite(fiber_x[fib]) else None,
-        'y':      round(fiber_y[fib], 2) if np.isfinite(fiber_y[fib]) else None,
-        'is_bad': fib in bad_fibers,
-        'nsig':   round(nsig_map[fib], 2) if fib in nsig_map else None,
-        'n_obs':  int(len(mjds)),
-        'fr':     fr,
-        'er':     er,
-        'pred':   pred,
+        'x':            round(fiber_x[fib], 2) if np.isfinite(fiber_x[fib]) else None,
+        'y':            round(fiber_y[fib], 2) if np.isfinite(fiber_y[fib]) else None,
+        'is_bad':       fib in bad_fibers,
+        'nsig':         round(nsig_map[fib], 2) if fib in nsig_map else None,
+        'n_obs':        int(len(mjds)),
+        'fr':           fr,
+        'er':           er,
+        'pred':         pred,
+        'rl':           rl,
+        'obs_fail_m':   fail_m,
+        'obs_fail_r':   fail_r,
+        'obs_fail_rid': fail_rid,
     }
 
 outpath = f'{DATADIR}/lrg_petal{PETAL}_focal_data.json'
