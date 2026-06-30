@@ -1319,10 +1319,12 @@ weightileloc=True
 redo_fracz=False
 if args.redo_fracz == 'y':
     redo_fracz=True
+    common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
 NN = False
 if args.nearestneighbor == 'y':
     NN = True
     nzcompmd = 'dat'
+    common.printlog('adding nearest neighbor to completeness weight',logger)
 if args.compmd == 'altmtl':
     weightileloc = False
 if mkclusdat:

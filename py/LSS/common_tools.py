@@ -82,6 +82,7 @@ def get_fracz_pNNweight(dz, get_nnweight=False,logger=None):
     natloc = ~np.isin(dz['TILELOCID'], loclz)
     nnweight = np.ones(len(dz))
     if get_nnweight:
+        common.printlog('getting nearest neighbor weight',logger)
         nnweight = get_nearest_neighbor_weight(dz['RA'], dz['DEC'], wz, natloc)
     printlog('number of unique targets around unassigned locations is ' +
           str(np.sum(natloc)),logger)
