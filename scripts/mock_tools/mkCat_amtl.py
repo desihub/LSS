@@ -278,7 +278,7 @@ test_dir(dirout)
 
 clusdir = dirout #directory for clustering catalogs
 if args.extra_clusdir != '':
-    clusdir += '/'+args.extra_clusdir
+    clusdir += '/'+args.extra_clusdir+'/'
 test_dir(clusdir)
     
 
@@ -1062,7 +1062,7 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         #common.printlog(str(datain.dtype),logger)
-        ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5')
+        ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5',extradir=args.extra_clusdir)
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
         del datain
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
@@ -1086,7 +1086,7 @@ if args.mkclusran == 'y':
 
     gc.collect()
 
-fb = os.path.join(dirout, finaltracer)
+fb = os.path.join(dirout+args.extra_clusdir+'/', finaltracer)
 nran = rx-rm
 regions = ['NGC', 'SGC']
 
@@ -1119,7 +1119,7 @@ def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
         common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 if args.splitGC == 'y':
-    fb_split = os.path.join(dirout,tracer_clus+'_')
+    fb_split = os.path.join(dirout+args.extra_clusdir+'/',tracer_clus+'_')
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
     splitGC(fb_split, '.dat',ftp='.h5')
     
@@ -1158,7 +1158,7 @@ if args.resamp == 'y':
 
 if args.nz == 'y':
     for reg in regions:#allreg:
-        fb_nz = os.path.join(dirout,tracer_clus+'_'+reg)
+        fb_nz = os.path.join(dirout+args.extra_clusdir+'/',tracer_clus+'_'+reg)
         fcr = fb_nz+'_0_clustering.ran.h5'#.fits'
         fcd = fb_nz+'_clustering.dat.h5'
         fout = fb_nz+'_nz.txt'
@@ -1263,23 +1263,23 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     )
         # define the paths for the input files
     fname_ngc_out = os.path.join(
-        dirout, f"{tracer_clus}_NGC_clustering.dat.h5"
+        clusdir, f"{tracer_clus}_NGC_clustering.dat.h5"
     )
 
     fname_sgc_out = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+        clusdir, f"{tracer_clus}_SGC_clustering.dat.h5"
     )
 
     # get paths for random catalogs
     randoms_fnames_out = [
         os.path.join(
-            dirout,
+            clusdir,
             f"{tracer_clus}_NGC_{i}_clustering.ran.h5",
         )
         for i in range(args.nran4imsys)
     ] + [
         os.path.join(
-            dirout,
+            clusdir,
             f"{tracer_clus}_SGC_{i}_clustering.ran.h5",
         )
         for i in range(args.nran4imsys)
@@ -1333,7 +1333,7 @@ if args.doimlin == 'y':
             lssmapdirout, f"{tpmap}_mapprops_healpix_nested_nside{nside}_N.fits"
         ),
         fit_maps=fit_maps,
-        output_directory=dirout,
+        output_directory=clusdir,
         output_catalog_path=None,  # writing to disk will be done later to handle SGC/NGC separately
         output_column_name=syscol,
         save_summary_plots=True,
@@ -1378,11 +1378,11 @@ if args.doimlin == 'y':
     #if args.imsys_clus_ran:
     if write_ran:
         fname = os.path.join(
-            dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
+            clusdir,  f"{tracer_clus}_NGC_clustering.dat.h5"
         )
         dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
         fname = os.path.join(
-            dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+            clusdir, f"{tracer_clus}_SGC_clustering.dat.h5"
         )
         dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
         dat = vstack([dat_sgc, dat_ngc])
@@ -1395,7 +1395,7 @@ if args.doimlin == 'y':
         def _add2ran(rann):
             for reg in regl:
                 ran_fn = os.path.join(
-                    dirout,
+                    clusdir,
                     f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
                 )
                 ran = Table(read_file(ran_fn))
@@ -1419,9 +1419,9 @@ if args.doimlin == 'y':
 
 if args.prep4sysnet == 'y':
     common.printlog('preparing data to run sysnet regression for '+tracer_clus,logger)
-    if not os.path.exists(dirout+'/sysnet'):
-        os.mkdir(dirout+'/sysnet')
-        print('made '+dirout+'/sysnet')    
+    if not os.path.exists(clusdir+'/sysnet'):
+        os.mkdir(clusdir+'/sysnet')
+        print('made '+clusdir+'/sysnet')    
 
     from LSS.imaging import sysnet_tools
     
@@ -1499,9 +1499,9 @@ if args.prep4sysnet == 'y':
             prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd=wtmd)
-            fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
-            if not os.path.isdir(dirout+'/sysnet/'):
-                os.makedirs( dirout+'/sysnet/')
+            fnout = clusdir+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
+            if not os.path.isdir(clusdir+'/sysnet/'):
+                os.makedirs( clusdir+'/sysnet/')
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
 
 if args.addsysnet == 'y':
@@ -1523,7 +1523,7 @@ if args.addsysnet == 'y':
             #zw = ''
             #if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
-            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
+            sn_weights = fitsio.read(clusdir+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
             pred_counts = np.mean(sn_weights['weight'],axis=1)
             #pix_weight = np.mean(pred_counts)/pred_counts
             #pix_weight = np.clip(pix_weight,0.5,2.)
@@ -1583,11 +1583,11 @@ if args.addsysnet == 'y':
     #if args.imsys_clus_ran:
     
     fname = os.path.join(
-        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
+        clusdir,  f"{tracer_clus}_NGC_clustering.dat.h5"
     )
     dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
     fname = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+        clusdir, f"{tracer_clus}_SGC_clustering.dat.h5"
     )
     dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
     dat = vstack([dat_sgc, dat_ngc])
@@ -1600,7 +1600,7 @@ if args.addsysnet == 'y':
     def _add2ran(rann):
         for reg in regl:
             ran_fn = os.path.join(
-                dirout,
+                clusdir,
                 f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
             )
             ran = Table(read_file(ran_fn))
