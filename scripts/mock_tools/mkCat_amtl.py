@@ -1086,7 +1086,7 @@ if args.mkclusran == 'y':
 
     gc.collect()
 
-fb = os.path.join(dirout+args.extra_clusdir+'/', finaltracer)
+fb = os.path.join(dirout+'/'+args.extra_clusdir+'/', finaltracer)
 nran = rx-rm
 regions = ['NGC', 'SGC']
 
@@ -1119,7 +1119,7 @@ def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
         common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 if args.splitGC == 'y':
-    fb_split = os.path.join(dirout+args.extra_clusdir+'/',tracer_clus+'_')
+    fb_split = os.path.join(clusdir+'/',tracer_clus+'_')
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
     splitGC(fb_split, '.dat',ftp='.h5')
     
@@ -1158,7 +1158,7 @@ if args.resamp == 'y':
 
 if args.nz == 'y':
     for reg in regions:#allreg:
-        fb_nz = os.path.join(dirout+args.extra_clusdir+'/',tracer_clus+'_'+reg)
+        fb_nz = os.path.join(clusdir+'/',tracer_clus+'_'+reg)
         fcr = fb_nz+'_0_clustering.ran.h5'#.fits'
         fcd = fb_nz+'_clustering.dat.h5'
         fout = fb_nz+'_nz.txt'
