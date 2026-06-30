@@ -56,6 +56,7 @@ parser.add_argument("--outmd", help="whether to write in scratch",default='scrat
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--pota", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
+parser.add_argument("--extra_clusdir", help="string for extra directory for clustering catalogs",default='')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
 parser.add_argument("--dataversion", help="version of LSS catalogs",default='v2')
@@ -97,6 +98,9 @@ parser.add_argument("--add_bitweights", help="Add bitweights to files before cre
 parser.add_argument("--add_extracols", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 parser.add_argument("--addNtileweight2full", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
+parser.add_argument("--redo_fracz",help="whether to recalculate the completeness weights based on masked data",default='n')
+parser.add_argument("--nearestneighbor",help="whether to nearest neighbor weights on data instead of frac_tl_obs on randoms",default='n')
+
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
 parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP weights.",default='n')
 
@@ -271,6 +275,12 @@ dirfinal = dirout
 if args.outmd == 'scratch':
     dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
 test_dir(dirout)
+
+clusdir = dirout #directory for clustering catalogs
+if args.extra_clusdir != '':
+    clusdir += '/'+args.extra_clusdir
+test_dir(clusdir)
+    
 
 #if not os.path.exists(dirout):
 #    os.makedirs(dirout)
@@ -917,6 +927,16 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
         common.write_LSShdf5_scratchcp(fin[sel],ffull,logger=logger)
 
 
+if args.redo_fracz == 'y':
+    redo_fracz=True
+    common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
+NN = False
+if args.nearestneighbor == 'y':
+    NN = True
+    nzcompmd = 'dat'
+    common.printlog('adding nearest neighbor to completeness weight',logger)
+if args.compmd == 'altmtl':
+    weightileloc = False
 
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
@@ -951,7 +971,7 @@ if args.mkclusdat == 'y':
 
        #readdir = dirout
     
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5') #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5',extradir=args.extra_clusdir) #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
