@@ -926,6 +926,10 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
         #common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
         common.write_LSShdf5_scratchcp(fin[sel],ffull,logger=logger)
 
+nzcompmd = 'ran'
+wtmd_sysnet = 'fracz'
+if args.compmd == 'altmtl':
+    nzcompmd = args.compmd
 
 if args.redo_fracz == 'y':
     redo_fracz=True
@@ -934,6 +938,7 @@ NN = False
 if args.nearestneighbor == 'y':
     NN = True
     nzcompmd = 'dat'
+    wtmd_sysnet = 'fraczNN'
     common.printlog('adding nearest neighbor to completeness weight',logger)
 if args.compmd == 'altmtl':
     weightileloc = False
@@ -980,9 +985,6 @@ if args.mkclusdat == 'y':
 
     gc.collect()
 
-nzcompmd = 'ran'
-if args.compmd == 'altmtl':
-    nzcompmd = args.compmd
 
    
     
@@ -1498,7 +1500,7 @@ if args.prep4sysnet == 'y':
             common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
             prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
-                                                  columns=fitmapsbin,wtmd=wtmd)
+                                                  columns=fitmapsbin,wtmd=wtmd_sysnet)
             fnout = clusdir+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
             if not os.path.isdir(clusdir+'/sysnet/'):
                 os.makedirs( clusdir+'/sysnet/')
