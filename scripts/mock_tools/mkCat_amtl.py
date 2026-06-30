@@ -1016,9 +1016,9 @@ if args.mkclusran == 'y':
 #             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
     
     fl = os.path.join(readdir, finaltracer) + '_'
-    
+    flclus = os.path.join(clusdir, finaltracer) + '_'
     #clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
-    clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
+    clus_arrays = [common.read_hdf5_blosc(flclus.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
     #mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
