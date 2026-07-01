@@ -3227,6 +3227,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
             common.printlog('reading '+assignf+'.fits',logger)
             fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
             fs = Table(fs)
+        else:
+            common.printlog(fs +' not found!',logger)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
