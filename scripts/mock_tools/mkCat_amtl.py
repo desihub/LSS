@@ -58,6 +58,7 @@ parser.add_argument("--pota", help="base directory for target file",default=None
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
 parser.add_argument("--extra_clusdir", help="string for extra directory for clustering catalogs",default='')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
+parser.add_argument("--surveycat", help="set this if you want to make, e.g. DA2 catalogs from DA3",default=None)
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
 parser.add_argument("--dataversion", help="version of LSS catalogs",default='v2')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
@@ -173,6 +174,10 @@ else:
 
 pd = pdir
 
+surveycat = args.survey
+if args.surveycat is not None:
+    surveycat = args.surveycat
+
 if args.base_output == None:
     maindir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)
 else:
@@ -183,10 +188,10 @@ if args.targDir == None:
     args.targDir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/'
 
 
-tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
+tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+surveycat+'/LSS/tiles-'+pr+'.fits'
 tiles = fitsio.read(tile_fn)
 
-data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=survey, SPECVER=args.specdata,DATAVER=args.dataversion)
+data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=surveycat, SPECVER=args.specdata,DATAVER=args.dataversion)
 
 gtl = None
 if args.add_gtl == 'y':
@@ -207,7 +212,7 @@ if args.add_gtl == 'y':
     #    tsnrcut = mainp.tsnrcut
     #    tnsrcol = mainp.tsnrcol        
 
-        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
+        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
         specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
         specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
@@ -300,10 +305,10 @@ if '-' not in args.tracer:
 
 asn = None
 pa = None
-outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
+outdir = os.path.join(maindir.replace(args.survey,surveycat), 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
 if args.outmd == 'scratch':
     dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
-
+dirout = dirout.replace(args.survey,surveycat)
 test_dir(outdir)
 
 if args.combd == 'y':
@@ -491,7 +496,7 @@ if args.joindspec == 'y':
         outfs = outfs.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
     #common.write_LSS_scratchcp(tj,outfs,logger=logger)
-    common.write_LSShdf5_scratchcp(tj,outfs,logger=logger)
+    common.write_LSShdf5_scratchcp(tj,outfs.replace(args.survey,surveycat),logger=logger)
     #tj.write(outfs, format = 'fits', overwrite = True)
     #common.print('wrote ' + outfs)
     #don't do this anymore, it gets done within mkfulld
@@ -512,9 +517,10 @@ if args.tracer[:3] == 'BGS':
     maxp = 2100
 
 dataf = None
+lssdir = lssdir.replace(args.survey,surveycat)
 if args.fulld == 'y':
     common.printlog('--- START FULLD ---',logger=logger)
-    mainp = main(args.tracer, args.specdata, survey=args.survey)
+    mainp = main(args.tracer, args.specdata, survey=surveycat)
 
     ftar = None
     #dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
@@ -1496,7 +1502,7 @@ if args.prep4sysnet == 'y':
             #else:
             #    allrands = None
             common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
-            wtmd = 'fracz'
+            #wtmd = 'fracz'
             common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
             prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
