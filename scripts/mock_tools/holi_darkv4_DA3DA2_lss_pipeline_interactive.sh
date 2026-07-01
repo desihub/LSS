@@ -11,9 +11,9 @@ surveycat=DA2 #this will make it process the DR2 footprint
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 #test
 
-echo $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat--add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/$survey/mocks/$sim --combd y --joindspec y --par y --usepota y
+echo $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/$survey/mocks/$sim --combd y --joindspec y --par y --usepota y
 
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat--add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/$survey/mocks/$sim --combd y --joindspec y --par y --usepota y
+python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/$survey/mocks/$sim --combd y --joindspec y --par y --usepota y
 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --targDir $SCRATCH/$survey/mocks/$sim --tracer LRG --fulld y --apply_veto y --par y
 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --targDir $SCRATCH/$survey/mocks/$sim --tracer QSO --fulld y --apply_veto y --par y
 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --targDir $SCRATCH/$survey/mocks/$sim --tracer ELG_LOP --notqso y --fulld y --apply_veto y --par y
