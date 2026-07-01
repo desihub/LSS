@@ -23,8 +23,7 @@ def get_nz_bgs(z_cat, tracer_type, nzfile, factor=None):
 def get_nz(z_cat, tracer_type, ns=None):
     ''' The function where the n(z) is read and the NZ column is computed for the given redshifts.   '''
     if tracer_type == 'LRG':
-        nzfile = 'LRG_SGC_nz.txt'
-        #nzfile = 'nz_lrg_da2_mocks.txt'
+        nzfile = 'nz_lrg_da2_mocks.txt'
     elif tracer_type == 'QSO':
         nzfile = 'nz_qso_da2_mocks.txt'
     elif tracer_type == 'BGS':
