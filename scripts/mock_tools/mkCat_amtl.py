@@ -901,15 +901,26 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
                 common.printlog(fn+' not found!')            
         common.printlog("cut method "+args.absmagmd, logger)
         dcols = list(fin.dtype.names)
+        cutagainst = 'rmag'
         if 'R_MAG_ABS' not in dcols:
             tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
-            td = fitsio.read(tarf,columns=['TARGETID','R_MAG_ABS'])
+            tdcol = list(fitsio.read(tarf,rows=1).dtype.names)
+            if 'R_MAG_ABS' in tdcol:
+                td = fitsio.read(tarf,columns=['TARGETID','R_MAG_ABS'])
+            elif 'TRACER_TYPE' in tdcol:
+                td = fitsio.read(tarf,columns=['TARGETID','TRACER_TYPE'])
+                cutagainst = 'string'
+            else:
+                common.printlog('needed column not there',logger)
             flen = len(fin)
             fin = join(fin,td,keys=['TARGETID'])
             if len(fin) != flen:
                 common.printlog('the lengths after join to get R_MAG_ABS changed!!!')
         if args.absmagmd == 'simp':
-            sel = fin['R_MAG_ABS'] < abmagcut
+            if cutagainst == 'rmag':
+                sel = fin['R_MAG_ABS'] < abmagcut
+            elif cutagainst == 'string':
+                sel = fin['TRACER_TYPE'] == args.tracer
         elif args.absmagmd == 'redshiftdep' and abmagcut == -2:
             common.printlog("using z dependent cut", logger)
             fit2_a = np.loadtxt("/pscratch/sd/z/zxzhai/DESI_LSS/BGS_ANY_zmagcut_a.dat")
