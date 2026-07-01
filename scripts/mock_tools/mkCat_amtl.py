@@ -948,6 +948,7 @@ wtmd_sysnet = 'fracz'
 if args.compmd == 'altmtl':
     nzcompmd = args.compmd
 
+redo_fracz = False
 if args.redo_fracz == 'y':
     redo_fracz=True
     common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
