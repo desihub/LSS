@@ -281,10 +281,6 @@ if args.outmd == 'scratch':
     dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
 test_dir(dirout)
 
-clusdir = dirout #directory for clustering catalogs
-if args.extra_clusdir != '':
-    clusdir += '/'+args.extra_clusdir+'/'
-test_dir(clusdir)
     
 
 #if not os.path.exists(dirout):
@@ -309,6 +305,12 @@ outdir = os.path.join(maindir.replace(args.survey,surveycat), 'fba' + str(mocknu
 if args.outmd == 'scratch':
     dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
 dirout = dirout.replace(args.survey,surveycat)
+clusdir = dirout #directory for clustering catalogs
+if args.extra_clusdir != '':
+    clusdir += '/'+args.extra_clusdir+'/'
+test_dir(clusdir)
+
+
 test_dir(outdir)
 
 if args.combd == 'y':
