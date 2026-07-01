@@ -465,7 +465,7 @@ if args.joindspec == 'y':
         common.printlog('loaded potential assignements',logger)
     pa = Table(pa)
     lenpa = len(pa)
-    sel_tiles = np.isin(pa['TILEID'],tiles['TILEID']
+    sel_tiles = np.isin(pa['TILEID'],tiles['TILEID'])
     pa = pa[sel_tiles]
     common.printlog('length of potential assignments, before/after cutting to tile list '+str(lenpa)+'/'+str(len(pa)),logger)
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
