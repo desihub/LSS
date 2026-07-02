@@ -6,6 +6,7 @@
 #SBATCH -t 01:30:00
 #SBATCH --array=601-850
 #SBATCH --reservation=_CAP_holi_dr3_altmtl
+#SBATCH --dependency=afterany:55383732
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=128
 
