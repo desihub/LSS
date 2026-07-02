@@ -14,6 +14,6 @@ module load LSS/main
 module load desitarget/3.0.0
 
 mocknum=$SLURM_ARRAY_TASK_ID
+scriptdir=/global/u2/d/desica/LSScode/LSS/scripts/mock_tools/
 
-
-srun python initialize_amtl_mocks_da3.py /pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/forFA"$mocknum".fits /pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/altmtl"$mocknum"/ DARK
+srun python $scriptdir/initialize_amtl_mocks_da3.py /pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/forFA"$mocknum".fits /pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/altmtl"$mocknum"/ DARK
