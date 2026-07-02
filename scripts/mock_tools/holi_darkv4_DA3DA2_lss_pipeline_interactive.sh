@@ -2,6 +2,7 @@
 set -e
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
+export LSSCODE=$LSS
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 mocknum=$1
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
