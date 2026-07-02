@@ -1521,7 +1521,7 @@ if args.prep4sysnet == 'y':
             #    allrands = None
             common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
             #wtmd = 'fracz'
-            common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
+            common.printlog('using '+tpmap +' maps and '+wtmd_sysnet+' weights')
             prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
                                                   columns=fitmapsbin,wtmd=wtmd_sysnet)
