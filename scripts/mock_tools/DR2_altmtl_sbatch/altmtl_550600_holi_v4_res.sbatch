@@ -11,7 +11,7 @@
 #SBATCH -e /pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/%x.e%j
 ##SBATCH --dependency=afterany:46276251
 #SBATCH --nodes=1
-#SBATCH --reservation=altmtl
+#SBATCH --reservation=_CAP_holi_dr3_altmtl
 
 source /global/common/software/desi/desi_environment.sh main
 
