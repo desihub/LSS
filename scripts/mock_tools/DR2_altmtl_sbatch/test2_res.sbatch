@@ -13,6 +13,6 @@
 #SBATCH --nodes=1
 #SBATCH --reservation=_CAP_holi_dr3_altmtl
 
-echo "this should go to log"
-sleep 30
-echo "more to log"
+echo "about to load desi env"
+source /global/common/software/desi/desi_environment.sh main
+echo "loaded desi env"
