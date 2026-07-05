@@ -2354,21 +2354,29 @@ def return_altmtl_fba_fadate(tileid):
     fadate = fhtOrig['RUNDATE']
     return ''.join(fadate.split('T')[0].split('-'))
 
-def check_fracfba(seed,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/',survey='DA2',prog='DARK'):
-    
-    fbadir = os.path.join(mockdir,'altmtl'+str(seed), 'Univ000/fa/MAIN')
+def get_fadate_dic(survey='DA2',prog='DARK'):
     tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog+'.fits'
     tiles = fitsio.read(tile_fn)
     tls = tiles['TILEID']
-    nt = 0
-    na = 0
+    fadatel = []
     for tile in tls:
         fadate = return_altmtl_fba_fadate(tile)
+		fadatel.append(fadate)
+    return dict(zip(tls,fadatel))
+    
+def check_fracfba(seed,fadate_dic,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/',):
+    #seed is the mock realization
+    #the fadate_dic is a dictionary with tile number and date that is independent of the mock realization and don't want to keep looking up
+    fbadir = os.path.join(mockdir,'altmtl'+str(seed), 'Univ000/fa/MAIN')
+    nt = 0
+    na = 0
+    for tile in fadate_dic.keys():
+        fadate = fadate_dic[tile]
         ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
         if os.path.isfile(ffa):
             nt += 1
         na += 1
-        print(nt,na,ffa)
+        #print(nt,na,ffa)
     return nt/len(tls)
 
 
