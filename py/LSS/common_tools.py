@@ -2355,14 +2355,23 @@ def return_altmtl_fba_fadate(tileid):
     return ''.join(fadate.split('T')[0].split('-'))
 
 def get_fadate_dic(survey='DA2',prog='DARK'):
-    tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog+'.fits'
-    tiles = fitsio.read(tile_fn)
-    tls = tiles['TILEID']
-    fadatel = []
-    for tile in tls:
-        fadate = return_altmtl_fba_fadate(tile)
-        fadatel.append(fadate)
-    return dict(zip(tls,fadatel))
+    import json
+    fjson = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog+'-datedict.json'
+    if os.path.isfile(fjson):
+        fr = open(fjson,'r')
+        rdict = json.load(fr)
+    else:
+        tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog+'.fits'
+        tiles = fitsio.read(tile_fn)
+        tls = tiles['TILEID'].astype(int)
+        fadatel = []
+        for tile in tls:
+            fadate = return_altmtl_fba_fadate(tile)
+            fadatel.append(fadate)
+        rdict = dict(zip(tls,fadatel))
+        with open(fjson, "w") as file:
+            json.dump(rdict, file, indent=4)
+    return rdict
     
 def check_fracfba(seed,fadate_dic,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/',):
     #seed is the mock realization
@@ -2377,7 +2386,7 @@ def check_fracfba(seed,fadate_dic,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_
             nt += 1
         na += 1
         #print(nt,na,ffa)
-    return nt/len(tls)
+    return nt/len(fadate_dic)
 
 
 def return_hp_givenradec(nside, ra, dec):
