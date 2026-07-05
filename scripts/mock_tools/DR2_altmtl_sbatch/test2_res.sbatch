@@ -14,5 +14,5 @@
 #SBATCH --reservation=_CAP_holi_dr3_altmtl
 
 echo "about to load desi env"
-source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/desi_environment.sh
 echo "loaded desi env"
