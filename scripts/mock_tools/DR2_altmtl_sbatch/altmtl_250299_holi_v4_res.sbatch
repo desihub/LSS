@@ -14,17 +14,18 @@
 #SBATCH --reservation=_CAP_holi_dr3_altmtl
 
 source /global/common/software/desi/desi_environment.sh main
-
+echo "desi env loaded"
 module load LSS/main
-
+echo "LSS loaded"
 export OMP_NUM_THREADS=1
-
+echo "OMP threads set"
 path2LSS=$LSS/bin
 
 ALTMTLHOME="/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/"
 simName="altmtl{mock_number}"
 
 printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/"
+echo "past printf statement"
 
 obscon='DARK'
 survey='main'
