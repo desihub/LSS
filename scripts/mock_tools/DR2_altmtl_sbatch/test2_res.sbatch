@@ -13,6 +13,8 @@
 #SBATCH --nodes=1
 #SBATCH --reservation=_CAP_holi_dr3_altmtl
 
+echo "about to load conda"
+module load conda
 echo "about to load cosmodesi"
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 echo "about to load desi env"
