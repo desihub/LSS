@@ -2363,12 +2363,12 @@ def check_fracfba(seed,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/'
     nt = 0
     na = 0
     for tile in tls:
-        fadate = common.return_altmtl_fba_fadate(tile)
+        fadate = return_altmtl_fba_fadate(tile)
         ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
         if os.path.isfile(ffa):
             nt += 1
         na += 1
-        #print(nt,na,ffa)
+        print(nt,na,ffa)
     return nt/len(tls)
 
 
