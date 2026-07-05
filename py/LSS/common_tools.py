@@ -2354,6 +2354,23 @@ def return_altmtl_fba_fadate(tileid):
     fadate = fhtOrig['RUNDATE']
     return ''.join(fadate.split('T')[0].split('-'))
 
+def check_fracfba(seed,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/',survey='DA2',prog='DARK'):
+    
+    fbadir = os.path.join(mockdir,'altmtl'+str(seed), 'Univ000/fa/MAIN')
+    tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+prog+'.fits'
+    tiles = fitsio.read(tile_fn)
+    tls = tiles['TILEID']
+    nt = 0
+    na = 0
+    for tile in tls:
+        fadate = common.return_altmtl_fba_fadate(tile)
+        ffa = os.path.join(fbadir, fadate, 'fba-'+str(tile).zfill(6)+'.fits')
+        if os.path.isfile(ffa):
+            nt += 1
+        na += 1
+        #print(nt,na,ffa)
+    return nt/len(tls)
+
 
 def return_hp_givenradec(nside, ra, dec):
     theta, phi = np.radians(90-dec), np.radians(ra)
