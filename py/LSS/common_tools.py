@@ -2365,10 +2365,12 @@ def get_fadate_dic(survey='DA2',prog='DARK'):
         tiles = fitsio.read(tile_fn)
         tls = tiles['TILEID'].astype(int)
         fadatel = []
+        tlsl = []
         for tile in tls:
             fadate = return_altmtl_fba_fadate(tile)
             fadatel.append(fadate)
-        rdict = dict(zip(tls,fadatel))
+            tlsl.append(int(tile))
+        rdict = dict(zip(tlsl,fadatel))
         with open(fjson, "w") as file:
             json.dump(rdict, file, indent=4)
     return rdict
