@@ -2361,7 +2361,7 @@ def get_fadate_dic(survey='DA2',prog='DARK'):
     fadatel = []
     for tile in tls:
         fadate = return_altmtl_fba_fadate(tile)
-		fadatel.append(fadate)
+        fadatel.append(fadate)
     return dict(zip(tls,fadatel))
     
 def check_fracfba(seed,fadate_dic,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/',):
