@@ -13,6 +13,7 @@
 #SBATCH --nodes=1
 #SBATCH --reservation=_CAP_holi_dr3_altmtl
 
+echo "noting happened yet"
 source /global/common/software/desi/desi_environment.sh main
 echo "desi env loaded"
 module load LSS/main
