@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=128
 #SBATCH --account=desi
-#SBATCH -t 2:00:00
+#SBATCH -t 02:00:00
 #SBATCH --constraint=cpu
 
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
