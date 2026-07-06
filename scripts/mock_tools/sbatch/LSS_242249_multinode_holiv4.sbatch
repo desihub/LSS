@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --nodes=8
+#SBATCH --ntasks=8
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=128
+#SBATCH --account=desi
+#SBATCH -t 2:00:00
+#SBATCH --constraint=cpu
+
+scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
+
+for i in $(seq 242 249); do
+    srun $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_pipeline_run1_nosysnet.sh "$i" &
+done
+
+wait
+
+for i in $(seq 242 249); do
+    $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_pipeline_run1_sysnet.sh "$i" &
+done
+
+wait
+
+for i in $(seq 242 249); do
+    srun $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_pipeline_run1_transfer.sh "$i" &
+done
+
+wait
