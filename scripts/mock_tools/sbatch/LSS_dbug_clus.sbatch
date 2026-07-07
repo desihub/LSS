@@ -10,7 +10,7 @@
 #test
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 
-for i in $(seq 242 249); do
+for i in $(seq $1 $2); do
     srun --exclusive -N 1 -n 1 --cpus-per-task=128 --cpu-bind=cores $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_clus.sh "$i" &
 done
 
