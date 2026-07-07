@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=8
+#SBATCH --nodes=$1
 ##SBATCH --ntasks=8
 ##SBATCH --ntasks-per-node=1
 ##SBATCH --cpus-per-task=128
@@ -10,7 +10,10 @@
 #test
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 
-for i in $(seq $1 $2); do
+mmin=$2
+mmax=$((mmin+$1-1))
+
+for i in $(seq mmin mmax); do
     srun --exclusive -N 1 -n 1 --cpus-per-task=128 $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_snprep.sh "$i" &
 done
 
