@@ -10,7 +10,7 @@
 #test
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 
-for i in $(seq 242 249); do
+for i in $(seq $1 $2); do
     $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_pipeline_run1_sysnet.sh "$i" &
 done
 
