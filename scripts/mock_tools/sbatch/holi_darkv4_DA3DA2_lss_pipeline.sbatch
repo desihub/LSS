@@ -1,13 +1,12 @@
 #!/bin/bash
-#!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -t 02:00:00
-#SBATCH --array=1-49,50-99
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=128
+#SBATCH --array=2-49,50-99
+##SBATCH --ntasks=1
+##SBATCH --cpus-per-task=128
 
 
 set -e
