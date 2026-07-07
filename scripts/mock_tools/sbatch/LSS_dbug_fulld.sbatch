@@ -11,7 +11,7 @@
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 
 for i in $(seq 350 359); do
-    srun --exclusive -N 1 -n 1 --cpus-per-task=128 $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_pipeline_run1_fulld.sh "$i" &
+    srun --exclusive -N 1 -n 1 --cpus-per-task=128 $scriptdir/mock_tools/holi_darkv4_DA3DA2_lss_fulld.sh "$i" &
 done
 
 wait
