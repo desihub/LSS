@@ -368,6 +368,19 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
+
+            # LGN 20260708 - Reading target directory and targver info directly from fiberassign header.
+            tdirfht = fht['TARG']
+
+            targver = None
+            for k in fht.keys():
+                if k.startswith('DEPNAM') and fht[k] == 'desitarget':
+                    targver = fht[k.replace('NAM','VER')]
+
+            if targver is None:
+                log.critical(f'Target File Header: {fa_fn} does not have a desitarget version specification')
+                raise ValueError('Target File Header must contain a desitarget version specification')
+                
             log.info(f'targver  = {targver}')
             #LGN 20260708: Now running altcreate_mtl for ALL targvers != 1.0.0
             #              This adds compatibility for DARK1B and BRIGHT1B target file generation
@@ -381,7 +394,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 gaiadr,
                 fht['PMCORR'],
                 tarfn,
-                tdirMain.format(targver)+prog,
+                tdirfht,
                 survey = 'main',
                 mock = mock)
             #tdirMain+prog,
