@@ -43,16 +43,16 @@ south_flags="-lr $LR_S -bs $NBATCH_S --nn_structure ${NNS_S[@]} -ne $NEPOCH_S -n
 
 # Get learning rates
     # for North
-srun -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $north_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_N.fits -o $sysnet_dir/${tracer}0.8_1.1_N
-srun -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $north_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_N.fits -o $sysnet_dir${tracer}1.1_1.6_N
+srun -N 1 -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $north_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_N.fits -o $sysnet_dir/${tracer}0.8_1.1_N
+srun -N 1 -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $north_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_N.fits -o $sysnet_dir${tracer}1.1_1.6_N
     # for South
-srun -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_S.fits -o $sysnet_dir/${tracer}0.8_1.1_S
-srun -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_S.fits -o $sysnet_dir/${tracer}1.1_1.6_S
+srun -N 1 -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_S.fits -o $sysnet_dir/${tracer}0.8_1.1_S
+srun -N 1 -n 1 -t 5 $srun_flags python $sysnet_app $lrfinder_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_S.fits -o $sysnet_dir/${tracer}1.1_1.6_S
 
 # Train NN
     # for North
-srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_N.fits -o $sysnet_dir/${tracer}0.8_1.1_N
-srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_N.fits -o $sysnet_dir/${tracer}1.1_1.6_N
+srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_N.fits -o $sysnet_dir/${tracer}0.8_1.1_N
+srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_N.fits -o $sysnet_dir/${tracer}1.1_1.6_N
     # for South
-srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_S.fits -o $sysnet_dir/${tracer}0.8_1.1_S
-srun -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_S.fits -o $sysnet_dir/${tracer}1.1_1.6_S
+srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_S.fits -o $sysnet_dir/${tracer}0.8_1.1_S
+srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_S.fits -o $sysnet_dir/${tracer}1.1_1.6_S
