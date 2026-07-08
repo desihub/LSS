@@ -369,9 +369,11 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
             if verbose:
                 log.info('main survey')
             log.info(f'targver  = {targver}')
-            if (not reproducing) or (targver == '1.1.1'):
+            #LGN 20260708: Now running altcreate_mtl for ALL targvers != 1.0.0
+            #              This adds compatibility for DARK1B and BRIGHT1B target file generation
+            if (not reproducing) or (targver != '1.0.0'):
                 if verbose:
-                    log.info('if reproducing is True, targver must be 1.1.1')
+                    log.info('if reproducing is True, targver must not be 1.0.0')
                     log.info(f'targver  = {targver}')
                     log.info(f'reproducing = {reproducing}')
                 altcreate_mtl(tilef,
@@ -383,11 +385,9 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 survey = 'main',
                 mock = mock)
             #tdirMain+prog,
-            #LGN 06/11/25: Adding compatibility with reproducing tests for DARK1B
-            #LGN 01/28/26: Adding compatibility with BRIGHT1B
-            elif targver == '1.0.0' or targver == '3.0.0' or targver == '3.2.0':
+            elif targver == '1.0.0':
                 log.info('Copying real targ file')
-                log.info('targver must be 1.0.0, 3.0.0 or 3.2.0 and reproducing must be True')
+                log.info('targver must be 1.0.0 and reproducing must be True')
                 log.info(f'targver  = {targver}')
                 log.info(f'reproducing = {reproducing}') 
                     
@@ -589,7 +589,6 @@ def altcreate_mtl(
                 os.path.basename(mtldir).replace('1b', '')
             )
             mtldirs = [mtldir_short, mtldir]
-            
             d = io.read_targets_in_tiles(
                 mtldirs,
                 tiles,
@@ -604,7 +603,6 @@ def altcreate_mtl(
         
         else:
             is_ext = False
-        
             d = io.read_targets_in_tiles(
                 mtldir,
                 tiles,
