@@ -9,7 +9,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export LSSCODE=$LSS
 #export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #
-mocknum=150
+mocknum=$1
 scriptdir=$HOME/LSScode/LSS/scripts
 #scriptdir=$LSSCODE/scripts
 #/global/homes/d/desica/LSScode/LSS/scripts
