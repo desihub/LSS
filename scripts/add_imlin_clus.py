@@ -365,7 +365,7 @@ if args.renorm:
                 seln = dat_reg['PHOTSYS'] == 'N'
                 weight_mean_tot = np.mean(dat_reg[~seln][syscol])
                 weight_mean = np.mean(dat_reg[~seln & selz][syscol])/weight_mean_tot #we want the overall mean to remain the same because of the N/S normalization
-                dat_reg[sys_col+'_norm'][~seln & selz] /= weight_mean
+                dat_reg[syscol+'_norm'][~seln & selz] /= weight_mean
        
         if args.imsys_finezbin:
             dz = 0.1
