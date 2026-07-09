@@ -31,13 +31,13 @@ parser.add_argument("--par", choices=['y', 'n'], help="run different random numb
 args = parser.parse_args()
 logger.info(f"Running with arguments: {args}")
 
-input_dir = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with analysis, where we keep non-standard catalogsS
+input_dir = os.path.join(args.basedir, args.survey, 'analysis', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with analysis, where we keep non-standard clustering catalogs
 logger.info(f"Primary input directory is {input_dir}")
 output_dir: str = args.outdir + '/'
 logger.info(f"Output directory is {output_dir}")
-input_dir_main = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut catalogs, and for fallback if the cut catalogs are not found in the analysis directory
+input_dir_main = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut clustering catalogs, and for fallback if the cut clustering catalogs are not found in the analysis directory
 logger.info(f"Input directory for non-cut catalogs (and fallback) is {input_dir_main}")
-input_dir_main_full = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut catalogs, and for fallback if the cut catalogs are not found in the analysis directory
+input_dir_main_full = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version) + '/' # basedir with LSS to find the non-cut full catalogs if needed (for DR3, the non-cut clustering catalogs are not made)
 logger.info(f"Input directory for non-cut full catalogs (if they are needed) is {input_dir_main_full}")
 try_dirs = [input_dir, output_dir, input_dir_main] # order to look for input files
 
