@@ -393,12 +393,12 @@ if args.renorm:
                 _renorm(zm,zx)
         else:
             sys.exit('no valid z binning choice in arguments, exiting...')
-		if args.replace_syscol:
-			dat_reg['WEIGHT'] /= dat_reg['WEIGHT_SYS']
-			dat_reg['WEIGHT_SYS'] = dat_reg[syscol+'_norm'
-			dat_reg['WEIGHT'] *= dat_reg['WEIGHT_SYS']
-		common.write_LSS_scratchcp(dat_reg,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_clustering.dat.fits'),logger=logger)
-		syscol = syscol+'_norm'
+        if args.replace_syscol:
+            dat_reg['WEIGHT'] /= dat_reg['WEIGHT_SYS']
+            dat_reg['WEIGHT_SYS'] = dat_reg[syscol+'_norm'
+            dat_reg['WEIGHT'] *= dat_reg['WEIGHT_SYS']
+        common.write_LSS_scratchcp(dat_reg,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_clustering.dat.fits'),logger=logger)
+        syscol = syscol+'_norm'
 
 if args.imsys_clus_ran:
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')
