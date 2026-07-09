@@ -353,7 +353,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         gaiadr = 'dr2'
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
-
+    
     if mtldir is not None:
         if 'sv3' in indir.lower():
             if verbose:
@@ -368,9 +368,25 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
-            if (not reproducing) or (targver == '1.1.1'):
+
+            # LGN 20260708 - Reading target directory and targver info directly from fiberassign header.
+            tdirfht = fht['TARG']
+
+            targver = None
+            for k in fht.keys():
+                if k.startswith('DEPNAM') and fht[k] == 'desitarget':
+                    targver = fht[k.replace('NAM','VER')]
+
+            if targver is None:
+                log.critical(f'Target File Header: {fa_fn} does not have a desitarget version specification')
+                raise ValueError('Target File Header must contain a desitarget version specification')
+                
+            log.info(f'targver  = {targver}')
+            #LGN 20260708: Now running altcreate_mtl for ALL targvers != 1.0.0
+            #              This adds compatibility for DARK1B and BRIGHT1B target file generation
+            if (not reproducing) or (targver != '1.0.0'):
                 if verbose:
-                    log.info('if reproducing is True, targver must be 1.1.1')
+                    log.info('if reproducing is True, targver must not be 1.0.0')
                     log.info(f'targver  = {targver}')
                     log.info(f'reproducing = {reproducing}')
                 altcreate_mtl(tilef,
@@ -378,23 +394,22 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 gaiadr,
                 fht['PMCORR'],
                 tarfn,
-                tdirMain.format(targver)+prog,
+                tdirfht,
                 survey = 'main',
                 mock = mock)
             #tdirMain+prog,
-            #LGN 06/11/25: Adding compatibility with reproducing tests for DARK1B
-            elif targver == '1.0.0' or targver == '3.0.0':
-                if verbose:
-                    log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
-                    log.info(f'targver  = {targver}')
-                    log.info(f'reproducing = {reproducing}') 
-            
+            elif targver == '1.0.0':
+                log.info('Copying real targ file')
+                log.info('targver must be 1.0.0 and reproducing must be True')
+                log.info(f'targver  = {targver}')
+                log.info(f'reproducing = {reproducing}') 
+                    
                 if not os.path.exists(outdir):
                     log.info('running makedirs. making {0}'.format(outdir))
                     os.makedirs(outdir)
                   
                 shutil.copyfile(indir+ts+'-targ.fits', tarfn)
-
+    
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -466,7 +481,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
         fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
-
+    
     if faver >=4:
         fo.write(" --fafns_for_stucksky "+fa_fn)
     fo.close()    
@@ -576,19 +591,43 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-    
-        d = io.read_targets_in_tiles(
-            mtldir,
-            tiles,
-            quick=False,
-            mtl=True,
-            unique=True,
-            isodate=mtltime,
-            verbose=verbose,
-            tabform='ascii.ecsv'
-        )
+        # LGN: Adding handling for bright1b/dark1b tiles
+        if 'dark1b' in mtldir or 'bright1b' in mtldir:
+            log.info('Running with maketwostyle=True')
+            is_ext = True
+            # LGN Formatting the path to bright or dark ledgers
+            # LGN Passing list of directories to read_targets_in_tiles
+            mtldir_short = os.path.join(
+                os.path.dirname(mtldir), 
+                os.path.basename(mtldir).replace('1b', '')
+            )
+            mtldirs = [mtldir_short, mtldir]
+            d = io.read_targets_in_tiles(
+                mtldirs,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
         
-    
+        else:
+            is_ext = False
+            d = io.read_targets_in_tiles(
+                mtldir,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )    
+                   
     try:
         log.info('shape of read_targets_in_tiles output')
         log.info(d.shape)
