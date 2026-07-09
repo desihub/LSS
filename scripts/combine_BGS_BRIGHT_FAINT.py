@@ -62,7 +62,7 @@ def read_catalog(sample: str, reg: str, iran: int | None = None) -> Table:
     basename = f'BGS_{sample}_{reg}' + f'_{iran}' * (iran is not None) + '_clustering.' + ('dat' if iran is None else 'ran') + '.fits'
     path = lookup_dirs(basename)
     logger.info(f"Reading clustering catalog from {path}")
-    return Table.read(path)
+    return Table(fitsio.read(path))
 
 
 def combine_regions(reg_cat_dict: dict[str, Table]) -> Table:
