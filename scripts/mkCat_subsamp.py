@@ -354,6 +354,66 @@ def get_ntile_info(clus_orig_fname):
         fttl = np.bincount(fd['NTILE']-1, weights=fd['FRAC_TLOBS_TILES']) / np.bincount(fd['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
         comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
     return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
+
+def get_ntile_info_from_full(full_orig_fname, tp, reg, ismock=False):
+    columns = ['RA', 'DEC', 'NTILE']
+    if tp[:3] == 'QSO': columns += ['Z', 'ZWARN']
+    if tp[:3] == 'ELG': columns += ['ZWARN', 'o2c', 'LOCATION_ASSIGNED']
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE': columns += ['Z', 'ZWARN', 'DELTACHI2']
+    if tp[:3] == 'BGS': columns += ['ZWARN', 'DELTACHI2']
+    if ismock: columns += ['TARGETID']
+    columns += ['FRACZ_TILELOCID', 'FRAC_TLOBS_TILES'] if weightileloc else ['PROB_OBS']
+    ff = fitsio.read(full_orig_fname, columns=columns)
+    # select region (NGC/SGC)
+    sel = common.splitGC(ff)
+    if reg == 'SGC': sel = ~sel
+    ff = ff[sel]
+    del sel
+    # define "good z" cuts from the full catalog to the clustering catalog, based on the tracer type, in accordance with the mkclusdat function
+    if tp[:3] == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['TARGETID'] < 419430400000000
+    if tp[:3] == 'ELG':
+        wz = ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        if ismock:
+            wz &= ff['TARGETID'] < 838860800000000
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
+        print('applying extra cut for LRGs')
+        # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['Z']<1.5
+        else:
+            if dchi2 is not None:
+                from LSS import ssr_tools
+                selg = ssr_tools.LRG_goodz(ff)
+                wz &= selg
+    if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['DELTACHI2'] > dchi2
+    ff = ff[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
+    del wz
+    weights_comp = 1./ff['FRACZ_TILELOCID'] if weightileloc else 129/(1+128*ff['PROB_OBS']) # compute WEIGHT_COMP in accordance with the mkclusdat function
+    weight_ntl = np.bincount(ff['NTILE']-1, weights=weights_comp) / np.bincount(ff['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
+    if args.compmd != 'altmtl':
+        fttl = np.bincount(ff['NTILE']-1, weights=ff['FRAC_TLOBS_TILES']) / np.bincount(ff['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
+    return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
  
 if args.nz == 'y':
     for reg in regions:#allreg:
@@ -368,10 +428,11 @@ if args.nz == 'y':
         extra_dir = 'nonKP'
         if args.compmd == 'altmtl':
             extra_dir = 'PIP'
-        clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits'
-        comp_ntl, weight_ntl = None,None
-        if args.compmd == 'altmtl': #use original uncut data to get info, so that angular upweighting can be weighted consistently
+        clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits' # use original uncut data to get info for consistency / so that angular upweighting can be weighted consistently (for altmtl/PIP)
+        if os.path.isfile(clus_orig): # use clustering catalog if it exists (then the process is simpler)
             comp_ntl, weight_ntl = get_ntile_info(clus_orig)
+        else: # if the clustering catalog does not exist, use the full catalog to get the NTILE info (particularly for DR3 BGS)
+            comp_ntl, weight_ntl = get_ntile_info_from_full(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits', tp=args.input_tracer, reg=reg)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
 
 # determine linear weights for imaging systematics
