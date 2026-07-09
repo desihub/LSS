@@ -1,6 +1,8 @@
 import numpy as np
 from astropy.table import Table, vstack
-from LSS.common_tools import write_LSS_scratchcp
+import fitsio
+from LSS.common_tools import write_LSS_scratchcp, splitGC
+from LSS.globals import main
 from pycorr import setup_logging
 import logging
 import argparse
@@ -35,6 +37,8 @@ output_dir: str = args.outdir + '/'
 logger.info(f"Output directory is {output_dir}")
 input_dir_main = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut catalogs, and for fallback if the cut catalogs are not found in the analysis directory
 logger.info(f"Input directory for non-cut catalogs (and fallback) is {input_dir_main}")
+input_dir_main_full = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version, 'nonKP') + '/' # basedir with LSS to find the non-cut catalogs, and for fallback if the cut catalogs are not found in the analysis directory
+logger.info(f"Input directory for non-cut full catalogs (if they are needed) is {input_dir_main_full}")
 try_dirs = [input_dir, output_dir, input_dir_main] # order to look for input files
 
 samples_base = ['BRIGHT', 'FAINT']
@@ -86,8 +90,28 @@ for (sample, sample_base) in zip(samples, samples_base):
         logger.info(f"Reading nz data for sample {sample} and region {reg} from {nz_name}")
         nz_data[sample][reg] = np.loadtxt(nz_name).T
         logger.info(f"Obtaining NTILE data for sample {sample_base} and region {reg}")
-        base_data = Table.read(input_dir_main + f'BGS_{sample_base}_{reg}_clustering.dat.fits') # the base sample catalog should be in the main input dir
-        comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
+        base_clustering_data_fname = input_dir_main + f'BGS_{sample_base}_{reg}_clustering.dat.fits' # the base sample catalog should be in the main input dir
+        if os.path.isfile(base_clustering_data_fname): # use it
+            base_data = fitsio.read(base_clustering_data_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
+            comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
+        else: # use the full catalog to get the NTILE info (particularly for DR3), need extra steps for compatibility with the clustering catalog
+            base_data = fitsio.read(input_dir_main_full + f'BGS_{sample_base}_full_HPmapcut.dat.fits', columns=['RA', 'DEC', 'NTILE', 'ZWARN', 'DELTACHI2', 'FRACZ_TILELOCID', 'FRAC_TLOBS_TILES'])
+            # select region (NGC/SGC)
+            sel = splitGC(base_data)
+            if reg == 'SGC': sel = ~sel
+            base_data = base_data[sel]
+            del sel
+            # define "good z" cuts from the full catalog to the clustering catalog in accordance with the mkclusdat function for BGS
+            wz = base_data['ZWARN'] == 0
+            wz &= base_data['ZWARN']*0 == 0
+            wz &= base_data['ZWARN'] != 999999
+            dchi2 = main(args.input_tracer,args.verspec,survey=args.survey).dchi2
+            if dchi2 is not None:
+                wz &= base_data['DELTACHI2'] > dchi2
+            base_data = base_data[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
+            del wz
+            # now should match the clustering catalog
+            comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=1/base_data['FRACZ_TILELOCID']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
         fttl = np.bincount(base_data['NTILE']-1, weights=base_data['FRAC_TLOBS_TILES']) / np.bincount(base_data['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (randoms might be more correct for this; note that NTILE is shifted down by 1)
         comp_ntile_factors[sample][reg] = comp_ntl * fttl # indexed by NTILE-1
         del base_data # free memory
