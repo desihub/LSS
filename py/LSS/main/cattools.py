@@ -4000,7 +4000,7 @@ def mkclusdat(fl,redo_fracz=False,NN=False,weighttileloc=True,zmask=False,correc
         ff = Table.read(in_fn.replace('global', 'dvs_ro')+'.fits')
     else:
         common.printlog('did not find file associated with '+in_fn)
-    if redo_fracz:
+    if redo_fracz and 'NEW_WEIGHTFRACZ' not in list(ff.dtype.names):
         ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
         
     #ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
