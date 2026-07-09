@@ -86,7 +86,7 @@ for (sample, sample_base) in zip(samples, samples_base):
     nz_data[sample] = {}
     comp_ntile_factors[sample] = {}
     for reg in regions:
-        nz_name = lookup_dirs(f'BGS_{sample}_{reg}_nz.txt')
+        nz_name = lookup_dirs(f'BGS_{sample}_{reg}_nz.txt') # in principle, the nz file may be found in a different (earlier) directory than the clustering catalog(s), which would be somewhat inconsistent, but it does not seem very likely and may not be a problem if it happens
         logger.info(f"Reading nz data for sample {sample} and region {reg} from {nz_name}")
         nz_data[sample][reg] = np.loadtxt(nz_name).T
         logger.info(f"Obtaining NTILE data for sample {sample_base} and region {reg}")
