@@ -3,7 +3,7 @@
 #SBATCH --account=desi
 #SBATCH -t 00:30:00
 #SBATCH --constraint=cpu
-#SBATCH -q reg
+#SBATCH -q regular
 #test
 scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 
