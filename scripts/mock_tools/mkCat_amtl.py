@@ -967,7 +967,7 @@ if args.nearestneighbor == 'y':
     full_fn = os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5').replace('global','dvs_ro')
     ff = common.read_hdf5_blosc(full_fn.replace('global', 'dvs_ro'))
     ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
-    common.write_hdf5_scratchcp(ff,full_fn.replace('dvs_ro','global'),logger=logger)
+    common.write_LSShdf5_scratchcp(ff,full_fn.replace('dvs_ro','global'),logger=logger)
     del ff
     
 if args.compmd == 'altmtl':
