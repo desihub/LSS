@@ -20,12 +20,12 @@ export LSSCODE=/global/homes/d/desica/LSScode/LSS
 PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
 
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y  --mkclusdat y --mkclusran y --splitGC y --nz y --par y --redo_fracz y --compmd data --nearestneighbor y  --extra_clusdir $edir --outmd cfs --prep4sysnet y --nran4imsys 18
+srun --exclusive -N 1 -n 1 --cpus-per-task=128 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y  --mkclusdat y --mkclusran y --splitGC y --nz y --par y --redo_fracz y --compmd data --nearestneighbor y  --extra_clusdir $edir --outmd cfs --prep4sysnet y --nran4imsys 18
 
 
 #python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y --par y --prep4sysnet y --nran4imsys 18 --extra_clusdir $edir --outmd cfs
 
 $scriptdir/sysnetELG_LOPnotqso_zbins.sh '' ELG_LOPnotqso $bdir/DA2/mocks/$sim/altmtl$mocknum/loa-v1/mock$mocknum/LSScats/$edir/
 
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y --par y --addsysnet y --replace_syscol --extra_clusdir $edir --outmd cfs
+srun --exclusive -N 1 -n 1 --cpus-per-task=128  python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y --par y --addsysnet y --replace_syscol --extra_clusdir $edir --outmd cfs
 
