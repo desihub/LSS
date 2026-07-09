@@ -439,7 +439,8 @@ if args.nz == 'y':
 # this is new for doing after the fact based on clustering catalogs
 if args.imsys_clus == 'y':
     #import package
-    from LSS.imaging import densvar 
+    from LSS.imaging import densvar
+    import numpy.lib.recfunctions as rfn
     
     #setup redshift bins to use for regressions; you might find something else works better!
     if args.input_tracer[:3] == 'ELG':
@@ -482,9 +483,11 @@ if args.imsys_clus == 'y':
     #get randoms
     ranl = []
     for i in range(0,args.nran4imsys):
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits'))
+        ran = rfn.drop_fields(ran, 'WEIGHT_IMLIN_CLUS', asrecarray=True) # drop the column if it exists - it breaks the concatenation of the randoms if some have it and some don't
         ranl.append(ran)
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
+        ran = rfn.drop_fields(ran, 'WEIGHT_IMLIN_CLUS', asrecarray=True) # drop the column if it exists - it breaks the concatenation of the randoms if some have it and some don't
         ranl.append(ran)
     rands = np.concatenate(ranl)
     
