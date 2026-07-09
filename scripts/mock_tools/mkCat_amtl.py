@@ -964,8 +964,8 @@ if args.nearestneighbor == 'y':
     nzcompmd = 'dat'
     wtmd_sysnet = 'fraczNN'
     common.printlog('adding nearest neighbor to completeness weight',logger)
-    full_fn = os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro')
-    ff = common.read_hdf5_blosc(full_fn.replace('global', 'dvs_ro')+'.h5')
+    full_fn = os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5').replace('global','dvs_ro')
+    ff = common.read_hdf5_blosc(full_fn.replace('global', 'dvs_ro'))
     ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
     common.write_hdf5_scratchcp(ff,full_fn.replace('dvs_ro','global'),logger=logger)
     del ff
