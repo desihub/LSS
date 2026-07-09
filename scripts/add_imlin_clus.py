@@ -360,7 +360,7 @@ if args.renorm:
             if reg == 'SGC':
                 #no DES split option yet
                 weight_mean = np.mean(dat_reg[selz][syscol])
-                dat_reg[sys_col+'_norm'][selz] /= weight_mean
+                dat_reg[syscol+'_norm'][selz] /= weight_mean
             if reg == 'NGC':
                 seln = dat_reg['PHOTSYS'] == 'N'
                 weight_mean_tot = np.mean(dat_reg[~seln][syscol])
