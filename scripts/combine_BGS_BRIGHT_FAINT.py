@@ -105,7 +105,7 @@ for (sample, sample_base) in zip(samples, samples_base):
             wz = base_data['ZWARN'] == 0
             wz &= base_data['ZWARN']*0 == 0
             wz &= base_data['ZWARN'] != 999999
-            dchi2 = main(args.input_tracer,args.verspec,survey=args.survey).dchi2
+            dchi2 = main('BGS_' + sample_base, args.verspec, survey=args.survey).dchi2
             if dchi2 is not None:
                 wz &= base_data['DELTACHI2'] > dchi2
             base_data = base_data[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
