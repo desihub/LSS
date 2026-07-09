@@ -61,6 +61,7 @@ parser.add_argument("--relax_zbounds", help="Use less restricted redshift bounds
 parser.add_argument("--imsys_finezbin", help="Perform imaging regressions in dz=0.1 bins", action='store_true')
 parser.add_argument("--imsys_1zbin", help="Perform imaging regressions in just 1 z bin", action='store_true')
 parser.add_argument("--imsys_clus", help="Add weights for imaging systematics using eboss method, applied to clustering catalogs", action='store_true')
+parser.add_argument("--renorm", help="if selected, weights get normalized within SGC/NGC", action='store_true')
 parser.add_argument("--imsys_clus_ran", help="Add imaging weights to random catalogs", action='store_true')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
 parser.add_argument("--add_syscol2blind", help="Add the new weight column to the blinded catalogs", action='store_true')
