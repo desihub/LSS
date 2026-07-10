@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import astropy.io.fits as fits
 from astropy.table import Table,vstack

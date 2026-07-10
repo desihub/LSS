@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from astropy.table import Table, vstack
 import LSS.common_tools as cm
