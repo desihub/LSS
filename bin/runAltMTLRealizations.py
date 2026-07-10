@@ -68,7 +68,7 @@ log = get_logger()
 log.info('got logger')
 
 if args.mock:
-    assert(not (args.targfile is None))
+    #assert(not (args.targfile is None))
     print('args.getosubp')
     print(args.getosubp)
     assert(not (args.getosubp))
