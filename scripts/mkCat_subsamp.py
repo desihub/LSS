@@ -484,11 +484,15 @@ if args.imsys_clus == 'y':
     ranl = []
     for i in range(0,args.nran4imsys):
         ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits'))
-        ran = rfn.drop_fields(ran, 'WEIGHT_IMLIN_CLUS', asrecarray=True) # drop the column if it exists - it breaks the concatenation of the randoms if some have it and some don't
         ranl.append(ran)
         ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
-        ran = rfn.drop_fields(ran, 'WEIGHT_IMLIN_CLUS', asrecarray=True) # drop the column if it exists - it breaks the concatenation of the randoms if some have it and some don't
         ranl.append(ran)
+    # check that randoms all have the same columns, otherwise the concatenation will fail
+    colnames = [set(rfn.get_names_flat(r.dtype)) for r in ranl]
+    common_colnames = set.intersection(*colnames)
+    for i, (ran, ran_colnames) in enumerate(zip(ranl, colnames)):
+        if ran_colnames != common_colnames:
+            ranl[i] = rfn.rec_drop_fields(ran, list(ran_colnames - common_colnames)) # drop any extra columns that are not in the common set of column names, so that all randoms have the same columns for concatenation
     rands = np.concatenate(ranl)
     
     #fiducial column name for weights, initialize as 1.
