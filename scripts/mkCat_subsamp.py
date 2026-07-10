@@ -487,16 +487,17 @@ if args.imsys_clus == 'y':
         ranl.append(ran)
         ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
-    # check that randoms all have the same columns, otherwise the concatenation will fail
-    colnames = [set(rfn.get_names_flat(r.dtype)) for r in ranl]
-    common_colnames = set.intersection(*colnames)
-    for i, (ran, ran_colnames) in enumerate(zip(ranl, colnames)):
-        if ran_colnames != common_colnames:
-            ranl[i] = rfn.rec_drop_fields(ran, list(ran_colnames - common_colnames)) # drop any extra columns that are not in the common set of column names, so that all randoms have the same columns for concatenation
+    # fiducial column name for weights
+    syscol = 'WEIGHT_IMLIN_CLUS' 
+    # ensure that randoms either all have this column or all don't, otherwise the concatenation will fail. the mix may result from previously performed imaging systematics added to randoms with some randoms having been processed and some not
+    ran_has_syscol = [syscol in rfn.get_names_flat(ran.dtype) for ran in ranl]
+    if not all(ran_has_syscol):
+        for i in range(len(ranl)):
+            if ran_has_syscol[i]:
+                ranl[i] = rfn.rec_drop_fields(ranl[i], [syscol]) # drop the column from any randoms that have it, so that all randoms should have the same columns for concatenation
     rands = np.concatenate(ranl)
     
-    #fiducial column name for weights, initialize as 1.
-    syscol = 'WEIGHT_IMLIN_CLUS' 
+    # initialize the fiducial column name for weights as 1
     dat[syscol] = np.ones(len(dat))
     #photometric regions
     regl = ['S','N']
