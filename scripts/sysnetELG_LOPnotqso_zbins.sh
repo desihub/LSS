@@ -40,6 +40,26 @@ train_flags="-ax all --model dnnp --loss pnll --eta_min 0.00001 -k"
 north_flags="-lr $LR_N -bs $NBATCH_N --nn_structure ${NNS_N[@]} -ne $NEPOCH_N -nc $NCHAIN_N"
 south_flags="-lr $LR_S -bs $NBATCH_S --nn_structure ${NNS_S[@]} -ne $NEPOCH_S -nc $NCHAIN_S"
 
+#check files exist
+if [ ! -f $sysnet_dir/prep_${tracer}0.8_1.1_N.fits ]; then
+    echo "Error: $sysnet_dir/prep_${tracer}0.8_1.1_N.fits does not exist."
+    exit 1
+fi
+
+if [ ! -f $sysnet_dir/prep_${tracer}1.1_1.6_N.fits ]; then
+    echo "Error: $sysnet_dir/prep_${tracer}1.1_1.6_N.fits does not exist."
+    exit 1
+fi
+
+if [ ! -f $sysnet_dir/prep_${tracer}0.8_1.1_S.fits ]; then
+    echo "Error: $sysnet_dir/prep_${tracer}0.8_1.1_S.fits does not exist."
+    exit 1
+fi
+
+if [ ! -f $sysnet_dir/prep_${tracer}1.1_1.6_S.fits ]; then
+    echo "Error: $sysnet_dir/prep_${tracer}1.1_1.6_S.fits does not exist."
+    exit 1
+fi
 
 # Get learning rates
     # for North
