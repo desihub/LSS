@@ -76,6 +76,7 @@ parser.add_argument("--minr", help="minimum number for random files",default=0,t
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
 
 parser.add_argument("--prep4sysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
+parser.add_argument("--compwtmd",help="weight mode to prepare data to get sysnet weights for imaging systematics?",default='fracz')
 parser.add_argument("--addsysnet",help="add sysnet weights for imaging systematics to clustering files?",default='n')
 parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
 
@@ -418,7 +419,7 @@ if args.prep4sysnet == 'y':
             #else:
             #    allrands = None
             common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
-            wtmd = 'fracz'
+            wtmd = args.compwtmd
             common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
             prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
