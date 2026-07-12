@@ -13,14 +13,14 @@ RascalC-style files, but computed from mock scatter):
 Examples::
 
     python compute_mock_cov_vega.py \\
-        --xipoles-glob '/pscratch/sd/m/martini/QF3x2/mocks/mock-*/smu/xipoles_QSO_GCcomb_1.77_3.8_default_custom1_njack0_nran4_split20.txt' \\
-        --outdir /pscratch/sd/m/martini/QF3x2/mocks/QSO_auto_cov \\
+        --xipoles-glob '$SCRATCH/QF3x2/mocks/mock-*/smu/xipoles_QSO_GCcomb_1.77_3.8_default_custom1_njack0_nran4_split20.txt' \\
+        --outdir $SCRATCH/QF3x2/mocks/QSO_auto_cov \\
         --s-min 20 --s-max 200 \\
         --z-min 1.77 --z-max 3.8
 
     python $HOME/Repos/vega/bin/build_global_cov.py \\
         --lya-cov /path/to/lya-qso-cross-covariance.fits \\
-        --qso-cov /pscratch/sd/m/martini/QF3x2/mocks/QSO_auto_cov/xi024_QSO_GCcomb_z1.77-3.8_mock_s20-200_cov.txt \\
+        --qso-cov $SCRATCH/QF3x2/mocks/QSO_auto_cov/xi024_QSO_GCcomb_z1.77-3.8_mock_s20-200_cov.txt \\
         --output /path/to/combined_global_cov.fits
 """
 
