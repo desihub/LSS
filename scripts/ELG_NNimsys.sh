@@ -10,7 +10,7 @@ module load LSS/main
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 verspec=loa-v1
 survey=DA2
-LSSCODE=$HOME/LSScode
+LSSCODE=$HOME/LSScode/LSS/
 version=v2
 edir=CMBLENS
 scriptdir=$LSSCODE/scripts
