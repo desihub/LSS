@@ -13,11 +13,12 @@ survey=DA2
 LSSCODE=$HOME/LSScode
 version=v2
 edir=CMBLENS
+scriptdir=$LSSCODE/scripts
 #PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $verspm --extra_clus_dir $edir --compwtmd fraczNN
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $verspm --extra_clus_dir $edir --compwtmd fraczNN
 
 $scriptdir/sysnetELG_LOPnotqso_zbins.sh '' ELG_LOPnotqso $bdir/$survey/LSS/$verspec/LSScats/$version//LSScats/$edir/
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir edir --replace_syscol
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir /global/cfs/cdirs/desi/survey/catalogs/    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir edir --replace_syscol
 
