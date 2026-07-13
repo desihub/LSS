@@ -11,7 +11,7 @@ survey=DA3
 surveycat=DA2 #this will make it process the DR2 footprint
 #PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 #test
-cfsdir='/global/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/'
+cfsdir='/dvs_ro/cfs/cdirs/desi/mocks/cai/LSS/DA2/mocks/'
 #holi_v4/altmtl/altmtl'+str(i)+'/loa-v1/mock'+str(i)
 #echo $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --add_gtl y --specdata loa-v1 --tracer dark --targDir $SCRATCH/$survey/mocks/$sim --combd y --joindspec y --par y --usepota y
 
