@@ -1590,6 +1590,11 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
             FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
 
         log.info('FAMapName = {0}'.format(FAMapName))
+        if not os.path.isfile(FAMapName):
+            log.info('pickle file {0} dont exist. Recreating it'.format(FAMapName))
+            OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [t], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = True, mock = mock)
+            assert(len(OrigFAs))
+            A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = True )
         with open(FAMapName,'rb') as fl:
             (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
 
