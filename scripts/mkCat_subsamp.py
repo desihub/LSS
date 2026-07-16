@@ -202,6 +202,7 @@ if args.mkfulldat == 'y':
             else:
                 sel &= ~sel_sfr
             common.printlog('length after SFR selection '+str(np.sum(sel)),logger)
+            del sel_sfr # delete arrays to free memory, no longer used
         if 'umz' in args.ccut: # perform U-Z color cut
             if 'per' in umz_str: # 'per' for percentile; otherwise, use the value directly
                 umz_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']), umz_split)
@@ -211,6 +212,8 @@ if args.mkfulldat == 'y':
             else:
                 sel &= ~sel_umz
             common.printlog('length after UMZ selection '+str(np.sum(sel)),logger)
+            del sel_umz # delete arrays to free memory, no longer used
+        del ecorr # delete arrays to free memory, no longer used
 
     # add `elif`s for any additional selections here
         
@@ -230,6 +233,7 @@ if args.mkfulldat == 'y':
         abr = r_dered -dm
         sel = abr < float(args.ccut)
         sel &= z2use < 2
+        del z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
 
     elif args.ccut.startswith('zcmb') and is_float(args.ccut[len('zcmb'):]): # like the above absolute magnitude cut without k-correction, but with redshifts corrected to the CMB frame
         # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
@@ -254,6 +258,7 @@ if args.mkfulldat == 'y':
         abr = r_dered -dm
         sel = abr < float(ccut_mag_str)
         sel &= z2use < 2
+        del zcmb, newz, z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
 
     else:
         raise ValueError(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
@@ -261,6 +266,7 @@ if args.mkfulldat == 'y':
     # write output to new "full" catalog at your defined location
     fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
     common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
+    del fulldat, sel # delete arrays to free memory, no longer used
     
     
 #create "clustering" catalogs for data with no NGC/SGC split or FKP weights 
@@ -292,6 +298,7 @@ if mkclusran:
     else:
         for ii in inds:#range(rm,rx):
             _parfun_cr(ii)
+    del clus_arrays # free memory, this one is no longer used
 
 #define P0 value used for fiducial FKP weights and dz used for creating n(z)
 if tracer_out[:3] == 'QSO':
@@ -500,6 +507,7 @@ if args.imsys_clus == 'y':
             if ran_has_syscol[i]:
                 ranl[i] = rfn.rec_drop_fields(ranl[i], [syscol]) # drop the column from any randoms that have it, so that all randoms should have the same columns for concatenation
     rands = np.concatenate(ranl)
+    del ranl # delete arrays to free memory, no longer used
     
     # initialize the fiducial column name for weights as 1
     dat[syscol] = np.ones(len(dat))
@@ -530,6 +538,7 @@ if args.imsys_clus == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        del debv # delete arrays to free memory, no longer used
         
         selr = rands['PHOTSYS'] == reg
 
@@ -556,6 +565,8 @@ if args.imsys_clus == 'y':
             #we want to update the weights for the selection of data just input to the regression
             sel = wsysl != 1 
             dat[syscol][sel] = wsysl[sel]
+            del wsysl # delete arrays to free memory, no longer used
+        del sys_tab # delete arrays to free memory, no longer used
     #attach data to NGC/SGC catalogs, write those out
     #we will do a join
     dat.keep_columns(['TARGETID',syscol])
@@ -579,6 +590,7 @@ if args.imsys_clus == 'y':
     dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     #write out SGC
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits'),logger=logger)
+    del dat_ngc, dat_sgc, dat, rands # delete arrays to free memory, no longer used
 
 #column needs to be added to randoms
 if args.imsys_clus_ran == 'y':
@@ -589,6 +601,7 @@ if args.imsys_clus_ran == 'y':
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
     dat = vstack([dat_sgc,dat_ngc])
+    del dat_ngc, dat_sgc # delete arrays to free memory, no longer used
     dat.rename_column('TARGETID','TARGETID_DATA') #randoms have their weights modulated based on the data used for the redshift
     regl = ['NGC','SGC']
     def _add2ran(rann):
@@ -610,4 +623,5 @@ if args.imsys_clus_ran == 'y':
     else:
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
+    del dat # delete arrays to free memory, no longer used (probably useless at the end of the script, but just in case e.g. there is more code added later)
 
