@@ -157,7 +157,7 @@ module load desitarget/3.0.0
 altmtlxxxx=$(printf "altmtl%04d" "$IDS")
 out7=$DS_DIR/$altmtlxxxx
 echo $out7
-# use 1 CPU, may be memory duplication in multiproc mode
+
 time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK
 
 exit 0

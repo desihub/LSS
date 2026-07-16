@@ -21,7 +21,8 @@ SIZE_CHUNK=$NCPU
 OFFSET=$((SIZE_CHUNK*ID_ARRAY))
 
 echo "Phase 1 : $NCPU simulations in parallel, first ID ${OFFSET}"
-srun -n "$NCPU" -c1 ./slurm_step134567.sh $LSS_DIR $DS_DIR $OFFSET
+# launch N tasks in parallel
+srun -n "$NCPU" -c1 ./slurm3_step134567.sh $LSS_DIR $DS_DIR $OFFSET
 
 echo "Phase 2 : Fiber assign with $NCPU CPUs"
 srun -n1 -c"$N" step_fa.sh ./fa_chunk_${OFFSET}.log  $2>&1

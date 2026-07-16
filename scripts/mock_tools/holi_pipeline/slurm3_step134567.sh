@@ -8,6 +8,7 @@
 #DS_DIR=$2     # root directory of mock
 #OFFSET=$3     # offset id simu
 
-SIM_ID=$((SLURM_PROCID + $3))
+PROCID=${SLURM_PROCID:0}
+SIM_ID=$((PROCID + $3))
 
-time ./step134567_one.sh $1 $2 ${SIM_ID} step134567_${SIM_ID}.log  $2>&1
+time ./step134567_one.sh $1 $2 ${SIM_ID} > step134567_seed${SIM_ID}.log 2>&1

@@ -3,14 +3,14 @@
 # Description:
 # ===========
 # top level of Holi pipeline with slurm
-# job array to process chunk of siluation = cpus-per-task
+# job array to process chunk of simulation = cpus-per-task
 
 #SBATCH --ntasks=1 # force srun with option -n 1 , ie 1 task
 #SBATCH --cpus-per-task=32
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -J HoliArray
+#SBATCH -J Holi
 #SBATCH -t 06:00:00
 #SBATCH --array=0-2
 #SBATCH --output=holi_%j.out
