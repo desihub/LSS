@@ -1,0 +1,25 @@
+# file parameters for holi pipeline
+
+# LSS  package
+LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS" 
+
+# mocks output dir
+mock_dir = "/global/cfs/cdirs/desi/mocks/fa4acm/holi/webjax_v4.80"
+
+id_beg = 0
+id_end = 10
+
+# step 1
+[prepare_mock]
+specdata = "loa-v1"
+survey = "DA2"
+# others ?
+
+# step 3
+[brickmask]
+exe_dir = "/global/cfs/cdirs/desi/users/colley/brickmask"
+conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/pipeline"
+
+# step 7
+[init_amtl]
+amtl_dir = ""

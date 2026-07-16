@@ -1,6 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # 2 CPUs
+
+# -n or --ntasks 1 else slurm/perlmutter launch 255 task by default
+# -c or --cpus-per-task 1 because python script are mono-process
 
 #
 # script parameters
@@ -18,6 +21,8 @@ seed=$(printf "seed%04d" "$IDS")
 in_4=imforFA0_Y3_noimagingmask_applied.fits
 in_5=forFA0.fits
 in_6=forFA0_withcontaminants.fits
+#
+
 in_7=forFA0_concat.fits
 
 #

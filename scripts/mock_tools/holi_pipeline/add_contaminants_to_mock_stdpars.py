@@ -23,11 +23,19 @@ def process_one_file(filein, out_f):
         newtargid = (np.arange(1,size_cont+1)+1e8*2**22).astype(int)
         print(newtargid)
         print('size contaminats/size sample', size_cont/float(len(dat_)))
-        print('size contaminats/size sample normal', size_cont/float(len(normal)))
-        replace_idx = rng.choice(len(normal), size=size_cont, replace=False)
-        normal['RA'][replace_idx] = datC['RA']
-        normal['DEC'][replace_idx] = datC['DEC']
-        normal['TARGETID'][replace_idx] = newtargid
+        if len(normal) > 0:
+            print('size contaminats/size sample normal', size_cont/float(len(normal)))
+        else:
+            print('size contaminats/size sample normal', 'inf (normal sample is empty)')
+        n_replace = min(size_cont, len(normal))
+        if n_replace < size_cont:
+            print(f'Warning: truncating contaminants from {size_cont} to {n_replace} for QSO.')
+        if n_replace > 0:
+            replace_idx = rng.choice(len(normal), size=n_replace, replace=False)
+            cont_idx = rng.choice(size_cont, size=n_replace, replace=False)
+            normal['RA'][replace_idx] = datC['RA'][cont_idx]
+            normal['DEC'][replace_idx] = datC['DEC'][cont_idx]
+            normal['TARGETID'][replace_idx] = newtargid[cont_idx]
         thecat = vstack([normal, qso_highz])
         thecat.write(out_f, overwrite=True)
 
@@ -53,13 +61,21 @@ def process_one_file(filein, out_f):
         newtargid = (np.arange(1,size_cont+1)+1e8*2**23).astype(int)
         print(newtargid)
         print('size contaminats/size sample', size_cont/float(len(dat_)))
-        print('size contaminats/size sample lop', size_cont/float(len(elg_lop)))
+        if len(elg_lop) > 0:
+            print('size contaminats/size sample lop', size_cont/float(len(elg_lop)))
+        else:
+            print('size contaminats/size sample lop', 'inf (elg_lop sample is empty)')
 
-        replace_idx = rng.choice(len(elg_lop), size=size_cont, replace=False)
+        n_replace = min(size_cont, len(elg_lop))
+        if n_replace < size_cont:
+            print(f'Warning: truncating contaminants from {size_cont} to {n_replace} for ELG.')
+        if n_replace > 0:
+            replace_idx = rng.choice(len(elg_lop), size=n_replace, replace=False)
+            cont_idx = rng.choice(size_cont, size=n_replace, replace=False)
 
-        elg_lop['RA'][replace_idx] = datC['RA']
-        elg_lop['DEC'][replace_idx] = datC['DEC']
-        elg_lop['TARGETID'][replace_idx] = newtargid
+            elg_lop['RA'][replace_idx] = datC['RA'][cont_idx]
+            elg_lop['DEC'][replace_idx] = datC['DEC'][cont_idx]
+            elg_lop['TARGETID'][replace_idx] = newtargid[cont_idx]
 
         thecat = vstack([elg_lop, elg_vlo])
 
