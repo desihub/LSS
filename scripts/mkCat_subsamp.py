@@ -11,18 +11,18 @@ Up to imaging systematics regression takes ~7 minutes ; imaging systematics take
 """
 #
 #standard python
-import sys
+# import sys
 import os
-import shutil
-import unittest
-from datetime import datetime
-import json
+# import shutil
+# import unittest
+# from datetime import datetime
+# import json
 import numpy as np
 import fitsio
-import glob
+# import glob
 import argparse
-from astropy.table import Table,join,unique,vstack
-from matplotlib import pyplot as plt
+from astropy.table import Table,join,vstack#,unique
+# from matplotlib import pyplot as plt
 
 import logging
 logname = 'mkCat'
@@ -313,8 +313,8 @@ regions = ['NGC', 'SGC']
 #function to take a file and split it NGC/SGC
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
-    from astropy.coordinates import SkyCoord
-    import astropy.units as u
+    # from astropy.coordinates import SkyCoord
+    # import astropy.units as u
     app = 'clustering'+datran+'.fits'
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
