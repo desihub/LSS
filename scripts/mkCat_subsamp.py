@@ -141,7 +141,7 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/dvs_ro/cfs/cdirs/desi/vac/dr2/fastspec
     #works with the data model that is new as of loa
     fsl = []
     for hp in range(0,12):
-        fsi = fitsio.read(fsf_dir+'fastspec-loa-main-bright-nside1-hp'+str(hp).zfill(2)+'.fits',ext='SPECPHOT',columns = fsf_cols)
+        fsi = fitsio.read(fsf_dir+'fastspec-loa-main-'+prog+'-nside1-hp'+str(hp).zfill(2)+'.fits', ext='SPECPHOT', columns=fsf_cols)
         fsl.append(fsi)
     fs = np.concatenate(fsl)
     del fsl
@@ -180,12 +180,12 @@ if args.mkfulldat == 'y':
             fsf_cols.append('ABSMAG01_SDSS_Z')
             umz_str = csplit[3]
             umz_split = float(csplit[4]) #value to split on
-            common.printlog('splitting on U-Z percentile '+str(umz_split),logger)
+            common.printlog('splitting on U-Z ' + 'percentile ' * ('per' in umz_str) + str(umz_split), logger)
         if 'SFR' in args.ccut:
             fsf_cols.append('SFR')
             sfr_str = csplit[3]
             sfr_split = float(csplit[4]) #value to split on
-            common.printlog('splitting on SFR percentile '+str(sfr_split),logger)
+            common.printlog('splitting on SFR ' + 'percentile ' * ('per' in sfr_str) + str(sfr_split), logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
         ecorr = np.zeros(len(fulldat))
@@ -193,15 +193,19 @@ if args.mkfulldat == 'y':
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
         common.printlog('length after Absmag selection '+str(np.sum(sel)),logger)
-        if 'SFR' in args.ccut and 'per' in args.ccut: #'per' for percentile
-            sel_sfr = fulldat['SFR'] > np.percentile(fulldat[sel]['SFR'],sfr_split)
+        if 'SFR' in args.ccut: # perform SFR cut
+            if 'per' in sfr_str: # 'per' for percentile; otherwise, use the value directly
+                sfr_split = np.percentile(fulldat[sel]['SFR'], sfr_split)
+            sel_sfr = fulldat['SFR'] > sfr_split
             if 'g' in sfr_str: #'g' for greater than
                 sel &= sel_sfr
             else:
                 sel &= ~sel_sfr
             common.printlog('length after SFR selection '+str(np.sum(sel)),logger)
-        if 'umz' in args.ccut and 'per' in args.ccut: #'per' for percentile
-            sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']),umz_split)
+        if 'umz' in args.ccut: # perform U-Z color cut
+            if 'per' in umz_str: # 'per' for percentile; otherwise, use the value directly
+                umz_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']), umz_split)
+            sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > umz_split
             if 'g' in umz_str: #'g' for greater than
                 sel &= sel_umz
             else:
@@ -354,6 +358,66 @@ def get_ntile_info(clus_orig_fname):
         fttl = np.bincount(fd['NTILE']-1, weights=fd['FRAC_TLOBS_TILES']) / np.bincount(fd['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
         comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
     return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
+
+def get_ntile_info_from_full(full_orig_fname, tp, reg, ismock=False):
+    columns = ['RA', 'DEC', 'NTILE']
+    if tp[:3] == 'QSO': columns += ['Z', 'ZWARN']
+    if tp[:3] == 'ELG': columns += ['ZWARN', 'o2c', 'LOCATION_ASSIGNED']
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE': columns += ['Z', 'ZWARN', 'DELTACHI2']
+    if tp[:3] == 'BGS': columns += ['ZWARN', 'DELTACHI2']
+    if ismock: columns += ['TARGETID']
+    columns += ['FRACZ_TILELOCID', 'FRAC_TLOBS_TILES'] if weightileloc else ['PROB_OBS']
+    ff = fitsio.read(full_orig_fname, columns=columns)
+    # select region (NGC/SGC)
+    sel = common.splitGC(ff)
+    if reg == 'SGC': sel = ~sel
+    ff = ff[sel]
+    del sel
+    # define "good z" cuts from the full catalog to the clustering catalog, based on the tracer type, in accordance with the mkclusdat function
+    if tp[:3] == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['TARGETID'] < 419430400000000
+    if tp[:3] == 'ELG':
+        wz = ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        if ismock:
+            wz &= ff['TARGETID'] < 838860800000000
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
+        print('applying extra cut for LRGs')
+        # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['Z']<1.5
+        else:
+            if dchi2 is not None:
+                from LSS import ssr_tools
+                selg = ssr_tools.LRG_goodz(ff)
+                wz &= selg
+    if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['DELTACHI2'] > dchi2
+    ff = ff[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
+    del wz
+    weights_comp = 1./ff['FRACZ_TILELOCID'] if weightileloc else 129/(1+128*ff['PROB_OBS']) # compute WEIGHT_COMP in accordance with the mkclusdat function
+    weight_ntl = np.bincount(ff['NTILE']-1, weights=weights_comp) / np.bincount(ff['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
+    if args.compmd != 'altmtl':
+        fttl = np.bincount(ff['NTILE']-1, weights=ff['FRAC_TLOBS_TILES']) / np.bincount(ff['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
+    return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
  
 if args.nz == 'y':
     for reg in regions:#allreg:
@@ -368,17 +432,19 @@ if args.nz == 'y':
         extra_dir = 'nonKP'
         if args.compmd == 'altmtl':
             extra_dir = 'PIP'
-        clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits'
-        comp_ntl, weight_ntl = None,None
-        if args.compmd == 'altmtl': #use original uncut data to get info, so that angular upweighting can be weighted consistently
+        clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits' # use original uncut data to get info for consistency / so that angular upweighting can be weighted consistently (for altmtl/PIP)
+        if os.path.isfile(clus_orig): # use clustering catalog if it exists (then the process is simpler)
             comp_ntl, weight_ntl = get_ntile_info(clus_orig)
+        else: # if the clustering catalog does not exist, use the full catalog to get the NTILE info (particularly for DR3 BGS)
+            comp_ntl, weight_ntl = get_ntile_info_from_full(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits', tp=args.input_tracer, reg=reg)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
 
 # determine linear weights for imaging systematics
 # this is new for doing after the fact based on clustering catalogs
 if args.imsys_clus == 'y':
     #import package
-    from LSS.imaging import densvar 
+    from LSS.imaging import densvar
+    import numpy.lib.recfunctions as rfn
     
     #setup redshift bins to use for regressions; you might find something else works better!
     if args.input_tracer[:3] == 'ELG':
@@ -421,14 +487,21 @@ if args.imsys_clus == 'y':
     #get randoms
     ranl = []
     for i in range(0,args.nran4imsys):
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
+    # fiducial column name for weights
+    syscol = 'WEIGHT_IMLIN_CLUS' 
+    # ensure that randoms either all have this column or all don't, otherwise the concatenation will fail. the mix may result from previously performed imaging systematics added to randoms with some randoms having been processed and some not
+    ran_has_syscol = [syscol in rfn.get_names_flat(ran.dtype) for ran in ranl]
+    if not all(ran_has_syscol):
+        for i in range(len(ranl)):
+            if ran_has_syscol[i]:
+                ranl[i] = rfn.rec_drop_fields(ranl[i], [syscol]) # drop the column from any randoms that have it, so that all randoms should have the same columns for concatenation
     rands = np.concatenate(ranl)
     
-    #fiducial column name for weights, initialize as 1.
-    syscol = 'WEIGHT_IMLIN_CLUS' 
+    # initialize the fiducial column name for weights as 1
     dat[syscol] = np.ones(len(dat))
     #photometric regions
     regl = ['S','N']
