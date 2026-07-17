@@ -9,19 +9,17 @@ import sys
 import argparse
 
 
-def concatenate_tracers(qso_path, elg_path, lrg_path, output_path):
-    if False:
-        # save only QSO , for debug ?
-        # qso_path = os.path.join(args.output_path, 'qsos')
-        # os.makedirs(qso_path, exist_ok=True)
-        # qsofile = os.path.join(qso_path, 'qso%s.txt' % args.realization)
-        # np.savetxt(qsofile, np.array([qsos['TARGETID'], qsos['RSDZ']]).T, fmt='%d %.3f')
-        # print(f'saving qsos to {qsofile}')
-        pass
+def concatenate_tracers(qso_path, elg_path, lrg_path, output_path):    
     # read Table
     elgs = Table.read(elg_path)    
     lrgs = Table.read(lrg_path)
     qsos = Table.read(qso_path)
+    # save only QSO 
+    qso_path = os.path.join(args.output_path, 'qsos')
+    os.makedirs(qso_path, exist_ok=True)
+    qsofile = os.path.join(qso_path, f'qso{args.id_seed:04d}.txt')
+    np.savetxt(qsofile, np.array([qsos['TARGETID'], qsos['RSDZ']]).T, fmt='%d %.3f')
+    print(f'saving qsos to {qsofile}')
     # Concatenate the three tables into one
     targets = vstack([elgs, lrgs, qsos])
     # free 
@@ -41,6 +39,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--inputs", nargs="+")
 parser.add_argument("--outputs", nargs="+")
+parser.add_argument("--id_seed", default=None)
 args = parser.parse_args() 
 
 print("concatenating tracers to FBA")

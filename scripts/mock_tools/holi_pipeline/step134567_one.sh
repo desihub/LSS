@@ -74,7 +74,7 @@ input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_ELG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 #out1_ELG=$RAMDISK/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
         
-time python ./prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y
+time python ./prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  
 
 tracer="LRG"
 nzname="${nzfile[$tracer]}"
@@ -178,8 +178,8 @@ in6_ELG=$out5_ELG
 in6_QSO=$out5_QSO
 in6_LRG=$out4_LRG
 out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
-time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_ELG $in6_LRG $in6_QSO --outputs $out6
-#time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_LRG $in6_LRG $in6_QSO --outputs $out6
+time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_ELG $in6_LRG $in6_QSO --outputs $out6 --id_seed $IDS
+#time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_LRG $in6_LRG $in6_QSO --outputs $out6 --id_seed $IDS
 
 
 #
