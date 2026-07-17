@@ -11,4 +11,4 @@
 PROCID=${SLURM_PROCID:0}
 SIM_ID=$((PROCID + $3))
 
-time ./step134567_one.sh $1 $2 ${SIM_ID} > step134567_seed${SIM_ID}.log 2>&1
+time ./step134567_one.sh $1 $2 ${SIM_ID} > $2/step134567_seed${SIM_ID}.log 2>&1
