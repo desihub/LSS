@@ -168,7 +168,9 @@ if len(args.mocklist) > 0:
 else:
     for i in range(args.mockmin, args.mockmax):
         log.info('Process i = {0}'.format(i))
-        files = glob.glob(args.altMTLBaseDir.format(mock_number=i))
+        pf_name = args.altMTLBaseDir.format(mock_number=i)
+        files = glob.glob(pf_name)
+        log.info(f"With {pf_name} found {len(files)} files:\n{files}")
     #files = glob.glob(args.altMTLBaseDir + "Univ{0:03d}/*".format(i))
         if len(files):
             pass
@@ -186,6 +188,7 @@ p = Pool(NProc)
 atexit.register(p.close)
 #for i in inds:
 #    procFunc(i)
+print(inds)
 result = p.map(procFunc,inds)
 
 
