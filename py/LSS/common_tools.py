@@ -2348,7 +2348,7 @@ def addNS(tab):
 
 def return_altmtl_fba_fadate(tileid):
     ts = str(tileid).zfill(6)
-    FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/' + \
+    FAOrigName = '/dvs_ro/cfs/cdirs/desi/target/fiberassign/tiles/trunk/' + \
         ts[:3]+'/fiberassign-'+ts+'.fits.gz'
     fhtOrig = fitsio.read_header(FAOrigName)
     fadate = fhtOrig['RUNDATE']
@@ -2375,7 +2375,7 @@ def get_fadate_dic(survey='DA2',prog='DARK'):
             json.dump(rdict, file, indent=4)
     return rdict
     
-def check_fracfba(seed,fadate_dic,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/',):
+def check_fracfba(seed,fadate_dic,mockdir='/pscratch/sd/d/desica/DA3/mocks/holi_v4/altmtl/'):
     #seed is the mock realization
     #the fadate_dic is a dictionary with tile number and date that is independent of the mock realization and don't want to keep looking up
     fbadir = os.path.join(mockdir,'altmtl'+str(seed), 'Univ000/fa/MAIN')
