@@ -4,6 +4,11 @@
 # ====
 # Process holi pipeline for step 1 to 7 for one seed and all tracer ELG, LRG, QSO
 # The possibility of using a RAM disk for file-based I/O data flow should be investigated.
+#   - certainly useful for BRICKMASK which has intensive I/O, but
+#     huge file in / out (same file with only 3 colmuns added) 
+#      => can need all memory of the node
+#      => may be possible with multi-node job ...
+#      => first implementation, some processing ok for only one seed but almost kill process ... 
 # **script slurm free** for test, debug, optimization
 
 # Loadbalancing:
@@ -17,6 +22,11 @@
 LSS_DIR=$1
 DS_DIR=$2   # root directory of mock with version
 IDS=$3      # id seed to process
+
+
+# Node-local temporary space; fallback is /tmp if /dev/shm is unavailable.
+RAMDISK=${RAMDISK:-/dev/shm/$USER/${IDS:-$$}}
+mkdir -p "$RAMDISK"
 
 #
 # internal variables
@@ -41,6 +51,10 @@ in_7=forFA0_concat.fits
 echo "================= step 1"
 # TODO: manage version ?
 # TODO: use file parameters 
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+
+export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+export PATH=$LSS_DIR/bin:$PATH
 
 declare -A conf_version
 conf_version[QSO]="webjax_v4.80"
@@ -58,6 +72,7 @@ nzname="${nzfile[$tracer]}"
 input_mockpath=/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_ELG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
+#out1_ELG=$RAMDISK/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
         
 time python ./prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y
 
@@ -67,6 +82,7 @@ version="${conf_version[$tracer]}"
 input_mockpath=/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_LRG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
+#out1_LRG=$RAMDISK/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 
 time python ./prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer LRG --zrsdcol Z --output_fullpathfn $out1_LRG --save_mock_nz n --nzfilename $nzname --need_nz_calib y
 
@@ -76,14 +92,19 @@ version="${conf_version[$tracer]}"
 input_mockpath=/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_QSO=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
+#out1_QSO=$RAMDISK/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 
 time python ./prepare_mocks_Y3_test1.py --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer QSO --zrsdcol Z --output_fullpathfn $out1_QSO --save_mock_nz n --nzfilename $nzname --need_nz_calib y
+
 
 #
 # step 3 brickmask
 #
 echo "================= step 3"
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
+export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+export PATH=$LSS_DIR/bin:$PATH
+
 #module load cpu cray-fftw
 export CFITSIO_DIR=/global/common/software/desi/users/naimgk/cfitsio
 export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
@@ -92,25 +113,39 @@ export EXE_PATH=/global/cfs/cdirs/desi/users/colley/wd_brick/brickmask
 export CONF_PATH=/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/pipeline
 
 out3_ELG=$DS_DIR/$seed/ELG/$in_4
+#out3_ELG=$RAMDISK/$seed/ELG/$in_4
 out3_LRG=$DS_DIR/$seed/LRG/$in_4
+#out3_LRG=$RAMDISK/$seed/LRG/$in_4
 out3_QSO=$DS_DIR/$seed/QSO/$in_4
+#out3_QSO=$RAMDISK/$seed/QSO/$in_4
 # BRICKMASK NOTE that command line options have priority over this file.
 # Unnecessary entries can be left unset.
 #srun -n 1 -c 3 --cpu-bind=cores $EXE_PATH/BRICKMASK -i $out1_ELG -o $out3_ELG -c $PROC_DIR/brickmask.conf
 
-echo $out1_ELG > input$IDS.txt
-echo $out3_ELG > output$IDS.txt
-time $EXE_PATH/BRICKMASK -i input$IDS.txt -o output$IDS.txt -c $PROC_DIR/brickmask.conf
+echo $out1_ELG > $DS_DIR/input$IDS.txt
+echo $out3_ELG > $DS_DIR/output$IDS.txt
+time $EXE_PATH/BRICKMASK -i $DS_DIR/input$IDS.txt -o $DS_DIR/output$IDS.txt -c $PROC_DIR/brickmask.conf
 
-echo $out1_LRG > input$IDS.txt
-echo $out3_LRG > output$IDS.txt
-time $EXE_PATH/BRICKMASK -i input$IDS.txt -o output$IDS.txt -c $PROC_DIR/brickmask.conf
+echo $out1_LRG > $DS_DIR/input$IDS.txt
+echo $out3_LRG > $DS_DIR/output$IDS.txt
+time $EXE_PATH/BRICKMASK -i $DS_DIR/input$IDS.txt -o $DS_DIR/output$IDS.txt -c $PROC_DIR/brickmask.conf
 
-echo $out1_QSO > input$IDS.txt
-echo $out3_QSO > output$IDS.txt
-time $EXE_PATH/BRICKMASK -i input$IDS.txt -o output$IDS.txt -c $PROC_DIR/brickmask.conf
+echo $out1_QSO > $DS_DIR/input$IDS.txt
+echo $out3_QSO > $DS_DIR/output$IDS.txt
+time $EXE_PATH/BRICKMASK -i $DS_DIR/input$IDS.txt -o $DS_DIR/output$IDS.txt -c $PROC_DIR/brickmask.conf
 
-rm input$IDS.txt output$IDS.txt
+# merge input output for one call to BRICKMASK 
+# echo $out1_ELG > $DS_DIR/input$IDS.txt
+# echo $out3_ELG > $DS_DIR/output$IDS.txt
+# echo $out1_LRG >> $DS_DIR/input$IDS.txt
+# echo $out3_LRG >> $DS_DIR/output$IDS.txt
+# echo $out1_QSO >> $DS_DIR/input$IDS.txt
+# echo $out3_QSO >> $DS_DIR/output$IDS.txt
+#time $EXE_PATH/BRICKMASK -i $DS_DIR/input$IDS.txt -o $DS_DIR/output$IDS.txt -c $PROC_DIR/brickmask.conf
+
+rm $DS_DIR/input$IDS.txt $DS_DIR/output$IDS.txt
+rm -rf $RAMDISK
+
 #
 # step 4 mask
 #
@@ -153,6 +188,8 @@ time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_ELG $in6_LRG $in6_QSO
 echo "================= step 7"
 source /global/common/software/desi/desi_environment.sh main
 module load desitarget/3.0.0
+export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+export PATH=$LSS_DIR/bin:$PATH
 
 altmtlxxxx=$(printf "altmtl%04d" "$IDS")
 out7=$DS_DIR/$altmtlxxxx
