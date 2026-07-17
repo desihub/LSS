@@ -27,6 +27,9 @@ def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=
     weights = np.ones_like(data[zcolumn])
     weights_ran = np.ones(len(rands))
 
+    if wtmd == 'none':
+        wts = np.ones(len(data))
+        weights_ran = np.ones(len(rands))
 
     if wtmd == 'fracz':
         if 'FRACZ_TILELOCID' in cols:
