@@ -1,3 +1,7 @@
+#
+# JM  Colley version to reproduce Holi pipeline
+#
+
 # make sure add the LSS repo to your python path
 from astropy.io import fits  # Access to FITS (Flexible Image Transport System) files.
 from astropy.table import (
@@ -43,32 +47,54 @@ def create_dir(value):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--survey", help="e.g., Y1, DA2", default="DA2")
-parser.add_argument("--specdata", help="mountain range for spec prod", default="loa-v1")
 parser.add_argument(
-    "--mockname", help="name of mocks: holimock, EZmock, abacushf, uchuu"
+    "--survey",
+    help="e.g., Y1, DA2",
+    default="DA2",
+)
+parser.add_argument(
+    "--specdata",
+    help="mountain range for spec prod",
+    default="loa-v1",
+)
+parser.add_argument(
+    "--mockname",
+    help="name of mocks: holimock, EZmock, abacushf, uchuu",
 )  # , default='EZmock')
 parser.add_argument(
-    "--input_mockpath", help="full directory path to input mocks", default=""
+    "--input_mockpath",
+    help="full directory path to input mocks",
+    default="",
 )
-parser.add_argument("--input_mockfile", help="mock file name", default="")
 parser.add_argument(
-    "--output_fullpathfn", help="output mock file and full path", default=""
+    "--input_mockfile",
+    help="mock file name",
+    default="",
+)
+parser.add_argument(
+    "--output_fullpathfn",
+    help="output mock file and full path",
+    default="",
 )
 # parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
-parser.add_argument("--tracer", help="LRG, ELG or QSO")  # ,default='LRG')
 parser.add_argument(
-    "--ztruecol", help="name of column with true redshift in the input catalog"
+    "--tracer",
+    help="LRG, ELG or QSO",
+)  # ,default='LRG')
+parser.add_argument(
+    "--ztruecol",
+    help="name of column with true redshift in the input catalog",
 )
 parser.add_argument(
-    "--zrsdcol", help="name of column with redshift, including RSD", default="Z"
+    "--zrsdcol",
+    help="name of column with redshift, including RSD",
+    default="Z",
 )
 parser.add_argument(
     "--need_footprint",
     help="Do we need to prune by rounded tile footprint?",
     default="y",
 )
-
 parser.add_argument(
     "--need_nz_calib",
     help="Do we need to calibrate n(z) to match that of the survey?",
@@ -89,15 +115,17 @@ parser.add_argument(
     help="name of nz file that have been previously saved or you want to create for the first time. If ELG, must be two names separated by coma",
     default=None,
 )
-
-
 # parser.add_argument("--ELGsplit", help="Are the ELGs already splitted into LOP and VLO? If 'n', make the division",default='y')
 parser.add_argument(
     "--ELGtpcol",
     help="column distinguishing the ELG type; assumed boolean with True being LOP, if mockname not abacushf",
     default="LOP",
 )
-
+parser.add_argument(
+    "--limit_for_test",
+    help="Limitation of number of galaxies in each catalog",
+    default=0,
+)
 # parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
 # parser.add_argument("--EZnzmask", help="apply mask on galaxy number density n(z)",default='n')
 
@@ -125,10 +153,14 @@ def read_parent_mock(filename):
     else:
         raise Exception("format input mock is not h5 or fits")
 
-    debug_limit = 2000
-    if len(data) > debug_limit:
-        print(f"DEBUG JMC: input mock is large, will read only {debug_limit} objects for testing")
-        data = data[:debug_limit]
+    if args.limit_for_test > 0:        
+        if len(data) > args.limit_for_test:
+            print(
+                f"\n===================== limit_for_test: input mock is large, will read only {args.limit_for_test} objects for testing\n"
+            )
+            data = data[:args.limit_for_test]
+        else:
+            print(f"\n===================== limit_for_test: input mock is not large, will read all objects\n")
     return data
 
 
