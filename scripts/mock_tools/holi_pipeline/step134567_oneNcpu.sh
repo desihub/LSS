@@ -25,8 +25,8 @@ NCPU=${SLURM_CPUS_PER_TASK:-4}
 NCPU_M2=$((NCPU-2))
 
 # Node-local temporary space; fallback is /tmp if /dev/shm is unavailable.
-RAMDISK=${RAMDISK:-/dev/shm/$USER/${IDS:-$$}}
-mkdir -p "$RAMDISK"
+#RAMDISK=${RAMDISK:-/dev/shm/$USER/${IDS:-$$}}
+#mkdir -p "$RAMDISK"
 
 #
 # internal variables
@@ -142,10 +142,10 @@ echo $out3_LRG >> $DS_DIR/output$IDS.txt
 echo $out1_QSO >> $DS_DIR/input$IDS.txt
 echo $out3_QSO >> $DS_DIR/output$IDS.txt
 
-time srun -n $NCPU -c 1 --cpu-bind=cores $EXE_PATH/BRICKMASK -i $DS_DIR/input$IDS.txt -o $DS_DIR/output$IDS.txt -c $PROC_DIR/brickmask.conf
+time srun --overlap -n $NCPU -c 1 --cpu-bind=cores $EXE_PATH/BRICKMASK -i $DS_DIR/input$IDS.txt -o $DS_DIR/output$IDS.txt -c $PROC_DIR/brickmask.conf
 
 rm $DS_DIR/input$IDS.txt $DS_DIR/output$IDS.txt
-rm -rf $RAMDISK
+#rm -rf $RAMDISK
 
 
 #
