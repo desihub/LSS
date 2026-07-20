@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=41
+#SBATCH --nodes=150
 #SBATCH --account=desi
 #SBATCH -t 00:30:00
 #SBATCH --constraint=cpu
