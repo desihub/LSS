@@ -99,4 +99,4 @@ time srun -n $NTASKS -c $NCPU_PT \
 #
 # submit STEP 8 (can't used all CPUs and very long step => new job)
 #
-#sbatch --ntasks=$NTASKS ./slurm3_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
+#sbatch --ntasks=$NTASKS ./sbatch2_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
