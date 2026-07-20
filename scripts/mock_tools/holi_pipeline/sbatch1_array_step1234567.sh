@@ -7,14 +7,14 @@
 # job array to process chunk (size ntasks) of simulation 
 # why _flat  ? 1 level of srun, no nested step to avoid resource problem
 
-#SBATCH --ntasks=2
-#SBATCH --cpus-per-task=40
+#SBATCH --ntasks=10
+#SBATCH --cpus-per-task=24
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -J Holi1-7
 #SBATCH -t 0:59:00
-#SBATCH --array=0-1
+#SBATCH --array=0-7
 #SBATCH --output=holi1-7_%j.out
 #SBATCH --error=holi1-7_%j.err
 #SBATCH --mail-type=begin,end,fail
@@ -25,7 +25,7 @@
 #
 # first ID seed to process => SBATCH --array=0-x **must start with 0**
 FIRST_ID=$1
-
+LOG_DIR=$PWD
 #
 # Env
 #
@@ -46,8 +46,8 @@ FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 # STEP 1 create catalogue
 #
 time srun -n $NTASKS -c $NCPU_PT \
---output="logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
---error="logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
+--output="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
+--error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
 
 #
@@ -92,11 +92,11 @@ time srun --exclusive -n $ALL_CPU -c 1 --cpu-bind=cores $EXE_PATH/BRICKMASK -i $
 #
 time srun -n $NTASKS -c $NCPU_PT \
 --open-mode=append \
---output="logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
---error="logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
+--output="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
+--error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 ./step4567.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
 
 #
 # submit STEP 8 (can't used all CPUs and very long step => new job)
 #
-sbatch --ntasks=$NTASKS ./slurm3_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
+#sbatch --ntasks=$NTASKS ./slurm3_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
