@@ -484,11 +484,17 @@ if args.imsys_clus == 'y':
     else:
         fit_maps = [mapn for mapn in args.usemaps]
 
+    # fiducial column name for imaging systematics weights
+    syscol = 'WEIGHT_IMLIN_CLUS'
     #get NGC/SGC catalogs and stack them (weights will be fit splitting the data into different photometric regions)
     fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
     dat_ngc = Table(fitsio.read(fname))
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname))
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
     dat = vstack([dat_sgc,dat_ngc])
     #foutname = os.path.join(dirout, tracer_clus+'_clustering.dat.fits')
     #get randoms
@@ -498,8 +504,6 @@ if args.imsys_clus == 'y':
         ranl.append(ran)
         ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
-    # fiducial column name for weights
-    syscol = 'WEIGHT_IMLIN_CLUS' 
     # ensure that randoms either all have this column or all don't, otherwise the concatenation will fail. the mix may result from previously performed imaging systematics added to randoms with some randoms having been processed and some not
     ran_has_syscol = [syscol in rfn.get_names_flat(ran.dtype) for ran in ranl]
     if not all(ran_has_syscol):
@@ -571,8 +575,6 @@ if args.imsys_clus == 'y':
     #we will do a join
     dat.keep_columns(['TARGETID',syscol])
     
-    if syscol in dat_ngc.colnames:
-        dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
     #apply weight to final weight columns, remove any previous weighting
     dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
@@ -581,8 +583,6 @@ if args.imsys_clus == 'y':
     #write out NGC
     common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits'),logger=logger)
     #do SGC
-    if syscol in dat_sgc.colnames:
-        dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     #apply weight to final weight columns
     dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
