@@ -170,7 +170,7 @@ if args.mkfulldat == 'y':
     if 'FSFABSmag' in args.ccut:
         #this is an example that can make subsamples based on fastspecfit absolute magnitudes
         #other critera can be added
-        csplit = args.ccut.split('-')
+        csplit : list[str] = args.ccut.split('-')
         bnd = csplit[1]
         abmag = -float(csplit[2])
         fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
@@ -186,6 +186,12 @@ if args.mkfulldat == 'y':
             sfr_str = csplit[3]
             sfr_split = float(csplit[4]) #value to split on
             common.printlog('splitting on SFR ' + 'percentile ' * ('per' in sfr_str) + str(sfr_split), logger)
+        if 'gmr' in args.ccut:
+            fsf_cols.append('ABSMAG01_SDSS_G')
+            fsf_cols.append('ABSMAG01_SDSS_R')
+            gmr_str = csplit[3].removeprefix('gmr') # remove the 'gmr' prefix to prevent issues with the g/l logic below for greater/less than
+            gmr_split = float(csplit[4]) #value to split on
+            common.printlog('splitting on G-R ' + 'percentile ' * ('per' in gmr_str) + str(gmr_split), logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
         ecorr = np.zeros(len(fulldat))
@@ -213,6 +219,16 @@ if args.mkfulldat == 'y':
                 sel &= ~sel_umz
             common.printlog('length after UMZ selection '+str(np.sum(sel)),logger)
             del sel_umz # delete arrays to free memory, no longer used
+        if 'gmr' in args.ccut: # perform G-R color cut
+            if 'per' in gmr_str: # 'per' for percentile; otherwise, use the value directly
+                gmr_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_G']-fulldat[sel]['ABSMAG01_SDSS_R']), gmr_split)
+            sel_gmr = (fulldat['ABSMAG01_SDSS_G']-fulldat['ABSMAG01_SDSS_R']) > gmr_split
+            if 'g' in gmr_str: # 'g' for greater than
+                sel &= sel_gmr
+            else:
+                sel &= ~sel_gmr
+            common.printlog('length after GMR selection '+str(np.sum(sel)),logger)
+            del sel_gmr # delete arrays to free memory, no longer used
         del ecorr # delete arrays to free memory, no longer used
 
     # add `elif`s for any additional selections here
