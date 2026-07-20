@@ -124,6 +124,7 @@ parser.add_argument(
 parser.add_argument(
     "--limit_for_test",
     help="Limitation of number of galaxies in each catalog",
+    type=int,
     default=0,
 )
 # parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
@@ -156,11 +157,11 @@ def read_parent_mock(filename):
     if args.limit_for_test > 0:        
         if len(data) > args.limit_for_test:
             print(
-                f"\n===================== limit_for_test: input mock is large, will read only {args.limit_for_test} objects for testing\n"
+                f"\n  **TEST/DEBUG** limit_for_test: input mock is large, will read only {args.limit_for_test} objects for testing\n"
             )
             data = data[:args.limit_for_test]
         else:
-            print(f"\n===================== limit_for_test: input mock is not large, will read all objects\n")
+            print(f"\n  **TEST/DEBUG** limit_for_test: input mock is not large, will read all objects\n")
     return data
 
 

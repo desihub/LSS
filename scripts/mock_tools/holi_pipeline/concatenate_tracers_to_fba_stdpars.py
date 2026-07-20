@@ -3,10 +3,11 @@
 from astropy.table import Table, vstack
 import LSS.common_tools as cm
 from astropy.io import fits
-# import numpy as np
-# import os
+import numpy as np
+import os
 import sys
 import argparse
+from  pathlib import Path
 
 
 def concatenate_tracers(qso_path, elg_path, lrg_path, output_path):    
@@ -14,10 +15,11 @@ def concatenate_tracers(qso_path, elg_path, lrg_path, output_path):
     elgs = Table.read(elg_path)    
     lrgs = Table.read(lrg_path)
     qsos = Table.read(qso_path)
-    # save only QSO 
-    qso_path = os.path.join(args.output_path, 'qsos')
+    # save only QSO
+    root_ds = Path(output_path).parent
+    qso_path = root_ds / 'qsos'
     os.makedirs(qso_path, exist_ok=True)
-    qsofile = os.path.join(qso_path, f'qso{args.id_seed:04d}.txt')
+    qsofile = qso_path / f'qso{args.id_seed:04d}.txt'
     np.savetxt(qsofile, np.array([qsos['TARGETID'], qsos['RSDZ']]).T, fmt='%d %.3f')
     print(f'saving qsos to {qsofile}')
     # Concatenate the three tables into one
@@ -39,7 +41,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--inputs", nargs="+")
 parser.add_argument("--outputs", nargs="+")
-parser.add_argument("--id_seed", default=None)
+parser.add_argument("--id_seed", type=int, default=None)
 args = parser.parse_args() 
 
 print("concatenating tracers to FBA")

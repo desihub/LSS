@@ -22,6 +22,7 @@ LSS_DIR=$1
 DS_DIR=$2   # root directory of mock with version
 IDS=$3      # id seed to process
 NCPU=${SLURM_CPUS_PER_TASK:-4}
+#NCPU=10
 NCPU_M2=$((NCPU-2))
 
 # Node-local temporary space; fallback is /tmp if /dev/shm is unavailable.
@@ -74,7 +75,7 @@ input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_ELG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 #out1_ELG=$RAMDISK/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 
-max_gal=-1
+max_gal=4000000
         
 #time srun -n 1 -c $NCPU_M2 --exclusive python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  &
 time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  &
@@ -147,7 +148,7 @@ time srun --overlap -n $NCPU -c 1 --cpu-bind=cores $EXE_PATH/BRICKMASK -i $DS_DI
 rm $DS_DIR/input$IDS.txt $DS_DIR/output$IDS.txt
 #rm -rf $RAMDISK
 
-
+exit 0
 #
 # step 4 mask
 #

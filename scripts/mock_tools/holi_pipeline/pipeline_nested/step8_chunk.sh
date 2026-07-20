@@ -13,9 +13,15 @@
 #
 LSS_DIR=$1
 DS_DIR=$2   # root directory of mock with version
-IDS=$3      # id seed to process
-NCPU=$4     # multiprocess 
+FIRST_ID=$3      # id seed to process
+SIZE_CHUNK=$4     # multiprocess
+NCPUTASK=$5
+PROCID=${SLURM_PROCID:-0}
 
+IDS=$((FIRST_ID+PROCID))
+
+#NCPU=$((SIZE_CHUNK*NCPUTASK))
+NCPU=$NCPUTASK
 #
 # environment
 #
@@ -23,6 +29,8 @@ source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
 
 export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=$NCPU
+export OMP_NUM_THREADS=2
 
 path2LSS=$LSS_DIR/bin
 
@@ -35,7 +43,8 @@ printf -v outputMTLFinalDestination "$ALTMTLHOME/$simName/"
 
 obscon='DARK'
 survey='main'
-ProcPerNode=$NCPU
+#ProcPerNode=$NCPU
+ProcPerNode=1
 numobs_from_ledger=''
 redoFA=''
 getosubp=''
@@ -47,7 +56,8 @@ targfile="--targfile=${ALTMTLHOME}/forFA{mock_number:04d}.fits"
 multiDate='--multiDate'
 reproducing=''
 mockinit=$IDS
-mockend=$((IDS + NCPU))
+#mockend=$((IDS + SIZE_CHUNK))
+mockend=$((IDS + 1))
 mocklist=''
 zfix="${ALTMTLHOME}/qsos/qso{mock_number:04d}.txt"
 
@@ -55,4 +65,5 @@ argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=
 echo "argstring for dateloop"
 echo $argstring
 
-srun -n 1 -c $NCPU --cpu-bind=none python $path2LSS/runAltMTLRealizations.py $argstring
+#srun -n 1 -c $NCPU --cpu-bind=none python $path2LSS/runAltMTLRealizations.py $argstring
+python $path2LSS/runAltMTLRealizations.py $argstring > $DS_DIR/fa_chunk_${IDS}.log  2>&1

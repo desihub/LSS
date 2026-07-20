@@ -35,7 +35,7 @@ def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=F
     if not os.path.isdir(initledger_path):
         print("Running initial ledgers")
         if paral:
-            mtl.make_ledger(concate_tracers, initledger_path, obscon=obscon.upper(), numproc=32)
+            mtl.make_ledger(concate_tracers, initledger_path, obscon=obscon.upper(), numproc=4)
         else:
             mtl.make_ledger(concate_tracers, initledger_path, obscon=obscon.upper())
     print("Creating list of tiles to be processed by AltMTL mock production")

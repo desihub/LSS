@@ -106,7 +106,14 @@ initialize_amtl_mocks_da2.py
 
 # 8) Run altMTL
 
- with 
+## Recent script
+
+```console
+scripts/mock_tools/DR2_altmtl_sbatch/altmtl_200249_holi_v3.sbatch
+``` 
+[github link](https://github.com/desihub/LSS/blob/main/scripts/mock_tools/DR2_altmtl_sbatch/altmtl_200249_holi_v3.sbatch)
+
+## Previous script
 
 ```console
 DA2ALTMTLRealizationsDARK_holi.sh
