@@ -224,7 +224,7 @@ if args.mkfulldat == 'y':
             if 'per' in gmr_str: # 'per' for percentile; otherwise, use the value directly
                 gmr_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_G']-fulldat[sel]['ABSMAG01_SDSS_R']), gmr_split)
             sel_gmr = (fulldat['ABSMAG01_SDSS_G']-fulldat['ABSMAG01_SDSS_R']) > gmr_split
-            if 'g' in gmr_str: # 'g' for greater than
+            if 'g' in gmr_str: # 'g' for greater than; 'gmr' prefix was removed earlier to avoid confusion with this logic
                 sel &= sel_gmr
             else:
                 sel &= ~sel_gmr
