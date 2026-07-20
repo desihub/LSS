@@ -194,10 +194,11 @@ if args.mkfulldat == 'y':
             common.printlog('splitting on G-R ' + 'percentile ' * ('per' in gmr_str) + str(gmr_split), logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
-        ecorr = np.zeros(len(fulldat))
+        ecorr = 0 # doesn't need to be an array at this point
         if 'ecorr' in args.ccut:
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
+        del ecorr # delete arrays to free memory, no longer used
         common.printlog('length after Absmag selection '+str(np.sum(sel)),logger)
         if 'SFR' in args.ccut: # perform SFR cut
             if 'per' in sfr_str: # 'per' for percentile; otherwise, use the value directly
@@ -229,7 +230,6 @@ if args.mkfulldat == 'y':
                 sel &= ~sel_gmr
             common.printlog('length after GMR selection '+str(np.sum(sel)),logger)
             del sel_gmr # delete arrays to free memory, no longer used
-        del ecorr # delete arrays to free memory, no longer used
 
     # add `elif`s for any additional selections here
         
