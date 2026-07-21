@@ -57,7 +57,6 @@ time srun -n $NTASKS -c $NCPU_PT \
 --error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
 
-exit 0
 
 #
 # STEP 2 concatenate file input/output for BRICKMASK

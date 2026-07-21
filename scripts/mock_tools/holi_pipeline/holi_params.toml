@@ -1,4 +1,6 @@
+#
 # file parameters for holi pipeline
+#
 
 # LSS  package
 LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS" 
@@ -8,14 +10,13 @@ mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
 
 first_id = 301
 
-# for debug
+# for debug else -1
 max_gal= 5000
 
 # step 1
 [prepare_mocks]
-specdata = "loa-v1"
+#specdata = "loa-v1"
 survey = "DA2"
-# others ?
 
 # step 3
 [brickmask]
@@ -25,4 +26,8 @@ conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipe
 
 # step 7
 [init_amtl]
-amtl_dir = ""
+#amtl_dir = ""
+
+# step 8
+[amtl]
+#verbose=''
