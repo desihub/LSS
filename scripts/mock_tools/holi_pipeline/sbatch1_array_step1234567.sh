@@ -35,13 +35,13 @@ LOG_DIR=$PWD
 #DS_DIR=/global/cfs/cdirs/desi/mocks/fa4acm/holi/webjax_v4.80
 #DS_DIR=/pscratch/sd/j/jcolley/holi/webjax_v4.80
 
-LSS_DIR=$(python3 get_pars.py $HOLIPARS LSS_dir)
-DS_DIR=$(python3 get_pars.py $HOLIPARS mock_dir)
+LSS_DIR=$(get_pars.py $HOLIPARS LSS_dir)
+DS_DIR=$(get_pars.py $HOLIPARS mock_dir)
 
 HOLI_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 cd $HOLI_DIR
 
-FIRST_ID=$(python3 get_pars.py $HOLIPARS first_id)
+FIRST_ID=$(get_pars.py $HOLIPARS first_id)
 
 # SLURM parameters with default value for interactive mode
 NTASKS=${SLURM_NTASKS:-2}
@@ -84,11 +84,10 @@ done
 ## env definition
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
 module load cpu cray-fftw
-export CFITSIO_DIR=$(python3 get_pars.py $HOLIPARS brickmask.cfitsio)
+export CFITSIO_DIR=$(get_pars.py $HOLIPARS brickmask.cfitsio)
 export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
-#TODO: path hardcoding, use file parameter
-export EXE_PATH=$(python3 get_pars.py $HOLIPARS brickmask.exe_dir)
-export CONF_PATH=$(python3 get_pars.py $HOLIPARS brickmask.conf_dir)
+EXE_PATH=$(get_pars.py $HOLIPARS brickmask.exe_dir)
+CONF_PATH=$(get_pars.py $HOLIPARS brickmask.conf_dir)
 
 ## BRICKMASK NOTE that command line options have priority over this file.
 ALL_CPU=$((NTASKS*NCPU_PT))

@@ -48,7 +48,7 @@ PROC_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 cd $PROC_DIR
 
 ## TEST/DEBUG: negative value for no debug
-max_gal=$(python3 get_pars.py $HOLIPARS max_gal)
+max_gal=$(get_pars.py $HOLIPARS max_gal)
 
 ## simulation
 # TODO: manage version ?
@@ -63,7 +63,7 @@ nzfile[QSO]="$DS_DIR/nzref_da2_qso.txt"
 nzfile[LRG]="$DS_DIR/nzref_da2_lrg.txt"
 nzfile[ELG]="$DS_DIR/nzref_da2_elg_N.txt,$DS_DIR/nzref_da2_elg_S.txt"
 
-SURV=$(python3 get_pars.py $HOLIPARS prepare_mocks.survey)
+SURV=$(get_pars.py $HOLIPARS prepare_mocks.survey)
 
 #
 tracer="ELG"
