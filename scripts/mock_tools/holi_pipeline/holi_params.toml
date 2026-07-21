@@ -4,21 +4,24 @@
 LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS" 
 
 # mocks output dir
-mock_dir = "/global/cfs/cdirs/desi/mocks/fa4acm/holi/webjax_v4.80"
+mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
 
-id_beg = 0
-id_end = 10
+first_id = 301
+
+# for debug
+max_gal= 5000
 
 # step 1
-[prepare_mock]
+[prepare_mocks]
 specdata = "loa-v1"
 survey = "DA2"
 # others ?
 
 # step 3
 [brickmask]
-exe_dir = "/global/cfs/cdirs/desi/users/colley/brickmask"
-conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/pipeline"
+cfitsio = "/global/common/software/desi/users/naimgk/cfitsio"
+exe_dir = "/global/cfs/cdirs/desi/users/colley/wd_brick/brickmask_mpi"
+conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline"
 
 # step 7
 [init_amtl]

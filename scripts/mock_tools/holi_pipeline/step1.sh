@@ -48,7 +48,7 @@ PROC_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 cd $PROC_DIR
 
 ## TEST/DEBUG: negative value for no debug
-max_gal=-1
+max_gal=$(python3 get_pars.py $HOLIPARS max_gal)
 
 ## simulation
 # TODO: manage version ?
@@ -63,6 +63,8 @@ nzfile[QSO]="$DS_DIR/nzref_da2_qso.txt"
 nzfile[LRG]="$DS_DIR/nzref_da2_lrg.txt"
 nzfile[ELG]="$DS_DIR/nzref_da2_elg_N.txt,$DS_DIR/nzref_da2_elg_S.txt"
 
+SURV=$(python3 get_pars.py $HOLIPARS prepare_mocks.survey)
+
 #
 tracer="ELG"
 #
@@ -71,7 +73,7 @@ nzname="${nzfile[$tracer]}"
 input_mockpath=/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_ELG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
-time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  &
+time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  &
 pid_elg=$!
 #
 tracer="LRG"
@@ -81,7 +83,7 @@ version="${conf_version[$tracer]}"
 input_mockpath=/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_LRG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
-time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer LRG --zrsdcol Z --output_fullpathfn $out1_LRG --save_mock_nz n --nzfilename $nzname --need_nz_calib y &
+time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer LRG --zrsdcol Z --output_fullpathfn $out1_LRG --save_mock_nz n --nzfilename $nzname --need_nz_calib y &
 pid_lrg=$!
 #
 tracer="QSO"
@@ -91,7 +93,7 @@ version="${conf_version[$tracer]}"
 input_mockpath=/global/cfs/cdirs/desi/mocks/cai/holi/$version/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_QSO=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
-time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey DA2 --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer QSO --zrsdcol Z --output_fullpathfn $out1_QSO --save_mock_nz n --nzfilename $nzname --need_nz_calib y &
+time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer QSO --zrsdcol Z --output_fullpathfn $out1_QSO --save_mock_nz n --nzfilename $nzname --need_nz_calib y &
 pid_qso=$!
 
 wait "$pid_elg"
