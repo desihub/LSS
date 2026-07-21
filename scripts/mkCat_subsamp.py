@@ -11,18 +11,18 @@ Up to imaging systematics regression takes ~7 minutes ; imaging systematics take
 """
 #
 #standard python
-import sys
+# import sys
 import os
-import shutil
-import unittest
-from datetime import datetime
-import json
+# import shutil
+# import unittest
+# from datetime import datetime
+# import json
 import numpy as np
 import fitsio
-import glob
+# import glob
 import argparse
-from astropy.table import Table,join,unique,vstack
-from matplotlib import pyplot as plt
+from astropy.table import Table,join,vstack#,unique
+# from matplotlib import pyplot as plt
 
 import logging
 logname = 'mkCat'
@@ -170,7 +170,7 @@ if args.mkfulldat == 'y':
     if 'FSFABSmag' in args.ccut:
         #this is an example that can make subsamples based on fastspecfit absolute magnitudes
         #other critera can be added
-        csplit = args.ccut.split('-')
+        csplit : list[str] = args.ccut.split('-')
         bnd = csplit[1]
         abmag = -float(csplit[2])
         fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
@@ -186,12 +186,19 @@ if args.mkfulldat == 'y':
             sfr_str = csplit[3]
             sfr_split = float(csplit[4]) #value to split on
             common.printlog('splitting on SFR ' + 'percentile ' * ('per' in sfr_str) + str(sfr_split), logger)
+        if 'gmr' in args.ccut:
+            fsf_cols.append('ABSMAG01_SDSS_G')
+            fsf_cols.append('ABSMAG01_SDSS_R')
+            gmr_str = csplit[3].removeprefix('gmr') # remove the 'gmr' prefix to prevent issues with the g/l logic below for greater/less than
+            gmr_split = float(csplit[4]) #value to split on
+            common.printlog('splitting on G-R ' + 'percentile ' * ('per' in gmr_str) + str(gmr_split), logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
-        ecorr = np.zeros(len(fulldat))
+        ecorr = 0 # doesn't need to be an array at this point
         if 'ecorr' in args.ccut:
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
+        del ecorr # delete arrays to free memory, no longer used
         common.printlog('length after Absmag selection '+str(np.sum(sel)),logger)
         if 'SFR' in args.ccut: # perform SFR cut
             if 'per' in sfr_str: # 'per' for percentile; otherwise, use the value directly
@@ -202,6 +209,7 @@ if args.mkfulldat == 'y':
             else:
                 sel &= ~sel_sfr
             common.printlog('length after SFR selection '+str(np.sum(sel)),logger)
+            del sel_sfr # delete arrays to free memory, no longer used
         if 'umz' in args.ccut: # perform U-Z color cut
             if 'per' in umz_str: # 'per' for percentile; otherwise, use the value directly
                 umz_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']), umz_split)
@@ -211,6 +219,17 @@ if args.mkfulldat == 'y':
             else:
                 sel &= ~sel_umz
             common.printlog('length after UMZ selection '+str(np.sum(sel)),logger)
+            del sel_umz # delete arrays to free memory, no longer used
+        if 'gmr' in args.ccut: # perform G-R color cut
+            if 'per' in gmr_str: # 'per' for percentile; otherwise, use the value directly
+                gmr_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_G']-fulldat[sel]['ABSMAG01_SDSS_R']), gmr_split)
+            sel_gmr = (fulldat['ABSMAG01_SDSS_G']-fulldat['ABSMAG01_SDSS_R']) > gmr_split
+            if 'g' in gmr_str: # 'g' for greater than; 'gmr' prefix was removed earlier to avoid confusion with this logic
+                sel &= sel_gmr
+            else:
+                sel &= ~sel_gmr
+            common.printlog('length after GMR selection '+str(np.sum(sel)),logger)
+            del sel_gmr # delete arrays to free memory, no longer used
 
     # add `elif`s for any additional selections here
         
@@ -230,6 +249,7 @@ if args.mkfulldat == 'y':
         abr = r_dered -dm
         sel = abr < float(args.ccut)
         sel &= z2use < 2
+        del z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
 
     elif args.ccut.startswith('zcmb') and is_float(args.ccut[len('zcmb'):]): # like the above absolute magnitude cut without k-correction, but with redshifts corrected to the CMB frame
         # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
@@ -254,6 +274,7 @@ if args.mkfulldat == 'y':
         abr = r_dered -dm
         sel = abr < float(ccut_mag_str)
         sel &= z2use < 2
+        del zcmb, newz, z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
 
     else:
         raise ValueError(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
@@ -261,6 +282,7 @@ if args.mkfulldat == 'y':
     # write output to new "full" catalog at your defined location
     fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
     common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
+    del fulldat, sel # delete arrays to free memory, no longer used
     
     
 #create "clustering" catalogs for data with no NGC/SGC split or FKP weights 
@@ -292,6 +314,7 @@ if mkclusran:
     else:
         for ii in inds:#range(rm,rx):
             _parfun_cr(ii)
+    del clus_arrays # free memory, this one is no longer used
 
 #define P0 value used for fiducial FKP weights and dz used for creating n(z)
 if tracer_out[:3] == 'QSO':
@@ -313,8 +336,8 @@ regions = ['NGC', 'SGC']
 #function to take a file and split it NGC/SGC
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
-    from astropy.coordinates import SkyCoord
-    import astropy.units as u
+    # from astropy.coordinates import SkyCoord
+    # import astropy.units as u
     app = 'clustering'+datran+'.fits'
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
@@ -477,11 +500,17 @@ if args.imsys_clus == 'y':
     else:
         fit_maps = [mapn for mapn in args.usemaps]
 
+    # fiducial column name for imaging systematics weights
+    syscol = 'WEIGHT_IMLIN_CLUS'
     #get NGC/SGC catalogs and stack them (weights will be fit splitting the data into different photometric regions)
     fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
     dat_ngc = Table(fitsio.read(fname))
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname))
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
     dat = vstack([dat_sgc,dat_ngc])
     #foutname = os.path.join(dirout, tracer_clus+'_clustering.dat.fits')
     #get randoms
@@ -491,8 +520,6 @@ if args.imsys_clus == 'y':
         ranl.append(ran)
         ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
-    # fiducial column name for weights
-    syscol = 'WEIGHT_IMLIN_CLUS' 
     # ensure that randoms either all have this column or all don't, otherwise the concatenation will fail. the mix may result from previously performed imaging systematics added to randoms with some randoms having been processed and some not
     ran_has_syscol = [syscol in rfn.get_names_flat(ran.dtype) for ran in ranl]
     if not all(ran_has_syscol):
@@ -500,6 +527,7 @@ if args.imsys_clus == 'y':
             if ran_has_syscol[i]:
                 ranl[i] = rfn.rec_drop_fields(ranl[i], [syscol]) # drop the column from any randoms that have it, so that all randoms should have the same columns for concatenation
     rands = np.concatenate(ranl)
+    del ranl # delete arrays to free memory, no longer used
     
     # initialize the fiducial column name for weights as 1
     dat[syscol] = np.ones(len(dat))
@@ -530,6 +558,7 @@ if args.imsys_clus == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        del debv # delete arrays to free memory, no longer used
         
         selr = rands['PHOTSYS'] == reg
 
@@ -556,12 +585,12 @@ if args.imsys_clus == 'y':
             #we want to update the weights for the selection of data just input to the regression
             sel = wsysl != 1 
             dat[syscol][sel] = wsysl[sel]
+            del wsysl # delete arrays to free memory, no longer used
+        del sys_tab # delete arrays to free memory, no longer used
     #attach data to NGC/SGC catalogs, write those out
     #we will do a join
     dat.keep_columns(['TARGETID',syscol])
     
-    if syscol in dat_ngc.colnames:
-        dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
     #apply weight to final weight columns, remove any previous weighting
     dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
@@ -570,8 +599,6 @@ if args.imsys_clus == 'y':
     #write out NGC
     common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits'),logger=logger)
     #do SGC
-    if syscol in dat_sgc.colnames:
-        dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     #apply weight to final weight columns
     dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
@@ -579,6 +606,7 @@ if args.imsys_clus == 'y':
     dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     #write out SGC
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits'),logger=logger)
+    del dat_ngc, dat_sgc, dat, rands # delete arrays to free memory, no longer used
 
 #column needs to be added to randoms
 if args.imsys_clus_ran == 'y':
@@ -589,6 +617,7 @@ if args.imsys_clus_ran == 'y':
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
     dat = vstack([dat_sgc,dat_ngc])
+    del dat_ngc, dat_sgc # delete arrays to free memory, no longer used
     dat.rename_column('TARGETID','TARGETID_DATA') #randoms have their weights modulated based on the data used for the redshift
     regl = ['NGC','SGC']
     def _add2ran(rann):
@@ -610,4 +639,5 @@ if args.imsys_clus_ran == 'y':
     else:
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
+    del dat # delete arrays to free memory, no longer used (probably useless at the end of the script, but just in case e.g. there is more code added later)
 
