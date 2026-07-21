@@ -14,10 +14,13 @@
 #
 # script parameters
 #
-LSS_DIR=$1
-DS_DIR=$2      # root directory of mock with version
-FIRST_ID=$3    # id seed to process
+HOLI_PARS=$1
 
+LSS_DIR=$(get_pars.py $HOLIPARS LSS_dir)
+DS_DIR=$(get_pars.py $HOLIPARS mock_dir)
+
+FIRST_ID=$2    # id seed to process
+export LOG_DIR=$3
 
 cd $LSS_DIR/scripts/mock_tools/holi_pipeline
 

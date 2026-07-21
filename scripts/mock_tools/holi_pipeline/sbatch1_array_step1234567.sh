@@ -53,8 +53,8 @@ FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 # STEP 1 create catalogue
 #
 time srun -n $NTASKS -c $NCPU_PT \
-# --output="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
-# --error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
+--output="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
+--error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
 
 exit 0
@@ -107,4 +107,4 @@ time srun -n $NTASKS -c $NCPU_PT \
 #
 # submit STEP 8 (can't used all CPUs and very long step => new job)
 #
-sbatch --ntasks=$NTASKS ./sbatch2_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
+sbatch --ntasks=$NTASKS ./sbatch2_step8.sh  $HOLI_DIR $FIRST_ID_RANK $LOG_DIR

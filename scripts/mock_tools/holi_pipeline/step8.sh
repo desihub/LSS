@@ -53,4 +53,4 @@ argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=
 echo "argstring for dateloop"
 echo $argstring
 
-python $path2LSS/runAltMTLRealizations.py $argstring > $DS_DIR/fa_chunk_${IDS}.log  2>&1
+python $path2LSS/runAltMTLRealizations.py $argstring > $LOG_DIR/fa_chunk_${IDS}.log  2>&1
