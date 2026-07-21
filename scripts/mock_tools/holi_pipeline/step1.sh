@@ -48,7 +48,7 @@ PROC_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 cd $PROC_DIR
 
 ## TEST/DEBUG: negative value for no debug
-max_gal=4000
+max_gal=-1
 
 ## simulation
 # TODO: manage version ?

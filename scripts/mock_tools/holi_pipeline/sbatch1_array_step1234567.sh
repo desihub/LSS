@@ -7,16 +7,16 @@
 # job array to process chunk (size ntasks) of simulation 
 # why _flat  ? 1 level of srun, no nested step to avoid resource problem
 
-#SBATCH --ntasks=10
-#SBATCH --cpus-per-task=24
+#SBATCH --ntasks=2
+#SBATCH --cpus-per-task=32
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -J Holi1-7
-#SBATCH -t 0:59:00
-#SBATCH --array=0-7
-#SBATCH --output=holi1-7_%j.out
-#SBATCH --error=holi1-7_%j.err
+#SBATCH -t 9:00:00
+#SBATCH --array=0-1
+#SBATCH --output=holi1-7_%j.log
+#SBATCH --error=holi1-7_%j.log
 #SBATCH --mail-type=begin,end,fail
 #SBATCH --mail-user=jcolley@lpnhe.in2p3.fr
 
@@ -99,4 +99,4 @@ time srun -n $NTASKS -c $NCPU_PT \
 #
 # submit STEP 8 (can't used all CPUs and very long step => new job)
 #
-#sbatch --ntasks=$NTASKS ./sbatch2_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
+sbatch --ntasks=$NTASKS ./sbatch2_step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
