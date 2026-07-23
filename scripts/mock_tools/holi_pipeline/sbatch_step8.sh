@@ -16,8 +16,8 @@
 #
 HOLI_PARS=$1
 
-LSS_DIR=$(get_pars.py $HOLIPARS LSS_dir)
-DS_DIR=$(get_pars.py $HOLIPARS mock_dir)
+LSS_DIR=$(get_pars.py $HOLI_PARS LSS_dir)
+DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
 
 FIRST_ID=$2    # id seed to process
 export LOG_DIR=$3

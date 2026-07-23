@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# Goal:
-# ====
+
 
 #
 # script parameters
@@ -18,7 +17,7 @@ PROCID=${SLURM_PROCID:-0}
 # ID seed mock to process in task rank
 IDS=$((FIRST_ID_RANK + PROCID ))
 
-# NCPU=${SLURM_CPUS_PER_TASK:-4}
+# NCPU=${SLURM_CPUS_PER_TASK:-1}
 # NCPU_M2=$((NCPU-2))
 
 #
@@ -49,10 +48,14 @@ out4_ELG=$DS_DIR/$seed/ELG/$in_5
 out4_LRG=$DS_DIR/$seed/LRG/$in_5
 out4_QSO=$DS_DIR/$seed/QSO/$in_5
 ## join tracers
-time ./join_imaging_mask_stdpars.py --inputs $out3_ELG --outputs $out4_ELG &
-time ./join_imaging_mask_stdpars.py --inputs $out3_LRG --outputs $out4_LRG &
-time ./join_imaging_mask_stdpars.py --inputs $out3_QSO --outputs $out4_QSO &
-wait
+time ./join_imaging_mask_stdpars.py --inputs $out3_ELG --outputs $out4_ELG 
+time ./join_imaging_mask_stdpars.py --inputs $out3_LRG --outputs $out4_LRG 
+time ./join_imaging_mask_stdpars.py --inputs $out3_QSO --outputs $out4_QSO 
+
+# remove &, to use same script for split and full pipeline version
+# The computation time is actually dominated by the ELG tracing; 
+# little is gained by parallelizing the tracers.
+# wait
 
 #
 # step 5 contaminant, **not for LRG**
@@ -61,9 +64,9 @@ echo "================= step 5"
 date
 out5_ELG=$DS_DIR/$seed/ELG/$in_6
 out5_QSO=$DS_DIR/$seed/QSO/$in_6
-time ./add_contaminants_to_mock_stdpars.py --inputs $out4_ELG --outputs $out5_ELG &
-time ./add_contaminants_to_mock_stdpars.py --inputs $out4_QSO --outputs $out5_QSO &
-wait
+time ./add_contaminants_to_mock_stdpars.py --inputs $out4_ELG --outputs $out5_ELG 
+time ./add_contaminants_to_mock_stdpars.py --inputs $out4_QSO --outputs $out5_QSO 
+#wait
 
 #
 # step 6 concatenate tracers

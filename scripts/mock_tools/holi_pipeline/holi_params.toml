@@ -6,12 +6,16 @@
 LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS" 
 
 # mocks output dir
+#/global/cfs/cdirs/desi/mocks/fa4acm/holi/webjax_v4.80
 mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
+
+# 
+input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
 
 first_id = 301
 
 # for debug else -1
-max_gal= 5000
+max_gal= -1
 
 # step 1
 [prepare_mocks]

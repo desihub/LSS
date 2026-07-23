@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
 
-# Description:
-# ===========
-# top level of Holi pipeline with slurm : step1-7 and submit step8
-#
-# job array to process chunk (size ntasks) of simulation 
-# why _flat  ? 1 level of srun, no nested step to avoid resource problem
 
-#SBATCH --ntasks=2
-#SBATCH --cpus-per-task=32
+
+#SBATCH --ntasks=2         # number of simu/seed
+#SBATCH --cpus-per-task=32 # to process one simu/seed, must be >= 3
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
