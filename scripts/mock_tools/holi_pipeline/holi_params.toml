@@ -1,37 +1,42 @@
-#
+
 # file parameters for holi pipeline
+
+
+#
+# GENERAL PARAMETERS
 #
 
-# LSS  package
+# LSS  package, must include LSS at the end
 LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS" 
 
 # mocks output dir
-#/global/cfs/cdirs/desi/mocks/fa4acm/holi/webjax_v4.80
 mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
 
 # 
 input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
-
 first_id = 301
 
 # for debug else -1
 max_gal= -1
 
-# step 1
-[prepare_mocks]
+#
+# STEP PARAMETERS
+#
+
+[prepare_mocks] # step 1
 #specdata = "loa-v1"
 survey = "DA2"
 
-# step 3
-[brickmask]
+
+[brickmask] # step 3
 cfitsio = "/global/common/software/desi/users/naimgk/cfitsio"
 exe_dir = "/global/cfs/cdirs/desi/users/colley/wd_brick/brickmask_mpi"
 conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline"
 
-# step 7
-[init_amtl]
+
+[init_amtl] # step 7
 #amtl_dir = ""
 
-# step 8
-[amtl]
+
+[amtl] # step 8
 #verbose=''

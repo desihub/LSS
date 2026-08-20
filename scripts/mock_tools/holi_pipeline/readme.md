@@ -2,6 +2,32 @@
 
 This version of the pipeline is designed to generate at least 1,000 catalogs; it therefore uses SLURM's sbatch system rather than the interactive platform, although parts of the pipeline can still be run there. A single submission handles the entire production process, which is configurable via a parameters file.
 
+The pipeline creates various realizations of the observation schedule using the official "fiber assignment" module. The outputs are stored in directories that include an index—like this, 
+```console
+  ├── seed0000
+  │   ├── ELG
+  │   ├── LRG
+  │   └── QSO
+  ├── seed0001
+  │   ├── ELG
+  │   ├── LRG
+  │   └── QSO
+```
+during the first stages of the pipeline and from stage 7 (Initialize the altmtl directories) onwards.
+
+```console
+    ├── altmtl0000
+    │   ├── initled
+    │   └── Univ000
+    ├── altmtl0001
+    │   ├── initled
+    │   └── Univ000
+```
+
+see [Holi pipeline description](../runHoli.md) step by step.
+
+The pipeline enables the creation of a series of executions with a contiguous index starting with parameter `first_id` in file parameters.
+
 
 # Launch Holi pipeline
 
@@ -59,7 +85,7 @@ Edit `my_run_params.toml` and set at least:
 
 ```toml
 LSS_dir  = "<LSS_DIR, see step 3.1>"
-mock_dir = "<DS_DIR, see step 2>"
+mock_dir = "<DS_DIR, export PATH=$PWD:$PATHsee step 2>"
 first_id = <first seed ID to process>
 ```
 
@@ -97,7 +123,13 @@ will process 8x10 simulations/seed with 10x24 CPUs for BRICKMASK step 3.
 
 ## 5) Launch pipeline
 
-create a run directory for log, like
+Add to PATH directory holi_pipeline of LSS package
+
+```console
+export PATH=<path/<to>/LSS/scripts/mock_tools/holi_pipeline:$PATH
+```
+
+Create a run directory for log, like
 ```console
 mkdir run_a8_t10_c24
 ```
@@ -109,6 +141,6 @@ in step 3.2:
 
 ```console
 cd run_a8_t10_c24
-sbatch <path>/<to>/<holi_pipeline>/pipeline_step_1-8.sh $PWD/my_run_params.toml
+sbatch <path>/<to>/<holi_pipeline>/pipeline_step_1-8.sh <path>/<to>/my_run_params.toml
 ```
 
