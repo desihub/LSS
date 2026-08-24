@@ -21,7 +21,7 @@ FIRST_ID_RANK=$3    # first id seed in rank job array
 # task rank
 PROCID=${SLURM_PROCID:-0}
 # ID seed mock to process in task rank
-IDS=$((FIRST_ID_RANK + PROCID ))
+IDS=$((FIRST_ID_RANK + PROCID))
 
 # NCPU=${SLURM_CPUS_PER_TASK:-1}
 # NCPU_M2=$((NCPU-2))
@@ -68,7 +68,8 @@ input_mockpath=$input_ref/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_ELG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  
-pid_elg=$!
+status_elg=$?
+
 #
 tracer="LRG"
 #
@@ -78,7 +79,8 @@ input_mockpath=$input_ref/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_LRG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer LRG --zrsdcol Z --output_fullpathfn $out1_LRG --save_mock_nz n --nzfilename $nzname --need_nz_calib y 
-pid_lrg=$!
+status_lrg=$?
+
 #
 tracer="QSO"
 #
@@ -88,28 +90,21 @@ input_mockpath=$input_ref/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_QSO=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
 time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer QSO --zrsdcol Z --output_fullpathfn $out1_QSO --save_mock_nz n --nzfilename $nzname --need_nz_calib y 
-pid_qso=$!
-
-# remove &, to use same script for split and full pipeline version
-# The computation time is actually dominated by the ELG tracing; 
-# little is gained by parallelizing the tracers.
-# wait "$pid_elg"
-# wait "$pid_lrg"
-# wait "$pid_qso"
+status_qso=$?
 
 #
 # concatenate input / output of current seed
 #
-## concatenate input
-echo $out1_ELG > $DS_DIR/input$IDS.txt
-echo $out1_LRG >> $DS_DIR/input$IDS.txt
-echo $out1_QSO >> $DS_DIR/input$IDS.txt
-## concatenate output
 out3_ELG=$DS_DIR/$seed/ELG/$in_4
 out3_LRG=$DS_DIR/$seed/LRG/$in_4
 out3_QSO=$DS_DIR/$seed/QSO/$in_4
-echo $out3_ELG > $DS_DIR/output$IDS.txt
-echo $out3_LRG >> $DS_DIR/output$IDS.txt
-echo $out3_QSO >> $DS_DIR/output$IDS.txt
 
-exit 0
+if [[ $status_elg -eq 0 && $status_lrg -eq 0 && $status_qso -eq 0 ]]; then
+	printf '%s\n' "$out1_ELG" "$out1_LRG" "$out1_QSO" > "$DS_DIR/input$IDS.txt"
+	printf '%s\n' "$out3_ELG" "$out3_LRG" "$out3_QSO" > "$DS_DIR/output$IDS.txt"
+    exit 0
+else
+	: > "$DS_DIR/input$IDS.txt"
+	: > "$DS_DIR/output$IDS.txt"
+    exit 1
+fi
