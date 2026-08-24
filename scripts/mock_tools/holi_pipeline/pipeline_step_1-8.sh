@@ -67,7 +67,7 @@ FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 #
 # STEP 1: create the mock catalogue for each seed in this rank
 #
-time srun -n $NTASKS -c $NCPU_PT \
+time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0\
 --output="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
@@ -116,7 +116,7 @@ time srun --exclusive -n $ALL_CPU -c 1 --cpu-bind=cores $EXE_PATH/BRICKMASK -i $
 # STEPS 4-7: imaging mask join, contaminants, tracer concatenation and
 # AMTL initialization, for each seed in this rank (see step4567.sh)
 #
-time srun -n $NTASKS -c $NCPU_PT \
+time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0\
 --open-mode=append \
 --output="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/step1-7_${FIRST_ID_RANK}_t%t.log" \
