@@ -29,15 +29,16 @@
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -J HoliJMC
+#SBATCH -J Holixxx
 #SBATCH -t 36:00:00
 # NOTE: the first seed ID to process is set by the "first_id" parameter
 # (see get_pars.py $HOLI_PARS first_id below), not by this --array directive.
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
-#SBATCH --output=holi_%j.log
-#SBATCH --error=holi_%j.log
+#SBATCH --output=holi_fa_%j.log
+#SBATCH --error=holi_fa%j.log
 #SBATCH --mail-type=begin,end,fail
+##SBATCH --mail-user=jcolley@lpnhe.in2p3.fr
 #SBATCH --mail-user=<user@mail.xx>
 
 #
@@ -127,7 +128,7 @@ time srun -n $NTASKS -c $NCPU_PT \
 if (( NCPU_PT == 1 )); then
     # "full" mode: only 1 CPU per task was requested, so step 8 can run
     # here with srun without wasting any CPU
-    time srun -n $NTASKS -c $NCPU_PT \
+    time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0\
     --output="${LOG_DIR}/logs/step8_${FIRST_ID_RANK}_t%t.log" \
     --error="${LOG_DIR}/logs/step8_${FIRST_ID_RANK}_t%t.log" \
     ./step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
@@ -135,5 +136,6 @@ else
     # "split" mode: more than 1 CPU per task was requested, but Fiber
     # Assignment only uses 1 CPU per seed, so submit step 8 as a separate
     # job with fewer CPUs per task instead of wasting the extra CPUs
-    sbatch --ntasks=$NTASKS ./sbatch_step8.sh  $HOLI_PARS $FIRST_ID_RANK $LOG_DIR
+    sbatch --ntasks=$NTASKS --kill-on-bad-exit=0\
+    ./sbatch_step8.sh  $HOLI_PARS $FIRST_ID_RANK $LOG_DIR
 fi
