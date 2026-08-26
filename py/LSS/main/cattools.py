@@ -8,6 +8,9 @@ from random import random
 
 import astropy.io.fits as fits
 from astropy.table import Table,join,unique,vstack,setdiff
+import warnings
+from astropy.units.core import UnitsWarning
+warnings.simplefilter('ignore', category=UnitsWarning)
 
 import fitsio
 
