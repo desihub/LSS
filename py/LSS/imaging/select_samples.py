@@ -37,7 +37,7 @@ def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
        except:
            print(key+' not in target file!')
     if survey == 'main':
-        if type[:3] == 'BGS':
+        if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
             bs = targetmask.bgs_mask[type]
             tp = 'BGS_TARGET'
         else:
@@ -89,7 +89,7 @@ def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
     else:
         keys = list(f.dtype.names)
     if survey == 'main':
-        if type[:3] == 'BGS' and 'extra' not in targroot:
+        if (type == 'BGS_BRIGHT' or type == 'BGS_FAINT') and 'extra' not in targroot:
             bs = targetmask.bgs_mask[type]
             tp = 'BGS_TARGET'
         else:
