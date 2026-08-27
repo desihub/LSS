@@ -12,7 +12,7 @@ import desitarget
 
 #import desitarget.io as io
 import glob
-from LSS.SV3.altmtltools import initializeAlternateMTLs
+from LSS.SV3.altmtltools import initializeAlternateMTLs, initializeYAML_HPTracker
 import numpy as np
 import os 
 from sys import argv
@@ -20,6 +20,7 @@ from desiutil.log import get_logger
 import cProfile, pstats, io
 from pstats import SortKey
 import argparse
+import yaml
 log = get_logger()
 
 #Keeping all arguments from previous version
@@ -40,7 +41,7 @@ parser.add_argument('-d', '--debug', dest = 'debug', default=False, action='stor
 parser.add_argument('-nt', '--dontUseTemp', dest = 'usetmp', default=True, action='store_false', help = 'pass flag to NOT use local tmp directories on compute nodes for initial writing of alt MTLs.')
 parser.add_argument('-ow', '--overwrite', dest = 'overwrite', default=False, action='store_true', help = 'pass this flag to regenerate already existing alt MTLs.')
 parser.add_argument('-sb', '--saveBackup', dest = 'saveBackup', default=False, action='store_true', help = 'Save the initial MTLs post shuffling in a backup directory underneath the main alt MTL directories.')
-parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a text file consisting only of one line of comma separated healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
+#parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a yaml file with an entry named Initial whose values are the healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
 
 parser.add_argument('--version', action='version', version='There are no version numbers.', help = 'There are no version numbers.')
 parser.add_argument('-sbp', '--shuffleBrightPriorities', action='store_true', dest='shuffleBrightPriorities', default=False, help = 'Pass this flag to shuffle top level PRIORITIES in BRIGHT survey Alt MTLs. If this argument is true, should also be setting PromoteFracBGSFaint.', required = False)
@@ -51,6 +52,7 @@ parser.add_argument('-pfbf', '--PromoteFracBGSFaint', dest='PromoteFracBGSFaint'
 parser.add_argument('-pfe', '--PromoteFracELG', dest='PromoteFracELG', default=0.1, help = 'What (decimal) percentage of ELG_LOP targets to promote to ELG_HIP. This argument is only used if shuffleELGPriorities is passed and if obscon = DARK.', required = False, type = float)
 parser.add_argument('-elb', '--exampleLedgerBase', dest='exampleLedgerBase', default='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', help = 'Location of the real (or mock) MTLs that serve as the basis for the alternate MTLs. Defaults to location of data MTLs. Do NOT include survey or obscon information here. ', required = False, type = str)
 parser.add_argument('-p2L', '--path2LSS', dest='path2LSS', default='~/.local/desicode/LSS/', help = 'location where LSS repository is cloned.', required = False, type = str)
+parser.add_argument('-yp', '--yamlpath', dest = 'yamlpath', default='/global/cfs/cdirs/desi/survey/fiberassign/AltMTL/', help = 'location of yaml tiletracker files', required = False, type = str)
 
 parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
 args = parser.parse_args()
@@ -90,24 +92,32 @@ else:
     with open(args.outputMTLDirBase + 'SeedFile', 'w') as f:
         f.write(str(args.seed))
 
-HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
-if args.verbose or args.debug:
-    log.debug('HPList')
-    log.debug(HPList)
-    log.debug('First healpixel: {0:d}'.format(HPList[0]))
-    log.debug('Last healpixel: {0:d}'.format(HPList[-1]))
-    log.debug('Number of healpixels: {0:d}'.format(int(len(HPList))))
-
-#Dropping these
-#NodeID = int(os.getenv('SLURM_NODEID'))
-#SlurmNProcs = int(os.getenv('SLURM_NPROCS'))
-
 NNodes = 1
 NProc = int(NNodes*args.ProcPerNode)
 
 outputMTLDir = args.outputMTLDirBase + "Univ{0:03d}/"
 
 def procFunc(nproc):
+    
+    if not os.path.exists(args.finalDir.format(nproc)):
+        os.makedirs(args.finalDir.format(nproc))
+
+    # 20260624 LGN - YAML files are now centralized
+    # 20260624 LGN - Accesed using new yamlpath argument
+    obscon_yaml = os.path.join(args.yamlpath, f'{args.obscon}-ledgers.yaml')
+    
+    with open(obscon_yaml) as f:
+        HPYaml = yaml.safe_load(f)
+    
+    HPList = np.array(HPYaml['Initial']).astype(int)
+    
+    if args.verbose or args.debug:
+        log.debug('HPList')
+        log.debug(HPList)
+        log.debug('First healpixel: {0:d}'.format(HPList[0]))
+        log.debug('Last healpixel: {0:d}'.format(HPList[-1]))
+        log.debug('Number of healpixels: {0:d}'.format(int(len(HPList))))
+        
     if 'sv' in args.survey.lower():
         log.info('sv survey')
         mtlprestr = args.survey.lower()
@@ -138,8 +148,18 @@ def procFunc(nproc):
             log.info(outputMTLDir)
             log.info('finalDir, nproc{0}'.format(nproc))
             log.info(args.finalDir)
-        log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
-        log.info('reproducing: {0}'.format(args.reproducing))
+
+        # 20260420 LGN - Adding some additional log statements here for reproducibility
+        # 20260420 LGN - And to aid in adding additional ledgers later
+        if (args.debug or args.verbose):
+            log.info('seed: {}'.format(args.seed))
+            log.info('reproducing: {0}'.format(args.reproducing))
+            log.info('shuffleSubpriorities: {0}'.format(args.shuffleSubpriorities))
+            log.info('shuffleBrightPriorities: {0}'.format(args.shuffleBrightPriorities))
+            log.info('shuffleELGPriorities: {0}'.format(args.shuffleELGPriorities))
+            log.info('PromoteFracBGSFaint: {0}'.format(args.PromoteFracBGSFaint))
+            log.info('PromoteFracELG: {0}'.format(args.PromoteFracELG))
+        
         initializeAlternateMTLs(exampleLedger, outputMTLDir, genSubset = nproc, seed = args.seed, obscon = args.obscon, survey = args.survey, saveBackup = args.saveBackup, hpnum = hpnum, overwrite = args.overwrite, reproducing = args.reproducing, shuffleSubpriorities = args.shuffleSubpriorities, startDate=args.startDate, endDate=args.endDate, profile = args.profile, usetmp=args.usetmp, finalDir=args.finalDir, debug = args.debug, verbose = args.verbose,
             shuffleBrightPriorities = args.shuffleBrightPriorities, shuffleELGPriorities = args.shuffleELGPriorities, PromoteFracBGSFaint = args.PromoteFracBGSFaint
             , PromoteFracELG = args.PromoteFracELG)

@@ -132,6 +132,8 @@ parser.add_argument("--imsys_colname",help="column name for fiducial imaging sys
 parser.add_argument("--add_weight_zfail",help="add weights for redshift systematics to full file?",default='n')
 parser.add_argument("--add_bitweight",help="add info from the alt mtl",default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
+parser.add_argument("--redo_fracz",help="whether to recalculate the completeness weights based on masked data",default='n')
+parser.add_argument("--nearestneighbor",help="whether to nearest neighbor weights on data instead of frac_tl_obs on randoms",default='n')
 parser.add_argument("--addNtileweight2full",help="whether to add the NTILE weight to the full catalogs (necessary for consistent angular upweighting)",default='n')
 parser.add_argument("--NStoGC",help="convert to NGC/SGC catalogs",default='n')
 parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
@@ -1309,15 +1311,25 @@ if args.ran_utlid == 'y':
 
 
 #needs to happen before randoms so randoms can get z and weights
-weightileloc=True
-if args.compmd == 'altmtl':
-    weightileloc = False
-if mkclusdat:
-    ct.mkclusdat(dirout+type+notqso,weightileloc,tp=type,dchi2=dchi2,zmin=mainp.zmin,zmax=mainp.zmax,correct_zcmb=args.zcmb,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
-
 nzcompmd = 'ran'
 if args.compmd == 'altmtl':
     nzcompmd = args.compmd
+
+weightileloc=True
+redo_fracz=False
+if args.redo_fracz == 'y':
+    redo_fracz=True
+    common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
+NN = False
+if args.nearestneighbor == 'y':
+    NN = True
+    nzcompmd = 'dat'
+    common.printlog('adding nearest neighbor to completeness weight',logger)
+if args.compmd == 'altmtl':
+    weightileloc = False
+if mkclusdat:
+    ct.mkclusdat(dirout+type+notqso,redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc,tp=type,dchi2=dchi2,zmin=mainp.zmin,zmax=mainp.zmax,correct_zcmb=args.zcmb,wsyscol=args.imsys_colname,use_map_veto=args.use_map_veto,extradir=args.extra_clus_dir)#,ntilecut=ntile,ccut=ccut)
+
 
 
 inds = np.arange(rm,rx)

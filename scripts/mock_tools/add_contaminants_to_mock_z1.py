@@ -14,6 +14,8 @@ parser.add_argument("--realization", default=None)
 parser.add_argument("--mock_version", default=None)
 parser.add_argument("--mock", default='holi')
 parser.add_argument("--file_name", default='forFA0.fits')
+parser.add_argument("--contaminant_path", default='/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2')
+parser.add_argument("--maxrea", default=33)  ##99 for QSO
 
 args = parser.parse_args()
 
@@ -30,6 +32,9 @@ elif args.mock == 'uchuuref':
     realization = str(args.realization).zfill(4)
     filein = os.path.join("/global/cfs/cdirs/desi/mocks/cai/Uchuu-SHAM/Y3-v2.0/0000/prep_altmtl", args.tracer, args.file_name)
 
+elif args.mock == 'generic':
+    realization = str(args.realization).zfill(4)
+    filein = args.file_name.format(seed=realization)
 
 #realization = str(args.realization).zfill(4)
 #filein = os.path.join("/global/cfs/cdirs/desi/mocks/cai", args.mock, args.mock_version, "seed%s" % realization, args.tracer, args.file_name)
@@ -48,9 +53,9 @@ dat_ = Table.read(filein)
 
 if args.tracer == 'QSO':
     
-    num = rng.integers(0, 99)
+    num = rng.integers(0, args.maxrea)
 
-    contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/QSO/noveto/contaminants_rea{num}.fits'
+    contaminants = os.path.join(args.contaminant_path, f'QSO/noveto/contaminants_rea{num}.fits')
 
 
     highz = dat_['RSDZ'] > 2.1
@@ -77,9 +82,9 @@ if args.tracer == 'QSO':
 
 if args.tracer == 'ELG':
     
-    num = rng.integers(0, 33)
+    num = rng.integers(0, args.maxrea)
 
-    contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea{num}.fits'
+    contaminants = os.path.join(args.contaminant_path, f'ELGnotqso/noveto/contaminants_rea{num}.fits')
 
     lop = dat_['DESI_TARGET'] & 2**5 == 2**5
     elg_vlo = dat_[~lop]

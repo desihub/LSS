@@ -27,6 +27,9 @@ def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=
     weights = np.ones_like(data[zcolumn])
     weights_ran = np.ones(len(rands))
 
+    if wtmd == 'none':
+        wts = np.ones(len(data))
+        weights_ran = np.ones(len(rands))
 
     if wtmd == 'fracz':
         if 'FRACZ_TILELOCID' in cols:
@@ -37,6 +40,9 @@ def prep4sysnet(data, rands, sys, allsky_rands=None, zcolumn='Z_not4clus', zmin=
         #if 'FRAC_TLOBS_TILES' in cols:
         #    print('using FRAC_TLOBS_TILES')
         wts *= 1/data['FRAC_TLOBS_TILES']
+    if wtmd == 'fraczNN':
+        wts = data['WEIGHT_COMP']
+
     if wtmd == 'probobs':
         wts = 129/(data['PROB_OBS']*128+1)
     if wtmd == 'wt_iip':

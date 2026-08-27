@@ -1,4 +1,5 @@
-scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
+scriptdir=/pscratch/sd/a/acarnero/codes/LSS/scripts
+#scriptdir=/global/homes/d/desica/LSScode/LSS/scripts
 source /global/common/software/desi/desi_environment.sh main
 module load LSS/main
 

@@ -22,6 +22,9 @@ from astropy.table import Table,join,vstack
 #import memory_profiler
 #from memory_profiler import profile
 
+from desiutil.log import get_logger
+log = get_logger()
+
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
@@ -29,14 +32,26 @@ from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_fo
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
 from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
 
+#LGN 20260624 - Replacing T/E wrapping with a hasattr check for update_lya_1b import
+#             - This should enable the this code to be used with older desitarget versions.
+if hasattr(mtl, 'update_lya_1b'):
+    update_lya_1b = mtl.update_lya_1b
+    log.info('desitarget.mtl.update_lya_1b() successfully imported')
+else:
+    log.info('Unable to import desitarget.mtl.update_lya_1b()')
+    log.info('You are using a desitarget version < 3.4.0')
+
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
 from desitarget.targetmask import desi_mask, bgs_mask, mws_mask, zwarn_mask
 
-from desiutil.log import get_logger
+from desitarget.geomask import match
+
+from desimodel.footprint import pix2tiles, radec2pix
 
 import fitsio
 import LSS.common_tools as common
+import yaml
 
 import healpy as hp
 
@@ -63,10 +78,7 @@ from pstats import SortKey
 from datetime import datetime, timedelta
 import glob
 
-
 pr = cProfile.Profile()
-
-log = get_logger()
 
 #os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 #os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
@@ -163,7 +175,7 @@ def evaluateMask(bits, mask, evalMultipleBits = False):
 
 def flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
     #only works on single bits
-    assert( np.abs( np.log2(int(bit2Flip)) - int(np.log2(int(bit2Flip))) ) < 0.001  )
+    assert( np.abs( np.log2(int(bit2Flip)) - np.log2(int(bit2Flip)) ) < 0.001  )
 
     if cond is None:
         if mode.lower() == 'on':
@@ -457,7 +469,7 @@ def checkMTLChanged(MTLFile1, MTLFile2):
     print('Number targets with different SUBPRIORITY')
     print(NDiff3)
 
-def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
+def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'):
     """Update action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -500,8 +512,44 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
         print('New end date is the same as the current end date, update will not be performed')
         return
 
+    #only pass the lya1b keyword if prev_endDate is before 20250721 and new enddate is after 20250721
+    #is this effective? need to be sure we don't write multiple lya1b actions
+    upd_lya1b = (prev_endDate <= 20250721) & (endDate > 20250721)
+
+    # 20260623 LGN - Temporarily Removing this YAML update step as we re-evaluate the YAML workflow
+    '''
+    # 20260420 LGN - Adding new step here where the YAML file containing ledger addition dates is re-generated if necessary
+    # 20260420 LGN - This occurs if the number of ledgers in the real mtl directory differs from the number in the YAML file
+    yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
+    yaml_numledgers = sum(len(v) for v in yaml.safe_load(open(yaml_fn)).values())
+    # 20260420 LGN - Getting number of real mtl ledgers
+    real_mtl_numledgers = os.listdir(os.path.join(real_mtl_dir,obscon.lower()))
+
+    if yaml_numledgers != real_mtl_numledgers:
+
+        #20260608 LGN - Write new YAML file (with -Update suffix)
+        initializeYAML_HPTracker(obscon,altmtldir,output_sfx='-UPDATE')
+
+        #Verify new YAML file
+        new_yaml_numledgers = sum(len(v) for v in yaml.safe_load(open(yaml_fn.replace('-ledgers','ledgers-UPDATE'))).values())
+
+        # 20260608 LGN - If verified, remove old YAML file, rename new file
+        if new_yaml_numledgers == real_mtl_numledgers:
+            os.remove(yaml_fn)
+            os.replace(yaml_fn.replace('-ledgers','ledgers-UPDATE'),yaml_fn)
+        else:
+            raise RuntimeError(
+                f"Generated YAML has {new_yaml_numledgers} ledgers, "
+                f"expected {real_mtl_numledgers}"
+            )
+    ''';
+
+    #accesing TT meta data and updating endDate
+    ttupd_meta = current_TT.meta
+    ttupd_meta['EndDate'] = endDate
+    
     #generate TileTracker update file
-    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True)
+    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b, meta_info = ttupd_meta)
 
     #read into memory
     update_TT = Table.read(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
@@ -523,8 +571,8 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
     #write new merged tiletracker
     combined_TT.write(TileTrackerFN, format='ascii.ecsv', overwrite=True)
 
-    #delete update tiletracker (going to leave this out for now, and assess if we want to delete this update files later)
-    #os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
+    #delete update tiletracker
+    os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
     
     return
     
@@ -533,7 +581,7 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK'):
 def makeTileTrackerFN(dirName, survey, obscon):
     return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
 def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True, update_only = False):
+    endDate = None, overwrite = True, update_only = False, lya1b = True, YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL', meta_info = None):
     """Create action file which orders all actions to do with AMTL in order 
     in which real survey did them.
 
@@ -550,6 +598,16 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         Used to look up the correct ledger, in combination with `obscon`.
         Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
         for the main survey and different iterations of SV, respectively.
+    update_only : :class:`bool`, optional, defaults to False
+        Used when only actions since the startdate are needed, for example
+        in the updateTileTracker function. 
+    lya1b : :class:`bool`, optional, defaults to True
+        Used to determine if an action should be created to mimic the lya1b
+        numobs increase. (see: https://github.com/desihub/desitarget/pull/845/
+        for details.) Only runs for obscon = dark and if there are actions
+        at dates > 2025-07-21. Should be set to false in only extremely specific
+        scenarios, when one is not trying to mimic real survey decisions.
+        
     
 
     Returns
@@ -585,37 +643,50 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
 
     TSS = Table.read(TSSFN)
 
+    
     MTLDTFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv'
-
     MTLDT = Table.read(MTLDTFN)
+
+    # 20260506 - LGN: We need to read veto actions in order to process vetoes for BRIGHT1B
+    MTLDVFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-vetoes.ecsv'
+    MTLDV = Table.read(MTLDVFN)
 
     #tiles-specstatus file filtered to only matching obscon and surveySURVEY FAPRGRM
     TSS_Sel = TSS[(TSS['SURVEY'] == surveyForTSS) & (TSS['FAPRGRM'] == obscon.lower())]
     
     TilesSel = np.unique(TSS_Sel['TILEID'])
 
+    #convert start/enddate into datetime objects, used for comparison
+    #if update_only is True, and for ledger addition actions
+    startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
+    endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
+
+    #format startdate into string for comparisson to MTL DT timestamp column
+    #note we increment startDate by one day to avoid overlapping on previous endDate
+    #(less than or equal to doesn't work due to datatype comparison)
+    startDate_str = (startDate_dt).strftime("%Y-%m-%d")
+    startDate_str_inc1 = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
+    endDate_str = (endDate_dt).strftime("%Y-%m-%d") 
+
     #if we only want entries from tiles within the [startDate, endDate] window
     if update_only:
+        # 20260303 LGN Changing behavior to work with makeTileTracker refactor
+        # 20260303 LGN We now longer check against the end date based on MTLDoneTiles, just start date
+        # 20260303 LGN This allows us to select actions fa'd before, but updated after the end date
+        
         #change output name to avoid overwriting the existing tile tracker
         TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
-        #convert dates into datetime objects
-        startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
-        endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
-
-        #format into strings for comparisson to MTL DT timestamp column
-        #note we increment startDate by one day to avoid overlapping on previous endDate
-        #note we increment endDate by one day to catch tiles from the final day (less than or equal to doesn't work due to column datatype comparison)
-        startDate_frm = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
-        endDate_frm = (endDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
 
         #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
-        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check prog/survey match)
-        time_sel = (MTLDT['TIMESTAMP'] > startDate_frm) & (MTLDT['TIMESTAMP'] < endDate_frm) & (np.isin(MTLDT['TILEID'],TilesSel))
+        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check program/survey match)
+        time_sel = (MTLDT['TIMESTAMP'] > startDate_str_inc1) & (np.isin(MTLDT['TILEID'],TilesSel))
         TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
     
     TileIDs = []
     TypeOfActions = []
     TimesOfActions = []
+    #times for fa actions come from the fiberassign-{tile}.fits file
+    #times for update actions come from the mtl done tiles file
     doneFlag = []
     archiveDates = []
     
@@ -626,17 +697,18 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         
         thisTileMTLDT = MTLDT[MTLDT['TILEID'] == tileid]
         
-        if len(thisTileMTLDT) > 1:
-            thisTileMTLDT.sort('TIMESTAMP')
-        elif len(thisTileMTLDT) == 0:
+        # 20260302 LGN Rewriting to remove ARCHIVEDATE check. 
+        # 20260302 LGN We want fa actions before the endDate to be included.
+        if len(thisTileMTLDT) == 0:
             continue
+        elif len(thisTileMTLDT) > 1:
+            thisTileMTLDT.sort('TIMESTAMP')
         else:
             log.info(len(thisTileMTLDT))
             log.info(thisTileMTLDT['ARCHIVEDATE'])
             log.info(thisTileMTLDT['ARCHIVEDATE'][0])
             log.info(type(thisTileMTLDT['ARCHIVEDATE'][0]))
-            if thisTileMTLDT['ARCHIVEDATE'][0] > int(endDate):
-                continue
+        
         reprocFlag = False
         thisFAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
 
@@ -676,10 +748,67 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
                 doneFlag.append(False)
             archiveDates.append(update['ARCHIVEDATE'])
             reprocFlag = True
+
+    #LGN 20260506: adding new special actions for BRIGHT1B veto actions
+    veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
+
+    for veto_en in MTLDV[veto_in_daterange]:
+        #LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
+        veto_ts_dt = datetime.fromisoformat(veto_en['TIMESTAMP'])
+        veto_ts_inc2s = (veto_ts_dt+timedelta(seconds=2)).isoformat()
+        
+        TileIDs.append(-1)
+        TypeOfActions.append('veto')
+        TimesOfActions.append(veto_ts_inc2s)
+        doneFlag.append(False)
+        archiveDates.append(-1)
+
+
+    #LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
+    #LGN This runs for all dark time surveys with actions at times later than 2025-07-21
+    #LGN unless the lya1b flag is set to false. Only change this flag if you are certain
+    #LGN you don't want to mimic real survey decisions.
+    if (lya1b) and (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
+        log.info('Adding QSO NUMOBS Increase Action')
+        TileIDs.append(-1)
+        TypeOfActions.append('lya1b')
+        TimesOfActions.append('2025-07-21T23:36:04+00:00')
+        doneFlag.append(False)
+        archiveDates.append(20250721)
+    else:
+        log.info('NOT adding QSO NUMOBS Increase Action')
+        log.info('You will not mimic real survey decisions after 2025-07-21T23:36:04+00:00')
+
+    #LGN 20260401: Adding New check of the per-obscon YAML file. This will see if we are past the date
+    #LGN 20260401: for adding new ledgers and add an "addnew" action to the actionlist if needed
+    #LGN 20260401: Current implementation requires the yaml files being in the altmtldir, seems better than /LSS/bin?
+    yaml_fp = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
+    with open(yaml_fp) as f:
+        HPYaml = yaml.safe_load(f)
+    #LGN 20260401: Get list of date in YAML, check dates after the first entry, which should always be 'Initial', could be explicit about this 
+    dates = list(HPYaml.keys())
+    
+    if len(dates) > 1:
+        for date in dates[1:]:
+            #LGN 20260401: If date is in the timeframe between startDate and endDate add a new action for it
+            if startDate_str < date and endDate_str >= date:
+                log.info('Adding Ledger Addition Action')
+                TileIDs.append(-1)
+                TypeOfActions.append('addnew')
+                TimesOfActions.append(f'{date}T00:00:00+00:00')
+                doneFlag.append(False)
+                archiveDates.append(date.replace('-',''))
+    
+
+    #LGN 20260426: Adding default meta info if meta info not supplied
+    if meta_info is None:
+        meta_info = {'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir}
+    
+            
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
     t = Table(ActionList,
            names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta={'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir},
+           meta=meta_info,
            dtype=('<i8', '<U6', '<U25', 'bool', '<i8'))
     t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
     
@@ -706,7 +835,68 @@ def trimToMTL(notMTL, MTL, debug = False, verbose = False):
             notMTL = rfn.drop_fields(notMTL, n)
     return notMTL
 
+# LGN 20260407 New function, designed to create a set of per-obscon yaml files, containing the dates at which ledgers
+# LGN 20260407 were added for the specified obscon. This file will be written at the altmtl root directory.
+def initializeYAML_HPTracker(obscon, outputMTLDir, output_sfx='', real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'): 
+    import xml.etree.ElementTree as ET
+    from collections import defaultdict
 
+    obscon = obscon.lower()
+    # LGN 20260407 First use xml to parse the svn log for the directory
+    # LGN 20260407 creating a dictionary mapping dates 'YYYY-MM-DD' to the added healpixels
+    directory = os.path.join(real_mtl_dir,obscon)
+    result = subprocess.run(
+        ["svn", "log", "--verbose", "--xml", directory],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    root = ET.fromstring(result.stdout)
+    creation_dates = defaultdict(list)
+    
+    for logentry in root.findall("logentry"):
+        date = logentry.find("date").text  # ISO format
+    
+        paths = logentry.find("paths")
+        if paths is None:
+            continue
+    
+        for path in paths.findall("path"):
+            action = path.attrib.get("action")
+            filepath = path.text
+    
+            #Check for added files that match mtl ledger structure
+            if action == "A" and filepath[-5:] == '.ecsv':
+                #strip the healpixel from the path string and add it to the dictionary
+                hp = filepath.split('/')[-1].strip('.escv').split('-')[-1]
+                creation_dates[date[:10]].append(hp)
+
+    #special handling to define the 'Initial' category used to create initial set of ledgers
+    if obscon in ['bright','dark']:
+        creation_dates = {
+            'Initial': [v for k, vals in creation_dates.items()
+                        if datetime.fromisoformat(k).year < 2025
+                        for v in vals],
+            **{k: v for k, v in creation_dates.items()
+               if datetime.fromisoformat(k).year >= 2025}
+        }
+    elif obscon in ['dark1b','bright1b']:
+        #replace first date with 'Initial' for ledger initialization
+        creation_dates['Initial'] = creation_dates.pop(min(creation_dates.keys()))
+    else:
+        print(f'Obscon: {obscon} is not supported')
+        return
+    
+    #re-sort the yaml file so Initial is the first entry (cosmetic)
+    out = {'Initial': creation_dates['Initial'], **{k: creation_dates[k] for k in sorted(creation_dates) if k != 'Initial'}}
+    out_path = os.path.join(outputMTLDir,f'{obscon.upper()}-ledgers{output_sfx}.yaml')
+    
+    with open(out_path, "w") as f:
+        yaml.dump(out, f, sort_keys=False)
+
+    return out_path
+                             
 #@profile
 def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
     obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
@@ -743,7 +933,9 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
     ztilefn = ztilefile.split('/')[-1]
     fn = initMTL.split('/')[-1]
     log.info('reading initial MTL(s)')
-    allentries = Table.read(initMTL) 
+    allentries = Table.read(initMTL)
+    if verbose or debug:
+        log.info('initial MTL size: {}'.format(len(allentries)))
     
     meta = allentries.meta
     if verbose or debug:
@@ -847,10 +1039,19 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         thisTileTrackerFN = makeTileTrackerFN(finalDir.format(n), survey, obscon)
         log.info('path to tiletracker = {0}'.format(thisTileTrackerFN))
         if not os.path.isfile(thisTileTrackerFN):
+
+            #LGN 20260624 - Building tiletracker meta object here.
+            #              - Allows access to initialization keywords
+            tt_meta={'Name': 'AltMTLTileTracker', 'StartDate': startDateShort, 'EndDate': endDateShort, 'amtldir':finalDir.format(n),\
+                    'seed': seed, 'reproducing': reproducing, 'shuffleSubpriorities': shuffleSubpriorities, 'shuffleBrightPriorities': shuffleBrightPriorities,\
+                    'shuffleELGPriorities': shuffleELGPriorities, 'PromoteFracBGSFaint': PromoteFracBGSFaint, 'PromoteFracELG': PromoteFracELG}
+
+            
             makeTileTracker(finalDir.format(n), survey = survey, obscon = obscon,overwrite = False,
-             startDate = startDateShort, endDate = endDateShort)
-            #makeTileTracker(outputMTLDir, survey = survey, obscon = obscon,overwrite = False,
-            #startDate = startDateShort, endDate = endDateShort)
+             startDate = startDateShort, endDate = endDateShort, meta_info = tt_meta)
+            
+        elif (verbose or debug):
+            log.info('tiletracker already exists, not overwriting')
         subpriors = initialentries['SUBPRIORITY']
 
         if (not reproducing) and shuffleSubpriorities:
@@ -1050,8 +1251,12 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
 
             #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
             initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
-
+        
+        if (verbose or debug):
+            log.info('Initial Entries Size: {}'.format(len(initialentries)))
         retval = desitarget.io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
+        if (verbose or debug):
+            log.info('write_mtl return value: {}'.format(retval))
         if debug or verbose:
             log.info('(nowrite = False) ntargs, fn = {0}'.format(retval))
         log.info('wrote MTLs to {0}'.format(outputMTLDir))
@@ -1335,7 +1540,10 @@ def to_big_endian_table(tab):
     arr_be = arr.byteswap().view(arr.dtype.newbyteorder('>'))
     return Table(arr_be)
     
-def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = 'sv3', obscon = 'dark', today = None, 
+# LGN 20260220 Adding tiletracker as a passed argument
+# LGN 20260220 Necessary to check the fa date of an update action
+# LGN 20260220 In order to check if we should pass the ext keyword
+def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracker, survey = 'sv3', obscon = 'dark', today = None, 
     getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False, zfix = None):
     if verbose or debug:
         log.info('today = {0}'.format(today))
@@ -1429,27 +1637,42 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         msg = "Update state for {} targets".format(ntargs)
         msg += " (the zcats also contain {} skies with +ve TARGETIDs)".format(nsky)
         log.info(msg)
-        didUpdateHappen = False
-        # ADM update the appropriate ledger.
-        if mock:
 
-            if targets is None:
-                raise ValueError('If processing mocks, you MUST specify a target file')
-            log.info('update loc a')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv')#, targets = targets)
-            didUpdateHappen = True
-        elif targets is None:
-            log.info('update loc b')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)
-            didUpdateHappen = True
+        # setting up update info
+        didUpdateHappen = False
+        if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
+            log.info('setting 1B flag for update')
+            is_1b = True
+
+            # LGN 20260220 In order to determine if we pass ext=True we need to check the fiberassign date associated with this update
+            #fa_time = tiletracker[(tiletracker['TILEID'] == t['TILEID']) & (tiletracker['ACTIONTYPE'] == 'fa')]['ACTIONTIME']
+            if t['ACTIONTIME'] < '2025-07-21T23:36:04+00:00':
+                log.info('setting ext flag = False for 1B tile')
+                is_ext = False
+            else:
+                log.info('setting ext flag = True for update')
+                is_ext = True
         else:
-            log.info('update loc c')
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, targets = targets)
-            didUpdateHappen = True
-        assert(didUpdateHappen)
+            is_1b = False
+            
+        # ADM update the appropriate ledger.
+        # LGN 20250909 Revising this section to update for 1B changes and simplifying
+
+        if is_1b:
+            #getting abbreviated obscon/path for non 1B survey (i.e. dark1b -> dark)
+            althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
+            obscon_short = obscon.replace('1B','')
+
+
+            #Updating the non-1b ledger
+            update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
+            #Updating the 1b ledger
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
+             
+        else:
+            #Updating ledger (No ext keyword)
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)
+
         if verbose or debug:
             log.info('if main, should sleep 1 second')
         #thisUTCDate = get_utc_date(survey=survey)
@@ -1555,9 +1778,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     """
 
 
-    if mock:
-        if targets is None:
-            raise ValueError('If processing mocks, you MUST specify a target file')
     if debug:
         log.info('getosubp value: {0}'.format(getosubp))
     if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
@@ -1600,7 +1820,6 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
     else:
         iterloop = range(ndirs)
     ### JL - End of directory/loop variable construction ###
-
 
 
     if quickRestart:
@@ -1647,14 +1866,17 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
             actionList = actionList[:1]
         
         for action in actionList:
-
+            
             if action['ACTIONTYPE'] == 'fa':
                 OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock, reproducing = reproducing)
                 assert(len(OrigFAs))
                 A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
-                
+
+            # LGN 20260220 Adding tiletracker as a passed argument
+            # LGN 20260220 Necessary to check the fa date of an update action
+            # LGN 20260220 In order to check if we should pass the ext keyword
             elif action['ACTIONTYPE'] == 'update':
-                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug, zfix = zfix)
+                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, altMTLTileTracker, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
                 
             elif action['ACTIONTYPE'] == 'reproc':
                 #returns timedict
@@ -1663,9 +1885,33 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
                 retval = reprocess_alt_ledger(altmtldir, action, obscon=obscon, survey = survey)
                 if debug or verbose:
                     log.info(f'retval = {retval}')
+            
+            #LGN 07/29/25: Adding new LyA1B case
+            elif action['ACTIONTYPE'] == 'lya1b':
+                log.info('Running LyA1B Ledger Update')
+                #run update on the realization
+                update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp=action['ACTIONTIME'], donefile=False)
+                #record succesful update in ledger
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
+
+            #LGN 20260407: Adding new 'addnew' case for ledger addition actions
+            elif action['ACTIONTYPE'] == 'addnew':
+                log.info('Running ledger addition action')
+                #run action
+                add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, nproc=nproc, survey=survey, obscon=obscon, debug=debug, verbose=verbose)
+                #record success in the ledger
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
+
+            #LGN 20260506: Adding new 'veto' action for BRIGHT1B vetoes
+            elif action['ACTIONTYPE'] == 'veto':
+                log.info('Running veto action')
+                #run action
+                process_vetoes_altmtl(altmtldir, action, obscon = obscon, survey = survey)
+                #record action in tile tracker
+                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
                 
             else:
-                raise ValueError('actiontype must be `fa`, `update`, or `reproc`.')
+                raise ValueError('actiontype must be `fa`, `update`, `reproc`, `lya1b`, `addnew` or `veto`.')
             #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
             #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
@@ -1680,6 +1926,108 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
             
         return althpdirname, altmtltilefn, altMTLTileTrackerFN, actionList
+
+# 20260506 LGN - Adding new function to apply vetoes to alt mtl ledgers
+# 20260506 LGN - Modified from desitarget.mtl.process_vetoes https://github.com/desihub/desitarget/blob/main/py/desitarget/mtl.py#L1717
+def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
+    
+    # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
+    MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
+    MTLDV = Table.read(MTLDVFN)
+
+    # LGN 20260528 Subtracting 2 seconds from veto actiontime to align with mtl-done-vetoes
+    actiontime_dt = datetime.fromisoformat(action['ACTIONTIME'])
+    actiontime_ts_dec2s = (actiontime_dt-timedelta(seconds=2)).isoformat()
+    
+    # LGN Select appropriate set of vetoes based on timestamps of current and previous veto events
+    # LGN If this is the first veto action, set low timestamp
+    DV_idx = (actiontime_ts_dec2s == MTLDV['TIMESTAMP']).argmax()
+    
+    tslow = MTLDV[DV_idx-1]['TIMESTAMP']
+    tshigh = MTLDV[DV_idx]['TIMESTAMP']
+    
+    if DV_idx == 0:
+        tslow = "0000-00-00T00:00:00+00:00"
+
+    # ADM grab the list of files in the veto directory.
+    vetodir = os.path.join(mtldir,survey,'veto',obscon.lower())
+    fns = sorted(glob.glob(os.path.join(vetodir, "*", "*ecsv")))
+    
+    # ADM read and concatenate the veto files, keeping only the relevant
+    # ADM columns and entries later than the most recent final TIMESTAMP.
+    vetocat = []
+    for fn in fns:
+        vetodat = io.read_mtl_veto_file(fn)
+        ii = (vetodat["TIMESTAMP"] > tslow) & (vetodat["TIMESTAMP"] < tshigh)
+        vetocat.append(vetodat[ii])
+    
+    # ADM stack all the stacks of objects to be vetoed into one catalog.
+    vetocat = vstack(vetocat)
+    
+    # ADM loop through and veto MTL entries in the pixel-based ledgers.
+    pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
+
+    altmtldir_srv = os.path.join(altmtldir, survey, obscon.lower())
+
+    for hpx in pixnum:
+        # ADM read each ledger that corresponds to a HEALPixel that
+        # ADM includes an RA, Dec in the veto catalog.
+        mtl = io.read_mtl_in_hp(altmtldir_srv, nside, hpx, unique=True, tabform=tabform)
+        # ADM match ledger targets to those in the veto catalog.
+        mii, vii = match(mtl["TARGETID"], vetocat["TARGETID"])
+        # ADM create a new set of entries that are updates to "turn off"
+        # ADM the targets that match the veto catalog.
+        updates = mtl[mii]
+        updates["NUMOBS_MORE"] = 0
+        updates["PRIORITY"] = 2
+        updates["TARGET_STATE"] = "VETO|DONE"
+        updates["TIMESTAMP"] = get_utc_date(survey=survey)
+        updates["VERSION"] = MTLDV[DV_idx]['VERSION']
+
+        # ADM finally, append the new updates to the ledger.
+        nups, fn = io.write_mtl(
+            altmtldir, updates, ecsv=True, survey=survey, obscon=obscon,
+            nsidefile=nside, hpxlist=hpx, append=True)
+
+    return
+    
+
+# 20260420 LGN - Adding new function to create new ledger files when needed
+def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
+    # 20260420 LGN - Extract the date, and the list of new ledgers using the YAML file
+    date_short = action['ACTIONTIME'][:10]
+
+    yaml_fn = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
+    with open(yaml_fn) as f:
+        hp_tracker = yaml.safe_load(f)
+        new_hps = np.array(hp_tracker[date_short]).astype(int)
+
+    # initializeAlternateMTLs expects these to be strings
+    #startDate = str(altMTLTileTracker.meta['StartDate']) #actually we don't want to pass startDate, if we don't it just uses all initial entries.
+    endDate = str(altMTLTileTracker.meta['EndDate'])
+
+    # 20260624 LGN - We can now read the other necessary keywords directly from the tile tracker meta info. No type casting necessary
+    seed = altMTLTileTracker.meta['seed']
+    reproducing = altMTLTileTracker.meta['reproducing']
+    shuffleSubpriorities = altMTLTileTracker.meta['shuffleSubpriorities']
+    shuffleBrightPriorities = altMTLTileTracker.meta['shuffleBrightPriorities']
+    shuffleELGPriorities = altMTLTileTracker.meta['shuffleELGPriorities']
+    PromoteFracBGSFaint = altMTLTileTracker.meta['PromoteFracBGSFaint']
+    PromoteFracELG = altMTLTileTracker.meta['PromoteFracELG']
+    
+    # 20260420 LGN - Run initialize ledger function for each new healpixel
+    # 20260420 LGN - Adapted from InitializeAltMTLsParallel script
+    for hpnum in new_hps:
+        exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon.lower())
+
+        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = seed,obscon = obscon.lower(), survey = survey,\
+                        saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = reproducing,\
+                        shuffleSubpriorities = shuffleSubpriorities,endDate = endDate, profile = False, usetmp=False,\
+                        debug = debug, verbose = verbose, shuffleBrightPriorities = shuffleBrightPriorities,\
+                        shuffleELGPriorities = shuffleELGPriorities, PromoteFracBGSFaint = PromoteFracBGSFaint,\
+                        PromoteFracELG = PromoteFracELG,finalDir=altmtlbasedir+'/Univ{0:03d}')
+
+    return
 
 def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
     """Plots probability that targets were observed among {ndirs} alternate realizations

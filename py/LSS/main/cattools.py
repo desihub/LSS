@@ -8,6 +8,9 @@ from random import random
 
 import astropy.io.fits as fits
 from astropy.table import Table,join,unique,vstack,setdiff
+import warnings
+from astropy.units.core import UnitsWarning
+warnings.simplefilter('ignore', category=UnitsWarning)
 
 import fitsio
 
@@ -3227,6 +3230,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
             common.printlog('reading '+assignf+'.fits',logger)
             fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
             fs = Table(fs)
+        else:
+            common.printlog(fs +' not found!',logger)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
@@ -3961,7 +3966,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None,exttp='.fits'):
+def mkclusdat(fl,redo_fracz=False,NN=False,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None,exttp='.fits'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3996,7 +4001,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     elif os.path.isfile(in_fn+'.fits'):
         common.printlog('reading '+in_fn+'.fits',logger)
         ff = Table.read(in_fn.replace('global', 'dvs_ro')+'.fits')
-
+    else:
+        common.printlog('did not find file associated with '+in_fn)
+    if redo_fracz and 'NEW_WEIGHTFRACZ' not in list(ff.dtype.names):
+        ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
+        
     #ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
@@ -4142,8 +4151,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
     
     if weighttileloc == True:
-        ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols and compmd == 'dat':
+        if  redo_fracz:
+            ff['WEIGHT_COMP'] = ff['NEW_WEIGHTFRACZ']
+        else:
+            ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in cols and compmd == 'dat' and NN == False:
             ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
 
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
