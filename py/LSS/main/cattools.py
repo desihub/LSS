@@ -1129,13 +1129,15 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
     #wt = tiles['TILEID'] == tile
     #print('reading targets for tile '+ts+' from '+mdir)
     tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+    tars = tars[[b for b in tarcol]] # do this here before combining with mtl2
     if 'MTL2' in fht.keys():
         mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
         #print('reading targets for tile '+ts+' from '+mdir)
         tars2 = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+        tars2 = tars2[[b for b in tarcol]] #do this here to match ordering before concatenating
         tars = np.concatenate([tars,tars2])
     #tars.keep_columns(tarcols)
-    tars = tars[[b for b in tarcol]]
+    
 
     tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
     tars = join(tars,tt,keys=['TARGETID'])
