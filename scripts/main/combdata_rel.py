@@ -214,7 +214,7 @@ if args.dotarg:
         tids_c = np.unique(tile_list[0]['TILEID'])
         tids_todo_inds = ~np.isin(tids, tids_c)
         tids_todo = tids[tids_todo_inds]
-        tabt = _tab2list[tids_todo[0]]
+        tabt = _tab2list(tids_todo[0])
         tile_list[0] = tile_list[0][list(tabt.dtype.names)]
         #from_scratch = False
         #init_dtype = tile_list[0].dtype
