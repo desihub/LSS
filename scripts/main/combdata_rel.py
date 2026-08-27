@@ -117,7 +117,7 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/' + \
         specrell[0]+'/tiles/cumulative/'
     specf = Table.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative.fits')
+                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative.fits') #this will get used again below
     wd &= np.isin(mt['TILEID'], np.unique(specf['TILEID']))
 else:
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'
@@ -207,12 +207,17 @@ if args.dotarg:
         logger.info('creating '+tarfo)
         tile_list = []
         tids_todo = tids
+        #from_scratch = True
     else:
         logger.info('not remaking '+tarfo)
         tile_list = [fitsio.read(tarfo)]
         tids_c = np.unique(tile_list[0]['TILEID'])
         tids_todo_inds = ~np.isin(tids, tids_c)
         tids_todo = tids[tids_todo_inds]
+        tabt = _tab2list[tids_todo[0]]
+        tile_list[0] = tile_list[0][list(tabt.dtype.names)]
+        #from_scratch = False
+        #init_dtype = tile_list[0].dtype
     if len(tids_todo) > 0:
         if args.par:
             from concurrent.futures import ProcessPoolExecutor
