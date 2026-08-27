@@ -391,10 +391,10 @@ if mkfulld:
 
     from desitarget import targetmask
     if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
-        bit = targetmask.bgs_mask[type]
+        bit = targetmask.bgs_mask[type] # BGS_ANY does not have a bgs_mask
         desitarg='BGS_TARGET'
     else:
-        bit = targetmask.desi_mask[type]
+        bit = targetmask.desi_mask[type] # BGS_ANY should be handled correctly here
         desitarg='DESI_TARGET'
     
     maskcoll = False
