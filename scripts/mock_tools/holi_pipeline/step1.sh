@@ -67,7 +67,7 @@ nzname="${nzfile[$tracer]}"
 input_mockpath=$input_ref/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_ELG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
-time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  
+time python ./prepare_mocks_Y3.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer ELG --zrsdcol Z --output_fullpathfn $out1_ELG --save_mock_nz n --nzfilename $nzname --need_nz_calib y  
 status_elg=$?
 
 #
@@ -78,7 +78,7 @@ version="${conf_version[$tracer]}"
 input_mockpath=$input_ref/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_LRG=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
-time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer LRG --zrsdcol Z --output_fullpathfn $out1_LRG --save_mock_nz n --nzfilename $nzname --need_nz_calib y 
+time python ./prepare_mocks_Y3.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer LRG --zrsdcol Z --output_fullpathfn $out1_LRG --save_mock_nz n --nzfilename $nzname --need_nz_calib y 
 status_lrg=$?
 
 #
@@ -89,7 +89,7 @@ version="${conf_version[$tracer]}"
 input_mockpath=$input_ref/$seed/
 input_mockfile=holi_"$tracer"_v4.80_GCcomb_clustering.dat.h5
 out1_QSO=$DS_DIR/$seed/"$tracer"/forFA0_Y3_noimagingmask_applied.fits
-time python ./prepare_mocks_Y3_test1.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer QSO --zrsdcol Z --output_fullpathfn $out1_QSO --save_mock_nz n --nzfilename $nzname --need_nz_calib y 
+time python ./prepare_mocks_Y3.py --limit_for_test $max_gal --survey $SURV --specdata loa-v1 --mockname holi --input_mockpath $input_mockpath --input_mockfile $input_mockfile --tracer QSO --zrsdcol Z --output_fullpathfn $out1_QSO --save_mock_nz n --nzfilename $nzname --need_nz_calib y 
 status_qso=$?
 
 #
