@@ -37,11 +37,11 @@ def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
        except:
            print(key+' not in target file!')
     if survey == 'main':
-        if type[:3] == 'BGS':
-            bs = targetmask.bgs_mask[type]
+        if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
+            bs = targetmask.bgs_mask[type] # BGS_ANY does not have a bgs_mask
             tp = 'BGS_TARGET'
         else:
-            bs = targetmask.desi_mask[type]
+            bs = targetmask.desi_mask[type] # BGS_ANY should be handled correctly here
             tp = 'DESI_TARGET'  
         ws = '' 
     if survey == 'sv1':
@@ -89,12 +89,12 @@ def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
     else:
         keys = list(f.dtype.names)
     if survey == 'main':
-        if type[:3] == 'BGS' and 'extra' not in targroot:
-            bs = targetmask.bgs_mask[type]
+        if (type == 'BGS_BRIGHT' or type == 'BGS_FAINT') and 'extra' not in targroot:
+            bs = targetmask.bgs_mask[type] # BGS_ANY does not have a bgs_mask
             tp = 'BGS_TARGET'
         else:
             print(type,targroot)
-            bs = targetmask.desi_mask[type]
+            bs = targetmask.desi_mask[type] # BGS_ANY should be handled correctly here
             tp = 'DESI_TARGET'  
         ws = '' 
     if survey == 'sv1':
