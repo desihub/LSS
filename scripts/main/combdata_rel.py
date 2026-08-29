@@ -251,7 +251,7 @@ if args.doqso:
     print('making/adding to QSO catalog '+outf)
     print(tiles4comb.dtype)
     if specrel == 'daily':  # and args.survey == 'main':
-        ct.combtile_qso(tiles4comb, outf, restart=redoqso)
+        ct.combtile_qso(tiles4comb, outf, restart=args.redoqso)
     else:
         ct.combtile_qso_alt(tiles4comb, outf, coaddir=coaddir)
 
