@@ -320,6 +320,18 @@ if mktar: #concatenate target files for given type, with column selection hardco
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
 
+tarver_dr11 = '5.2.0'
+tardirdr11 = '/global/cfs/cdirs/desi/target/catalogs/dr11/'+tarver+'/targets/main/resolve/'
+tarf11 = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR11v'+tarver.strip('.')+'.fits'
+mktar11 = True
+if os.path.isfile(tarf11) and redotar == False or len(type.split('-'))>1:    
+    mktar11 = False
+if mktar:11 #concatenate target files for given type, with column selection hardcoded
+    import LSS.imaging.select_samples as ss
+    ss.gather_targets(type,tardir11,tarf11,tarver11,'main',progl,keys=keys)
+
+
+
 mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
