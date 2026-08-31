@@ -6,7 +6,7 @@
 # Loadbalancing:
 # =============
 
-date
+echo "$(date), Step 1"
 
 #
 # script parameters

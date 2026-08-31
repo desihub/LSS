@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
+echo "$(date), Step 4-7:concatenate, prepar AltMLT"
 
 #
 # script parameters
@@ -38,8 +38,9 @@ in_7=forFA0_concat.fits
 echo "================= step 4"
 ## Env
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
+# use local package LSS, refresh after source env
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
-export PATH=$LSS_DIR/bin:$PATH
+export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
 ## in4=out3, out4
 out3_ELG=$DS_DIR/$seed/ELG/$in_4
 out3_LRG=$DS_DIR/$seed/LRG/$in_4
@@ -87,8 +88,9 @@ date
 ## Env
 source /global/common/software/desi/desi_environment.sh main
 module load desitarget/3.0.0
+# use local package LSS, refresh after source env
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
-export PATH=$LSS_DIR/bin:$PATH
+export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
 
 altmtlxxxx=$(printf "altmtl%04d" "$IDS")
 out7=$DS_DIR/$altmtlxxxx

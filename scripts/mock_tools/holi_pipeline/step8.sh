@@ -5,6 +5,7 @@
 # Processing 1 seed with 1 CPU
 # OpenMP disable ?
 
+echo "$(date), Step 8: AltMTL"
 
 #
 # script parameters
@@ -20,7 +21,11 @@ IDS=$((FIRST_ID+PROCID))
 # environment
 #
 source /global/common/software/desi/desi_environment.sh main
-module load LSS/main
+#module load LSS/main
+# use local package LSS, refresh after source env
+HOLI_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
+export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
 
 export OMP_NUM_THREADS=1
 

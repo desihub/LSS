@@ -1,7 +1,6 @@
 
 # file parameters for holi pipeline
 
-
 #
 # GENERAL PARAMETERS
 #
@@ -11,6 +10,9 @@ LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS"
 
 # mocks output dir
 mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
+
+# log directory
+logs_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80/slurm"
 
 # 
 input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
