@@ -25,7 +25,7 @@ mkdir -p "$LOG_DIR/logs"
 
 # copy pipeline parameters 
 cp $HOLI_PARS $LOG_DIR
-cp $LSS_DIR/sbatch_holi_pipeline.sh $LOG_DIR
+cp $LSS_DIR/scripts/mock_tools/holi_pipeline/sbatch_holi_pipeline.sh  $LOG_DIR
 
 # launch SLURM array job 
 cd $LOG_DIR
