@@ -818,10 +818,11 @@ def combQSOdata_alt(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/dai
 
 
 def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None,qso_maker='desispec' ):
+    #import LSS.common_tools as common
     if qso_maker == 'orig':
         from LSS.qso_cat_utils import qso_catalog_maker
     if qso_maker == 'desispec':
-        from desispec.validredshifts import actually_validate as qso_catalog_maker
+        from LSS.common_tools import desispec_validate as qso_catalog_maker
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
