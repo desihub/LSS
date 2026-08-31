@@ -903,8 +903,11 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             #print(cat.dtype.names)
             cat_val = qso_catalog_maker(cat,ignore_emline=True)
             cat['Z_QSO'] = cat_val['Z_QSO']
+            cat['QSO_MASKBITS'] = cat_val['QSO_MASKBITS']
             selqso = cat_val['GOOD_Z_LYA']
             qso_cati = cat[selqso]
+            qso_cati['Z'] = qso_cati['Z_QSO']
+            
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         qsocats.append(qso_cati)
         #if i == 0:
@@ -914,7 +917,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
 
     qso_cat = vstack(qsocats,metadata_conflicts='silent')
     qso_cat['TILEID'] = int(tile)
-    print(qso_cat.dtype.names)
+    #print(qso_cat.dtype.names)
     if cols is not None:
         qso_cat = Table(qso_cat)
         qso_cat.keep_columns(cols)
