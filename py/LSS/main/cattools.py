@@ -7,7 +7,7 @@ import os
 from random import random
 
 import astropy.io.fits as fits
-from astropy.table import Table,join,unique,vstack,setdiff
+from astropy.table import Table,join,unique,vstack,hstack,setdiff
 import warnings
 from astropy.units.core import UnitsWarning
 warnings.simplefilter('ignore', category=UnitsWarning)
@@ -817,8 +817,11 @@ def combQSOdata_alt(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/dai
     return qso_cat
 
 
-def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
-    from LSS.qso_cat_utils import qso_catalog_maker
+def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None,qso_maker='desispec' ):
+    if qso_maker == 'orig':
+        from LSS.qso_cat_utils import qso_catalog_maker
+    if qos_maker == 'desispec':
+        from desispec.validredshifts import actually_validate as qso_catalog_maker
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
@@ -870,7 +873,16 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         qn = coaddir+str(tile)+'/'+zdate+'/'+'qso_qn'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
         old_extname_redrock = True if zhdu == 'ZBEST' else False
         old_extname_for_qn = False #if int(tdate) >= 20220118 else True
-        qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
+        if qso_maker == 'orig':
+            qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
+        if qso_maker == 'desispec':
+            rrd = Table(fitsio.read(rr))
+            mgiid = Table(fitsio.read(mgii)).remove_column('TARGETID')
+            qnd = Table(fitsio.read(qn)).remove_column('TARGETID')
+            cat = hstack([rrd,mgiid,qnd])
+            cat_val = qso_catalog_maker(cat,ignore_emline=True)
+            selqso = cat_val['GOOD_Z_LYA']
+            qso_cati = cat_val[selqso]
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         qsocats.append(qso_cati)
         #if i == 0:
