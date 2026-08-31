@@ -877,6 +877,8 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
         if qso_maker == 'desispec':
             rrd = Table(fitsio.read(rr,ext=zhdu))
+            rrfm = Table(fitsio.read(rr,ext='FIBERMAP'))
+            rrfm.remove_column('TARGETID')
             #print(rrd.dtype.names)
             #print(rr)
             #print(rrd.dtype.names)
@@ -886,7 +888,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             qnd = Table(fitsio.read(qn))
             qnd.keep_columns(['SPECTYPE_RR', 'IS_QSO_QN_NEW_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'Z_NEW', 'ZERR_NEW', 'ZWARN_NEW', 'SPECTYPE_NEW', 'SUBTYPE_NEW', 'CHI2_NEW', 'DELTACHI2_NEW', 'COEFF_NEW'])
             #print(qnd.dtype.names)
-            cat = hstack([rrd,mgiid,qnd])
+            cat = hstack([rrd,rrfm,mgiid,qnd])
             #print(cat.dtype.names)
             cat_val = qso_catalog_maker(cat,ignore_emline=True)
             selqso = cat_val['GOOD_Z_LYA']
