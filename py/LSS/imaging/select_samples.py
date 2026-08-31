@@ -23,54 +23,6 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
     return dd       
 
 
-def gather_targets(type,targroot,outdir,tarver,survey,prog='dark',keys=[]):
-    #just concatenate all of the targets for a given type, keeping only the columns quoted below
-    print(targroot+prog)
-    fns = glob.glob(targroot+prog+'/*.fits')
-    ncat     = len(fns)
-    print('data is split into '+str(ncat)+' healpix files')
-        #check to make sure those were copied correctly
-    f = fitsio.read(fns[0])
-    for key in keys:
-       try:
-           d = f[key]
-       except:
-           print(key+' not in target file!')
-    if survey == 'main':
-        if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
-            bs = targetmask.bgs_mask[type] # BGS_ANY does not have a bgs_mask
-            tp = 'BGS_TARGET'
-        else:
-            bs = targetmask.desi_mask[type] # BGS_ANY should be handled correctly here
-            tp = 'DESI_TARGET'  
-        ws = '' 
-    if survey == 'sv1':
-        bs = sv1_targetmask.desi_mask[type]
-        tp = 'SV1_DESI_TARGET'
-        ws = 'sv1'
-    if survey == 'sv3':
-        bs = sv3_targetmask.desi_mask[type]
-        tp = 'SV3_DESI_TARGET'
-        ws = 'sv3'
-    print(type+' selection bit is '+str(bs))
-    
-    outf = outdir+type+ws +'targetsDR9v'+tarver.strip('.')+'.fits'   
-    print('file will be written to '+outf)  
-    
-    data = fitsio.read(fns[0],columns=keys)
-    data = data[(data[tp] & bs)>0]
-    for i in range(1,ncat):
-        print(i)
-        datan = fitsio.read(fns[i],columns=keys)
-        datan = datan[(datan[tp] & bs)>0]
-        data = np.hstack((data,datan))
-        print(len(data))
-    
-    
-    fitsio.write(outf,data,clobber=True)
-    print('wrote to '+outf)
-    del data
-    #return outf
 
 def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
     #just concatenate all of the targets for a given type, keeping only the columns quoted below
