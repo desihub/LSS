@@ -892,8 +892,9 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             cat = hstack([rrd,rrfm,mgiid,qnd])
             #print(cat.dtype.names)
             cat_val = qso_catalog_maker(cat,ignore_emline=True)
+            cat['Z_QSO'] = cat_val['Z_QSO']
             selqso = cat_val['GOOD_Z_LYA']
-            qso_cati = cat_val[selqso]
+            qso_cati = cat[selqso]
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         qsocats.append(qso_cati)
         #if i == 0:
