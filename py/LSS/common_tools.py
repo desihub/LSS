@@ -364,7 +364,7 @@ def goodz_infull(tp, dz, zcol='Z_not4clus'):
 
     return z_suc
 
-def desispec_validate(cat, fiberstatus_cut=True, ignore_emline=False, ignore_qso=False, ignore_lya=False,
+def desispec_validate(cat, fiberstatus_cut=False, ignore_emline=False, ignore_qso=False, ignore_lya=False,
                       populate_missing_columns=False):
     '''
     copied from desispec.validredshifts on Aug 31 2026, but wanted selection with more freedom
