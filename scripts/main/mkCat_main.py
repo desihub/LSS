@@ -326,7 +326,7 @@ tarf11 = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR11v'
 mktar11 = True
 if os.path.isfile(tarf11) and redotar == False or len(type.split('-'))>1:    
     mktar11 = False
-if mktar:11 #concatenate target files for given type, with column selection hardcoded
+if mktar11: #concatenate target files for given type, with column selection hardcoded
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir11,tarf11,tarver11,'main',progl,keys=keys)
 
