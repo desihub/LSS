@@ -4,12 +4,13 @@
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -J Holi8
+#SBATCH -J AltMTL
 #SBATCH -t 36:00:00
-#SBATCH --output=holi8_%j.out
-#SBATCH --error=holi8_%j.err
+#SBATCH --output=AltMTL_%j.out
+#SBATCH --error=AltMTL_%j.err
 #SBATCH --mail-type=begin,end,fail
 #SBATCH --mail-user=jcolley@lpnhe.in2p3.fr
+##SBATCH --mail-user=xx@yy.zz
 
 #
 # script parameters

@@ -36,7 +36,7 @@
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
 #SBATCH --output=holi_fa_%j.log
-#SBATCH --error=holi_fa%j.log
+#SBATCH --error=holi_fa_%j.log
 #SBATCH --mail-type=begin,end,fail
 ##SBATCH --mail-user=jcolley@lpnhe.in2p3.fr
 #SBATCH --mail-user=<user@mail.xx>

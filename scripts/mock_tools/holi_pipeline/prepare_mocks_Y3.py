@@ -2,38 +2,22 @@
 # JM  Colley version to reproduce Holi pipeline
 #
 
-# make sure add the LSS repo to your python path
-from astropy.io import fits  # Access to FITS (Flexible Image Transport System) files.
-from astropy.table import (
-    Table,
-    hstack,
-    vstack,
-    Column,
-)  # A class to represent tables of heterogeneous data.
-import fitsio
-import numpy as np
-import os, sys
 import argparse
-import random
-import json
+import errno
+import os
+
+# make sure add the LSS repo to your python path
+import numpy as np
+from astropy.io import fits  # Access to FITS (Flexible Image Transport System) files.
+from astropy.table import Column, Table, vstack  # A class to represent tables of heterogeneous data.
 from desitarget.targetmask import desi_mask, bgs_mask, obsconditions
 
-# from multiprocessing import Pool
-# import time
 import LSS.common_tools as common
-from LSS.imaging import get_pixel_bitmasknobs as bitmask  # get_nobsandmask
-
-# from LSS.main.cattools import count_tiles_better
-from LSS.globals import main
-
 from calibrate_nz_prep import calibrate_nz
-
-
 from numpy.random import Generator, PCG64
 
-rng = Generator(PCG64())
 
-import errno
+rng = Generator(PCG64())
 
 
 def create_dir(value):
@@ -147,9 +131,7 @@ def read_parent_mock(filename):
 
         # data = Table(h5py.File(filename, 'r+'))
         data = common.read_hdf5_blosc(filename, extname=None)
-    elif filename.endswith(".fits"):
-        data = Table.read(filename)
-    elif filename.endswith(".fits.gz"):
+    elif filename.endswith(".fits") or filename.endswith(".fits.gz"):
         data = Table.read(filename)
     else:
         raise Exception("format input mock is not h5 or fits")

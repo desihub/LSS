@@ -118,15 +118,17 @@ def procFunc(nproc):
     if args.verbose:
         log.debug('calling procFunc')
     if not(args.targfile is None):
-        targets = Table.read(args.targfile.format(mock_number=nproc))
-        print('targets.dtype')
-        print(targets.dtype)
-        print('targets[0:5]')
-        print(targets[0:5])
-        print('targets TARGETID,RA,DEC')
-        print(targets['TARGETID'][0:5])
-        print(targets['RA'][0:5])
-        print(targets['DEC'][0:5])
+        print(f"JMC: skip targets creating with {args.targfile}, NUMOBS isn't present and occurs error")
+        # targets = Table.read(args.targfile.format(mock_number=nproc))
+        # print('targets.dtype')
+        # print(targets.dtype)
+        # print('targets[0:5]')
+        # print(targets[0:5])
+        # print('targets TARGETID,RA,DEC')
+        # print(targets['TARGETID'][0:5])
+        # print(targets['RA'][0:5])
+        # print(targets['DEC'][0:5])
+        targets = None
     else:
         targets = None
     retval = amt.loop_alt_ledger(args.obscon, survey = args.survey, mtldir = args.mtldir, zcatdir = args.zcatdir, altmtlbasedir = args.altMTLBaseDir.format(mock_number=nproc), ndirs = ndirs, numobs_from_ledger = args.numobs_from_ledger,secondary = args.secondary, getosubp = args.getosubp, quickRestart = args.quickRestart, multiproc = multiproc, nproc = nproc, singleDate = singleDate, redoFA = args.redoFA, mock = args.mock, targets = targets, debug = args.debug, verbose = args.verbose, reproducing = args.reproducing, debugOrig = True, zfix = zfix)
