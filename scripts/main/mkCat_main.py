@@ -328,7 +328,7 @@ if os.path.isfile(tarf11) and redotar == False or len(type.split('-'))>1:
     mktar11 = False
 if mktar11: #concatenate target files for given type, with column selection hardcoded
     import LSS.imaging.select_samples as ss
-    ss.gather_targets(type,tardir11,tarf11,tarver11,'main',progl,keys=keys)
+    ss.gather_targets(type,tardir11,tarf11,tarver_dr11,'main',progl,keys=keys)
 
 
 
