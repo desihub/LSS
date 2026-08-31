@@ -881,7 +881,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             rrfm = Table(fitsio.read(rr,ext='FIBERMAP'))
             rrfm.remove_columns(['TARGETID','DESI_TARGET'])
             rrtsnr = Table(fitsio.read(rr,ext='TSNR2'))
-            rrtsnrremove_columns(['TARGETID'])
+            rrtsnr.remove_columns(['TARGETID'])
             #print(rrd.dtype.names)
             #print(rr)
             #print(rrfm.dtype.names)
