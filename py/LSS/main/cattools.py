@@ -877,6 +877,8 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
             qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
         if qso_maker == 'desispec':
             rrd = Table(fitsio.read(rr,ext=zhdu))
+            print(rrd.dtype.names)
+            print(rr)
             mgiid = Table(fitsio.read(mgii))
             mgiid.remove_column('TARGETID')
             qnd = Table(fitsio.read(qn))
