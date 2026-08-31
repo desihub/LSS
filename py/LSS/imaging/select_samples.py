@@ -9,6 +9,7 @@ from desitarget import targetmask
 from desitarget.sv1 import sv1_targetmask
 from desitarget.sv3 import sv3_targetmask
 import astropy.io.fits as fits
+import LSS.common_tools as common
 
 
 def mask(dd,mb=[1,5,6,7,11,12,13]):
@@ -64,15 +65,19 @@ def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
     
     data = fitsio.read(fns[0],columns=keys)
     data = data[(data[tp] & bs)>0]
+    datal = []
+    datal.append(data)
     for i in range(1,ncat):
         print(i)
         datan = fitsio.read(fns[i],columns=keys)
         datan = datan[(datan[tp] & bs)>0]
-        data = np.hstack((data,datan))
-        print(len(data))
-    
-    
-    fitsio.write(outf,data,clobber=True)
+        datal.append(datan)
+        #data = np.hstack((data,datan))
+        #print(len(data))
+    data = np.concatenate(datal)
+    del datal
+    #fitsio.write(outf,data,clobber=True)
+    common.write_LSS_scratchcp(data, outf)
     print('wrote to '+outf)
     del data
 

@@ -322,7 +322,7 @@ if mktar: #concatenate target files for given type, with column selection hardco
 
 tarver_dr11 = '5.2.0'
 tardir11 = '/global/cfs/cdirs/desi/target/catalogs/dr11/'+tarver_dr11+'/targets/main/resolve/'
-tarf11 = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR11v'+tarver.strip('.')+'.fits'
+tarf11 = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR11v'+tarver_dr11.strip('.')+'.fits'
 mktar11 = True
 if os.path.isfile(tarf11) and redotar == False or len(type.split('-'))>1:    
     mktar11 = False
