@@ -354,7 +354,7 @@ mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
 if os.path.isfile(etarf) and redotar == False: 
-    common.printlog('making '+tarf,logger)
+    #common.printlog('making '+tarf,logger)
     mketar = False
 
 if args.survey != 'main':
