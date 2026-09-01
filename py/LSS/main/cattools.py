@@ -3449,7 +3449,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         spec_cols = ['TARGETID','TILEID','LOCATION','Z','ZERR','SPECTYPE','DELTACHI2'\
         ,'COADD_FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
         ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX']
-        dailydir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
+        dailydir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
+        common.printlog('adding info from spec file '+dailydir+'datcomb_'+prog+'_spec_zdone.fits',logger)
         prog = 'dark'
         if tp[:3] == 'BGS':
             prog = 'bright'
@@ -3468,7 +3469,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         if azf is not None and 'OII_FLUX' not in list(dz.dtype.names):
-            arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
+            arz = Table(fitsio.read(azf.replace('global','dvs_ro'),columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
             arz['TILEID'] = arz['TILEID'].astype(int)
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
@@ -3485,7 +3486,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         logger.info('adding extra redshift info to QSO with '+azf)
         if emlin_fn is None:
             logger.info('will not be adding emline info, because emlin_fn is None')
-        arz = Table(fitsio.read(azf))
+        arz = Table(fitsio.read(azf.replace('global','dvs_ro')))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
         #print(arz.dtype.names)
@@ -3501,7 +3502,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
                     cols.append(col)
             logger.info('columns to use for match are '+str(cols))
             if len(cols) > 3:
-                emcat =  Table(fitsio.read(emlin_fn,columns=cols))
+                emcat =  Table(fitsio.read(emlin_fn.replace('global','dvs_ro'),columns=cols))
                 emcat['TILEID'] = emcat['TILEID'].astype(int)
                 dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
