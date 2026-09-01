@@ -28,7 +28,7 @@ def mask(dd,mb=[1,5,6,7,11,12,13]):
 def gather_targets(type,targroot,outf,tarver,survey,prog='dark',keys=None):
     #just concatenate all of the targets for a given type, keeping only the columns quoted below
     print(targroot+prog)
-    fns = glob.glob(targroot+prog+'/*.fits')
+    fns = glob.glob(targroot.replace('global','dvs_ro')+prog+'/*.fits')
     ncat     = len(fns)
     print('data is split into '+str(ncat)+' healpix files')
         #check to make sure those were copied correctly
