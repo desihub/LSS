@@ -3441,7 +3441,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         ndatpretar = len(dz)
         dz = join(dz,ftar,keys=['TARGETID'])
         if ndatpretar != len(dz):
-            common.printlog('lost '+str(ndatpretar-len(dz)))+' targets after join, should be from dr9->dr11',logger)
+            common.printlog('lost '+str(ndatpretar-len(dz))+' targets after join, should be from dr9->dr11',logger)
         else:
             common.printlog('did not lose any targets during join',logger)
     
