@@ -112,7 +112,6 @@ At the top of `sbatch_holi_pipeline.sh`, modify these 3 parameters
 #SBATCH --array=0-7
 #SBATCH --ntasks=10
 #SBATCH --cpus-per-task=24
-#SBATCH -t 36:00:00
 ```
 
 * `--array` selects how many array ranks (chunks of seeds) are submitted. The array range below only needs to start at 0: SBATCH --array=0-x. The first seed ID to process is set by the "first_id" in file parameters. 
@@ -152,5 +151,21 @@ run_holi_pipeline.sh <path/to/parameters/file>
 
 a directory like `holi_260831_09h13` (with date) will created in directory log defined with parameter  `logs_dir`
 
+```console
+login09:holi_pipeline>. init_env_holi.sh
+
+The following have been reloaded with a version change:
+  1) cudatoolkit/13.2 => cudatoolkit/13.0
+
+login09:holi_pipeline>run_holi_pipeline.sh /global/homes/j/jcolley/test/my_run_params.toml 
+Launch Holi pipeline : /global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline/sbatch_holi_pipeline.sh
+       Log directory : /global/homes/j/jcolley/test/runs/holi_260901_06h56
+Submitted batch job 57823814
 
 
+login09:holi_pipeline>tree /global/homes/j/jcolley/test/runs/holi_260901_06h56
+/global/homes/j/jcolley/test/runs/holi_260901_06h56
+├── logs
+├── my_run_params.toml
+└── sbatch_holi_pipeline.sh
+```
