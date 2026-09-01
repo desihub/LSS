@@ -42,7 +42,7 @@ in_7=forFA0_concat.fits
 echo "================= step 1"
 ## Env
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+export PYTHONPATH=$LSS_DIR/py:$LSS_DIR/scripts/mock_tools:$PYTHONPATH
 export PATH=$LSS_DIR/bin:$PATH
 PROC_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 cd $PROC_DIR
