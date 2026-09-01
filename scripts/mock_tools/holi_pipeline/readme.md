@@ -44,6 +44,9 @@ see [Holi pipeline description](../runHoli.md) step by step, here is a summary.
 
 The pipeline enables the creation of a series of executions with a contiguous index starting with parameter `first_id` in file parameters.
 
+
+Pipeline description in "full mode", in 3 stage regarding CPU management
+
 ![holi pipeline](holi_pipeline_schema.jpg)
 
 # Define Holi pipeline
@@ -67,7 +70,7 @@ nzref_da2_lrg.txt
 nzref_da2_qso.txt
 ```
 
-note: this path is what you will set as `mock_dir` in the parameter file (see step 4)
+note: this path is what you will set as `mock_dir` in the parameter file (2.2)
 
 [perlmutter scratch doc](https://docs.nersc.gov/filesystems/perlmutter-scratch/)
 
@@ -94,8 +97,8 @@ cp holi_params.toml my_run_params.toml
 Edit `my_run_params.toml` and set at least:
 
 ```toml
-LSS_dir  = "<LSS_DIR, see step 3.1>"
-mock_dir = "<DS_DIR, export PATH=$PWD:$PATHsee step 2>"
+LSS_dir  = "<LSS_DIR, see 2.1) >"
+mock_dir = "<DS_DIR, see 1) >"
 first_id = <first seed ID to process>
 ```
 
@@ -133,8 +136,7 @@ is read from the `first_id` key of the parameter file (see step 2.2).`) with few
 
 will process 8x10 simulations/seed with 10x24 CPUs for BRICKMASK.
 
-## 3) Launch pipeline
-
+# Launch holi pipeline
 
 Init environment to launch the pipeline , in holi_pipeline directory
 
