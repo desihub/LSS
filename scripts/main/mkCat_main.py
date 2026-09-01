@@ -320,6 +320,18 @@ if mktar: #concatenate target files for given type, with column selection hardco
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir,tarf,tarver,'main',progl,keys=keys)
 
+tarver_dr11 = '5.2.0'
+tardir11 = '/global/cfs/cdirs/desi/target/catalogs/dr11/'+tarver_dr11+'/targets/main/resolve/'
+tarf11 = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR11v'+tarver_dr11.strip('.')+'.fits'
+mktar11 = True
+if os.path.isfile(tarf11) and redotar == False or len(type.split('-'))>1:    
+    mktar11 = False
+if mktar11: #concatenate target files for given type, with column selection hardcoded
+    import LSS.imaging.select_samples as ss
+    ss.gather_targets(type,tardir11,tarf11,tarver_dr11,'main',progl,keys=keys)
+
+
+
 mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
 etarf = maindir+type +'targets_pixelDR9v'+tarver.strip('.')+'.fits'        
@@ -391,10 +403,10 @@ if mkfulld:
 
     from desitarget import targetmask
     if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
-        bit = targetmask.bgs_mask[type]
+        bit = targetmask.bgs_mask[type] # BGS_ANY does not have a bgs_mask
         desitarg='BGS_TARGET'
     else:
-        bit = targetmask.desi_mask[type]
+        bit = targetmask.desi_mask[type] # BGS_ANY should be handled correctly here
         desitarg='DESI_TARGET'
     
     maskcoll = False

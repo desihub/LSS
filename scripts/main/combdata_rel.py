@@ -1,5 +1,45 @@
+"""Build combined LSS data products for a survey release.
+
+This script is a command-line driver that assembles several downstream catalog
+products used by DESI LSS analyses. Depending on the flags provided, it can:
+
+- identify the set of main-survey tiles that should be included for a given
+  survey/release combination,
+- write a tile summary file,
+- combine repeated target observations into a target-level catalog,
+- build QSO and emission-line catalogs,
+- combine target and spectra information for per-tracer catalogs, and
+- generate or rejoin zMTL-based spectra products.
+
+The logic is intentionally release-aware:
+
+- ``--verspec=daily`` uses the daily spectroscopic reductions and the daily tile
+  archive.
+- any other ``--verspec`` value is treated as a release label of the form
+  ``<redux>-<zcatalog>`` and uses cumulative tiles and zcatalog files from that
+  release.
+
+The script relies on helpers in ``LSS.main.cattools`` and
+``LSS.common_tools`` for the heavy lifting. This file mainly orchestrates which
+input tiles are eligible, which directories to use, and which combination steps
+to run.
+
+Typical usage patterns include:
+
+- ``--make_tile_file``: write the tile list used for the requested combination.
+- ``--dotarg``: build the target-with-duplicates combined catalog.
+- ``--doqso``: build the combined QSO catalog.
+- ``--mkemlin``: build emission-line summary catalogs.
+- ``--dotarspec``: join target and spectra products for specific tracers.
+- ``--dospec`` / ``--dozmtl``: build spectra and zMTL-based outputs for
+  non-daily releases.
+
+The script is designed for batch execution on DESI systems and expects the
+usual DESI filesystem layout under ``--basedir``.
+"""
+
 # standard python
-#works for daily and DA3 onward
+# works for daily and DA3 onward
 import logging
 import sys
 import os
@@ -25,7 +65,12 @@ import LSS.common_tools as common
 from LSS.globals import main
 
 scratch = os.getenv('SCRATCH')
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(
+    description=(
+        'Combine DESI LSS target, spectra, QSO, and emission-line products '
+        'for a chosen survey/release.'
+    )
+)
 parser.add_argument(
     "--basedir", help="base directory for output, default is SCRATCH", default=scratch)
 parser.add_argument(
@@ -117,7 +162,7 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/' + \
         specrell[0]+'/tiles/cumulative/'
     specf = Table.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative.fits') #this will get used again below
+                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative.fits') # this will get used again below
     wd &= np.isin(mt['TILEID'], np.unique(specf['TILEID']))
 else:
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'
@@ -197,6 +242,12 @@ if args.dotarg:
     tids = tiles4comb['TILEID']  # list()
 
     def _tab2list(tid):
+        """Return the per-tile target table for one TILEID.
+
+        This helper wraps ``ct.get_tiletab`` so that the ``--dotarg`` path can
+        optionally map tiles in parallel before concatenating them into a single
+        target catalog.
+        """
         sel = tiles4comb['TILEID'] == tid
         logger.info('at TILEID '+str(tid))
         tl_tab = tiles4comb[sel]
@@ -214,11 +265,12 @@ if args.dotarg:
         tids_c = np.unique(tile_list[0]['TILEID'])
         tids_todo_inds = ~np.isin(tids, tids_c)
         tids_todo = tids[tids_todo_inds]
-        tabt = _tab2list(tids_todo[0])
-        tile_list[0] = tile_list[0][list(tabt.dtype.names)]
         #from_scratch = False
         #init_dtype = tile_list[0].dtype
     if len(tids_todo) > 0:
+        tabt = _tab2list(tids_todo[0])
+        tile_list[0] = tile_list[0][list(tabt.dtype.names)]
+
         if args.par:
             from concurrent.futures import ProcessPoolExecutor
 
@@ -250,7 +302,7 @@ if args.doqso:
     print('making/adding to QSO catalog '+outf)
     print(tiles4comb.dtype)
     if specrel == 'daily':  # and args.survey == 'main':
-        ct.combtile_qso(tiles4comb, outf, restart=redoqso)
+        ct.combtile_qso(tiles4comb, outf, restart=args.redoqso)
     else:
         ct.combtile_qso_alt(tiles4comb, outf, coaddir=coaddir)
 
@@ -269,7 +321,7 @@ if args.mkemlin:
             if not os.path.isfile(outf):
                 tdate = str(tdate)
                 ct.combEMdata_daily_old(tile, zdate, tdate, outf=outft)
-                print('wrote '+outf)
+                print('wrote '+outft)
                 ndone += 1
                 print('completed '+str(ndone)+' tiles')
         ct.combtile_em(tiles4comb, outf)
@@ -292,6 +344,11 @@ if args.mkemlin:
                 tiles_2comb = tiles4comb[tmask]
 
                 def _get_tile(ind):
+                    """Build the emission-line table for a single tile.
+
+                    Used by the parallel ``--mkemlin`` path for non-daily
+                    releases.
+                    """
 
                     trow = tiles_2comb[ind]
                     tile, zdate, tdate = trow['TILEID'], trow['ZDATE'], trow['THRUDATE']
@@ -362,6 +419,7 @@ if args.mkemlin:
                 tiles_2comb = tiles4comb[tmask]
 
                 def _get_tile(ind):
+                    """Build the daily emission-line table for a single tile."""
 
                     trow = tiles_2comb[ind]
                     tile, zdate, tdate = trow['TILEID'], trow['ZDATE'], trow['THRUDATE']
@@ -497,14 +555,13 @@ if args.dotarspec and specrel == 'daily':
 if specrel != 'daily' and args.dospec:
     
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',
-                            'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z',
+    kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'XFOCAL', 'YFOCAL', 'Z_QN', 'Z_QN_CONF', 'IS_QSO_QN', 'C_LYA', 'C_BI', 'Z_KNOWN', 'ZWARN_MTL', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z',
                             'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY', 'DESI_TARGET', 'BGS_TARGET', 'TARGET_RA', 'TARGET_DEC', 'LASTNIGHT']
 
     logger.info('length of specf is '+str(len(specf)))
     if args.dozmtl:
         if specrell[1] == 'v2':
-            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
+            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'DELTA_X', 'DELTA_Y', 'MEAN_FIBER_RA', 'MEAN_FIBER_DEC', 'MEAN_DELTA_RA', 'MEAN_DELTA_DEC', 'RMS_DELTA_RA', 'RMS_DELTA_DEC', 'DELTA_RA', 'DELTA_DEC']
             logger.info('reading extra file')
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
                            specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID','TILEID','LOCATION']+ml)
@@ -521,7 +578,7 @@ if specrel != 'daily' and args.dospec:
         specf.write(outfs, format='fits', overwrite=True)
     elif args.redo_zmtljoin:
         if specrell[1] == 'v2':
-            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
+            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'DELTA_X', 'DELTA_Y', 'MEAN_FIBER_RA', 'MEAN_FIBER_DEC', 'MEAN_DELTA_RA', 'MEAN_DELTA_DEC', 'RMS_DELTA_RA', 'RMS_DELTA_DEC', 'DELTA_RA', 'DELTA_DEC']
             logger.info('reading extra file')
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
                            specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID','TILEID']+ml)

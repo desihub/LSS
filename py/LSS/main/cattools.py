@@ -7,7 +7,7 @@ import os
 from random import random
 
 import astropy.io.fits as fits
-from astropy.table import Table,join,unique,vstack,setdiff
+from astropy.table import Table,join,unique,vstack,hstack,setdiff
 import warnings
 from astropy.units.core import UnitsWarning
 warnings.simplefilter('ignore', category=UnitsWarning)
@@ -817,8 +817,12 @@ def combQSOdata_alt(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/dai
     return qso_cat
 
 
-def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
-    from LSS.qso_cat_utils import qso_catalog_maker
+def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None,qso_maker='desispec' ):
+    #import LSS.common_tools as common
+    if qso_maker == 'orig':
+        from LSS.qso_cat_utils import qso_catalog_maker
+    if qso_maker == 'desispec':
+        from LSS.common_tools import desispec_validate as qso_catalog_maker
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
@@ -870,7 +874,40 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         qn = coaddir+str(tile)+'/'+zdate+'/'+'qso_qn'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
         old_extname_redrock = True if zhdu == 'ZBEST' else False
         old_extname_for_qn = False #if int(tdate) >= 20220118 else True
-        qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
+        if qso_maker == 'orig':
+            qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
+        if qso_maker == 'desispec':
+            rrd = Table(fitsio.read(rr,ext=zhdu))
+            rrfm = Table(fitsio.read(rr,ext='FIBERMAP'))
+            rrfm.remove_columns(['TARGETID','DESI_TARGET'])
+            rrtsnr = Table(fitsio.read(rr,ext='TSNR2'))
+            rrtsnr.remove_columns(['TARGETID'])
+            #print(rrd.dtype.names)
+            #print(rr)
+            #print(rrfm.dtype.names)
+            mgiid = Table(fitsio.read(mgii))
+            mgiid.remove_columns(['TARGETID','SPECTYPE','ZERR'])
+            mgiid.rename_column('DELTA_CHI2','DELTA_CHI2_MGII')
+            mgiid.rename_column('VAR_A','VAR_A_MGII')
+            mgiid.rename_column('VAR_B','VAR_B_MGII')
+            mgiid.rename_column('A','A_MGII')
+            mgiid.rename_column('B','B_MGII')
+
+            mgiid.rename_column('SIGMA','SIGMA_MGII')
+            mgiid.rename_column('VAR_SIGMA','VAR_SIGMA_MGII')
+            #print(mgiid.dtype.names)
+            qnd = Table(fitsio.read(qn))
+            qnd.keep_columns(['SPECTYPE_RR', 'IS_QSO_QN_NEW_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'Z_NEW', 'ZERR_NEW', 'ZWARN_NEW', 'SPECTYPE_NEW', 'SUBTYPE_NEW', 'CHI2_NEW', 'DELTACHI2_NEW', 'COEFF_NEW'])
+            #print(qnd.dtype.names)
+            cat = hstack([rrd,rrfm,rrtsnr,mgiid,qnd])
+            #print(cat.dtype.names)
+            cat_val = qso_catalog_maker(cat,ignore_emline=True)
+            cat['Z_QSO'] = cat_val['Z_QSO']
+            cat['QSO_MASKBITS'] = cat_val['QSO_MASKBITS']
+            selqso = cat_val['GOOD_Z_LYA']
+            qso_cati = cat[selqso]
+            qso_cati['Z'] = qso_cati['Z_QSO']
+            
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         qsocats.append(qso_cati)
         #if i == 0:
@@ -1129,13 +1166,15 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
     #wt = tiles['TILEID'] == tile
     #print('reading targets for tile '+ts+' from '+mdir)
     tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+    tars = tars[[b for b in tarcol]] # do this here before combining with mtl2
     if 'MTL2' in fht.keys():
         mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
         #print('reading targets for tile '+ts+' from '+mdir)
         tars2 = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+        tars2 = tars2[[b for b in tarcol]] #do this here to match ordering before concatenating
         tars = np.concatenate([tars,tars2])
     #tars.keep_columns(tarcols)
-    tars = tars[[b for b in tarcol]]
+    
 
     tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
     tars = join(tars,tt,keys=['TARGETID'])
