@@ -23,23 +23,23 @@
 #     CPUs would sit idle during Fiber Assignment and the allocation
 #     time would be wasted.
 
-#SBATCH --array=0-4
-#SBATCH --ntasks=10        # number of seeds processed per array rank
+#SBATCH --array=0-1
+#SBATCH --ntasks=5        # number of seeds processed per array rank
 #SBATCH --cpus-per-task=1  # keep at 1 for "full" mode; override on the sbatch command line for "split" mode
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -J Holixxx
+#SBATCH -J HoliTest
 #SBATCH -t 36:00:00
 # NOTE: the first seed ID to process is set by the "first_id" parameter
 # (see get_pars.py $HOLI_PARS first_id below), not by this --array directive.
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
-#SBATCH --output=holi_fa_%j.log
-#SBATCH --error=holi_fa_%j.log
+#SBATCH --output=holi_%j.log
+#SBATCH --error=holi_%j.log
 #SBATCH --mail-type=begin,end,fail
-##SBATCH --mail-user=jcolley@lpnhe.in2p3.fr
-#SBATCH --mail-user=<user@mail.xx>
+#SBATCH --mail-user=jcolley@lpnhe.in2p3.fr
+##SBATCH --mail-user=<user@mail.xx>
 
 #
 # Script parameter: path to the pipeline parameter file (read by get_pars.py)
@@ -153,6 +153,6 @@ else
     # "split" mode: more than 1 CPU per task was requested, but Fiber
     # Assignment only uses 1 CPU per seed, so submit step 8 as a separate
     # job with fewer CPUs per task instead of wasting the extra CPUs
-    sbatch --ntasks=$NTASKS --kill-on-bad-exit=0\
+    sbatch --ntasks=$NTASKS \
     ./sbatch8_AltMTL.sh  $HOLI_PARS $FIRST_ID_RANK $LOG_DIR
 fi
