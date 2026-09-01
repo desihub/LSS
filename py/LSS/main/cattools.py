@@ -3438,7 +3438,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         for col in remcol:
             if col in cols:
                 dz.remove_columns([col]) #these come back in with merge to full target file
+        ndatpretar = len(dz)
         dz = join(dz,ftar,keys=['TARGETID'])
+        if ndatpretar != len(dz):
+            common.printlog('lost '+str(ndatpretar-len(dz)))+' targets after join, should be from dr9->dr11',logger)
+        else:
+            common.printlog('did not lose any targets during join',logger)
     
     if specver == 'daily':
         spec_cols = ['TARGETID','TILEID','LOCATION','Z','ZERR','SPECTYPE','DELTACHI2'\

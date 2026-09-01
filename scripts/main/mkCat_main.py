@@ -330,7 +330,25 @@ if mktar11: #concatenate target files for given type, with column selection hard
     import LSS.imaging.select_samples as ss
     ss.gather_targets(type,tardir11,tarf11,tarver_dr11,'main',progl,keys=keys)
 
-
+if args.survey == 'main':
+    tarfc = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/'+type +'targetsDR9p11.fits'
+    if not os.path.isfile(tarfc):
+        sbricks = fitsio.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
+        t9 = fitsio.read(tarf)
+        t11 = fitsio.read(tarf11)
+        sel9 = sbricks['DRVERSION'] == 9
+        sel11 = sbricks['DRVERSION'] == 11
+        dr9_bricks = sbricks['BRICKID'][sel9]
+        dr9in = np.isin(t9['BRICKID'],dr9_bricks)
+        dr11_bricks = sbricks['BRICKID'][sel11]
+        dr11in = np.isin(t11['BRICKID'],dr11_bricks)
+        tc = np.concatenate([t9[dr9in],t11[dr11in]])
+        del t9
+        del t11
+        common.write_LSS_scratchcp(tc,tarfc,logger=logger)
+        del tc
+else:
+    tarfc = tarf
 
 mketar = False
 etardir = '/global/cfs/cdirs/desi/survey/catalogs/extra_target_data/'+tarver+'/'
@@ -399,7 +417,7 @@ if mkfulld:
     #    tlf = ldirspec+type+'_tilelocs.dat.fits'
 
  
-    ftar = fitsio.read(tarf)   
+    ftar = fitsio.read(tarfc)   
 
     from desitarget import targetmask
     if type == 'BGS_BRIGHT' or type == 'BGS_FAINT':
