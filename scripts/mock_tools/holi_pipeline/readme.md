@@ -145,10 +145,10 @@ source init_env_holi.sh
 then 
 
 ```console
-sbatch_holi_pipeline.sh <path/to/parameters/file>
+run_holi_pipeline.sh <path/to/parameters/file>
 ```
 
-a directory like `holi_260831_09h13` will created in directory log defined with parameter  `logs_dir`
+a directory like `holi_260831_09h13` (with date) will created in directory log defined with parameter  `logs_dir`
 
 
 
