@@ -108,7 +108,7 @@ def wrapper(bid_index):
 
 
 # bricks = Table(fitsio.read('/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-bricks.fits.gz'))
-bricks = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/randoms/survey-bricks-dr9-randoms-0.48.0.fits'))
+bricks = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr11/randoms/survey-bricks-dr11-randoms-5.1.0.fits'))
 
 
 cat1row = fitsio.read(input_path,rows=1)
