@@ -5027,7 +5027,7 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
-def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',logger=None ):
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,randir11 = '/global/cfs/cdirs/desi/target/catalogs/dr11/5.1.0/randoms/resolve/',dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',logger=None ):
     '''
     tiles should be a table containing the relevant info
     '''
@@ -5056,8 +5056,22 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         common.printlog('no tiles to process for '+str(ii),logger)
         return True
     rtall = read_targets_in_tiles(dirrt,tiles)
-    common.printlog('read targets on all tiles',logger)
-
+    common.printlog('read dr9 targets on all tiles',logger)
+    rt11 = read_targets_in_tiles(randir11,tiles)
+    common.printlog('read dr11 targets on all tiles',logger)
+    if len(rt11) > 0:
+        sbricks = fitsio.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
+        sel9 = sbricks['DRVERSION'] == 9
+        sel11 = sbricks['DRVERSION'] == 11
+        dr9_bricks = sbricks['BRICKID'][sel9]
+        dr11_bricks = sbricks['BRICKID'][sel11]
+        dr9in = np.isin(rtall['BRICKID'],dr9_bricks)
+        rtall = rtall[dr9in]
+        dr11in = np.isin(rt11['BRICKID'],dr11_bricks)
+        rt11 = rt11[dr11in]
+        rtall = np.concatenat([rtall,rt11])
+        del rt11
+        
     common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
     #for i in range(0,len(tiles)):
     def _create_rantile(ind):
