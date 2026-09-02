@@ -1,0 +1,9 @@
+DR9 and DR11 data are now separated into DR9 and DR11 bricks. This will end up removing some data. We do this by making combined target files DR9pDR11 in desi/survey/catalogs/main/LSS/. The DR9 and DR11 TARGETID are different. So, after cutting to unique TARGETID when creating the full catalogs, we join to these combined target files and the DR9 data now in DR11 bricks should get dropped.
+
+The file /global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits contains the column DRVERSION, which is 0, 9, or 11. BRICKID with 9 or 11 define our respective areas. This can be used to separate both data and randoms into their regions. Testing is done in /global/cfs/cdirs/desi/survey/catalogs/main/LSS/DR11.ipynb
+
+For the random processing to work, need DR11 randoms split into healpix like done for DR9 in /global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/randoms-1-0/
+
+Adding the lrg mask info for DR11 failed, with /dvs_ro/cfs/cdirs/desi/survey/catalogs/brickmasks/dr11/lrg/v1.1/south/coadd/291/2914m515-lrgmask.fits.gz appearing to be corrupted.
+
+After success, the DR9 and DR11 will need to be added together. Check ordering, etc.
