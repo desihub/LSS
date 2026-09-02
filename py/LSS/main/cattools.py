@@ -5035,7 +5035,6 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     import desimodel.focalplane
     import desimodel.footprint
     import LSS.common_tools as common
-    common.printlog('making random target files for '+str(len(tiles))+' tiles',logger)
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
     #print(trad)
 
