@@ -50,7 +50,7 @@ version_dict = {'lrg': 'v1.1', 'elg': 'v1'}
 if version=='none':
     version = version_dict[tracer]
 
-bitmask_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/brickmasks/dr11/{}/{}'.format(tracer.upper(), version)
+bitmask_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/brickmasks/dr11/{}/{}'.format(tracer, version)
 
 # input_path = '/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits'
 # output_path = '/global/cscratch1/sd/rongpu/temp/randoms-1-0-lrgmask_v1.fits'
@@ -75,7 +75,7 @@ def bitmask_radec(brickid, ra, dec):
         return bitmask
 
     # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
-    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, brickname, tracer))
+    bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, tracer))
 
     bitmask_img = fitsio.read(bitmask_fn)
 
