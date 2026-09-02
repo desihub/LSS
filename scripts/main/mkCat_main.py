@@ -335,6 +335,9 @@ if args.survey == 'main':
     if not os.path.isfile(tarfc):
         sbricks = fitsio.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
         t9 = fitsio.read(tarf)
+        if 'lrg_mask' in list(t9.dtype.names):
+            t9 = Table(t9)
+            t9.remove_column('lrg_mask') #this is recorded in a separate file
         t11 = fitsio.read(tarf11)
         sel9 = sbricks['DRVERSION'] == 9
         sel11 = sbricks['DRVERSION'] == 11
@@ -342,6 +345,7 @@ if args.survey == 'main':
         dr9in = np.isin(t9['BRICKID'],dr9_bricks)
         dr11_bricks = sbricks['BRICKID'][sel11]
         dr11in = np.isin(t11['BRICKID'],dr11_bricks)
+        
         tc = np.concatenate([t9[dr9in],t11[dr11in]])
         del t9
         del t11
