@@ -552,6 +552,10 @@ dz_step = 0.02
 
 zsplit = None
 subfrac = 1
+
+if args.survey == 'DA3':
+    common.printlog('***NO SUBSAMPLING DEFINED FOR DA3, final n(z) could be off***')
+
 if tracer == 'QSO':
     zmin = 0.8
     zmax = 2.1
