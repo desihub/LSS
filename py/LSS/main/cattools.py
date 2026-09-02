@@ -5027,7 +5027,7 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
-def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,randir11 = '/global/cfs/cdirs/desi/target/catalogs/dr11/5.1.0/randoms/resolve/',dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',logger=None ):
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,randir11 = '/global/cfs/cdirs/desi/target/catalogs/dr11/5.1.0/randoms/resolve/',dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/',logger=None ):
     '''
     tiles should be a table containing the relevant info
     '''
