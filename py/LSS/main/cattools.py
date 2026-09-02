@@ -5055,6 +5055,7 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     if len(tiles) == 0:
         common.printlog('no tiles to process for '+str(ii),logger)
         return True
+    common.printlog('making random target files '+str(ii)+' for '+str(len(tiles))+' tiles',logger)
     rtall = read_targets_in_tiles(dirrt,tiles)
     common.printlog('read dr9 targets on all tiles',logger)
     rt11 = read_targets_in_tiles(randir11,tiles)
@@ -5072,7 +5073,7 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         rtall = np.concatenat([rtall,rt11])
         del rt11
         
-    common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
+    common.printlog('Loaded targets, now creating files per tile for '+str(ii),logger)
     #for i in range(0,len(tiles)):
     def _create_rantile(ind):
         fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
