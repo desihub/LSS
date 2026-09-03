@@ -77,8 +77,10 @@ def bitmask_radec(brickid, ra, dec):
     # bitmask_fn = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/{}/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(field, brickname[:3], brickname, brickname)
     bitmask_fn = os.path.join(bitmask_dir, '{}/coadd/{}/{}-{}mask.fits.gz'.format(field, brickname[:3], brickname, tracer))
 
-    bitmask_img = fitsio.read(bitmask_fn)
-
+    try:
+        bitmask_img = fitsio.read(bitmask_fn)
+    except:
+        print('failed to open '+bitmask_fn)
     header = fits.open(bitmask_fn)[1].header
     w = wcs.WCS(header)
 
