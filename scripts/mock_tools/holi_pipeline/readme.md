@@ -51,32 +51,7 @@ Pipeline description in "full mode", in 3 stage regarding CPU management
 
 # Define Holi pipeline
  
-## 1) Prepare output directory
-
-1. Create directory, in $SCRATCH place to have best I/O performance 
-2. Copy nzref files from reference
-
-Actually the input reference is : `/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80`
-
-You can configure it in file parameters, see 2.2
-
-```console
-cp /global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/nzref* /pscratch/sd/j/jcolley/holi/webjax_v4.80
-
-login22:webjax_v4.80>ls /pscratch/sd/j/jcolley/holi/webjax_v4.80/
-nzref_da2_elg_N.txt
-nzref_da2_elg_S.txt
-nzref_da2_lrg.txt
-nzref_da2_qso.txt
-```
-
-note: this path is what you will set as `mock_dir` in the parameter file (2.2)
-
-[perlmutter scratch doc](https://docs.nersc.gov/filesystems/perlmutter-scratch/)
-
-## 2) Holi pipeline parameters
-
-### 2.1) Clone desihub/LSS package
+## 1) Clone desihub/LSS package
 
 ```console
 git clone https://github.com/desihub/LSS.git
@@ -87,7 +62,7 @@ git checkout fa4acm
 
 note: this path is what you will set as `LSS_dir` in the parameter file
 
-### 2.2) Copy/edit the parameter file
+## 2) Copy/edit the parameter file
 
 ```console
 cd scripts/mock_tools/holi_pipeline
@@ -97,14 +72,16 @@ cp holi_params.toml my_run_params.toml
 Edit `my_run_params.toml` and set at least:
 
 ```toml
-LSS_dir  = "<LSS_DIR, see 2.1) >"
-mock_dir = "<DS_DIR, see 1) >"
+LSS_dir  = LSS path package"
+mock_dir = /pscratch/..."
 first_id = <first seed ID to process>
 ```
 
-and check the `[brickmask]` section (`cfitsio`, `exe_dir`, `conf_dir`)
+* mock_dir is the output directory, for better performance use /pscratch disk, see [perlmutter scratch doc](https://docs.nersc.gov/filesystems/perlmutter-scratch/)
 
-### 2.3) Define size of array job 
+* for `[brickmask]` section check path (`cfitsio`, `exe_dir`, `conf_dir`)
+
+## 3) Define size of array job 
 
 At the top of `sbatch_holi_pipeline.sh`, modify these 3 parameters
 
@@ -146,7 +123,7 @@ source init_env_holi.sh
 then 
 
 ```console
-run_holi_pipeline.sh <path/to/parameters/file>
+run_holi_pipeline.sh <path/to/parameters/file.toml>
 ```
 
 a directory like `holi_260831_09h13` (with date) will created in directory log defined with parameter  `logs_dir`
@@ -168,4 +145,28 @@ login09:holi_pipeline>tree /global/homes/j/jcolley/test/runs/holi_260901_06h56
 ├── logs
 ├── my_run_params.toml
 └── sbatch_holi_pipeline.sh
+```
+
+# Summary of commands
+
+Clone LSS and define file parameters
+
+```console
+git clone https://github.com/desihub/LSS.git
+cd LSS
+git checkout fa4acm
+cd scripts/mock_tools/holi_pipeline
+nano holi_params.toml 
+```
+
+then define size of array job
+
+```console
+nano sbatch_holi_pipeline.sh
+```
+
+then launch Holi pipeline
+```console
+source . init_env_holi.sh
+run_holi_pipeline.sh ./my_run_params.toml 
 ```
