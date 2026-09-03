@@ -168,5 +168,5 @@ nano sbatch_holi_pipeline.sh
 then launch Holi pipeline
 ```console
 source init_env_holi.sh
-run_holi_pipeline.sh ./my_run_params.toml 
+run_holi_pipeline.sh holi_params.toml 
 ```
