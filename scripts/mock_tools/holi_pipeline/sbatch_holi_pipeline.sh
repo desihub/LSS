@@ -34,7 +34,7 @@
 #SBATCH --constraint=cpu
 #SBATCH -q regular
 #SBATCH -J HoliTest
-#SBATCH -t 70:00:00
+#SBATCH -t 48:00:00
 #SBATCH --output=holi_%j.log
 #SBATCH --error=holi_%j.log
 #SBATCH --mail-type=begin,end,fail
