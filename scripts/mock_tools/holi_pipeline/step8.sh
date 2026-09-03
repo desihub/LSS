@@ -5,7 +5,8 @@
 # Processing 1 seed with 1 CPU
 # OpenMP disable ?
 
-echo "$(date), Step 8: AltMTL"
+echo "================= Step 8: AltMTL"
+date
 
 #
 # script parameters
@@ -60,3 +61,5 @@ echo $argstring
 
 #python $path2LSS/runAltMTLRealizations.py $argstring > $LOG_DIR/fa_chunk_${IDS}.log  2>&1
 python $path2LSS/runAltMTLRealizations.py $argstring
+
+date
