@@ -14,6 +14,11 @@
 
 
 # set env
+if [[ $# -ne 1 || ! -f "$1" || ! -r "$1" ]]; then
+    echo "Usage: $0 <readable-parameter-file.toml>" >&2
+    exit 2
+fi
+
 HOLI_PARS=$1
 LSS_DIR=$(get_pars.py $HOLI_PARS LSS_dir)
 LOGS_DIR=$(get_pars.py $HOLI_PARS logs_dir)
@@ -26,6 +31,21 @@ mkdir -p "$LOG_DIR/logs"
 # copy pipeline parameters 
 cp $HOLI_PARS $LOG_DIR
 cp $LSS_DIR/scripts/mock_tools/holi_pipeline/sbatch_holi_pipeline.sh  $LOG_DIR
+
+# test if mock_dir exist else create it
+mock_dir=$(get_pars.py $HOLI_PARS mock_dir)
+if [[ ! -d "$mock_dir" ]]; then
+    mkdir -p "$mock_dir"
+fi
+
+# copy nzref files
+input_ref=$(get_pars.py $HOLI_PARS input_ref)
+if ! compgen -G "$input_ref/nzref*" > /dev/null; then
+    echo "Error: no nzref files found in $input_ref" >&2
+    exit 1
+fi
+cp "$input_ref"/nzref* "$mock_dir"
+
 
 # launch SLURM array job 
 cd $LOG_DIR
