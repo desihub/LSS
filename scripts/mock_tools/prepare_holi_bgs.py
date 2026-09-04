@@ -41,12 +41,21 @@ def mknz(df, lenran,fout, bs=0.01, zmin=0.02, zmax=0.6, randens=2500.):
 
 
 tile = 'BRIGHT'
+release = 'DA3'
 
-wd=Table.read('/pscratch/sd/d/desica/DA2/mocks/white_dwarfs_bgs/wd_sample.fits')
-wd.remove_columns(['TARGETID', 'REF_EPOCH', 'PARALLAX', 'PMRA','PMDEC','NUMOBS', 'ZTILEID','Z_QN','IS_QSO_QN','DELTACHI2','TARGET_STATE','TIMESTAMP','VERSION'])
-wd.rename_column('Z', 'RSDZ')
+columns_remove_wd = {'DA2': ['TARGETID', 'REF_EPOCH', 'PARALLAX', 'PMRA','PMDEC','NUMOBS', 'ZTILEID','Z_QN','IS_QSO_QN','DELTACHI2','TARGET_STATE','TIMESTAMP','VERSION'],
+                     'DA3': ['TARGETID', 'TARGET_STATE', 'TIMESTAMP', 'FIBER', 'LOCATION', 'TILEID']}
+
+wd=Table.read(f'/pscratch/sd/d/desica/{release}/mocks/white_dwarfs_bgs/wd_sample.fits')
+wd.remove_columns(columns_remove_wd[release])
+
 swd = len(wd)
-wd['NZ'] = [0.0001]*swd
+if 'Z' in wd.columns:
+    wd.rename_column('Z', 'RSDZ')
+else:
+    wd['RSDZ'] = np.zeros(swd)
+
+#wd['NZ'] = [0.0001]*swd 
 wd['RA'] = wd['RA'].astype(np.float64)
 wd['DEC'] = wd['DEC'].astype(np.float64)
 wd['TRUEZ'] = np.ones(swd)
@@ -54,18 +63,29 @@ wd['R_MAG_ABS'] = np.ones(swd)*-21
 wd['BRICKNAME'] = np.full(swd, '000p0000')    #- required !?!
 wd['WEIGHT'] = 1.
 wd['ZWARN'] = np.zeros(swd, dtype='i8')+int(0)
+if 'NX' not in wd.columns:
+    wd['NX'] = [0.0001]*swd
+if 'NUMOBS_MORE' not in wd.columns:
+    wd['NUMOBS_MORE'] = [2.]*swd
+if 'NUMOBS_INIT' not in wd.columns:
+    wd['NUMOBS_INIT'] = [2.]*swd
+if 'SCND_TARGET' not in wd.columns:
+    wd['SCND_TARGET'] = np.zeros(swd, dtype='i8')+int(0)
+if 'OBSCONDITIONS' not in wd.columns:
+    wd['OBSCONDITIONS'] = obsconditions.mask(tile) 
 
 
 
+paths = {'DA2': '/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.82', 'DA3': '/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.82_DR3'}
 files = ['holi_BGS_v4.82_GCcomb_clustering.dat.h5', 'holi_BGS-NONKP_v4.82_GCcomb_clustering.dat.h5']
-path = '/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.82'
+path = paths[release]
 
 
 seeds_good = []
 seeds_missing = []
-for i in range(1000):
-    if i<50:
-        continue
+for i in range(3, 100):
+    #if i<50:
+    #    continue
     seed = str(i).zfill(4)
     dest = os.path.join(path,'seed%s' % seed)
     if os.path.isfile(os.path.join(dest,files[0])) and os.path.isfile(os.path.join(dest,files[1])):
@@ -73,8 +93,11 @@ for i in range(1000):
 
 
 
-path_to_save_nz = '/pscratch/sd/d/desica/holi_bgs_nz_temp'
+paths_to_save_nz = {'DA2':'/pscratch/sd/d/desica/holi_bgs_nz_temp', 'DA3':'/pscratch/sd/d/desica/holi_bgs_nz_temp/da3'}
+path_to_save_nz = paths_to_save_nz[release]
 
+sizeran = {'DA2': 35957774, 'DA3': 37946091}
+sizetail = {'DA2': 100000, 'DA3': 104000}
 for i in seeds_good:
     seed = str(i).zfill(4)
 
@@ -82,23 +105,23 @@ for i in seeds_good:
     dest = os.path.join(path,'seed%s' % seed)
     datos_nonkp = os.path.join(os.path.join(dest, files[1]))   #'/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80/seed0001/holi_BGS-NONKP_v4.80_GCcomb_clustering.dat.h5'
     mock = Table(h5py.File(datos_nonkp, 'r+'))
-    mknz(mock, 35957774, os.path.join(path_to_save_nz, 'nz_holi_bgs_nonkp_extended_%s.txt' % seed), zmax=1.6)
+    mknz(mock, sizeran[release], os.path.join(path_to_save_nz, 'nz_holi_bgs_nonkp_extended_%s.txt' % seed), zmax=1.6)
     z,nz = np.loadtxt(os.path.join(path_to_save_nz, 'nz_holi_bgs_nonkp_extended_%s.txt' % seed), unpack=True, usecols=(0,3))
-    the_bgs_any = calibrate_nz_bgs(mock, redshift_column = 'Z', tracer_type='BGS', survey='DA2', save_mock_nz = 'n', n_mean=[z,nz], nzfile='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/BGS_ANY_full_HPmapcut_nz.txt')
+    the_bgs_any = calibrate_nz_bgs(mock, redshift_column = 'Z', tracer_type='BGS', survey=release, save_mock_nz = 'n', n_mean=[z,nz], nzfile='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/BGS_ANY_full_HPmapcut_nz.txt')
     the_bgs_any_new = the_bgs_any[the_bgs_any['STATUS']==1]
     print(len(the_bgs_any_new), 'should be around 19623289')
     val=19623289-len(the_bgs_any_new)
     print(val)
-    mknz(the_bgs_any_new, 35957774, os.path.join(path_to_save_nz, 'nz_holi_bgs_any_v4_seed%s.txt' % seed), zmax=1.6)
+    mknz(the_bgs_any_new, sizeran[release], os.path.join(path_to_save_nz, 'nz_holi_bgs_any_v4_seed%s.txt' % seed), zmax=1.6)
     the_bgs_any_new['DESI_TARGET'] = 2**60
     the_bgs_any_new['R_MAG_ABS'] = -21.
     z,nz = np.loadtxt(os.path.join(path_to_save_nz, 'nz_holi_bgs_any_v4_seed%s.txt' % seed), unpack=True,usecols=(0,3))
-    the_bgs_bright = calibrate_nz_bgs(the_bgs_any_new, redshift_column = 'Z', tracer_type='BGS', survey='DA2', save_mock_nz = 'n', n_mean=[z,nz], nzfile='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/BGS_BRIGHT_full_HPmapcut_nz.txt')
+    the_bgs_bright = calibrate_nz_bgs(the_bgs_any_new, redshift_column = 'Z', tracer_type='BGS', survey=release, save_mock_nz = 'n', n_mean=[z,nz], nzfile='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/BGS_BRIGHT_full_HPmapcut_nz.txt')
 
     the_bgs_bright_new = the_bgs_bright[the_bgs_bright['STATUS']==1]
     the_bgs_rest = the_bgs_bright[the_bgs_bright['STATUS']==0]
 #print(len(the_bgs_bright_new), len(the_bgs_rest))
-    mknz(the_bgs_bright_new, 35957774, os.path.join(path_to_save_nz, 'nz_holi_bgs_bright_v4_seed%s.txt' % seed), zmax=1.6)
+    mknz(the_bgs_bright_new, sizeran[release], os.path.join(path_to_save_nz, 'nz_holi_bgs_bright_v4_seed%s.txt' % seed), zmax=1.6)
     the_bgs_bright_new['BGS_TARGET'] = 2**1
 
     dowisebgs = 0.00585
@@ -109,7 +132,7 @@ for i in seeds_good:
     the_bgs_wise_final = the_bgs_rest[wisebgs_mask]
     the_bgs_wise_final['BGS_TARGET'] = 2**2
     the_bgs_faint_final['BGS_TARGET'] = 2**0
-    print(len(the_bgs_wise_final), 'size BGS WISE should be around 43742')
+    print(len(the_bgs_wise_final), 'size BGS WISE should be around 43742 in DA2')
     val=43742-len(the_bgs_wise_final)
     print(val)
     the_bgs_faint_final['PRIORITY_INIT'] = 2000
@@ -132,20 +155,20 @@ for i in seeds_good:
     maska = (the_bgs_rest['Z'] > 0.5) & (the_bgs_rest['Z']<0.61)
     some = the_bgs_rest[maska]
 
-    random_indices = np.random.choice(len(some), size=100000, replace=False)
+    random_indices = np.random.choice(len(some), size=sizetail[release], replace=False)
     t_sampled = some[random_indices]
 
     datos_nonkp = os.path.join(dest, files[0])
     mock = Table(h5py.File(datos_nonkp, 'r+'))
     mocka = vstack([mock, t_sampled])
-    mknz(mocka, 35957774, os.path.join(path_to_save_nz, 'nz_holi_bgs_cosmosample_seed%s.txt' % seed), zmax=0.61)
+    mknz(mocka, sizeran[release], os.path.join(path_to_save_nz, 'nz_holi_bgs_cosmosample_seed%s.txt' % seed), zmax=0.61)
     zsim, nzsim = np.loadtxt(os.path.join(path_to_save_nz, 'nz_holi_bgs_cosmosample_seed%s.txt' % seed), unpack=True, usecols=(0,3))
 
-    the_bgs_cosmo = calibrate_nz_bgs(mocka, redshift_column = 'Z', tracer_type='BGS', survey='DA2', save_mock_nz = 'n', n_mean=[zsim,nzsim], nzfile='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/nonKP/BGS_BRIGHT-21.35_NGC_nz.txt')
+    the_bgs_cosmo = calibrate_nz_bgs(mocka, redshift_column = 'Z', tracer_type='BGS', survey=release, save_mock_nz = 'n', n_mean=[zsim,nzsim], nzfile='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/LSScats/v2/nonKP/BGS_BRIGHT-21.35_NGC_nz.txt')
     the_real_bgs_cosmo = the_bgs_cosmo[the_bgs_cosmo['STATUS']==1]
-    mknz(the_real_bgs_cosmo, 35957774, os.path.join(path_to_save_nz, 'nz_holi_bgs_bright-21.35_v4_seed%s.txt' % seed), zmax=0.61)
+    mknz(the_real_bgs_cosmo, sizeran[release], os.path.join(path_to_save_nz, 'nz_holi_bgs_bright-21.35_v4_seed%s.txt' % seed), zmax=0.61)
     zsim,nzsim=np.loadtxt(os.path.join(path_to_save_nz, 'nz_holi_bgs_bright_v4_seed%s.txt' % seed), unpack=True,usecols=(0,3))
-    temp_holi_bright = calibrate_nz_bgs(the_bgs_bright_new, redshift_column = 'Z', tracer_type='BGS', survey='DA2', save_mock_nz = 'n', n_mean=[zsim,nzsim], nzfile=os.path.join(path_to_save_nz, 'nz_holi_bgs_bright-21.35_v4_seed%s.txt' % seed))
+    temp_holi_bright = calibrate_nz_bgs(the_bgs_bright_new, redshift_column = 'Z', tracer_type='BGS', survey=release, save_mock_nz = 'n', n_mean=[zsim,nzsim], nzfile=os.path.join(path_to_save_nz, 'nz_holi_bgs_bright-21.35_v4_seed%s.txt' % seed))
     final_bright = temp_holi_bright[temp_holi_bright['STATUS'] == 0]
     the_real_bgs_cosmo['R_MAG_ABS'] = -22.
     final_bright['R_MAG_ABS'] = -21.
@@ -181,22 +204,24 @@ for i in seeds_good:
     all_targets['SCND_TARGET'] = np.zeros(n, dtype='i8')+int(0)
     all_targets['ZWARN'] = np.zeros(n, dtype='i8')+int(0)
     all_targets['WEIGHT'] = 1.
-    tile = 'BRIGHT'
     all_targets['OBSCONDITIONS'] = obsconditions.mask(tile)
     all_targets.remove_column('STATUS')
 
     if len(all_targets.columns) != len(wd.columns):
         print('something went wrong with columns')
+        print('TARGETS', all_targets.columns)
+        print('WD', wd.columns)
+        exit()
     
     cata = vstack([all_targets, wd])
     cata['TARGETID'] = (np.arange(1,len(cata)+1)+1e8).astype(int)
-    out_file_name = os.path.join('/pscratch/sd/d/desica/DA2/mocks/holi_bgs', 'forFA%d.fits' %i)
+    out_file_name = os.path.join(f'/pscratch/sd/d/desica/{release}/mocks/holi_bgs', 'forFA%d.fits' %i)
     cata.write(out_file_name, overwrite=True)
+    
 
 
     fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
     fits.setval(out_file_name, 'OBSCON', value=tile, ext=1)
     print('end seed',seed)
-
 
 
