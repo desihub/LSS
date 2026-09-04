@@ -4,12 +4,11 @@ import argparse
 from astropy.table import Table, vstack
 import fitsio
 from pycorr import utils
-#import mpytools as mpy
-#mpicomm = mpy.COMM_WORLD
-#mpiroot = None
-#from multiprocessing import Pool
+import logging
+from cosmoprimo.fiducial import DESI
+cosmo = DESI()
 
-def read_rand(fn, comp_ntl, zmin, zmax, verbose=False):
+def read_rand(fn, comp_ntl, zmin, zmax, verbose=False, logger=None):
     '''
     Reads random catalog
     '''
@@ -17,10 +16,10 @@ def read_rand(fn, comp_ntl, zmin, zmax, verbose=False):
     mask = (rcat['Z'] > zmin) & (rcat['Z'] < zmax)
     rcat = rcat[mask]
     nxfacr = comp_ntl[rcat['NTILE']-1]
-    if verbose: print('Loaded random file at ' + fn)
+    if verbose: logger.info('Loaded random file at ' + fn)
     return rcat, nxfacr
 
-def read_data(fn, comp_ntl, zmin, zmax, verbose=False):
+def read_data(fn, comp_ntl, zmin, zmax, verbose=False, logger=None):
     '''
     Reads data catalog
     '''
@@ -28,17 +27,17 @@ def read_data(fn, comp_ntl, zmin, zmax, verbose=False):
     mask = (dcat['Z'] > zmin) & (dcat['Z'] < zmax)
     dcat = dcat[mask]
     nxfacd = comp_ntl[dcat['NTILE']-1]
-    if verbose: print('Loaded data file at ' + fn)
+    if verbose: logger.info('Loaded data file at ' + fn)
     return dcat, nxfacd
 
-def get_comp(fb, verbose=False):
+def get_comp(fb, verbose=False, logger=None):
     '''
     Calculates completeness per number of tiles
     '''
     fn = fb + '_clustering.dat.fits'
     fd = Table(fitsio.read(fn))
     mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
-    if verbose: print(f'mean completeness = {mean_comp}')
+    if verbose: logger.info(f'mean completeness = {mean_comp}')
     ntl = np.unique(fd['NTILE'])
     comp_ntl = np.zeros(len(ntl))
     weight_ntl = np.zeros(len(ntl))
@@ -54,10 +53,10 @@ def get_comp(fb, verbose=False):
         mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
         fttl[i] = mean_fracobs_tiles
     comp_ntl = comp_ntl*fttl
-    if verbose: print(f'completeness per ntile: \n{ntl} \n{comp_ntl}')
+    if verbose: logger.info(f'completeness per ntile: \n{ntl} \n{comp_ntl}')
     return comp_ntl
 
-def setup_binning(nz_list, verbose=False):
+def setup_binning(nz_list, verbose=False, logger=None):
     '''
     Sets up zbins
     
@@ -72,7 +71,7 @@ def setup_binning(nz_list, verbose=False):
         zmax_ti.append(max(nz_file[:,2]))
     zmin = min(zmin_ti)
     zmax = max(zmax_ti)
-    if verbose: print(f'zmin = {zmin}, zmax = {zmax}')
+    if verbose: logger.info(f'zmin = {zmin}, zmax = {zmax}')
     return zmin, zmax
 
 def rebin_nz(z_comb, nz_t, zmin_arr_t, dz_t):
@@ -94,13 +93,12 @@ def rebin_nz(z_comb, nz_t, zmin_arr_t, dz_t):
             i_t = int((z - zmin_t) / dz_t)
             nz_t_comb[i] = nz_t[i_t]
     return nz_t_comb
-    
 
-def calc_neff(nz_list, bias_list, zmin, zmax, dz, verbose=False):
+def calc_neff(nz_list, bias_list, zmin, zmax, dz, verbose=False, logger=None):
     '''
     Combines n(z) files of each tracer into one neff(z) and rebinned n_t(z)
     
-    returns neff[zbin] and nz_comb_all[tracer, zbin]
+    returns neff[zbin], nz_comb_all[tracer, zbin], and beff[zbin]
     '''
     ntracers = len(nz_list)
     nbins = int((zmax - zmin) / dz)
@@ -124,17 +122,16 @@ def calc_neff(nz_list, bias_list, zmin, zmax, dz, verbose=False):
     
     beff = np.sum(b2nz_comb_all, axis=0) / np.sum(bnz_comb_all, axis=0)
     neff = np.sum(bnz_comb_all, axis=0) / beff
-    if verbose: print(f'neff(z) = {neff}\n\n beff(z) = {beff}')
-    return neff, nz_comb_all
+    if verbose: logger.info(f'neff(z) = {neff}\n\n beff(z) = {beff}')
+    return neff, nz_comb_all, beff
 
-def calc_fkp(nxfac, zall, neff, P0, zmin, zmax, dz):
+def calc_fkp(nxfac, zall, neff, P0, zmin, zmax, dz, tracer):
     '''
     Calculates new fkp weights for combined catalog
     '''
     fkp = np.zeros(len(zall))
     for i in range(len(zall)):
         z = zall[i]
-        if z > zmin and z < zmax:
-            zind = int((z - zmin) / dz)
-            fkp[i] = 1. / (1. + neff[zind]*nxfac[i]*P0)
+        zind = int((z - zmin) / dz)
+        fkp[i] = 1. / (1. + neff[zind]*nxfac[i]*P0[zind])
     return fkp
