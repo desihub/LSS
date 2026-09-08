@@ -25,24 +25,14 @@ def get_comp(fb, verbose=False, logger=None):
     '''
     fn = fb + '_clustering.dat.fits'
     fd = Table(fitsio.read(fn))
-    mean_comp = len(fd)/np.sum(fd['WEIGHT_COMP'])
+    mean_comp = 1/np.mean(fd['WEIGHT_COMP'])
     if verbose: logger.info(f'mean completeness = {mean_comp}')
-    ntl = np.unique(fd['NTILE'])
-    comp_ntl = np.zeros(len(ntl))
-    weight_ntl = np.zeros(len(ntl))
-    for i in range(0,len(ntl)):
-        sel = fd['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
-        weight_ntl[i] = mean_ntweight
-        comp_ntl[i] = 1/mean_ntweight
+    weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    comp_ntl = 1 / weight_ntl
     fran = fitsio.read(fb+'_0_clustering.ran.fits',columns=['NTILE','FRAC_TLOBS_TILES'])
-    fttl = np.zeros(len(ntl))
-    for i in range(0,len(ntl)): 
-        sel = fran['NTILE'] == ntl[i]
-        mean_fracobs_tiles = np.mean(fran[sel]['FRAC_TLOBS_TILES'])
-        fttl[i] = mean_fracobs_tiles
+    fttl = np.bincount(fran['NTILE']-1, weights=fran['FRAC_TLOBS_TILES']) / np.bincount(fran['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in randoms. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
     comp_ntl = comp_ntl*fttl
-    if verbose: logger.info(f'completeness per ntile: \n{ntl} \n{comp_ntl}')
+    if verbose: logger.info(f'completeness per ntile: \n{np.arange(len(comp_ntl))+1} \n{comp_ntl}')
     return comp_ntl
 
 def setup_binning(nz_list, verbose=False, logger=None):
