@@ -1552,13 +1552,18 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
     return
 
 
-def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targetsDR9v1.1.1', redo=False, logger=None, return_array=False):
+def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targetsDR9v1.1.1',tarver11='targetsDR11v5.2.0', dr11=False,redo=False, logger=None, return_array=False):
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/' + \
         tracer+tarver+'_'+tracer_mask+'imask.fits'
+    mask_fn11 = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/' + \
+        tracer+tarver11+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
             str(rann)+tracer_mask+'imask.fits'
     maskf = fitsio.read(mask_fn)
+    if dr11:
+        maskf11 = fistio.read(mask_fn11)
+        maskf = np.concatenate([maskf,maskf11])
     df = fitsio.read(fn.replace('global', 'dvs_ro'))
     if np.isin(tracer_mask+'_mask', list(df.dtype.names)):
         printlog('mask column already in '+fn, logger)
