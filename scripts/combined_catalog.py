@@ -88,9 +88,9 @@ for i, tracer in enumerate(tracers):
     dcat[i], nxfacd_i = comb.read_catalog(d_fn, comp_ntl[i], zmin, zmax, verbose, logger=logger, kind='data')
     dcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacd_i, dcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
     del nxfacd_i # no longer needed, free memory
-    N_d[i] = np.sum(dcat[i]['WEIGHT'] * dcat[i]['WEIGHT_FKP'])
-    dcat[i]['WEIGHT'] *= bias_list[i]
-    dcat[i]['TRACER_TYPE'] = i
+    N_d[i] = np.sum(dcat[i]['WEIGHT'] * dcat[i]['WEIGHT_FKP']) # default x FKP-weighted count of galaxies in the data catalog
+    dcat[i]['WEIGHT'] *= bias_list[i] # upweight each tracer by its bias
+    dcat[i]['TRACER_TYPE'] = i # mark the tracer type to e.g. easily divide the combined catalog into pieces later if needed
 
 # Concatenate catalogs
 dcat_concat = vstack(dcat)
@@ -98,6 +98,7 @@ del dcat # no longer needed, free memory
 
 save_data_fn = save_dir + f'{out_tracer}_{cap}_clustering.dat.fits'
 common.write_LSS_scratchcp(dcat_concat,save_data_fn,logger=logger)
+del dcat_concat # no longer needed, free memory
 
 def _make_rancat(rdmnb):
     '''
@@ -114,9 +115,9 @@ def _make_rancat(rdmnb):
         rcat[i], nxfacr_i = comb.read_catalog(r_fn.replace('global','dvs_ro'), comp_ntl[i], zmin, zmax, verbose, logger=logger, kind='random')
         rcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacr_i, rcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
         del nxfacr_i # no longer needed, free memory
-        N_r[i] = np.sum(rcat[i]['WEIGHT'] * rcat[i]['WEIGHT_FKP'])
-        rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / N_r[i]
-        rcat[i]['TRACER_TYPE'] = i
+        N_r[i] = np.sum(rcat[i]['WEIGHT'] * rcat[i]['WEIGHT_FKP']) # default x FKP-weighted count of randoms in the current catalog
+        rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / N_r[i] # upweight each tracer by its bias, and match the default x FKP-weighted count of randoms to the same count of data galaxies for each tracer
+        rcat[i]['TRACER_TYPE'] = i # mark the tracer type to e.g. easily divide the combined catalogs into pieces later if needed
 
     # Concatenate catalogs
     rcat_concat = vstack(rcat)
