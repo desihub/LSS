@@ -5027,7 +5027,7 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
-def randomtiles_allmain_pix_2step(tiles,dirout='/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,randir11 = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr11/5.4.0/randoms/resolve/',dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/',ranind=1,logger=None ):
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,randir11 = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr11/5.4.0/randoms/resolve/',dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/',ranind=1,logger=None ):
     '''
     tiles should be a table containing the relevant info
     '''
@@ -5100,7 +5100,8 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/dvs_ro/cfs/cdirs/desi/survey/ca
         rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
         #print('added columns for '+fname)
-        rmtl.write(fname,format='fits', overwrite=True)
+        common.write_LSS_scratchcp(rmtl,fname,logger=logger)
+        #rmtl.write(fname,format='fits', overwrite=True)
         del rmtl
         common.printlog('added columns, wrote to '+fname,logger)
         #nd += 1
