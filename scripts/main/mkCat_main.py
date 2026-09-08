@@ -446,10 +446,13 @@ if args.add_veto == 'y':
     if type == 'LGE':
         mask_type = 'lrg'
         tarver='targetsDR9v3.0.0'
-    common.add_veto_col(fin,type,ran=False,tracer_mask=mask_type,redo=True,tarver=tarver)#,rann=0
+    dr11=False
+    if args.survey == 'main':
+        dr11 = True
+    common.add_veto_col(fin,type,ran=False,tracer_mask=mask_type,dr11=dr11,redo=True,tarver=tarver)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver)
+        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver,dr11=dr11)
         
 if args.join_etar == 'y':
     logf.write('added extra target columns to data catalogs for '+tp+' '+str(datetime.now()))
