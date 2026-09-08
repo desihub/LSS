@@ -1562,7 +1562,7 @@ def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targe
             str(rann)+tracer_mask+'imask.fits'
     maskf = fitsio.read(mask_fn)
     if dr11:
-        maskf11 = fistio.read(mask_fn11)
+        maskf11 = fitsio.read(mask_fn11)
         maskf = np.concatenate([maskf,maskf11])
     df = fitsio.read(fn.replace('global', 'dvs_ro'))
     if np.isin(tracer_mask+'_mask', list(df.dtype.names)):
