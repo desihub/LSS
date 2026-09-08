@@ -69,10 +69,7 @@ z_comb = (zmin_comb + zmax_comb) / 2
 comp_ntl = [None] * ntracers
 nz = [None] * ntracers
 dcat = [None] * ntracers
-nxfacd = [None] * ntracers
-fkp = [None] * ntracers
 N_d = [None] * ntracers
-weights = [None] * ntracers
 
 # Read completeness and n(z)
 for i, tracer in enumerate(tracers):
@@ -88,18 +85,16 @@ P0 = cosmo.pk_kz(0.14, z_comb) * (beff**2 + 2/3*f*beff + f**2/5)
 # Read data and compute weights
 for i, tracer in enumerate(tracers):
     d_fn = base_dir + f'{tracer}_{cap}_clustering.dat.fits'
-    dcat[i], nxfacd[i] = comb.read_data(d_fn, comp_ntl[i], zmin, zmax, verbose, logger=logger)
-    fkp[i] = comb.calc_fkp(nxfacd[i], dcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
-    N_d[i] = np.sum(dcat[i]['WEIGHT'] * fkp[i])
-    weights[i] = dcat[i]['WEIGHT'] * fkp[i] * bias_list[i]
+    dcat[i], nxfacd_i = comb.read_catalog(d_fn, comp_ntl[i], zmin, zmax, verbose, logger=logger, kind='data')
+    dcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacd_i, dcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
+    del nxfacd_i # no longer needed, free memory
+    N_d[i] = np.sum(dcat[i]['WEIGHT'] * dcat[i]['WEIGHT_FKP'])
+    dcat[i]['WEIGHT'] *= bias_list[i]
     dcat[i]['TRACER_TYPE'] = i
 
 # Concatenate catalogs
-weight_concat = np.concatenate(weights)
-fkp_concat = np.concatenate(fkp)
-dcat_concat = vstack([Table(dcat[i]) for i in range(ntracers)])
-dcat_concat['WEIGHT'] = weight_concat / fkp_concat
-dcat_concat['WEIGHT_FKP'] = fkp_concat
+dcat_concat = vstack(dcat)
+del dcat # no longer needed, free memory
 
 save_data_fn = save_dir + f'{out_tracer}_{cap}_clustering.dat.fits'
 common.write_LSS_scratchcp(dcat_concat,save_data_fn,logger=logger)
@@ -111,26 +106,21 @@ def _make_rancat(rdmnb):
     '''
     # Setup needed lists
     rcat = [None] * ntracers
-    nxfacr = [None] * ntracers
-    fkp_r = [None] * ntracers
     N_r = [None] * ntracers
-    weights_r = [None] * ntracers
 
     # Read data and compute weights
     for i, tracer in enumerate(tracers):
         r_fn = base_dir + f'{tracer}_{cap}_{rdmnb}_clustering.ran.fits'
-        rcat[i], nxfacr[i] = comb.read_rand(r_fn.replace('global','dvs_ro'), comp_ntl[i], zmin, zmax, verbose,logger=logger)
-        fkp_r[i] = comb.calc_fkp(nxfacr[i], rcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
-        N_r[i] = np.sum(rcat[i]['WEIGHT'] * fkp_r[i])
-        weights_r[i] = rcat[i]['WEIGHT'] * fkp_r[i] * bias_list[i] * N_d[i] / N_r[i]
+        rcat[i], nxfacr_i = comb.read_catalog(r_fn.replace('global','dvs_ro'), comp_ntl[i], zmin, zmax, verbose, logger=logger, kind='random')
+        rcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacr_i, rcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
+        del nxfacr_i # no longer needed, free memory
+        N_r[i] = np.sum(rcat[i]['WEIGHT'] * rcat[i]['WEIGHT_FKP'])
+        rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / N_r[i]
         rcat[i]['TRACER_TYPE'] = i
 
     # Concatenate catalogs
-    weight_concat_r = np.concatenate(weights_r)
-    fkp_concat_r = np.concatenate(fkp_r)
-    rcat_concat = vstack([Table(rcat[i]) for i in range(ntracers)])
-    rcat_concat['WEIGHT'] = weight_concat_r / fkp_concat_r
-    rcat_concat['WEIGHT_FKP'] = fkp_concat_r
+    rcat_concat = vstack(rcat)
+    del rcat # no longer needed, free memory
     
     save_ran_fn = save_dir + f'{out_tracer}_{cap}_{rdmnb}_clustering.ran.fits'
     common.write_LSS_scratchcp(rcat_concat,save_ran_fn,logger=logger)

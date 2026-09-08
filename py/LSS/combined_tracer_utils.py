@@ -8,26 +8,15 @@ import logging
 from cosmoprimo.fiducial import DESI
 cosmo = DESI()
 
-def read_rand(fn, comp_ntl, zmin, zmax, verbose=False, logger=None):
+def read_catalog(fn, comp_ntl, zmin, zmax, verbose=False, logger=None, kind='data'):
     '''
-    Reads random catalog
+    Reads data or random clustering catalog
     '''
-    rcat = Table.read(fn)
-    mask = (rcat['Z'] > zmin) & (rcat['Z'] < zmax)
-    rcat = rcat[mask]
-    nxfacr = comp_ntl[rcat['NTILE']-1]
-    if verbose: logger.info('Loaded random file at ' + fn)
-    return rcat, nxfacr
-
-def read_data(fn, comp_ntl, zmin, zmax, verbose=False, logger=None):
-    '''
-    Reads data catalog
-    '''
-    dcat = Table.read(fn)
+    dcat = Table(fitsio.read(fn))
     mask = (dcat['Z'] > zmin) & (dcat['Z'] < zmax)
     dcat = dcat[mask]
     nxfacd = comp_ntl[dcat['NTILE']-1]
-    if verbose: logger.info('Loaded data file at ' + fn)
+    if verbose: logger.info(f'Loaded {kind} file at ' + fn)
     return dcat, nxfacd
 
 def get_comp(fb, verbose=False, logger=None):
