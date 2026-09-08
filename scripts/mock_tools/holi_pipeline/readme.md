@@ -3,9 +3,9 @@
 **Pipeline under development, pending approval**
 ##  Goal
 
-This version of the pipeline is designed to generate at least 1,000 catalogs; it therefore uses SLURM'sinitialize_amtl_mocks_da2_stdpars sbatch system rather than the interactive platform, although parts of the pipeline can still be run there. A single submission handles the entire production process, which is configurable via a parameters file.
+This version of the pipeline is designed to generate at least 1,000 catalogs; it therefore uses the SLURM batch system rather than the interactive platform, although parts of the pipeline can still be run there. A single submission handles the entire production process, which is configurable via a parameters file.
 
-The pipeline creates various realizations of the observation schedule using the official "fiber assignment" module. The pipeline enables the creation of a series of executions with a contiguous index starting with parameter `first_id` in file parameters. The outputs are stored in directories that include an index—like this, 
+The pipeline creates various realizations of the observation schedule using the official "fiber assignment" module. The pipeline enables the creation of a series of executions with a contiguous index starting from the `first_id` parameter in the parameter file. The outputs are stored in directories that include an index—like this, 
 ```console
   ├── seed0000
   │   ├── ELG
@@ -29,23 +29,23 @@ during the first stages of the pipeline and from stage 7 (Initialize the altmtl 
 
 ## Pipeline step description
 
-see [Holi pipeline description](../runHoli.md) step by step, here is a summary.
+See [Holi pipeline description](../runHoli.md) for a step-by-step description. Here is a summary.
 
 
 | Step | Script | Short description |
 | --- | --- | --- |
-| 1 | `script_prepare_holi.sh` | Prepares the Holi mock catalogs for all available realizations in the Y3 footprint. |
-| 2 | No script specified | Concatenates simulation files from each seed for the MPI Brickmask version. |
-| 3 | `brickmask/script_holi.sbatch` | Runs Brickmask on catalogs without imaging masks. |
-| 4 | `join_imaging_mask.py` | Applies the NOBS and MASKBIT imaging masks. |
-| 5 | `add_contaminants_to_mock.py` | Adds contaminants to the ELG and QSO samples. |
-| 6 | `concatenate_tracers_to_fba.py` | Combines tracers into a `forFA` catalog and creates the QSO file required by AltMTL. |
-| 7 | `script_init_holi.sh` / `initialize_amtl_mocks_da2_stdpars.py` | Initializes AltMTL directories for each realization. |
+| 1 | `prepare_mocks_Y3.py` | Prepares the Holi mock catalogs for all available realizations in the Y3 footprint. |
+| 2 | part of sbatch_holi_pipeline.sh | Concatenates simulation files from each seed for the MPI Brickmask version. |
+| 3 | `BRICKMASK` | Runs Brickmask on catalogs without imaging masks. |
+| 4 | `join_imaging_mask_stdpars.py` | Applies the NOBS and MASKBIT imaging masks. |
+| 5 | `add_contaminants_to_mock_stdpars.py` | Adds contaminants to the ELG and QSO samples. |
+| 6 | `concatenate_tracers_to_fba_stdpars.py` | Combines tracers into a `forFA` catalog and creates the QSO file required by AltMTL. |
+| 7 |  `initialize_amtl_mocks_da2_stdpars.py` | Initializes AltMTL directories for each realization. |
 | 8 | `LSS/bin/runAltMTLRealizations.py` | Runs the AltMTL realization campaign. |
 
 
 ## Pipeline with CPU management
-Pipeline description in "full mode", in 3 stage regarding CPU management
+The diagram below describes the pipeline in full mode and its three CPU-management stages.
 
 ![holi pipeline](holi_pipeline_schema.jpg)
 
@@ -72,8 +72,8 @@ cp holi_params.toml my_run_params.toml
 Edit `my_run_params.toml` and set at least:
 
 ```toml
-LSS_dir  = LSS path package"
-mock_dir = /pscratch/..."
+LSS_dir  = LSS path package
+mock_dir = /pscratch/...
 first_id = <first seed ID to process>
 ```
 
@@ -98,9 +98,7 @@ At the top of `sbatch_holi_pipeline.sh`, modify these 3 parameters
     (Fiber Assignment, step 8, only uses 1 CPU per seed). In this case adapt the time ~ 36 hours (?)
   * `> 1`: **"split" mode**, steps 1 to 7 can use the extra CPUs (e.g.
     Brickmask), but step 8 is automatically resubmitted as a separate
-    job (`sbatch_step8.shThe first seed ID to process is no longer a command-line argument: it
-is read from the `first_id` key of the parameter file (see step 2.2).`) with fewer CPUs per task, so no CPU time is
-    wasted during Fiber Assignment.
+    job (`sbatch8_AltMTL.sh`) with fewer CPUs per task, so no CPU time is wasted during Fiber Assignment.
 
 **Example:**
 
@@ -110,7 +108,7 @@ is read from the `first_id` key of the parameter file (see step 2.2).`) with few
 #SBATCH --cpus-per-task=24
 ```
 
-will process 8x10 simulations/seed with 10x24 CPUs for BRICKMASK.
+will process 80 simulations/seeds with 240 CPUs for BRICKMASK.
 
 # Launch holi pipeline
 
@@ -126,7 +124,7 @@ then
 run_holi_pipeline.sh <path/to/parameters/file.toml>
 ```
 
-a directory like `holi_260831_09h13` (with date) will created in directory log defined with parameter  `logs_dir`
+a directory like `holi_260831_09h13` (with date) will be created in the directory specified by the `logs_dir` parameter.
 
 ```console
 login09:holi_pipeline>. init_env_holi.sh
