@@ -1,10 +1,11 @@
-# Intro
+# Pipeline presentation
 
 **Pipeline under development, pending approval**
+##  Goal
 
-This version of the pipeline is designed to generate at least 1,000 catalogs; it therefore uses SLURM's sbatch system rather than the interactive platform, although parts of the pipeline can still be run there. A single submission handles the entire production process, which is configurable via a parameters file.
+This version of the pipeline is designed to generate at least 1,000 catalogs; it therefore uses SLURM'sinitialize_amtl_mocks_da2_stdpars sbatch system rather than the interactive platform, although parts of the pipeline can still be run there. A single submission handles the entire production process, which is configurable via a parameters file.
 
-The pipeline creates various realizations of the observation schedule using the official "fiber assignment" module. The outputs are stored in directories that include an index—like this, 
+The pipeline creates various realizations of the observation schedule using the official "fiber assignment" module. The pipeline enables the creation of a series of executions with a contiguous index starting with parameter `first_id` in file parameters. The outputs are stored in directories that include an index—like this, 
 ```console
   ├── seed0000
   │   ├── ELG
@@ -26,8 +27,9 @@ during the first stages of the pipeline and from stage 7 (Initialize the altmtl 
     │   └── Univ000
 ```
 
-see [Holi pipeline description](../runHoli.md) step by step, here is a summary.
+## Pipeline step description
 
+see [Holi pipeline description](../runHoli.md) step by step, here is a summary.
 
 
 | Step | Script | Short description |
@@ -38,13 +40,11 @@ see [Holi pipeline description](../runHoli.md) step by step, here is a summary.
 | 4 | `join_imaging_mask.py` | Applies the NOBS and MASKBIT imaging masks. |
 | 5 | `add_contaminants_to_mock.py` | Adds contaminants to the ELG and QSO samples. |
 | 6 | `concatenate_tracers_to_fba.py` | Combines tracers into a `forFA` catalog and creates the QSO file required by AltMTL. |
-| 7 | `script_init_holi.sh` / `initialize_amtl_mocks_da2.py` | Initializes AltMTL directories for each realization. |
-| 8 | `DR2_altmtl_sbatch/altmtl_200249_holi_v3.sbatch` | Runs the AltMTL realization campaign. |
+| 7 | `script_init_holi.sh` / `initialize_amtl_mocks_da2_stdpars.py` | Initializes AltMTL directories for each realization. |
+| 8 | `LSS/bin/runAltMTLRealizations.py` | Runs the AltMTL realization campaign. |
 
 
-The pipeline enables the creation of a series of executions with a contiguous index starting with parameter `first_id` in file parameters.
-
-
+## Pipeline with CPU management
 Pipeline description in "full mode", in 3 stage regarding CPU management
 
 ![holi pipeline](holi_pipeline_schema.jpg)
