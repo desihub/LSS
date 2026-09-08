@@ -364,7 +364,7 @@ def doran(ii):
         #print('making random mtl files for each tile')
         #ct.randomtiles_allmain_pix(ta,imin=ii,imax=ii+1,dirrt=dirrt+'randoms-1-'+str(ii))
         
-        ct.randomtiles_allmain_pix_2step(ta,ii=ran_out,dirrt=dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),logger=logger)
+        ct.randomtiles_allmain_pix_2step(ta,ii=ran_out,dirrt=dirrt,logger=logger)
 
 
     

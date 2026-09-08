@@ -5055,9 +5055,9 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         common.printlog('no tiles to process for '+str(ii),logger)
         return True
     common.printlog('making random target files '+str(ii)+' for '+str(len(tiles))+' tiles',logger)
-    rtall = read_targets_in_tiles(dirrt,tiles)
+    rtall = read_targets_in_tiles(dirrt+'randoms-'+str(args.ran_ind)+'-'+str(ii),tiles)
     common.printlog('read dr9 targets on all tiles',logger)
-    rt11 = read_targets_in_tiles(randir11,tiles)
+    rt11 = read_targets_in_tiles(randir11+'randoms-'+str(args.ran_ind)+'-'+str(ii),tiles)
     common.printlog('read dr11 targets on all tiles',logger)
     if len(rt11) > 0:
         sbricks = fitsio.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
