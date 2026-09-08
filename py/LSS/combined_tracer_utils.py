@@ -1,12 +1,6 @@
 import numpy as np
-import os
-import argparse
-from astropy.table import Table, vstack
+from astropy.table import Table
 import fitsio
-from pycorr import utils
-import logging
-from cosmoprimo.fiducial import DESI
-cosmo = DESI()
 
 def read_catalog(fn, comp_ntl, zmin, zmax, verbose=False, logger=None, kind='data'):
     '''
