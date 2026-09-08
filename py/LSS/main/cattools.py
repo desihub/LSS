@@ -5069,6 +5069,9 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/dvs_ro/cfs/cdirs/desi/survey/ca
         rtall = rtall[dr9in]
         dr11in = np.isin(rt11['BRICKID'],dr11_bricks)
         rt11 = rt11[dr11in]
+        #rt11.keep_columns('RA','DEC','TARGETID')
+        #rtall.keep_columns('RA','DEC','TARGETID')
+        rt11 = rt11[b for b in list.rtall.dtype.names]
         rtall = np.concatenate([rtall,rt11])
         del rt11
         
