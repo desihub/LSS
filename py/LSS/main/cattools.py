@@ -3308,7 +3308,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
             print(specf)
         fs = fitsio.read(specf)
         if mode1b == 2:
-            fs = np.concatenate([fs,fitsio.read(specf1b)])
+            logger.info('adding 1b spec info')
+            fs1b = fitsio.read(specf1b)
+            fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
+            fs = np.concatenate([fs,fs1b])
+            del fs1b
         #common.printlog('badfib type is '+str(type(badfib).__name__),logger)
         #common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
         if specver == 'daily':
