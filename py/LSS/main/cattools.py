@@ -2374,17 +2374,21 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftiles=None):
+def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=None,ftiles=None):
     import LSS.common_tools as common
     #import logging
     logger = logging.getLogger('LSSran')
-
-
-
+        
     zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     logger.info('about to load '+zf)
     in_cols = ['LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'PRIORITY']#, 'TILELOCID']
     dz = Table(fitsio.read(zf,columns=in_cols))
+    if mode1b == 2:
+        zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'1bwdupspec_zdone.fits'
+        logger.info('about to load '+zf)
+        in_cols = ['LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'PRIORITY']#, 'TILELOCID']
+        dz = vstack([dz,Table(fitsio.read(zf,columns=in_cols))])
+        
     logger.info(dz.dtype.names)
 
     cols = list(dz.dtype.names)
