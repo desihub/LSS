@@ -3218,10 +3218,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
     if mockz and mask_coll:
         collf = mask_coll
 
-    zfno1b = zf+'_zdone.fits'#+f1b+'_zdone.fits'
-    zf1b = zf+'_1b_zdone.fits'
     logger.info('getting input repeat targets data in mode1b '+str(mode1b))
     if '.fits' in zf:
+        zfno1b = zf.strip('.fits')+'_zdone.fits'#+f1b+'_zdone.fits'
+        zf1b = zf.strip('.fits')+'_1b_zdone.fits'
+
         if mode1b == 0 or mode1b == 2:
             dz = Table(fitsio.read(zfno1b))
         if mode1b == 1:
