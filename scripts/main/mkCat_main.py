@@ -68,6 +68,8 @@ parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA"
 parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
 parser.add_argument("--redotar", help="remake the target file for the particular type (needed if, e.g., the requested columns are changed)",default='n')
 parser.add_argument("--fulld", help="make the 'full' catalog containing info on everything physically reachable by a fiber",default='n')
+parser.add_argument("--mode1b", help="integer to encode what to do with 1b data, see code block for explanation of default behavior",default=None)
+
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
@@ -407,11 +409,19 @@ if mkfulld:
             tracer_ts = 'ELG'
         if type[:3] == 'BGS':
             tracer_ts = 'BGS_ANY'
-        f1b = ''
-        if type[:3] == 'LGE' and args.survey != 'main':
-            f1b = '_1b'
+        if args.mode1b is None:
+            mode1b = 0 #default is to not use 1b
+            if args.survey == 'main':
+                mode1b = 2 #will combine 1b with not 1b
+                if type == 'LGE':
+                    mode1b = 1 #only use 1b for LGE
+        else:
+            mode1b = int(args.mode1b)
+        #f1b = ''
+        #if type[:3] == 'LGE':
+        #    f1b = '_1b'
 
-        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup'+f1b+'_zdone.fits'
+        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup'#+f1b+'_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
             azf = emlin_fn
@@ -435,7 +445,7 @@ if mkfulld:
     if args.survey != 'main':
         maskcoll = True
     common.printlog('the emline file is '+emlin_fn)
-    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,emlin_fn=emlin_fn,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
+    ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,mode1b=mode1b,emlin_fn=emlin_fn,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
 
 
 if args.add_veto == 'y':

@@ -3,7 +3,11 @@ DR9 and DR11 data are now separated into DR9 and DR11 bricks. This will end up r
 The file /global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits contains the column DRVERSION, which is 0, 9, or 11. BRICKID with 9 or 11 define our respective areas. This can be used to separate both data and randoms into their regions. Testing is done in /global/cfs/cdirs/desi/survey/catalogs/main/LSS/DR11.ipynb
 
 For the random processing to work, need DR11 randoms split into healpix like done for DR9 in /global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/randoms-1-0/
+Adam created the files in dr11/5.4.0
 
-Adding the lrg mask info for DR11 failed, with /dvs_ro/cfs/cdirs/desi/survey/catalogs/brickmasks/dr11/lrg/v1.1/south/coadd/291/2914m515-lrgmask.fits.gz appearing to be corrupted.
+Need to add mask info from DR11 lrg files with readwrite_pixel_bitmaskDR11_ttype.py, setting input/output directories
 
-After success, the DR9 and DR11 will need to be added together. Check ordering, etc.
+srun -N 1 -C cpu -t 04:00:00 -q interactive python scripts/readwrite_pixel_bitmaskDR11_ttype.py --tracer lrg --input_fn randoms-1-0 --output_fn  randoms-1-0_dr11_lrgimask.fits --input_dir /dvs_ro/cfs/cdirs/desi/target/catalogs/dr11/5.1.0/randoms/resolve/ --output_dir /global/cfs/cdirs/desi/survey/catalogs/main/LSS/
+
+Adding the lrg mask info for DR11 works; TARGETID are different, so can just add the two imask and match to the TARGETID in the file to be masked
+
