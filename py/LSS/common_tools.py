@@ -1560,6 +1560,9 @@ def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targe
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
             str(rann)+tracer_mask+'imask.fits'
+        mask_fn11 = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
+            str(rann)+'_dr11_'+tracer_mask+'imask.fits'
+
     maskf = fitsio.read(mask_fn)
     if dr11:
         maskf11 = fitsio.read(mask_fn11)

@@ -3163,7 +3163,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
@@ -3178,6 +3178,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         argument.
     outf : :class:`str`, path to write output to
     ftiles : :class:`str`, path to file containing information on how and where each target
+    mode1b : :`int`, 0 (no 1b), 1 (1b only), or 2 (combine 1b with no 1b)
     azf : :class:`str`, path to where to find extra redshift info for ELG/QSO catalogs
     azfm : :class:`str`, whether to use per tile ('cumul') or healpix redshifts ('hp')
     desitarg : :class:`str`, column to use when selecting on targeting bit
@@ -3203,6 +3204,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         tscol = 'TSNR2_BGS'
         #CHANGE TO HANDLE MOCK PATHS PROPERLY
         collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
+        collf1b = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT1B.fits'
     elif tp[:3] == 'LGE':
         pd = 'dark1b'
         tscol = 'TSNR2_ELG'
@@ -3211,15 +3213,28 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         pd = 'dark'
         tscol = 'TSNR2_ELG'
         collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
-
+        collf1b = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK1B.fits'
     
     if mockz and mask_coll:
         collf = mask_coll
 
+    zfno1b = zf+'_zdone.fits'#+f1b+'_zdone.fits'
+    zf1b = zf+'_1b_zdone.fits'
     if '.fits' in zf:
-        dz = Table(fitsio.read(zf))
+        if mode1b == 0 or mode1b == 2:
+            dz = Table(fitsio.read(zfno1b))
+        if mode1b == 1:
+            dz = Table(fitsio.read(zf1b))
+        if mode1b == 2:
+            dz = vstack([dz,Table(fitsio.read(zf1b))])        
     if '.h5' in zf:
-        dz = common.read_hdf5_blosc(zf)
+        if mode1b == 0 or mode1b == 2:
+            dz = common.read_hdf5_blosc(zfno1b)
+        if mode1b == 1:
+            dz = common.read_hdf5_blosc(zf1b)  
+        if mode1b == 2:
+            dz = vstack([dz,common.read_hdf5_blosc(zf1b)])        
+
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         if logger is not None:
@@ -3236,6 +3251,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
     if mask_coll:
         coll = Table(fitsio.read(collf))
+        if mode1b == 2:
+            coll = vstack([coll,Table(fitsio.read(collf1b))])
         if logger is not None:
             logger.info('length before masking collisions '+str(len(dz)))
         else:
@@ -3253,8 +3270,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     #changing behavior back, load file that is spec info including zmtl
     specdir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specver+'/'
     prog = 'dark'
+    prog1b = 'dark1b'
     if tp[:3] == 'BGS':
         prog = 'bright'
+        prog1b = 'bright1b'
     if 'LGE' in tp:
         prog = 'dark1b'
 
@@ -3274,11 +3293,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+        specf1b = specdir+'datcomb_'+prog1b+'_spec_zdone.fits'
         if logger is not None:
             logger.info('reading from spec file '+specf)
         else:
             print(specf)
         fs = fitsio.read(specf)
+        if mode1b == 2:
+            fs = np.concatenate([fs,fitsio.read(specf1b)])
         #common.printlog('badfib type is '+str(type(badfib).__name__),logger)
         #common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
         if specver == 'daily':
