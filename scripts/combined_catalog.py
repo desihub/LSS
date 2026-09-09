@@ -117,7 +117,8 @@ def _make_rancat(rdmnb):
         rcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacr_i, rcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
         del nxfacr_i # no longer needed, free memory
         N_r[i] = np.sum(rcat[i]['WEIGHT'] * rcat[i]['WEIGHT_FKP']) # default x FKP-weighted count of randoms in the current catalog
-        rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / N_r[i] # upweight each tracer by its bias, and match the default x FKP-weighted count of randoms to the same count of data galaxies for each tracer
+        rcat[i]['WEIGHT'] *= bias_list[i] # upweight each tracer by its bias
+        rcat[i]['WEIGHT'] *= N_d[i] / N_r[i] / (N_d[0] / N_r[0]) # additional step for randoms: match the random-to-data ratio (default x FKP weighted) for each tracer to the first tracer. could just make the ratio 1 for simplicity, but it wouldn't match the description in Equation 4.14 of https://arxiv.org/pdf/2508.05467v2, and that also seems to create an issue with thecov Fourier-space covariances (https://github.com/cosmodesi/thecov) from our experience with BGS_BRIGHT+FAINT
         rcat[i]['TRACER_TYPE'] = i # mark the tracer type to e.g. easily divide the combined catalogs into pieces later if needed
 
     # Concatenate catalogs
