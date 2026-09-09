@@ -56,7 +56,8 @@ nrands = args.nrands  #Number of random catalogs
 dz = 0.01
 tracers = args.in_tracers
 ntracers = len(tracers)
-bias_list = [2.0, 1.2, 2.1] #LRG, ELG, QSO
+bias_dict = {'LRG': 2.0, 'ELG_LOPnotqso': 1.2, 'QSO': 2.1}
+bias_list = [bias_dict[tracer] for tracer in tracers]
 
 # Setup z-binning
 zmin, zmax = 0.4, 2.1
