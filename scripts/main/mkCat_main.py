@@ -379,7 +379,16 @@ if type[:3] == 'LRG' or notqso == 'notqso':
 if type[:3] == 'LGE':
     maxp = 3210
 if type[:3] == 'BGS':
+
     maxp = 2100
+if args.mode1b is None:
+	mode1b = 0 #default is to not use 1b
+	if args.survey == 'main':
+		mode1b = 2 #will combine 1b with not 1b
+		if type == 'LGE':
+			mode1b = 1 #only use 1b for LGE
+else:
+	mode1b = int(args.mode1b)
 
        
 if mkfulld:
@@ -409,14 +418,6 @@ if mkfulld:
             tracer_ts = 'ELG'
         if type[:3] == 'BGS':
             tracer_ts = 'BGS_ANY'
-        if args.mode1b is None:
-            mode1b = 0 #default is to not use 1b
-            if args.survey == 'main':
-                mode1b = 2 #will combine 1b with not 1b
-                if type == 'LGE':
-                    mode1b = 1 #only use 1b for LGE
-        else:
-            mode1b = int(args.mode1b)
         #f1b = ''
         #if type[:3] == 'LGE':
         #    f1b = '_1b'
@@ -462,6 +463,8 @@ if args.add_veto == 'y':
     common.add_veto_col(fin,type,ran=False,tracer_mask=mask_type,dr11=dr11,redo=True,tarver=tarver)#,rann=0
     for rn in range(rm,rx):
         fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
+        if mode1b == 2:
+            fin = dirout+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
         common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver,dr11=dr11)
         
 if args.join_etar == 'y':

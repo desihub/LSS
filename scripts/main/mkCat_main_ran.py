@@ -70,6 +70,7 @@ parser.add_argument("--counttiles", help="get NTILE, etc. counts",default='n')
 
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--fullr_mode", help="if prog, noveto files are only split dark/bright",default='prog')
+parser.add_argument("--mode1b", help="integer to encode what to do with 1b tiles",choices=[0,1,2],default=0,type=int)
 parser.add_argument("--mkdupranmasked",help="make duplicate randoms but with masks applied, to be used for randoms",default='n')
 parser.add_argument("--hpmapcut", help="string indicating whether healpix map cut gets applied",default='_HPmapcut')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
@@ -395,8 +396,10 @@ def doran(ii):
             maxp = 2100
         if args.fullr_mode == 'prog':
             outf = dirout+pdir+'_'+str(ii)+'_full_noveto.ran.fits'
+            if args.mode1b == 2:
+                outf = dirout+pdir+'p1b_'+str(ii)+'_full_noveto.ran.fits'
             logger.info('about to make full ran '+outf)
-            ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir)
+            ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir,mode1b=args.mode1b)
         
         else:
             outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
