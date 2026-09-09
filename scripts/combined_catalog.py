@@ -10,7 +10,7 @@ cosmo = DESI()
 
 from multiprocessing import Pool
 
-logname = 'mkCat'
+logname = 'combined_catalog'
 logger = logging.getLogger(logname)
 logger.setLevel(logging.INFO)
 
@@ -31,9 +31,9 @@ logger.addHandler(ch)
 parser = argparse.ArgumentParser()
 parser.add_argument('--base_dir', help='directory to load from')
 parser.add_argument('--save_dir', help='directory to write combined catalogs to')
-parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'])
-parser.add_argument('--out_tracer', help='name of the tracer in output files', default='LRG+ELG')
-parser.add_argument('--cap', help='NGC or SGC')
+parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'], choices=['LRG', 'ELG_LOPnotqso', 'QSO'])
+parser.add_argument('--out_tracer', help='name of the tracer in output files', default='LRG+ELG_LOPnotqso')
+parser.add_argument('--cap', help='NGC or SGC', choices=['NGC', 'SGC'])
 parser.add_argument('--nrands', help='number of random files to process',default=18,type=int)
 parser.add_argument('--verbose', help='True of False, prints out progress steps', type=bool, default=False)
 args = parser.parse_args()
