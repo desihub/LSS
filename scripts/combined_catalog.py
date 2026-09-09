@@ -27,11 +27,12 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
+bias_dict = {'LRG': 2.0, 'ELG_LOPnotqso': 1.2, 'QSO': 2.1}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--base_dir', help='directory to load from')
 parser.add_argument('--save_dir', help='directory to write combined catalogs to')
-parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'], choices=['LRG', 'ELG_LOPnotqso', 'QSO'])
+parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'], choices=bias_dict.keys())
 parser.add_argument('--out_tracer', help='name of the tracer in output files', default='LRG+ELG_LOPnotqso')
 parser.add_argument('--cap', help='NGC or SGC', choices=['NGC', 'SGC'])
 parser.add_argument('--nrands', help='number of random files to process',default=18,type=int)
@@ -56,7 +57,6 @@ nrands = args.nrands  #Number of random catalogs
 dz = 0.01
 tracers = args.in_tracers
 ntracers = len(tracers)
-bias_dict = {'LRG': 2.0, 'ELG_LOPnotqso': 1.2, 'QSO': 2.1}
 bias_list = [bias_dict[tracer] for tracer in tracers]
 
 # Setup z-binning
