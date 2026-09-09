@@ -3227,7 +3227,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
         if mode1b == 1:
             dz = Table(fitsio.read(zf1b))
         if mode1b == 2:
-            dz = vstack([dz,Table(fitsio.read(zf1b))])        
+            dz1b = Table(fitsio.read(zf1b))
+            logger.info('read 1b and non 1b')
+            dz = vstack([dz,dz1b])        
+            del dz1b
     if '.h5' in zf:
         if mode1b == 0 or mode1b == 2:
             dz = common.read_hdf5_blosc(zfno1b)
@@ -3254,7 +3257,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
     if mask_coll:
         coll = Table(fitsio.read(collf))
         if mode1b == 2:
-            coll = vstack([coll,Table(fitsio.read(collf1b))])
+            coll1b = Table(fitsio.read(collf1b))
+            coll = vstack([coll,coll1b])
+            del coll1b
         if logger is not None:
             logger.info('length before masking collisions '+str(len(dz)))
         else:
