@@ -421,7 +421,7 @@ if mkfulld:
         #if type[:3] == 'LGE':
         #    f1b = '_1b'
 
-        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup'#+f1b+'_zdone.fits'
+        dz = ldirspec+'datcomb_'+tracer_ts+'_tarspecwdup.fits'#leaving .fits to encode whether .fits or h5;+f1b+'_zdone.fits'
         tlf = None
         if type[:3] == 'ELG':
             azf = emlin_fn
