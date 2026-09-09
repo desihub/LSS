@@ -382,13 +382,13 @@ if type[:3] == 'BGS':
 
     maxp = 2100
 if args.mode1b is None:
-	mode1b = 0 #default is to not use 1b
-	if args.survey == 'main':
-		mode1b = 2 #will combine 1b with not 1b
-		if type == 'LGE':
-			mode1b = 1 #only use 1b for LGE
+    mode1b = 0 #default is to not use 1b
+    if args.survey == 'main':
+        mode1b = 2 #will combine 1b with not 1b
+        if type == 'LGE':
+            mode1b = 1 #only use 1b for LGE
 else:
-	mode1b = int(args.mode1b)
+    mode1b = int(args.mode1b)
 
        
 if mkfulld:
@@ -930,10 +930,10 @@ if args.prepsysnet == 'y' or args.regressis == 'y' or args.imsys == 'y' or args.
 #del ran
 
 #for i in range(1,4):
-#	ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_'+str(i)+'_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
-#	ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
-#	common.printlog('read random, specified path, in loop '+str(i),logger)
-#	del ran
+#   ranf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/LSS/loa-v1/LSScats/v2/QSO_'+str(i)+'_full_HPmapcut.ran.fits'.replace('global','dvs_ro')
+#   ran = fitsio.read(ranf, columns=['RA', 'DEC','PHOTSYS'])
+#   common.printlog('read random, specified path, in loop '+str(i),logger)
+#   del ran
 
 if args.imsys == 'y':
     common.printlog('doing linear regression',logger)
@@ -1386,7 +1386,7 @@ inds = np.arange(rm,rx)
 
 out_name = dirout +args.extra_clus_dir+ tracer_clus#type + notqso
 if args.zcmb == 'y':
-	out_name += '_zcmb'
+    out_name += '_zcmb'
 
 
 if mkclusran:
