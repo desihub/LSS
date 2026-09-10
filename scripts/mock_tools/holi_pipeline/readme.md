@@ -110,6 +110,12 @@ At the top of `sbatch_holi_pipeline.sh`, modify these 3 parameters
 
 will process 80 simulations/seeds with 240 CPUs for BRICKMASK.
 
+>NOTE
+>
+> You can also add your mail to know the beginning and the end of pipeline with option :
+>
+>#SBATCH --mail-user=<user@mail.xx>
+
 # Launch holi pipeline
 
 Init environment to launch the pipeline , in holi_pipeline directory
@@ -168,3 +174,20 @@ then launch Holi pipeline
 source init_env_holi.sh
 run_holi_pipeline.sh holi_params.toml 
 ```
+
+# Results
+
+## Traceability
+
+At the root of the log directory defined in the parameter file, you can retrieve a copy of the parameter file as well as the version of sbatch_holi_pipeline.sh that was used.
+
+
+## Organization of log files
+
+You can view the Slurm output for each rank of the job array as well as the log for each seed in the logs directory; the BRICKMASK step has its own log file for each job array rank. The file naming convention is `seed_xxx_tyy.log`, where `xxx` corresponds to the initial seed number for the job array rank and `yy` to the task number from the `srun` command; this is therefore the log file corresponding to seed number `xxx + yy`.
+
+## Tools to explore results
+
+TODO
+
+For this moment you can search word `error` with a grep oin log file. If an error occurs , you will find a task error message (with its task number) in the log file SLURM : `holi_<JOBID>.log`
