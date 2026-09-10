@@ -8,6 +8,9 @@ The second level is handled by the `srun -n xx script.sh` command, which execute
 
 During the development of the pipeline, it became apparent that using nested `srun` commands complicated the exclusive use of CPU resources; consequently, the pipeline was written to use only a single level of `srun`.
 
+By default, if one of the srun tasks fails, the others are stopped; since the simulation calculations are independent, this srun behavior must be modified using the option `--kill-on-bad-exit=0 `.
+
+
 ## Namming file and good practice
 
 It is best practice for a data processing script not to hardcode input and output filenames. Most steps in the Holi pipeline followed this principle prior to this update; to ensure consistency across all scripts, I rewrote the interfaces of the original scripts to use the same option names, aligning them with this parameter naming convention.
