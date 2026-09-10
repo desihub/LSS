@@ -60,6 +60,10 @@ srun ...
 for the seed where `xx+yy=zz`; I haven't yet found a way to get them named `seed_zz.log`.
 
 ## Debug method
+
+### Interactive session
+Several hours can elapse between submitting the pipeline with `sbatch` and its actual start; using an interactive session for debugging is recommended.
+
 Use interactive session with --cpus-per-task=1, like:
 
 ```bash
@@ -67,6 +71,11 @@ salloc -N 1 -C cpu --ntasks=10 --cpus-per-task=1 -t 4:00:00 --qos interactive --
 ```
 
 You can't used directly script `run_holi_piepeline.sh` but you can launch  `sbatch_holi_pipeline.sh <file.toml> ` and the script will execute the first rank of array job, so here 10 seeds will processed.
+
+## Reduce number of galaxies in catalog
+
+Step 1 takes into account the `max_gal` parameter—set in the parameter file—to limit the number of galaxies. This speeds up the pipeline up to step 7; however, I do not think it makes sense for step 8 (FA). The minimum value to avoid significantly disrupting processing is around 5,000.
+
 
 ## Tests
 
