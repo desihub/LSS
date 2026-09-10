@@ -179,15 +179,15 @@ run_holi_pipeline.sh holi_params.toml
 
 ## Traceability
 
-At the root of the log directory defined in the parameter file, you can retrieve a copy of the parameter file as well as the version of sbatch_holi_pipeline.sh that was used.
+At the root of the log directory defined in the parameter file, you can find a copy of the parameter file and the version of `sbatch_holi_pipeline.sh` that was used.
 
 
 ## Organization of log files
 
-You can view the Slurm output for each rank of the job array as well as the log for each seed in the logs directory; the BRICKMASK step has its own log file for each job array rank. The file naming convention is `seed_xxx_tyy.log`, where `xxx` corresponds to the initial seed number for the job array rank and `yy` to the task number from the `srun` command; this is therefore the log file corresponding to seed number `xxx + yy`.
+The `logs` directory contains the Slurm output for each job-array rank and a log file for each seed. The BRICKMASK step has a separate log file for each job-array rank. Log files are named `seed_xxx_tyy.log`, where `xxx` is the first seed number assigned to the job-array rank and `yy` is the task number from the `srun` command. The file therefore corresponds to seed number `xxx + yy`.
 
 ## Tools to explore results
 
 TODO
 
-For this moment you can search word `error` with a grep oin log file. If an error occurs , you will find a task error message (with its task number) in the log file SLURM : `holi_<JOBID>.log`
+For now, you can search the log files for the word `error` using `grep`. If an error occurs, the Slurm log file, `holi_<JOBID>.log`, will contain an error message that identifies the affected task number.
