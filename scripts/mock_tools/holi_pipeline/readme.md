@@ -191,3 +191,7 @@ The `logs` directory contains the Slurm output for each job-array rank and a log
 TODO
 
 For now, you can search the log files for the word `error` using `grep`. If an error occurs, the Slurm log file, `holi_<JOBID>.log`, will contain an error message that identifies the affected task number.
+
+# Holi pipeline for developers
+
+see [doc_holi_dev](doc_holi_dev.md)
