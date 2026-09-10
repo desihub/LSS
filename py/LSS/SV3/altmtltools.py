@@ -2486,6 +2486,13 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
     #else:
     FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+    if not os.path.isfile(FAMapName):
+
+        log.info('FAMapName = {0} dont exist, running fba again'.format(FAMapName))
+        OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon)
+        assert(len(OrigFAs))
+        A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = None, survey = survey , obscon = obscon, redoFA = False)
+
     with open(FAMapName,'rb') as fl:
         (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
 
