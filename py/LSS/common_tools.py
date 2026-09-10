@@ -629,6 +629,25 @@ def splitGC(input_array):
     return sel_ngc
 
 
+def select_DR11(input_array, ra_col='RA', dec_col='DEC'):
+    '''
+    input_array with RA, DEC given by ra_col,dec_col
+    return boolean array for whether in DR11 area or not as defined by desitarget  
+    '''
+    
+    #first, get brickids for DR11
+    sbricks = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
+    sel11 = sbricks['DRVERSION'] == 11
+    dr11_bricks = sbricks['BRICKID'][sel11]
+    if 'BRICKID' in list(input_array.dtype.names):
+        dr11in = np.isin(input_array['BRICKID'],dr11_bricks) 
+    else:
+        from desiutil import brick
+        tmp = brick.Bricks(bricksize=0.25)
+        brickids = tmp.brickid(input_array[ra_col], input_array[dec_col])
+        dr11in = np.isin(brickids,dr11_bricks) 
+    return dr11in
+
 def select_regressis_DES(input_array, ra_col='RA', dec_col='DEC'):
     '''
     input_array with RA, DEC given by ra_col,dec_col
