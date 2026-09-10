@@ -3,13 +3,13 @@
 
 set -e
 
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type LGE --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type BGS_ANY --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type ELG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type ELG_LOP --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily --notqso y
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/main/mkCat_main.py --type LGE --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec daily 
 
