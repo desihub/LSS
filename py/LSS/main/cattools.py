@@ -3489,6 +3489,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
         ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX']
         dailydir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
         common.printlog('adding info from spec file '+dailydir+'datcomb_'+prog+'_spec_zdone.fits',logger)
+        common.printlog('mode1b is '+str(mode1b),logger)
         prog = 'dark'
         if tp[:3] == 'BGS':
             prog = 'bright'
@@ -3496,7 +3497,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
             prog = 'dark1b'
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
         if mode1b == 2:
-            common.printlog('adding 1b spec info')
+            common.printlog('adding 1b spec info',logger)
             fs1b = fitsio.read(specf1b,columns=spec_cols)
             fs1b = fs1b[[b for b in list(specdat.dtype.names)]] #need same columns in same order before concatenating
             specdat = np.concatenate([specdat,fs1b])
