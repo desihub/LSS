@@ -10,6 +10,7 @@ During the development of the pipeline, it became apparent that using nested `sr
 
 By default, if one of the srun tasks fails, the others are stopped; since the simulation calculations are independent, this srun behavior must be modified using the option `--kill-on-bad-exit=0 `.
 
+See file [sbatch_holi_pipeline.sh](./sbatch_holi_pipeline.sh)
 
 ## Namming file and good practice
 
@@ -72,7 +73,7 @@ salloc -N 1 -C cpu --ntasks=10 --cpus-per-task=1 -t 4:00:00 --qos interactive --
 
 You can't used directly script `run_holi_piepeline.sh` but you can launch  `sbatch_holi_pipeline.sh <file.toml> ` and the script will execute the first rank of array job, so here 10 seeds will processed.
 
-## Reduce number of galaxies in catalog
+### Reduce number of galaxies in catalog
 
 Step 1 takes into account the `max_gal` parameter—set in the parameter file—to limit the number of galaxies. This speeds up the pipeline up to step 7; however, I do not think it makes sense for step 8 (FA). The minimum value to avoid significantly disrupting processing is around 5,000.
 
