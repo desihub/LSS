@@ -3496,12 +3496,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
             prog = 'dark1b'
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
         if mode1b == 2:
-            logger.info('adding 1b spec info')
+            common.printlog('adding 1b spec info')
             fs1b = fitsio.read(specf1b,columns=spec_cols)
             fs1b = fs1b[[b for b in list(specdat.dtype.names)]] #need same columns in same order before concatenating
             specdat = np.concatenate([specdat,fs1b])
             del fs1b
-        
+        else:
+            common.printlog('did not add 1b because mode1b is '+str(mode1b),logger)
         dz = join(dz,specdat,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
         logger.info('joined specdat')
         del specdat
