@@ -3237,6 +3237,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
             dz = vstack([dz,dz1b])        
             del dz1b
     if '.h5' in zf:
+        zfno1b = zf
         if mode1b == 0 or mode1b == 2:
             dz = common.read_hdf5_blosc(zfno1b)
         if mode1b == 1:
