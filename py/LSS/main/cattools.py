@@ -3197,7 +3197,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
     Notes
     -----
     """
-
+    logger.info('using updated function')
     if emlin_fn is None:
         logger.info('will not be adding emline info, because emlin_fn is None')
     else:
