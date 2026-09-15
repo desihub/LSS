@@ -142,7 +142,7 @@ def _make_rancat(rdmnb):
             if len(current_targetids) == 0: continue # nothing to be done if this strict intersection is empty
 
             if len(included_tracers) == 1:
-                # if only one tracer is included, just keep the rows with the unique TARGETIDs in that tracer's catalog
+                # when only one tracer is included, just keep the rows with the TARGETIDs unique to that tracer's catalog, and those are identified as the current_targetids
                 mask = np.isin(rcat[included_tracers[0]]['TARGETID'], current_targetids)
                 rcat_unique.append(rcat[included_tracers[0]][mask])
                 del mask # no longer needed, free memory
@@ -157,8 +157,8 @@ def _make_rancat(rdmnb):
                 if len(targetids_sel) == 0: continue # check just in case some of the splits are empty for very small intersections, though that should be rare. this presents a bit of a problem for the tracer sky density, but hopefully only could happen for very small-area intersections
                 mask = np.isin(rcat[i]['TARGETID'], targetids_sel)
                 rcat_unique.append(rcat[i][mask])
-                rcat_unique[-1]['WEIGHT'] *= len(current_targetids) / len(targetids_sel) # upweight the selected randoms to account for the fact that we are keeping only targetids_sel out of current_targetids for this tracer. in-place multiplication is fine, as this set of random should not be encountered again. NB: this simple number-based upscaling could cause additional fluctuations in weighted random density in redshift and/or on sky; using the weight ratio may be better in that respect, but may have an issue of overly fine tuning for small intersections (and we also may need to be more careful about multiplying the weights in place)
                 del mask # no longer needed, free memory
+                rcat_unique[-1]['WEIGHT'] *= len(current_targetids) / len(targetids_sel) # upweight the selected randoms to account for the fact that we are keeping only targetids_sel out of current_targetids for this tracer. in-place multiplication is fine, as this set of random should not be encountered again. NB: this simple number-based upscaling could cause additional fluctuations in weighted random density in redshift and/or on sky; using the weight ratio may be better in that respect, but may have an issue of overly fine tuning for small intersections (and we also may need to be more careful about multiplying the weights in place)
             del current_targetids, targetids_sel_all # no longer needed, free memory
         del rcat # no longer needed, free memory
         rcat_concat = vstack(rcat_unique) # concatenate the catalog pieces with unique TARGETIDs. the order may be a bit strange, but that should not matter. for unscrambling the catalogs, we have the TRACER_TYPE column
