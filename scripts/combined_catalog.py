@@ -29,7 +29,7 @@ logger.addHandler(ch)
 
 bias_dict = {'LRG': 2.0, 'ELG_LOPnotqso': 1.2, 'QSO': 2.1}
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--base_dir', help='directory to load from')
 parser.add_argument('--save_dir', help='directory to write combined catalogs to')
 parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'], choices=bias_dict.keys())
