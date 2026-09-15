@@ -222,7 +222,7 @@ badfib = mainp.badfib
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
 if args.mode1b == 2:
-wd &= ( (mt['FAPRGRM'] == pdir ) | (mt['FAPRGRM'] == pdir+'1b' ))
+    wd &= ( (mt['FAPRGRM'] == pdir ) | (mt['FAPRGRM'] == pdir+'1b' ))
 else:
     wd &= mt['FAPRGRM'] == pdir
 if args.survey == 'Y1':
@@ -249,12 +249,12 @@ specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
 specf = fitsio.read(specfo.replace('global','dvs_ro'))
 if args.mode1b == 2:
-	logger.info('adding 1b spec info')
-	specfo = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
-	fs1b = fitsio.read(specf1b)
-	fs1b = fs1b[[b for b in list(specf.dtype.names)]] #need same columns in same order before concatenating
-	specf = np.concatenate([specf,fs1b])
-	logger.info('added 1b spec info')
+    logger.info('adding 1b spec info')
+    specfo = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
+    fs1b = fitsio.read(specf1b)
+    fs1b = fs1b[[b for b in list(specf.dtype.names)]] #need same columns in same order before concatenating
+    specf = np.concatenate([specf,fs1b])
+    logger.info('added 1b spec info')
 specf = Table(specf)
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
