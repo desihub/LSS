@@ -2374,7 +2374,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=None,ftiles=None):
+def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=None,ftiles=None,dr11=False):
     import LSS.common_tools as common
     #import logging
     logger = logging.getLogger('LSSran')
@@ -2394,6 +2394,7 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=
     cols = list(dz.dtype.names)
  
 
+    
     dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
 
     wg = np.isin(dz['TILELOCID'],gtl)
@@ -2439,10 +2440,20 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=
     if len(imbits) > 0:
         logger.info(str(rann)+' joining with original randoms to get mask properties')
         dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        dir11='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr11/5.1.0/randoms/resolve/'
         tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
         #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
         #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
         tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+        if dr11:
+            logger.info('adding in DR11 target info and cutting to dr9/dr11')
+            sel11 = common.select_DR11(tarf)
+            tarf = tarf[~sel11]
+            tarf11 = fitsio.read(dir11+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+            sel11 = common.select_DR11(tarf11)
+            tarf11 = tarf11[sel11]
+            tarf = np.concatenate([tarf,tarf11])
+            del tarf11
         dz = join(dz,tarf,keys=['TARGETID'])
         logger.info(str(rann)+' completed join with original randoms to get mask properties')
         del tarf

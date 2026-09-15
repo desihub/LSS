@@ -69,6 +69,7 @@ parser.add_argument("--combwspec", help="combine the random potential assignment
 parser.add_argument("--counttiles", help="get NTILE, etc. counts",default='n')
 
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--dr11",help="pass this flag if including dr11 area", action='store_true')
 parser.add_argument("--fullr_mode", help="if prog, noveto files are only split dark/bright",default='prog')
 parser.add_argument("--mode1b", help="integer to encode what to do with 1b tiles",choices=[0,1,2],default=0,type=int)
 parser.add_argument("--mkdupranmasked",help="make duplicate randoms but with masks applied, to be used for randoms",default='n')
@@ -220,7 +221,10 @@ badfib = mainp.badfib
 
 wd = mt['SURVEY'] == 'main'
 wd &= mt['ZDONE'] == 'true'
-wd &= mt['FAPRGRM'] == pdir
+if args.mode1b == 2:
+wd &= ( (mt['FAPRGRM'] == pdir ) | (mt['FAPRGRM'] == pdir+'1b' ))
+else:
+    wd &= mt['FAPRGRM'] == pdir
 if args.survey == 'Y1':
     wd &=mt['ZDATE'] < 20220900
 
@@ -243,7 +247,15 @@ ta['DEC'] =tiles[selt]['DEC']
 #if mkfullr or combr:
 specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
 logger.info('loading specf file '+specfo)
-specf = Table(fitsio.read(specfo.replace('global','dvs_ro')))
+specf = fitsio.read(specfo.replace('global','dvs_ro'))
+if args.mode1b == 2:
+	logger.info('adding 1b spec info')
+	specfo = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
+	fs1b = fitsio.read(specf1b)
+	fs1b = fs1b[[b for b in list(specf.dtype.names)]] #need same columns in same order before concatenating
+	specf = np.concatenate([specf,fs1b])
+	logger.info('added 1b spec info')
+specf = Table(specf)
 sel = np.isin(specf['TILEID'],mtld['TILEID'])
 specf = specf[sel]
 specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
@@ -399,7 +411,7 @@ def doran(ii):
             if args.mode1b == 2:
                 outf = dirout+pdir+'p1b_'+str(ii)+'_full_noveto.ran.fits'
             logger.info('about to make full ran '+outf)
-            ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir,mode1b=args.mode1b)
+            ct.mkfullran_prog(gtl,ldirspec,ii,imbits,outf,pdir,mode1b=args.mode1b,dr11=args.dr11)
         
         else:
             outf = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
