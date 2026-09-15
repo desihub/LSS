@@ -250,7 +250,7 @@ logger.info('loading specf file '+specfo)
 specf = fitsio.read(specfo.replace('global','dvs_ro'))
 if args.mode1b == 2:
     logger.info('adding 1b spec info')
-    specfo = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
+    specf1b = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
     fs1b = fitsio.read(specf1b)
     fs1b = fs1b[[b for b in list(specf.dtype.names)]] #need same columns in same order before concatenating
     specf = np.concatenate([specf,fs1b])

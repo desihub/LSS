@@ -2444,16 +2444,21 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=
         tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
         #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
         #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
-        tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+        
         if dr11:
+            tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol+['RA','DEC'])
             logger.info('adding in DR11 target info and cutting to dr9/dr11')
             sel11 = common.select_DR11(tarf)
             tarf = tarf[~sel11]
-            tarf11 = fitsio.read(dir11+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+            tarf11 = fitsio.read(dir11+'/randoms-1-'+str(rann)+'.fits',columns=tcol+['RA','DEC'])
             sel11 = common.select_DR11(tarf11)
             tarf11 = tarf11[sel11]
             tarf = np.concatenate([tarf,tarf11])
+            tarf = Table(tarf)
+            tarf.remove_columns(['RA','DEC'])
             del tarf11
+        else:
+            tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
         dz = join(dz,tarf,keys=['TARGETID'])
         logger.info(str(rann)+' completed join with original randoms to get mask properties')
         del tarf
