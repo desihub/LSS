@@ -130,6 +130,8 @@ def _make_rancat(rdmnb):
         for tracer_bit_encoding in range(1, 2**ntracers): # go over all possible tracer intersections, bits encoding which tracers are included/excluded. skip the 0 case (no tracers) since that would be empty for sure
             # get the indices of the tracers included in this intersection; at least one is included since we skip the tracer_bit_encoding=0 case
             included_tracers = np.array([i for i in range(ntracers) if (tracer_bit_encoding & (1 << i)) != 0])
+            if len(included_tracers) == 1: continue # when only one tracer is included, actually fine to do nothing: the remaining logic would just keep the TARGETIDs unique to that tracer catalog with no rescaling of the weights
+
             # get the indices of the tracers excluded from this intersection
             excluded_tracers = np.array([i for i in range(ntracers) if (tracer_bit_encoding & (1 << i)) == 0])
 
@@ -139,8 +141,6 @@ def _make_rancat(rdmnb):
             for i in excluded_tracers: current_targetids = np.setdiff1d(current_targetids, rcat[i]['TARGETID'], assume_unique=True) # TARGETIDs should be unique within each tracer catalog, so assume_unique=True should be safe and may be faster
 
             if len(current_targetids) == 0: continue # nothing to be done if this strict intersection is empty
-
-            if len(included_tracers) == 1: continue # when only one tracer is included, just keep the rows with the TARGETIDs unique to that tracer's catalog, actually fine to do nothing
 
             # case of multiple tracers included in the intersection, need to select which tracer catalog to draw random from for each of current_targetids
             n_random_goals = len(current_targetids) * N_d_raw[included_tracers] / N_d_raw[included_tracers].sum() # goal number of randoms to draw is proportional to the number of data in each tracer catalog (before consequent rounding to integer). this is a simple and reasonable choice. an alternative could be to use the number of data in the sky area corresponding to the intersection, but we don't seem to have a good way to compute that, and it may not be worth the effort anyway
@@ -152,6 +152,8 @@ def _make_rancat(rdmnb):
                 if len(targetids_sel) == 0: continue # check just in case some of the splits are empty for very small intersections, though that should be rare. this presents a bit of a problem for the tracer sky density, but hopefully only could happen for very small-area intersections
                 rcat[i]['WEIGHT'][np.isin(rcat[i]['TARGETID'], targetids_sel)] *= len(current_targetids) / len(targetids_sel) # upweight the selected randoms to account for the fact that we are keeping only targetids_sel out of current_targetids for this tracer. in-place multiplication is fine, as this set of random should not be encountered again. NB: this simple number-based upscaling could cause additional fluctuations in weighted random density in redshift and/or on sky; using the weight ratio may be better in that respect, but may have an issue of overly fine tuning for small intersections (and we also may need to be more careful about multiplying the weights in place)
             del current_targetids, targetids_sel_all # no longer needed, free memory
+        # re-apply the global rescaling to match the random-to-data ratio (default x FKP weighted) for each tracer to the first tracer's original ratio. doesn't exactly help with the fluctuations in weighted random density in redshift and/or on sky, however
+        for i in range(ntracers): rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / np.sum(rcat[i]['WEIGHT']) / (N_d[0] / N_r[0]) # N_d and N_r did not include the bias in the weights
     
     rcat_concat = vstack(rcat) # simply concatenate catalogs
     del rcat # no longer needed, free memory
