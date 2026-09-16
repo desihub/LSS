@@ -69,7 +69,7 @@ input_data_group.add_argument("--use_map_veto", help="string to include in full 
 #input_data_group.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 completeness_group = parser.add_argument_group('completeness mode', description='the method for completeness weight computations')
-completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
+completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n', 'comptile'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
 
 catalog_steps_group = parser.add_argument_group('catalog creation steps', description='options for which steps to run (set all to y to get NGC/SGC clustering catalogs output). for finer selections, keep in mind that next steps often depend on previous steps')
 catalog_steps_group.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
@@ -290,22 +290,24 @@ if args.mkfulldat == 'y':
 weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
+elif args.compmd == 'comptile':
+    weightileloc = None
 if mkclusdat:
     common.printlog('about to start mkclusdat',logger)
     ct.mkclusdat(args.outdir+'/'+tracer_out,weighttileloc=weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto,logger=logger)
 
 #make clustering catalogs for randoms
-nzcompmd = 'ran'
-if args.compmd == 'altmtl':
-    nzcompmd = args.compmd
+rancompmd = 'ran'
+if args.compmd in ('altmtl', 'comptile'):
+    rancompmd = args.compmd
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA'] #columns to make sure are in the randoms
 inds = np.arange(rm,rx)
 if mkclusran:
-    ranin = dirin + args.input_tracer +'_'
+    ranin = dirin + args.input_tracer + '_'
 
     clus_arrays = [fitsio.read(args.outdir+'/'+tracer_out+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,args.outdir+'/'+tracer_out+'_',ii,rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,tp=args.input_tracer)
+        ct.mkclusran(ranin,args.outdir+'/'+tracer_out+'_',ii,rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=rancompmd,logger=logger,tp=args.input_tracer)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
@@ -443,6 +445,12 @@ def get_ntile_info_from_full(full_orig_fname, tp, reg, ismock=False):
     return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
  
 if args.nz == 'y':
+    nzcompmd = 'ran'
+    if args.compmd == 'altmtl':
+        nzcompmd = args.compmd
+    wtmd = 'clus'
+    if args.compmd == 'comptile':
+        wtmd = 'comptile'
     for reg in regions:#allreg:
         #file names
         fb = dirout+'/'+tracer_out+'_'+reg
@@ -450,7 +458,7 @@ if args.nz == 'y':
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
         #make n(z)
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd)
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd,wtmd=wtmd,logger=logger)
         #do steps 2-5 above
         extra_dir = 'nonKP'
         if args.compmd == 'altmtl':
@@ -461,6 +469,7 @@ if args.nz == 'y':
         else: # if the clustering catalog does not exist, use the full catalog to get the NTILE info (particularly for DR3 BGS)
             comp_ntl, weight_ntl = get_ntile_info_from_full(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits', tp=args.input_tracer, reg=reg)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
+        # for args.compmd = 'comptile', the mean completeness weight should end up being 1, which is fine. later, we might want to disable pieces of computation that are trivial in this case
 
 # determine linear weights for imaging systematics
 # this is new for doing after the fact based on clustering catalogs

@@ -4269,6 +4269,8 @@ def mkclusdat(fl,redo_fracz=False,NN=False,weighttileloc=True,zmask=False,correc
             ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
 
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
+    elif weighttileloc is None:
+        ff['WEIGHT_COMP'] = np.ones(len(ff))
     else:
         print('using PROB_OBS for WEIGHT_COMP')
         ff['WEIGHT_COMP'] = 129/(1+128*ff['PROB_OBS'])
@@ -4575,7 +4577,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             for col in rcols:
                 ffr[col][rsel] = dshuf[col]
         if compmd == 'ran':
-            ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES'] 
+            ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES']
+        elif compmd == 'comptile':
+            ffr['WEIGHT'] *= ffr['COMP_TILE'] # as long as it exists already
         rdl = []
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
@@ -4684,6 +4688,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
                 ffcn[col] = dshuf[col]
             if compmd == 'ran':
                 ffcn['WEIGHT'] *= ffcn['FRAC_TLOBS_TILES']
+            elif compmd == 'comptile':
+                ffcn['WEIGHT'] *= ffcn['COMP_TILE']
 
         for col in rcols:
             kc.append(col)

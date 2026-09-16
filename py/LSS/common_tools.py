@@ -918,6 +918,9 @@ def mknz(fcd, fcr, fout, bs=0.01, zmin=0.01, zmax=1.6, randens=2500., compmd='ra
     if wtmd == 'clus':
         # this is what should be used for clustering catalogs because 'WEIGHT' gets renormalized
         wts = df['WEIGHT_COMP']*df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']
+    elif wtmd == 'comptile':
+        # need to recompute the completeness weight as 1/FRACZ_TILELOCID
+        wts = df['WEIGHT_SYS']*df['WEIGHT_ZFAIL']/df['FRACZ_TILELOCID']
     else: wts = None # no weights, if relevant at all
     zhist = np.histogram(df['Z'], bins=nbin, range=(zmin, zmax), weights=wts)
     headers.append('#zmid zlow zhigh n(z) Nbin Vol_bin')
