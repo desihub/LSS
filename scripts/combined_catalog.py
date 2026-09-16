@@ -126,8 +126,7 @@ def _make_rancat(rdmnb):
         rcat[i]['TRACER_TYPE'] = i # mark the tracer type to e.g. easily divide the combined catalogs into pieces later if needed
 
     if args.rand_unique_ids:
-        np.random.seed(rdmnb) # for reproducibility, but different for each random catalog
-        rcat_unique = [] # catalog pieces with unique TARGETIDs will be collected here to then concatenate into the final random catalog
+        np.random.seed(rdmnb) # for reproducibility of subselection, but different for each random catalog
         for tracer_bit_encoding in range(1, 2**ntracers): # go over all possible tracer intersections, bits encoding which tracers are included/excluded. skip the 0 case (no tracers) since that would be empty for sure
             # get the indices of the tracers included in this intersection; at least one is included since we skip the tracer_bit_encoding=0 case
             included_tracers = np.array([i for i in range(ntracers) if (tracer_bit_encoding & (1 << i)) != 0])
@@ -141,12 +140,7 @@ def _make_rancat(rdmnb):
 
             if len(current_targetids) == 0: continue # nothing to be done if this strict intersection is empty
 
-            if len(included_tracers) == 1:
-                # when only one tracer is included, just keep the rows with the TARGETIDs unique to that tracer's catalog, and those are identified as the current_targetids
-                mask = np.isin(rcat[included_tracers[0]]['TARGETID'], current_targetids)
-                rcat_unique.append(rcat[included_tracers[0]][mask])
-                del mask # no longer needed, free memory
-                continue # done for this intersection, move on to the next one
+            if len(included_tracers) == 1: continue # when only one tracer is included, just keep the rows with the TARGETIDs unique to that tracer's catalog, actually fine to do nothing
 
             # case of multiple tracers included in the intersection, need to select which tracer catalog to draw random from for each of current_targetids
             n_random_goals = len(current_targetids) * N_d_raw[included_tracers] / N_d_raw[included_tracers].sum() # goal number of randoms to draw is proportional to the number of data in each tracer catalog (before consequent rounding to integer). this is a simple and reasonable choice. an alternative could be to use the number of data in the sky area corresponding to the intersection, but we don't seem to have a good way to compute that, and it may not be worth the effort anyway
@@ -154,18 +148,13 @@ def _make_rancat(rdmnb):
             np.random.shuffle(current_targetids) # randomly shuffle the TARGETIDs in-place to then split and select for each tracer catalog
             targetids_sel_all = np.split(current_targetids, n_random_split) # split the shuffled indices according to the number of randoms to draw for each sample
             for i, targetids_sel in zip(included_tracers, targetids_sel_all):
+                rcat[i].remove_rows(np.where(np.isin(rcat[i]['TARGETID'], np.setdiff1d(current_targetids, targetids_sel, assume_unique=True)))[0]) # remove the TARGETIDs selected from other tracers from the current tracer catalog
                 if len(targetids_sel) == 0: continue # check just in case some of the splits are empty for very small intersections, though that should be rare. this presents a bit of a problem for the tracer sky density, but hopefully only could happen for very small-area intersections
-                mask = np.isin(rcat[i]['TARGETID'], targetids_sel)
-                rcat_unique.append(rcat[i][mask])
-                del mask # no longer needed, free memory
-                rcat_unique[-1]['WEIGHT'] *= len(current_targetids) / len(targetids_sel) # upweight the selected randoms to account for the fact that we are keeping only targetids_sel out of current_targetids for this tracer. in-place multiplication is fine, as this set of random should not be encountered again. NB: this simple number-based upscaling could cause additional fluctuations in weighted random density in redshift and/or on sky; using the weight ratio may be better in that respect, but may have an issue of overly fine tuning for small intersections (and we also may need to be more careful about multiplying the weights in place)
+                rcat[i]['WEIGHT'][np.isin(rcat[i]['TARGETID'], targetids_sel)] *= len(current_targetids) / len(targetids_sel) # upweight the selected randoms to account for the fact that we are keeping only targetids_sel out of current_targetids for this tracer. in-place multiplication is fine, as this set of random should not be encountered again. NB: this simple number-based upscaling could cause additional fluctuations in weighted random density in redshift and/or on sky; using the weight ratio may be better in that respect, but may have an issue of overly fine tuning for small intersections (and we also may need to be more careful about multiplying the weights in place)
             del current_targetids, targetids_sel_all # no longer needed, free memory
-        del rcat # no longer needed, free memory
-        rcat_concat = vstack(rcat_unique) # concatenate the catalog pieces with unique TARGETIDs. the order may be a bit strange, but that should not matter. for unscrambling the catalogs, we have the TRACER_TYPE column
-        del rcat_unique # no longer needed, free memory
-    else:
-        rcat_concat = vstack(rcat) # simply concatenate catalogs
-        del rcat # no longer needed, free memory
+    
+    rcat_concat = vstack(rcat) # simply concatenate catalogs
+    del rcat # no longer needed, free memory
     
     save_ran_fn = save_dir + f'{out_tracer}_{cap}_{rdmnb}_clustering.ran.fits'
     common.write_LSS_scratchcp(rcat_concat,save_ran_fn,logger=logger)
