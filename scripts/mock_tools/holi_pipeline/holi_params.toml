@@ -5,21 +5,27 @@
 # GENERAL PARAMETERS
 #
 
-# LSS  package, must include LSS at the end
+# actualy holi pipeline always used a local version of LSS package
+# NOTE: must include LSS at the end
 LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS" 
 
-# mocks output dir
+# output directory of holi pipeline
+# will content seed0000 and altmtl0000 directories
 mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
 
 # log directory
 logs_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80/slurm"
 
-# 
+# reference simulation directory
 input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
+
+# First id seed processing by pipeline
 first_id = 301
 
-# for debug else -1
-max_gal= -1
+# for debug, reduce number of galaxy for fast processing,
+# minimal value is 5000 else error can appears
+# no limitation with value <0, like -1
+max_gal = -1
 
 #
 # STEP PARAMETERS
@@ -27,6 +33,7 @@ max_gal= -1
 
 [prepare_mocks] # step 1
 #specdata = "loa-v1"
+# example of prepare_mocks parameters, can be completed if necessary
 survey = "DA2"
 
 
@@ -41,4 +48,8 @@ conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipe
 
 
 [amtl] # step 8
-#verbose=''
+# verbose mode is '--verbose', by default ''
+#verbose='--verbose'
+
+# select desi/desi_environment.sh version 
+desi_env_vers = 'main'

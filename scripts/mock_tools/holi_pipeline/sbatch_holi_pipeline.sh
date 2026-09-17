@@ -45,6 +45,7 @@
 # Script parameter: path to the pipeline parameter file (read by get_pars.py)
 #
 export HOLI_PARS=$1
+# NOTE: all export env variables are visible in script launched by srun.
 
 #
 # Environment

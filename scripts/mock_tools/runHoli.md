@@ -1,3 +1,6 @@
+Markdown version with some comments of [runHoli.txt](./runHoli.txt)
+
+
 # 1) Prepare Holi mocks
 
  It runs through 1000 realizations, and it will create the prepared catalogs in Y3 footprint for those available. If the catalog has been created, it won't create again.
