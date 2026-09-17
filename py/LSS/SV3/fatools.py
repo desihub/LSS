@@ -643,33 +643,35 @@ def get_fba_fromnewmtl(
         fo.write("module swap fiberassign/" + str(faver) + "\n")
         faver = float(faver[:3])
     fo.write("fba_run")
-    fo.write(" --targets " + tarfn)
+    str_args = " --targets " + tarfn
     if scnd:
-        fo.write(" " + scndf)
+        str_args += " " + scndf
     if too:
-        fo.write(" " + toof)
-    fo.write(" --sky " + skyf)
-    fo.write(" --footprint " + tilef)
+        str_args += " " + toof
+    str_args +=" --sky " + skyf
+    str_args +=" --footprint " + tilef
     rundate = fht["RUNDATE"]
     if rundate == "2021-04-10T21:28:37":
         rundate = "2021-04-10T20:00:00"
-    fo.write(" --rundate " + rundate)
-    fo.write(" --fieldrot " + np.format_float_positional(fht["FIELDROT"]))
-    fo.write(" --dir " + outdir)
-    fo.write(" --sky_per_petal 40 --standards_per_petal 10")
+    str_args +=" --rundate " + rundate
+    str_args +=" --fieldrot " + np.format_float_positional(fht["FIELDROT"])
+    str_args += " --dir " + outdir
+    str_args += " --sky_per_petal 40 --standards_per_petal 10"
     if overwriteFA:
-        fo.write(" --overwrite")
+        str_args += " --overwrite"
     # fo.write(" --by_tile true")
     if faver >= 2.4:
-        fo.write(" --sky_per_slitblock 1")
+        str_args += " --sky_per_slitblock 1"
     if faver >= 3:
-        fo.write(" --ha " + str(fht["FA_HA"]))
-        fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
+        str_args += " --ha " + str(fht["FA_HA"])
+        str_args += " --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05"
 
     if faver >= 4:
-        fo.write(" --fafns_for_stucksky " + fa_fn)
+        str_args += " --fafns_for_stucksky " + fa_fn
+    fo.write(str_args)
     fo.close()
     log.info('close fo')
+    return str_args
 
 
 #     if float(fht['FA_VER'][:3]) < 2.4:
