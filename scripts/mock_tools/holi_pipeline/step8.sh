@@ -45,7 +45,7 @@ numobs_from_ledger=''
 redoFA=''
 getosubp=''
 debug=''
-verbose='--verbose'
+verbose=''
 secondary=''
 mock='--mock'
 targfile="--targfile=${ALTMTLHOME}/forFA{mock_number:04d}.fits"
@@ -60,22 +60,23 @@ argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=
 echo "argstring for dateloop"
 echo $argstring
 
+python $path2LSS/runAltMTLRealizations.py $argstring
 
-python "$path2LSS/runAltMTLRealizations.py" $argstring &
-parent_pid=$!
-LSS
-sleep 10
-worker_pid=$(pgrep -P "$parent_pid" | head -n 1)
+# python "$path2LSS/runAltMTLRealizations.py" $argstring &
+# parent_pid=$!
+# LSS
+# sleep 10
+# worker_pid=$(pgrep -P "$parent_pid" | head -n 1)
 
-if [[ -z "$worker_pid" ]]; then
-  echo "No AltMTL worker process found for parent PID $parent_pid" >&2
-  wait "$parent_pid"
-  exit 1
-fi
+# if [[ -z "$worker_pid" ]]; then
+#   echo "No AltMTL worker process found for parent PID $parent_pid" >&2
+#   wait "$parent_pid"
+#   exit 1
+# fi
 
-echo "Profiling worker PID $worker_pid"
-py-spy record --pid "$worker_pid" --duration 240 \
-  --rate 100 --format speedscope \
-  --output "profile_worker_${IDS}.json" &
+# echo "Profiling worker PID $worker_pid"
+# py-spy record --pid "$worker_pid" --duration 240 \
+#   --rate 100 --format speedscope \
+#   --output "profile_worker_${IDS}.json" &
 
-wait "$parent_pid"
+# wait "$parent_pid"
