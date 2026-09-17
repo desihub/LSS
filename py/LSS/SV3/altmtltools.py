@@ -80,6 +80,13 @@ from pstats import SortKey
 from datetime import datetime, timedelta
 import glob
 
+import tempfile
+import shlex
+
+from desiutil.iers import freeze_iers
+
+from fiberassign.scripts.assign import parse_assign, run_assign_full, run_assign_bytile
+
 pr = cProfile.Profile()
 
 # os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
@@ -137,12 +144,22 @@ def datesInMonthForYear(yyyy):
     return monthLengths
 
 
-import tempfile
-
-
 def run_script(cmd):
     return subprocess.run(cmd, capture_output=True)
-    
+
+
+def call_fba_run(fba_args):
+    # AR freeze_iers
+    freeze_iers()
+
+    args = parse_assign(shlex.split(fba_args))
+    if args.by_tile:
+        run_assign_bytile(args)
+    else:
+        run_assign_full(args)
+    return
+
+
 def safe_pickle_dump(data, filename):
     # Step 1: Create a temporary file
     dir_name = os.path.dirname(filename)
@@ -1893,7 +1910,7 @@ def do_fiberassignment(
     log.info(type(FATiles))
     for t in FATiles:
         log.info("========================================= do_fiberassignment")
-        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
         log.info(type(t))
         log.info(t)
         # JL This loop takes each of the original fiberassignments for each of the tiles on $date
@@ -1911,7 +1928,7 @@ def do_fiberassignment(
             + ".fits.gz"
         )
         fhtOrig = fitsio.read_header(FAOrigName)
-        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
         fadate = fhtOrig["RUNDATE"]
         # e.g. DESIROOT/target/catalogs/dr9/1.0.0/targets/main/resolve/dark
         targver = fhtOrig["TARG"].split("/targets")[0].split("/")[-1]
@@ -1946,7 +1963,7 @@ def do_fiberassignment(
         if verbose or debug:
             log.info("FAOrigName = {0}".format(FAOrigName))
             log.info("FAAltName = {0}".format(FAAltName))
-        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
 
         # JL Sometimes fiberassign leaves around temp files if a run is aborted.
         # JL This command removes those temp files to prevent endless crashes.
@@ -1976,8 +1993,8 @@ def do_fiberassignment(
                 log.info(glob.glob(fbadir + "/*"))
             # get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
             log.info("========== get_fba_fromnewmtl")
-            log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
-            get_fba_fromnewmtl(
+            log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
+            fba_args = get_fba_fromnewmtl(
                 ts,
                 mtldir=altmtldir + survey.lower() + "/",
                 outdir=fbadirbase,
@@ -1990,13 +2007,14 @@ def do_fiberassignment(
             )  # , targets = targets)
             # JMC
             log.info("========== fba_run")
-            log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
-            command_run = ["bash", fbadir + "fa-" + ts + ".sh"]
-            if verbose:
-                log.info(f"fa command_run: {command_run}")
-            run_script(command_run)
-            log.info("fa command end")
-            #result = subprocess.run(command_run, capture_output=True)
+            log.info(f"fba_args = {fba_args}")
+            call_fba_run(fba_args)
+            log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
+            # command_run = ["bash", fbadir + "fa-" + ts + ".sh"]
+            # if verbose:
+            #     log.info(f"fa command_run: {command_run}")
+            # run_script(command_run)
+            # #result = subprocess.run(command_run, capture_output=True)
         else:
             log.info("not repeating fiberassignment")
         log.info("adding fiberassignments to arrays")
@@ -2005,9 +2023,9 @@ def do_fiberassignment(
         AltFAs2.append(pf.open(FAAltName)[2].data)
         TSs.append(ts)
         fadates.append(fadate)
-        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
-        
-    log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
+
+    log.info(f"Duration TOTAL(h:m:s): {datetime.now() - START_BEGIN}")
     return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
 
 
@@ -2500,10 +2518,10 @@ def loop_alt_ledger(
     ### JL - this loop is through all realizations serially or (usually) one realization parallelized
     cpt = 0
     for n in iterloop:
-        if cpt==1:
+        if cpt == 1:
             break
         cpt += 1
-        log.info(f'============================== iterloop : {n}')
+        log.info(f"============================== iterloop : {n}")
         if debugOrig:
             altmtldir = altmtlbasedir + "/Univ000/"
         else:
@@ -2547,10 +2565,10 @@ def loop_alt_ledger(
         # restricting to a single action for profiling use, is this overlapping with some other option? multiproc?
         if single_action:
             actionList = actionList[:1]
-        
+
         for action in actionList:
-            log.info(f'============== actionList : {action}')
-            
+            log.info(f"============== actionList : {action}")
+
             if action["ACTIONTYPE"] == "fa":
                 OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(
                     altmtldir,
