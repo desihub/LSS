@@ -21,8 +21,9 @@ IDS=$((FIRST_ID+PROCID))
 #
 # environment
 #
-source /global/common/software/desi/desi_environment.sh main
-#module load LSS/main
+desi_env_vers=$(get_pars.py $HOLI_PARS amtl.desi_env_vers)
+source /global/common/software/desi/desi_environment.sh $desi_env_vers
+# module load LSS/main
 # use local package LSS, refresh after source env
 HOLI_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
@@ -44,7 +45,7 @@ numobs_from_ledger=''
 redoFA=''
 getosubp=''
 debug=''
-verbose=''
+verbose='--verbose'
 secondary=''
 mock='--mock'
 targfile="--targfile=${ALTMTLHOME}/forFA{mock_number:04d}.fits"
@@ -59,7 +60,22 @@ argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=
 echo "argstring for dateloop"
 echo $argstring
 
-#python $path2LSS/runAltMTLRealizations.py $argstring > $LOG_DIR/fa_chunk_${IDS}.log  2>&1
-python $path2LSS/runAltMTLRealizations.py $argstring
 
-date
+python "$path2LSS/runAltMTLRealizations.py" $argstring &
+parent_pid=$!
+LSS
+sleep 10
+worker_pid=$(pgrep -P "$parent_pid" | head -n 1)
+
+if [[ -z "$worker_pid" ]]; then
+  echo "No AltMTL worker process found for parent PID $parent_pid" >&2
+  wait "$parent_pid"
+  exit 1
+fi
+
+echo "Profiling worker PID $worker_pid"
+py-spy record --pid "$worker_pid" --duration 240 \
+  --rate 100 --format speedscope \
+  --output "profile_worker_${IDS}.json" &
+
+wait "$parent_pid"
