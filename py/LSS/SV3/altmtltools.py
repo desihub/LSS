@@ -1,45 +1,47 @@
 ##from desiutil.iers import freeze_iers
 ##freeze_iers()
 
-#TEMP
-#MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
-#MODULE_NAME = 'desitarget'
-#import importlib
-#import sys
-#spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
-#module = importlib.util.module_from_spec(spec)
-#sys.modules[spec.name] = module
-#spec.loader.exec_module(module)
+# TEMP
+# MODULE_PATH = '/global/homes/a/acarnero/.local/lib/python3.10/site-packages/desitarget/__init__.py'
+# MODULE_NAME = 'desitarget'
+# import importlib
+# import sys
+# spec = importlib.util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
+# module = importlib.util.module_from_spec(spec)
+# sys.modules[spec.name] = module
+# spec.loader.exec_module(module)
 #
 
+from datetime import datetime
 import collections.abc
-from time import time 
+from time import time
 import astropy
 import astropy.io
 import astropy.io.fits as pf
-from astropy.table import Table,join,vstack
+from astropy.table import Table, join, vstack
 
-#import memory_profiler
-#from memory_profiler import profile
+# import memory_profiler
+# from memory_profiler import profile
 
 from desiutil.log import get_logger
-log = get_logger()
+
+log = get_logger(timestamp=True)
 
 import desitarget
 from desitarget import io, mtl
 from desitarget.cuts import random_fraction_of_trues
-from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name,get_mtl_ledger_format
+from desitarget.mtl import get_mtl_dir, get_mtl_tile_file_name, get_mtl_ledger_format
 from desitarget.mtl import get_zcat_dir, get_ztile_file_name, tiles_to_be_processed
-from desitarget.mtl import make_zcat,survey_data_model,update_ledger, get_utc_date
+from desitarget.mtl import make_zcat, survey_data_model, update_ledger, get_utc_date
 
-#LGN 20260624 - Replacing T/E wrapping with a hasattr check for update_lya_1b import
+# LGN 20260624 - Replacing T/E wrapping with a hasattr check for update_lya_1b import
 #             - This should enable the this code to be used with older desitarget versions.
-if hasattr(mtl, 'update_lya_1b'):
+if hasattr(mtl, "update_lya_1b"):
     update_lya_1b = mtl.update_lya_1b
-    log.info('desitarget.mtl.update_lya_1b() successfully imported')
+    log.info("desitarget.mtl.update_lya_1b() successfully imported")
 else:
-    log.info('Unable to import desitarget.mtl.update_lya_1b()')
-    log.info('You are using a desitarget version < 3.4.0')
+    log.info("Unable to import desitarget.mtl.update_lya_1b()")
+    log.info("You are using a desitarget version < 3.4.0")
 
 from desitarget.targets import initial_priority_numobs, decode_targetid
 from desitarget.targetmask import obsconditions, obsmask
@@ -80,26 +82,42 @@ import glob
 
 pr = cProfile.Profile()
 
-#os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
-#os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
+# os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
+# os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
 
-mtlformatdict = {"PARALLAX": '%16.8f', 'PMRA': '%16.8f', 'PMDEC': '%16.8f'}
+mtlformatdict = {"PARALLAX": "%16.8f", "PMRA": "%16.8f", "PMDEC": "%16.8f"}
 
 
-zcatdatamodel = np.array([], dtype=[
-    ('RA', '>f8'), ('DEC', '>f8'), ('TARGETID', '>i8'),
-    ('NUMOBS', '>i4'), ('Z', '>f8'), ('ZWARN', '>i8'), ('ZTILEID', '>i4')
-    ])
+zcatdatamodel = np.array(
+    [],
+    dtype=[
+        ("RA", ">f8"),
+        ("DEC", ">f8"),
+        ("TARGETID", ">i8"),
+        ("NUMOBS", ">i4"),
+        ("Z", ">f8"),
+        ("ZWARN", ">i8"),
+        ("ZTILEID", ">i4"),
+    ],
+)
 
-#mtltilefiledm = np.array([], dtype=[
+# mtltilefiledm = np.array([], dtype=[
 #    ('TILEID', '>i4'), ('TIMESTAMP', 'U25'),
 #    ('VERSION', 'U14'), ('PROGRAM', 'U6'), ('ZDATE', 'U8')
 #    ])
 
-mtltilefiledm = np.array([], dtype = [
-    ('TILEID', '>i4'), ('TIMESTAMP', '<U25'),
-    ('VERSION', '<U14'), ('PROGRAM', '<U6'), 
-    ('ZDATE', '>i8'), ('ARCHIVEDATE', '>i8')])
+mtltilefiledm = np.array(
+    [],
+    dtype=[
+        ("TILEID", ">i4"),
+        ("TIMESTAMP", "<U25"),
+        ("VERSION", "<U14"),
+        ("PROGRAM", "<U6"),
+        ("ZDATE", ">i8"),
+        ("ARCHIVEDATE", ">i8"),
+    ],
+)
+
 
 def datesInMonthForYear(yyyy):
     # if divisible by 4
@@ -108,7 +126,7 @@ def datesInMonthForYear(yyyy):
         if not ((yyyy % 100) == 0):
             monthLengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
         # if divisible by 100 and 400, leap year
-        elif ((yyyy % 400) == 0):
+        elif (yyyy % 400) == 0:
             monthLengths = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
         # if divisble by 100 and not 400, no leap year
         else:
@@ -118,7 +136,13 @@ def datesInMonthForYear(yyyy):
         monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     return monthLengths
 
+
 import tempfile
+
+
+def run_script(cmd):
+    return subprocess.run(cmd, capture_output=True)
+    
 def safe_pickle_dump(data, filename):
     # Step 1: Create a temporary file
     dir_name = os.path.dirname(filename)
@@ -126,15 +150,15 @@ def safe_pickle_dump(data, filename):
         tmp_name = tmp_file.name
         try:
             # Step 2: Dump pickle data
-            with open(tmp_name, 'wb') as f:
+            with open(tmp_name, "wb") as f:
                 pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
                 f.flush()
                 os.fsync(f.fileno())  # Ensure data is written to disk
-            
+
             # Step 3: Sanity check by loading
-            with open(tmp_name, 'rb') as f:
+            with open(tmp_name, "rb") as f:
                 test_data = pickle.load(f)
-            
+
             # Step 4: Rename only if valid
             os.replace(tmp_name, filename)
             return True  # Success
@@ -142,178 +166,181 @@ def safe_pickle_dump(data, filename):
         except Exception as e:
             os.remove(tmp_name)  # Clean up on failure
             log.critical(f"Pickle dump failed: {e}")
-#            print(f"Pickle dump failed: {e}")
+            #            print(f"Pickle dump failed: {e}")
             return False  # Failure
 
 
 def nextDate(date):
     # JL  takes NITE in YYYYMMDD form and increments to the next date
     yyyy, mm, dd = int(str(date)[0:4]), int(str(date)[4:6]), int(str(date)[6:])
-    log.info('date = {0}'.format(date))
+    log.info("date = {0}".format(date))
     monthLengths = datesInMonthForYear(yyyy)
-    log.info('monthLengths array is {0}'.format(monthLengths))
-    log.info('yyyy, mm, dd = {0}, {1}, {2}'.format(yyyy, mm, dd))
+    log.info("monthLengths array is {0}".format(monthLengths))
+    log.info("yyyy, mm, dd = {0}, {1}, {2}".format(yyyy, mm, dd))
     if dd == monthLengths[mm - 1]:
         if mm == 12:
-            mm = '01'
-            yyyy = str(yyyy+1)
+            mm = "01"
+            yyyy = str(yyyy + 1)
         else:
-            mm = str(mm+1).zfill(2)
-        
-        dd = '01'
+            mm = str(mm + 1).zfill(2)
+
+        dd = "01"
     else:
         dd = str(dd + 1).zfill(2)
-    log.info('yyyy, mm, dd = {0}, {1}, {2}'.format(yyyy, mm, dd))
-    return ''.join([str(yyyy), str(mm).zfill(2), str(dd).zfill(2)])
+    log.info("yyyy, mm, dd = {0}, {1}, {2}".format(yyyy, mm, dd))
+    return "".join([str(yyyy), str(mm).zfill(2), str(dd).zfill(2)])
 
-def evaluateMask(bits, mask, evalMultipleBits = False):
+
+def evaluateMask(bits, mask, evalMultipleBits=False):
     if evalMultipleBits:
-        return (bits & mask) == mask 
+        return (bits & mask) == mask
     return (bits & mask) > 0
 
 
-
-def flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
-    #only works on single bits
-    assert( np.abs( np.log2(int(bit2Flip)) - np.log2(int(bit2Flip)) ) < 0.001  )
+def flipBit(cat, bit2Flip, cond=None, fieldName="DESI_TARGET", mode="on"):
+    # only works on single bits
+    assert np.abs(np.log2(int(bit2Flip)) - np.log2(int(bit2Flip))) < 0.001
 
     if cond is None:
-        if mode.lower() == 'on':
+        if mode.lower() == "on":
             cond = np.invert(evaluateMask(cat[fieldName], bit2Flip))
-        elif mode.lower() == 'off':
+        elif mode.lower() == "off":
             cond = evaluateMask(cat[fieldName], bit2Flip)
-        #elif mode.lower() == 'both':
+        # elif mode.lower() == 'both':
         #    cond = np.ones(cat.shape[0], dtype = bool)
         else:
-            #raise ValueError('`mode` must be `on` `off` or `both`')
-            raise ValueError('`mode` must be `on` or `off`')
+            # raise ValueError('`mode` must be `on` `off` or `both`')
+            raise ValueError("`mode` must be `on` or `off`")
 
-    assert( len(cond) ==  len(cat))
+    assert len(cond) == len(cat)
 
     if np.sum(cond) == 0:
-        log.warning('This call to flipBit does not flip any bits.')
+        log.warning("This call to flipBit does not flip any bits.")
         return cat
 
-
-    if mode == 'on':
+    if mode == "on":
         cat[fieldName][cond] = cat[fieldName][cond] | bit2Flip
-    elif mode == 'off':
+    elif mode == "off":
         cond = cond & ((cat[fieldName] & bit2Flip) == bit2Flip)
         cat[fieldName][cond] = cat[fieldName][cond] ^ bit2Flip
-    #elif mode == 'both':
+    # elif mode == 'both':
     #    cat[fieldName][cond] = cat[fieldName][cond] ^ bit2Flip
     else:
-        #raise ValueError('`mode` must be `on` `off` or `both`')
-        raise ValueError('`mode` must be `on` or `off`')
+        # raise ValueError('`mode` must be `on` `off` or `both`')
+        raise ValueError("`mode` must be `on` or `off`")
 
     return cat
 
+
 def processTileFile(infile, outfile, startDate, endDate):
-    #ztilefile, outputMTLDir + ztilefn, startDate, endDate
+    # ztilefile, outputMTLDir + ztilefn, startDate, endDate
     if (startDate is None) and (endDate is None):
-        #os.symlink(infile, outfile)
+        # os.symlink(infile, outfile)
         from shutil import copyfile
+
         copyfile(infile, outfile)
         return 0
-    
-        
-    if (startDate is None) or (startDate == ''):
+
+    if (startDate is None) or (startDate == ""):
         startDate = 0
     else:
-        startDate = int(startDate.split('T')[0].replace('-', ''))       
-    if (endDate is None) or (endDate == ''):
+        startDate = int(startDate.split("T")[0].replace("-", ""))
+    if (endDate is None) or (endDate == ""):
         endDate = 9999999999
     else:
-        endDate = int(endDate.split('T')[0].replace('-', ''))
+        endDate = int(endDate.split("T")[0].replace("-", ""))
 
     origtf = Table.read(infile)
 
-    origtf = origtf[origtf['LASTNIGHT'].astype(int) >= startDate ]
-    origtf = origtf[origtf['LASTNIGHT'].astype(int) <= endDate ]
+    origtf = origtf[origtf["LASTNIGHT"].astype(int) >= startDate]
+    origtf = origtf[origtf["LASTNIGHT"].astype(int) <= endDate]
 
-
-    origtf.write(outfile, overwrite = True, format = 'ascii.ecsv')
+    origtf.write(outfile, overwrite=True, format="ascii.ecsv")
     return 0
-def uniqueTimestampFATimePairs(tileList, withFlag = False):
+
+
+def uniqueTimestampFATimePairs(tileList, withFlag=False):
     output = []
-    for t in tileList: 
+    for t in tileList:
         if withFlag:
-            datepair = (t['ORIGMTLTIMESTAMP'], t['FAMTLTIME'], t['REPROCFLAG'])
+            datepair = (t["ORIGMTLTIMESTAMP"], t["FAMTLTIME"], t["REPROCFLAG"])
         else:
-            datepair = (t['ORIGMTLTIMESTAMP'], t['FAMTLTIME'])
+            datepair = (t["ORIGMTLTIMESTAMP"], t["FAMTLTIME"])
 
-        if datepair in  output:
-            continue
-        else:
-            output.append(datepair)
-
-    return output
-def uniqueArchiveDateZDatePairs(tileList, withFlag = False):
-    output = []
-    for t in tileList: 
-        if withFlag:
-            datepair = (t['ZDATE'], t['ARCHIVEDATE'], t['REPROCFLAG'])
-        else:
-            datepair = (t['ZDATE'], t['ARCHIVEDATE'])
-
-        if datepair in  output:
+        if datepair in output:
             continue
         else:
             output.append(datepair)
 
     return output
 
-def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
-    log.critical('this function isn\'t ready yet. Goodbye')
-    raise NotImplementedError('Fiber Twin method not implemented yet.')
-    if survey == 'sv3':
-        if obscon == 'dark':
-            altTargBits = altFiber['SV3_DESI_TARGET']
-            altTargBitsSec = altFiber['SV3_BGS_TARGET']
-            altTargBitsMWS = altFiber['SV3_MWS_TARGET']
 
-            origTargBitList = origFiberList['SV3_DESI_TARGET']
-            origTargBitListSec = origFiberList['SV3_BGS_TARGET']
-            origTargBitListMWS = origFiberList['SV3_MWS_TARGET']
-
-        elif obscon == 'bright':
-            altTargBits = altFiber['SV3_BGS_TARGET']
-            altTargBitsSec = altFiber['SV3_DESI_TARGET']
-            altTargBitsMWS = altFiber['SV3_MWS_TARGET']
-
-            origTargBitList = origFiberList['SV3_BGS_TARGET']
-            origTargBitListSec = origFiberList['SV3_DESI_TARGET']
-            origTargBitListMWS = origFiberList['SV3_MWS_TARGET']
+def uniqueArchiveDateZDatePairs(tileList, withFlag=False):
+    output = []
+    for t in tileList:
+        if withFlag:
+            datepair = (t["ZDATE"], t["ARCHIVEDATE"], t["REPROCFLAG"])
         else:
-            raise ValueError('Invalid value for \'obscon\': {0}'.format(obscon))
-    elif survey == 'main': 
-        if obscon == 'dark':
-            altTargBits = altFiber['DESI_TARGET']
-            altTargBitsSec = altFiber['BGS_TARGET']
-            altTargBitsMWS = altFiber['MWS_TARGET']
+            datepair = (t["ZDATE"], t["ARCHIVEDATE"])
 
-            origTargBitList = origFiberList['DESI_TARGET']
-            origTargBitListSec = origFiberList['BGS_TARGET']
-            origTargBitListMWS = origFiberList['MWS_TARGET']
+        if datepair in output:
+            continue
+        else:
+            output.append(datepair)
 
-        elif obscon == 'bright':
-            altTargBits = altFiber['BGS_TARGET']
-            altTargBitsSec = altFiber['DESI_TARGET']
-            altTargBitsMWS = altFiber['MWS_TARGET']
-            origTargBitList = origFiberList['BGS_TARGET']
-            origTargBitListSec = origFiberList['DESI_TARGET']
-            origTargBitListMWS = origFiberList['MWS_TARGET']
+    return output
+
+
+def findTwin(altFiber, origFiberList, survey="sv3", obscon="dark"):
+    log.critical("this function isn't ready yet. Goodbye")
+    raise NotImplementedError("Fiber Twin method not implemented yet.")
+    if survey == "sv3":
+        if obscon == "dark":
+            altTargBits = altFiber["SV3_DESI_TARGET"]
+            altTargBitsSec = altFiber["SV3_BGS_TARGET"]
+            altTargBitsMWS = altFiber["SV3_MWS_TARGET"]
+
+            origTargBitList = origFiberList["SV3_DESI_TARGET"]
+            origTargBitListSec = origFiberList["SV3_BGS_TARGET"]
+            origTargBitListMWS = origFiberList["SV3_MWS_TARGET"]
+
+        elif obscon == "bright":
+            altTargBits = altFiber["SV3_BGS_TARGET"]
+            altTargBitsSec = altFiber["SV3_DESI_TARGET"]
+            altTargBitsMWS = altFiber["SV3_MWS_TARGET"]
+
+            origTargBitList = origFiberList["SV3_BGS_TARGET"]
+            origTargBitListSec = origFiberList["SV3_DESI_TARGET"]
+            origTargBitListMWS = origFiberList["SV3_MWS_TARGET"]
+        else:
+            raise ValueError("Invalid value for 'obscon': {0}".format(obscon))
+    elif survey == "main":
+        if obscon == "dark":
+            altTargBits = altFiber["DESI_TARGET"]
+            altTargBitsSec = altFiber["BGS_TARGET"]
+            altTargBitsMWS = altFiber["MWS_TARGET"]
+
+            origTargBitList = origFiberList["DESI_TARGET"]
+            origTargBitListSec = origFiberList["BGS_TARGET"]
+            origTargBitListMWS = origFiberList["MWS_TARGET"]
+
+        elif obscon == "bright":
+            altTargBits = altFiber["BGS_TARGET"]
+            altTargBitsSec = altFiber["DESI_TARGET"]
+            altTargBitsMWS = altFiber["MWS_TARGET"]
+            origTargBitList = origFiberList["BGS_TARGET"]
+            origTargBitListSec = origFiberList["DESI_TARGET"]
+            origTargBitListMWS = origFiberList["MWS_TARGET"]
 
         else:
-            raise ValueError('Invalid value for \'obscon\': {0}'.format(obscon))
+            raise ValueError("Invalid value for 'obscon': {0}".format(obscon))
     else:
-        raise ValueError('Invalid value for \'survey\': {0}'.format(survey))
+        raise ValueError("Invalid value for 'survey': {0}".format(survey))
 
-    altFS = altFiber['FIBERSTATUS']
-    origFS = origFiberList['FIBERSTATUS']
+    altFS = altFiber["FIBERSTATUS"]
+    origFS = origFiberList["FIBERSTATUS"]
 
-
-    '''
+    """
     BGSBits = initialentries['SV3_BGS_TARGET']
     BGSFaintHIP = ((BGSBits & 8) == 8)
     BGSFaintAll = ((BGSBits & 1) == 1) | BGSFaintHIP
@@ -333,29 +360,37 @@ def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
 
     initialentries['SV3_BGS_TARGET'][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | 8)
     initialentries['PRIORITY'][BGSFaintNewHIP] = 102100*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
-    '''
+    """
 
 
-def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = False,
- verbose = False, mock = False, mockTrueZKey = None):
+def createFAmap(
+    FAReal,
+    FAAlt,
+    TargAlt=None,
+    changeFiberOpt=None,
+    debug=False,
+    verbose=False,
+    mock=False,
+    mockTrueZKey=None,
+):
     # Options for 'changeFiberOpt':
     # None: do nothing different to version 1
-    # AllTwins: Find a twin fiber with a target of the 
+    # AllTwins: Find a twin fiber with a target of the
     #   same type and similar Fiber assignment for all
     #   unsimilar target types
-    # SomeTwins: Find a twin as above but only for 
+    # SomeTwins: Find a twin as above but only for
     #   assignments where the original fiber was unassigned
 
-    TIDReal = FAReal['TARGETID']
-    TIDAlt = FAAlt['TARGETID']
-    FibReal = FAReal['FIBER']
-    FibAlt = FAAlt['FIBER']
+    TIDReal = FAReal["TARGETID"]
+    TIDAlt = FAAlt["TARGETID"]
+    FibReal = FAReal["FIBER"]
+    FibAlt = FAAlt["FIBER"]
 
     if not (changeFiberOpt is None):
-        raise NotImplementedError('changeFiberOpt is not implemented yet.')
-        assert(not(TargAlt is None))
-        jTargs = join(FAAlt, TargAlt, keys = "TARGETID")
-    
+        raise NotImplementedError("changeFiberOpt is not implemented yet.")
+        assert not (TargAlt is None)
+        jTargs = join(FAAlt, TargAlt, keys="TARGETID")
+
     Real2Alt = {}
     Alt2Real = {}
     if debug:
@@ -364,18 +399,18 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
     negMisMatch = []
     for tr, fr in zip(TIDReal, FibReal):
         taMatch = TIDAlt[FibAlt == fr]
-        assert(len(taMatch) == 1)
+        assert len(taMatch) == 1
         if debug:
             try:
-                assert(tr == taMatch[0])
+                assert tr == taMatch[0]
             except:
-                inc1+=1
+                inc1 += 1
         Real2Alt[tr] = taMatch[0]
-    
+
     for ta, fa in zip(TIDAlt, FibAlt):
         trMatch = TIDReal[FibReal == fa]
         try:
-            assert(len(trMatch) == 1)
+            assert len(trMatch) == 1
         except:
             if ta < 0:
                 negMisMatch.append(ta)
@@ -383,59 +418,62 @@ def createFAmap(FAReal, FAAlt, TargAlt = None, changeFiberOpt = None, debug = Fa
             else:
                 log.info(ta)
 
-                assert(0)
+                assert 0
         if debug or verbose:
             try:
-                assert(ta == trMatch[0])
+                assert ta == trMatch[0]
             except:
-                inc2+=1
-        if (changeFiberOpt is None) or (changeFiberOpt == 'SomeTwins') or (ta == trMatch[0]):
+                inc2 += 1
+        if (
+            (changeFiberOpt is None)
+            or (changeFiberOpt == "SomeTwins")
+            or (ta == trMatch[0])
+        ):
             Alt2Real[ta] = trMatch[0]
-        elif changeFiberOpt == 'AllTwins':
-            #if jTargs['SV3_']
-            assert(0)
+        elif changeFiberOpt == "AllTwins":
+            # if jTargs['SV3_']
+            assert 0
             pass
 
-    
     if debug or verbose:
-        log.info('no matches for negative tas {0}'.format(negMisMatch))
+        log.info("no matches for negative tas {0}".format(negMisMatch))
         log.info(inc1)
         log.info(inc2)
     return Alt2Real, Real2Alt
 
 
-
-def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = False):
+def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug=False, verbose=False):
     from collections import Counter
-    zcatids = zcat['TARGETID']
+
+    zcatids = zcat["TARGETID"]
     altZCat = Table(zcat)
     if debug:
         failures = 0
         negativeIDs = 0
     for n, i in zip(zcatids, range(len(zcatids))):
-        cond = (n == zcatids)
+        cond = n == zcatids
         if debug and (n < 0):
-            negativeIDs +=1   
+            negativeIDs += 1
         altid = real2AltMap[n]
 
-        altZCat['TARGETID'][i] = altid
+        altZCat["TARGETID"][i] = altid
     if debug:
-        log.info('negIDs')
+        log.info("negIDs")
         log.info(negativeIDs)
-        log.info('failures')
+        log.info("failures")
         log.info(failures)
-        log.info('testctr')
-    d =  Counter(altZCat['TARGETID'])  
-    res = [ k for k, v in d.items() if v > 1]
+        log.info("testctr")
+    d = Counter(altZCat["TARGETID"])
+    res = [k for k, v in d.items() if v > 1]
     if debug:
-        log.info('res')
+        log.info("res")
         log.info(res)
     if len(res):
-        log.info('how many pre dup cuts')
+        log.info("how many pre dup cuts")
         log.info(zcatids.shape)
         cond2 = np.ones(zcatids.shape, dtype=bool)
         for i in res:
-            log.info('test')
+            log.info("test")
             log.info(np.sum(zcatids == i))
             cond2 = cond2 & (altcatids != i)
         log.info("how many post dup cuts")
@@ -444,33 +482,41 @@ def makeAlternateZCat(zcat, real2AltMap, alt2RealMap, debug = False, verbose = F
         log.info("supposedly, no duplicates")
     return altZCat
 
+
 def checkMTLChanged(MTLFile1, MTLFile2):
-    MTL1 = desitarget.io.read_mtl_ledger(MTLFile1, unique = True)
-    MTL2 = desitarget.io.read_mtl_ledger(MTLFile2, unique = True)
+    MTL1 = desitarget.io.read_mtl_ledger(MTLFile1, unique=True)
+    MTL2 = desitarget.io.read_mtl_ledger(MTLFile2, unique=True)
     NDiff = 0
     NDiff2 = 0
     NDiff3 = 0
     for tar1 in MTL1:
-        tar2 = MTL2[MTL2['TARGETID'] == tar1['TARGETID']]
+        tar2 = MTL2[MTL2["TARGETID"] == tar1["TARGETID"]]
 
-        if tar1['NUMOBS'] != tar2['NUMOBS']:
-            NDiff +=1
+        if tar1["NUMOBS"] != tar2["NUMOBS"]:
+            NDiff += 1
 
-        if tar1['TIMESTAMP'] != tar2['TIMESTAMP']:
-            NDiff2 +=1
-            
-        if tar1['SUBPRIORITY'] != tar2['SUBPRIORITY']:
-            NDiff3 +=1
+        if tar1["TIMESTAMP"] != tar2["TIMESTAMP"]:
+            NDiff2 += 1
 
-    print('Number targets with different NUMOBS')
+        if tar1["SUBPRIORITY"] != tar2["SUBPRIORITY"]:
+            NDiff3 += 1
+
+    print("Number targets with different NUMOBS")
     print(NDiff)
-    print('Number targets with different TIMESTAMP')
+    print("Number targets with different TIMESTAMP")
     print(NDiff2)
-    print('Number targets with different SUBPRIORITY')
+    print("Number targets with different SUBPRIORITY")
     print(NDiff3)
 
-def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'):
-    """Update action file which orders all actions to do with AMTL in order 
+
+def updateTileTracker(
+    altmtldir,
+    endDate,
+    survey="main",
+    obscon="DARK",
+    real_mtl_dir="/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/",
+):
+    """Update action file which orders all actions to do with AMTL in order
     in which real survey did them.
 
     Parameters
@@ -487,11 +533,11 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
     survey : :class:`str`, optional, defaults to "main"
         Used to look up the correct ledger, in combination with `obscon`.
         Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
-        for the main survey and different iterations of SV, respectively.    
+        for the main survey and different iterations of SV, respectively.
 
     Returns
     -------
-    
+
     [Nothing]
 
     Notes
@@ -500,24 +546,26 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
     - Survey and obscon are determined from existing file
     """
 
-    #find current tile tracker using common naming schema
+    # find current tile tracker using common naming schema
     TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
 
-    #open current tile tracker, read current endDate
+    # open current tile tracker, read current endDate
     current_TT = Table.read(TileTrackerFN)
-    prev_endDate = current_TT.meta['EndDate']
+    prev_endDate = current_TT.meta["EndDate"]
 
-    #check if enddates are the same, skip remaining steps if true
+    # check if enddates are the same, skip remaining steps if true
     if endDate == prev_endDate:
-        print('New end date is the same as the current end date, update will not be performed')
+        print(
+            "New end date is the same as the current end date, update will not be performed"
+        )
         return
 
-    #only pass the lya1b keyword if prev_endDate is before 20250721 and new enddate is after 20250721
-    #is this effective? need to be sure we don't write multiple lya1b actions
+    # only pass the lya1b keyword if prev_endDate is before 20250721 and new enddate is after 20250721
+    # is this effective? need to be sure we don't write multiple lya1b actions
     upd_lya1b = (prev_endDate <= 20250721) & (endDate > 20250721)
 
     # 20260623 LGN - Temporarily Removing this YAML update step as we re-evaluate the YAML workflow
-    '''
+    """
     # 20260420 LGN - Adding new step here where the YAML file containing ledger addition dates is re-generated if necessary
     # 20260420 LGN - This occurs if the number of ledgers in the real mtl directory differs from the number in the YAML file
     yaml_fn = os.path.join(altmtldir,f'{obscon.upper()}-ledgers.yaml')
@@ -542,47 +590,75 @@ def updateTileTracker(altmtldir, endDate, survey = 'main', obscon = 'DARK', real
                 f"Generated YAML has {new_yaml_numledgers} ledgers, "
                 f"expected {real_mtl_numledgers}"
             )
-    ''';
-
-    #accesing TT meta data and updating endDate
+    """
+    # accesing TT meta data and updating endDate
     ttupd_meta = current_TT.meta
-    ttupd_meta['EndDate'] = endDate
-    
-    #generate TileTracker update file
-    makeTileTracker(altmtldir, survey, obscon, startDate = prev_endDate, endDate = endDate, update_only=True, lya1b = upd_lya1b, meta_info = ttupd_meta)
+    ttupd_meta["EndDate"] = endDate
 
-    #read into memory
-    update_TT = Table.read(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
-    
-    #columns to determine if entries are in both tiletrackers.
-    compare_cols = ['TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'ARCHIVEDATE']
+    # generate TileTracker update file
+    makeTileTracker(
+        altmtldir,
+        survey,
+        obscon,
+        startDate=prev_endDate,
+        endDate=endDate,
+        update_only=True,
+        lya1b=upd_lya1b,
+        meta_info=ttupd_meta,
+    )
+
+    # read into memory
+    update_TT = Table.read(
+        TileTrackerFN.replace("TileTracker", "TileTracker-Update{}".format(endDate))
+    )
+
+    # columns to determine if entries are in both tiletrackers.
+    compare_cols = ["TILEID", "ACTIONTYPE", "ACTIONTIME", "ARCHIVEDATE"]
 
     existing_cols = np.isin(update_TT[compare_cols], current_TT[compare_cols])
 
-    #Combine current tile tracker with new entries
-    combined_TT = vstack([current_TT,update_TT[~existing_cols]])
-    #update meta information
-    combined_TT.meta['EndDate'] = update_TT.meta['EndDate']
-    combined_TT.meta['StartDate'] = current_TT.meta['StartDate']
+    # Combine current tile tracker with new entries
+    combined_TT = vstack([current_TT, update_TT[~existing_cols]])
+    # update meta information
+    combined_TT.meta["EndDate"] = update_TT.meta["EndDate"]
+    combined_TT.meta["StartDate"] = current_TT.meta["StartDate"]
 
-    #rename existing tiletracker
-    os.rename(TileTrackerFN,TileTrackerFN.replace('TileTracker','TileTracker-Thru{}'.format(prev_endDate)))
-    
-    #write new merged tiletracker
-    combined_TT.write(TileTrackerFN, format='ascii.ecsv', overwrite=True)
+    # rename existing tiletracker
+    os.rename(
+        TileTrackerFN,
+        TileTrackerFN.replace("TileTracker", "TileTracker-Thru{}".format(prev_endDate)),
+    )
 
-    #delete update tiletracker
-    os.remove(TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate)))
-    
+    # write new merged tiletracker
+    combined_TT.write(TileTrackerFN, format="ascii.ecsv", overwrite=True)
+
+    # delete update tiletracker
+    os.remove(
+        TileTrackerFN.replace("TileTracker", "TileTracker-Update{}".format(endDate))
+    )
+
     return
-    
-    
+
 
 def makeTileTrackerFN(dirName, survey, obscon):
-    return dirName + '/{0}survey-{1}obscon-TileTracker.ecsv'.format(survey, obscon.upper())
-def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = None,
-    endDate = None, overwrite = True, update_only = False, lya1b = True, YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL', meta_info = None):
-    """Create action file which orders all actions to do with AMTL in order 
+    return dirName + "/{0}survey-{1}obscon-TileTracker.ecsv".format(
+        survey, obscon.upper()
+    )
+
+
+def makeTileTracker(
+    altmtldir,
+    survey="main",
+    obscon="DARK",
+    startDate=None,
+    endDate=None,
+    overwrite=True,
+    update_only=False,
+    lya1b=True,
+    YAMLdir="/global/cfs/cdirs/desi/survey/fiberassign/AltMTL",
+    meta_info=None,
+):
+    """Create action file which orders all actions to do with AMTL in order
     in which real survey did them.
 
     Parameters
@@ -600,19 +676,19 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         for the main survey and different iterations of SV, respectively.
     update_only : :class:`bool`, optional, defaults to False
         Used when only actions since the startdate are needed, for example
-        in the updateTileTracker function. 
+        in the updateTileTracker function.
     lya1b : :class:`bool`, optional, defaults to True
         Used to determine if an action should be created to mimic the lya1b
         numobs increase. (see: https://github.com/desihub/desitarget/pull/845/
         for details.) Only runs for obscon = dark and if there are actions
         at dates > 2025-07-21. Should be set to false in only extremely specific
         scenarios, when one is not trying to mimic real survey decisions.
-        
-    
+
+
 
     Returns
     -------
-    
+
     [Nothing]
 
     Notes
@@ -622,696 +698,1086 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
 
     TileTrackerFN = makeTileTrackerFN(altmtldir, survey, obscon)
 
-    if (survey.lower() == 'main') or (survey.lower() == 'y1'):
-        
-        surveyForTSS = 'main'
-        if survey.lower() == 'y1':
-            TileFN = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-{0}.fits'.format(obscon.upper())
+    if (survey.lower() == "main") or (survey.lower() == "y1"):
+        surveyForTSS = "main"
+        if survey.lower() == "y1":
+            TileFN = (
+                "/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/tiles-{0}.fits".format(
+                    obscon.upper()
+                )
+            )
         else:
-            TileFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv'
-    elif survey.lower() == 'sv3':
-        surveyForTSS = 'sv3'
-        TileFN = '/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-{0}.fits'.format(obscon.upper())
+            TileFN = (
+                "/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-main.ecsv"
+            )
+    elif survey.lower() == "sv3":
+        surveyForTSS = "sv3"
+        TileFN = "/global/cfs/cdirs/desi/survey/catalogs/SV3/LSS/tiles-{0}.fits".format(
+            obscon.upper()
+        )
     else:
-        raise ValueError('only valid values for `survey` are `main` and `sv3.` {0} was provided'.format(survey))
+        raise ValueError(
+            "only valid values for `survey` are `main` and `sv3.` {0} was provided".format(
+                survey
+            )
+        )
 
-    FABaseDir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'
+    FABaseDir = "/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/"
 
     Tiles = Table.read(TileFN)
 
-    TSSFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv'
+    TSSFN = (
+        "/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv"
+    )
 
     TSS = Table.read(TSSFN)
 
-    
-    MTLDTFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv'
+    MTLDTFN = (
+        "/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv"
+    )
     MTLDT = Table.read(MTLDTFN)
 
     # 20260506 - LGN: We need to read veto actions in order to process vetoes for BRIGHT1B
-    MTLDVFN = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-vetoes.ecsv'
+    MTLDVFN = (
+        "/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-vetoes.ecsv"
+    )
     MTLDV = Table.read(MTLDVFN)
 
-    #tiles-specstatus file filtered to only matching obscon and surveySURVEY FAPRGRM
-    TSS_Sel = TSS[(TSS['SURVEY'] == surveyForTSS) & (TSS['FAPRGRM'] == obscon.lower())]
-    
-    TilesSel = np.unique(TSS_Sel['TILEID'])
+    # tiles-specstatus file filtered to only matching obscon and surveySURVEY FAPRGRM
+    TSS_Sel = TSS[(TSS["SURVEY"] == surveyForTSS) & (TSS["FAPRGRM"] == obscon.lower())]
 
-    #convert start/enddate into datetime objects, used for comparison
-    #if update_only is True, and for ledger addition actions
+    TilesSel = np.unique(TSS_Sel["TILEID"])
+
+    # convert start/enddate into datetime objects, used for comparison
+    # if update_only is True, and for ledger addition actions
     startDate_dt = datetime.strptime(str(startDate), "%Y%m%d")
     endDate_dt = datetime.strptime(str(endDate), "%Y%m%d")
 
-    #format startdate into string for comparisson to MTL DT timestamp column
-    #note we increment startDate by one day to avoid overlapping on previous endDate
-    #(less than or equal to doesn't work due to datatype comparison)
+    # format startdate into string for comparisson to MTL DT timestamp column
+    # note we increment startDate by one day to avoid overlapping on previous endDate
+    # (less than or equal to doesn't work due to datatype comparison)
     startDate_str = (startDate_dt).strftime("%Y-%m-%d")
-    startDate_str_inc1 = (startDate_dt+timedelta(days=1)).strftime("%Y-%m-%d")
-    endDate_str = (endDate_dt).strftime("%Y-%m-%d") 
+    startDate_str_inc1 = (startDate_dt + timedelta(days=1)).strftime("%Y-%m-%d")
+    endDate_str = (endDate_dt).strftime("%Y-%m-%d")
 
-    #if we only want entries from tiles within the [startDate, endDate] window
+    # if we only want entries from tiles within the [startDate, endDate] window
     if update_only:
         # 20260303 LGN Changing behavior to work with makeTileTracker refactor
         # 20260303 LGN We now longer check against the end date based on MTLDoneTiles, just start date
         # 20260303 LGN This allows us to select actions fa'd before, but updated after the end date
-        
-        #change output name to avoid overwriting the existing tile tracker
-        TileTrackerFN = TileTrackerFN.replace('TileTracker','TileTracker-Update{}'.format(endDate))
 
-        #select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
-        #overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check program/survey match)
-        time_sel = (MTLDT['TIMESTAMP'] > startDate_str_inc1) & (np.isin(MTLDT['TILEID'],TilesSel))
-        TilesSel = np.unique(MTLDT[time_sel]['TILEID'])
-    
+        # change output name to avoid overwriting the existing tile tracker
+        TileTrackerFN = TileTrackerFN.replace(
+            "TileTracker", "TileTracker-Update{}".format(endDate)
+        )
+
+        # select relevant tiles using timestamps in mtl done tiles file, only interested in tiles matching survey and program
+        # overwrite iterand TilesSel (note we still use the initial determination of TilesSel to check program/survey match)
+        time_sel = (MTLDT["TIMESTAMP"] > startDate_str_inc1) & (
+            np.isin(MTLDT["TILEID"], TilesSel)
+        )
+        TilesSel = np.unique(MTLDT[time_sel]["TILEID"])
+
     TileIDs = []
     TypeOfActions = []
     TimesOfActions = []
-    #times for fa actions come from the fiberassign-{tile}.fits file
-    #times for update actions come from the mtl done tiles file
+    # times for fa actions come from the fiberassign-{tile}.fits file
+    # times for update actions come from the mtl done tiles file
     doneFlag = []
     archiveDates = []
-    
+
     for tileid in TilesSel:
-        print('tileid = {0}'.format(tileid))
-        
+        print("tileid = {0}".format(tileid))
+
         ts = str(tileid).zfill(6)
-        
-        thisTileMTLDT = MTLDT[MTLDT['TILEID'] == tileid]
-        
-        # 20260302 LGN Rewriting to remove ARCHIVEDATE check. 
+
+        thisTileMTLDT = MTLDT[MTLDT["TILEID"] == tileid]
+
+        # 20260302 LGN Rewriting to remove ARCHIVEDATE check.
         # 20260302 LGN We want fa actions before the endDate to be included.
         if len(thisTileMTLDT) == 0:
             continue
         elif len(thisTileMTLDT) > 1:
-            thisTileMTLDT.sort('TIMESTAMP')
+            thisTileMTLDT.sort("TIMESTAMP")
         else:
             log.info(len(thisTileMTLDT))
-            log.info(thisTileMTLDT['ARCHIVEDATE'])
-            log.info(thisTileMTLDT['ARCHIVEDATE'][0])
-            log.info(type(thisTileMTLDT['ARCHIVEDATE'][0]))
-        
+            log.info(thisTileMTLDT["ARCHIVEDATE"])
+            log.info(thisTileMTLDT["ARCHIVEDATE"][0])
+            log.info(type(thisTileMTLDT["ARCHIVEDATE"][0]))
+
         reprocFlag = False
-        thisFAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
+        thisFAFN = FABaseDir + f"/{ts[0:3]}/fiberassign-{ts}.fits"
 
         thisfhtOrig = fitsio.read_header(thisFAFN)
-        thisfadate = thisfhtOrig['MTLTIME']
+        thisfadate = thisfhtOrig["MTLTIME"]
         thisfadate = desitarget.mtl.add_to_iso_date(thisfadate, 1)
-        thisfanite = int(''.join(thisfadate.split('T')[0].split('-')))
+        thisfanite = int("".join(thisfadate.split("T")[0].split("-")))
         if thisfanite > endDate:
             continue
-        
+
         TileIDs.append(tileid)
-        TypeOfActions.append('fa')
+        TypeOfActions.append("fa")
         TimesOfActions.append(thisfadate)
         archiveDates.append(thisfanite)
-        if thisfanite < startDate and not update_only: #05/28/25 : adding special case for update_only, we want all flags set to False
+        if (
+            thisfanite < startDate and not update_only
+        ):  # 05/28/25 : adding special case for update_only, we want all flags set to False
             doneFlag.append(True)
         else:
             doneFlag.append(False)
-        
+
         for update in thisTileMTLDT:
-            
-                
-            thisupdateTimestamp = update['TIMESTAMP']
-            thisupdateNite = int(''.join(thisupdateTimestamp.split('T')[0].split('-')))
-            if (thisupdateNite > endDate):
+            thisupdateTimestamp = update["TIMESTAMP"]
+            thisupdateNite = int("".join(thisupdateTimestamp.split("T")[0].split("-")))
+            if thisupdateNite > endDate:
                 continue
-            
+
             TileIDs.append(tileid)
             if reprocFlag:
-                TypeOfActions.append('reproc')
+                TypeOfActions.append("reproc")
             else:
-                TypeOfActions.append('update')
+                TypeOfActions.append("update")
             TimesOfActions.append(thisupdateTimestamp)
-            if (thisupdateNite < startDate and not update_only): #05/28/25 : adding special case for update_only, we want all flags set to False
+            if (
+                thisupdateNite < startDate and not update_only
+            ):  # 05/28/25 : adding special case for update_only, we want all flags set to False
                 doneFlag.append(True)
             else:
                 doneFlag.append(False)
-            archiveDates.append(update['ARCHIVEDATE'])
+            archiveDates.append(update["ARCHIVEDATE"])
             reprocFlag = True
 
-    #LGN 20260506: adding new special actions for BRIGHT1B veto actions
-    veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
+    # LGN 20260506: adding new special actions for BRIGHT1B veto actions
+    veto_in_daterange = (
+        (MTLDV["TIMESTAMP"] >= startDate_str)
+        & (MTLDV["TIMESTAMP"] < endDate_str)
+        & (MTLDV["PROGRAM"] == obscon.upper())
+    )
 
     for veto_en in MTLDV[veto_in_daterange]:
-        #LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
-        veto_ts_dt = datetime.fromisoformat(veto_en['TIMESTAMP'])
-        veto_ts_inc2s = (veto_ts_dt+timedelta(seconds=2)).isoformat()
-        
+        # LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
+        veto_ts_dt = datetime.fromisoformat(veto_en["TIMESTAMP"])
+        veto_ts_inc2s = (veto_ts_dt + timedelta(seconds=2)).isoformat()
+
         TileIDs.append(-1)
-        TypeOfActions.append('veto')
+        TypeOfActions.append("veto")
         TimesOfActions.append(veto_ts_inc2s)
         doneFlag.append(False)
         archiveDates.append(-1)
 
-
-    #LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
-    #LGN This runs for all dark time surveys with actions at times later than 2025-07-21
-    #LGN unless the lya1b flag is set to false. Only change this flag if you are certain
-    #LGN you don't want to mimic real survey decisions.
-    if (lya1b) and (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
-        log.info('Adding QSO NUMOBS Increase Action')
+    # LGN 07/29/25: adding new special action for the LyA QSO NUMOBS increase
+    # LGN This runs for all dark time surveys with actions at times later than 2025-07-21
+    # LGN unless the lya1b flag is set to false. Only change this flag if you are certain
+    # LGN you don't want to mimic real survey decisions.
+    if (
+        (lya1b)
+        and (obscon.lower() == "dark")
+        and (max(TimesOfActions) > "2025-07-21T23:36:04+00:00")
+    ):
+        log.info("Adding QSO NUMOBS Increase Action")
         TileIDs.append(-1)
-        TypeOfActions.append('lya1b')
-        TimesOfActions.append('2025-07-21T23:36:04+00:00')
+        TypeOfActions.append("lya1b")
+        TimesOfActions.append("2025-07-21T23:36:04+00:00")
         doneFlag.append(False)
         archiveDates.append(20250721)
     else:
-        log.info('NOT adding QSO NUMOBS Increase Action')
-        log.info('You will not mimic real survey decisions after 2025-07-21T23:36:04+00:00')
+        log.info("NOT adding QSO NUMOBS Increase Action")
+        log.info(
+            "You will not mimic real survey decisions after 2025-07-21T23:36:04+00:00"
+        )
 
-    #LGN 20260401: Adding New check of the per-obscon YAML file. This will see if we are past the date
-    #LGN 20260401: for adding new ledgers and add an "addnew" action to the actionlist if needed
-    #LGN 20260401: Current implementation requires the yaml files being in the altmtldir, seems better than /LSS/bin?
-    yaml_fp = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
+    # LGN 20260401: Adding New check of the per-obscon YAML file. This will see if we are past the date
+    # LGN 20260401: for adding new ledgers and add an "addnew" action to the actionlist if needed
+    # LGN 20260401: Current implementation requires the yaml files being in the altmtldir, seems better than /LSS/bin?
+    yaml_fp = os.path.join(YAMLdir, f"{obscon.upper()}-ledgers.yaml")
     with open(yaml_fp) as f:
         HPYaml = yaml.safe_load(f)
-    #LGN 20260401: Get list of date in YAML, check dates after the first entry, which should always be 'Initial', could be explicit about this 
+    # LGN 20260401: Get list of date in YAML, check dates after the first entry, which should always be 'Initial', could be explicit about this
     dates = list(HPYaml.keys())
-    
+
     if len(dates) > 1:
         for date in dates[1:]:
-            #LGN 20260401: If date is in the timeframe between startDate and endDate add a new action for it
+            # LGN 20260401: If date is in the timeframe between startDate and endDate add a new action for it
             if startDate_str < date and endDate_str >= date:
-                log.info('Adding Ledger Addition Action')
+                log.info("Adding Ledger Addition Action")
                 TileIDs.append(-1)
-                TypeOfActions.append('addnew')
-                TimesOfActions.append(f'{date}T00:00:00+00:00')
+                TypeOfActions.append("addnew")
+                TimesOfActions.append(f"{date}T00:00:00+00:00")
                 doneFlag.append(False)
-                archiveDates.append(date.replace('-',''))
-    
+                archiveDates.append(date.replace("-", ""))
 
-    #LGN 20260426: Adding default meta info if meta info not supplied
+    # LGN 20260426: Adding default meta info if meta info not supplied
     if meta_info is None:
-        meta_info = {'Name': 'AltMTLTileTracker', 'StartDate': startDate, 'EndDate': endDate, 'amtldir':altmtldir}
-    
-            
+        meta_info = {
+            "Name": "AltMTLTileTracker",
+            "StartDate": startDate,
+            "EndDate": endDate,
+            "amtldir": altmtldir,
+        }
+
     ActionList = [TileIDs, TypeOfActions, TimesOfActions, doneFlag, archiveDates]
-    t = Table(ActionList,
-           names=('TILEID', 'ACTIONTYPE', 'ACTIONTIME', 'DONEFLAG', 'ARCHIVEDATE'),
-           meta=meta_info,
-           dtype=('<i8', '<U6', '<U25', 'bool', '<i8'))
-    t.sort(['ACTIONTIME', 'ACTIONTYPE', 'TILEID'])
-    
-    t.write(TileTrackerFN, format='ascii.ecsv', overwrite = overwrite)
+    t = Table(
+        ActionList,
+        names=("TILEID", "ACTIONTYPE", "ACTIONTIME", "DONEFLAG", "ARCHIVEDATE"),
+        meta=meta_info,
+        dtype=("<i8", "<U6", "<U25", "bool", "<i8"),
+    )
+    t.sort(["ACTIONTIME", "ACTIONTYPE", "TILEID"])
+
+    t.write(TileTrackerFN, format="ascii.ecsv", overwrite=overwrite)
 
 
-
-
-def trimToMTL(notMTL, MTL, debug = False, verbose = False):
+def trimToMTL(notMTL, MTL, debug=False, verbose=False):
     # JL trims a target file, which possesses all of the information in an MTL, down
-    # JL to the columns allowed in the MTL data model. 
+    # JL to the columns allowed in the MTL data model.
     allNames = notMTL.dtype.names
     MTLNames = MTL.dtype.names
     for n in allNames:
         if n in MTLNames:
             if debug:
-                print('allowed')
+                print("allowed")
                 print(n)
             continue
         else:
             if debug:
-                print('killed')
+                print("killed")
                 print(n)
             notMTL = rfn.drop_fields(notMTL, n)
     return notMTL
 
+
 # LGN 20260407 New function, designed to create a set of per-obscon yaml files, containing the dates at which ledgers
 # LGN 20260407 were added for the specified obscon. This file will be written at the altmtl root directory.
-def initializeYAML_HPTracker(obscon, outputMTLDir, output_sfx='', real_mtl_dir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/'): 
+def initializeYAML_HPTracker(
+    obscon,
+    outputMTLDir,
+    output_sfx="",
+    real_mtl_dir="/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/main/",
+):
     import xml.etree.ElementTree as ET
     from collections import defaultdict
 
     obscon = obscon.lower()
     # LGN 20260407 First use xml to parse the svn log for the directory
     # LGN 20260407 creating a dictionary mapping dates 'YYYY-MM-DD' to the added healpixels
-    directory = os.path.join(real_mtl_dir,obscon)
+    directory = os.path.join(real_mtl_dir, obscon)
     result = subprocess.run(
         ["svn", "log", "--verbose", "--xml", directory],
         capture_output=True,
         text=True,
-        check=True
+        check=True,
     )
 
     root = ET.fromstring(result.stdout)
     creation_dates = defaultdict(list)
-    
+
     for logentry in root.findall("logentry"):
         date = logentry.find("date").text  # ISO format
-    
+
         paths = logentry.find("paths")
         if paths is None:
             continue
-    
+
         for path in paths.findall("path"):
             action = path.attrib.get("action")
             filepath = path.text
-    
-            #Check for added files that match mtl ledger structure
-            if action == "A" and filepath[-5:] == '.ecsv':
-                #strip the healpixel from the path string and add it to the dictionary
-                hp = filepath.split('/')[-1].strip('.escv').split('-')[-1]
+
+            # Check for added files that match mtl ledger structure
+            if action == "A" and filepath[-5:] == ".ecsv":
+                # strip the healpixel from the path string and add it to the dictionary
+                hp = filepath.split("/")[-1].strip(".escv").split("-")[-1]
                 creation_dates[date[:10]].append(hp)
 
-    #special handling to define the 'Initial' category used to create initial set of ledgers
-    if obscon in ['bright','dark']:
+    # special handling to define the 'Initial' category used to create initial set of ledgers
+    if obscon in ["bright", "dark"]:
         creation_dates = {
-            'Initial': [v for k, vals in creation_dates.items()
-                        if datetime.fromisoformat(k).year < 2025
-                        for v in vals],
-            **{k: v for k, v in creation_dates.items()
-               if datetime.fromisoformat(k).year >= 2025}
+            "Initial": [
+                v
+                for k, vals in creation_dates.items()
+                if datetime.fromisoformat(k).year < 2025
+                for v in vals
+            ],
+            **{
+                k: v
+                for k, v in creation_dates.items()
+                if datetime.fromisoformat(k).year >= 2025
+            },
         }
-    elif obscon in ['dark1b','bright1b']:
-        #replace first date with 'Initial' for ledger initialization
-        creation_dates['Initial'] = creation_dates.pop(min(creation_dates.keys()))
+    elif obscon in ["dark1b", "bright1b"]:
+        # replace first date with 'Initial' for ledger initialization
+        creation_dates["Initial"] = creation_dates.pop(min(creation_dates.keys()))
     else:
-        print(f'Obscon: {obscon} is not supported')
+        print(f"Obscon: {obscon} is not supported")
         return
-    
-    #re-sort the yaml file so Initial is the first entry (cosmetic)
-    out = {'Initial': creation_dates['Initial'], **{k: creation_dates[k] for k in sorted(creation_dates) if k != 'Initial'}}
-    out_path = os.path.join(outputMTLDir,f'{obscon.upper()}-ledgers{output_sfx}.yaml')
-    
+
+    # re-sort the yaml file so Initial is the first entry (cosmetic)
+    out = {
+        "Initial": creation_dates["Initial"],
+        **{k: creation_dates[k] for k in sorted(creation_dates) if k != "Initial"},
+    }
+    out_path = os.path.join(outputMTLDir, f"{obscon.upper()}-ledgers{output_sfx}.yaml")
+
     with open(out_path, "w") as f:
         yaml.dump(out, f, sort_keys=False)
 
     return out_path
-                             
-#@profile
-def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed = 314159, 
-    obscon = 'DARK', survey = 'sv3', saveBackup = False, overwrite = False, startDate = None, endDate = None,
-    ztilefile = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv', 
-    hpnum = None, shuffleBrightPriorities = False, PromoteFracBGSFaint = 0.2, shuffleELGPriorities = False, 
-    PromoteFracELG = 0.1, shuffleSubpriorities = True, reproducing = False, usetmp = False, 
-    finalDir = None, profile = False, debug = False, verbose = False):
+
+
+# @profile
+def initializeAlternateMTLs(
+    initMTL,
+    outputMTL,
+    nAlt=2,
+    genSubset=None,
+    seed=314159,
+    obscon="DARK",
+    survey="sv3",
+    saveBackup=False,
+    overwrite=False,
+    startDate=None,
+    endDate=None,
+    ztilefile="/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/ops/tiles-specstatus.ecsv",
+    hpnum=None,
+    shuffleBrightPriorities=False,
+    PromoteFracBGSFaint=0.2,
+    shuffleELGPriorities=False,
+    PromoteFracELG=0.1,
+    shuffleSubpriorities=True,
+    reproducing=False,
+    usetmp=False,
+    finalDir=None,
+    profile=False,
+    debug=False,
+    verbose=False,
+):
     if profile:
         pr.enable()
     if verbose or debug:
-        log.info('starting initializeAltMTLs')
+        log.info("starting initializeAltMTLs")
 
-    if (shuffleSubpriorities ^ reproducing):
+    if shuffleSubpriorities ^ reproducing:
         pass
     else:
-        log.critical('If you are not shuffling subpriorities, you MUST be in debug/reproduction mode.')
-        raise ValueError('If you are not shuffling subpriorities, you MUST be in debug/reproduction mode.')
+        log.critical(
+            "If you are not shuffling subpriorities, you MUST be in debug/reproduction mode."
+        )
+        raise ValueError(
+            "If you are not shuffling subpriorities, you MUST be in debug/reproduction mode."
+        )
 
-    if ('trunk' in outputMTL.lower()) or  ('ops' in outputMTL.lower()):
-        raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
+    if ("trunk" in outputMTL.lower()) or ("ops" in outputMTL.lower()):
+        raise ValueError(
+            "In order to prevent accidental overwriting of the real MTLs, please remove 'ops' and 'trunk' from your MTL output directory"
+        )
 
-    if (not usetmp) or (usetmp and (outputMTL.startswith('/dev/shm/') or not(outputMTL.startswith('/tmp/')))):
+    if (not usetmp) or (
+        usetmp
+        and (outputMTL.startswith("/dev/shm/") or not (outputMTL.startswith("/tmp/")))
+    ):
         pass
     else:
-        log.critical('You are trying to write to local tmp directories but \
-            your write directory is not in local tmp (/dev/shm/ or /tmp/).')
-        log.critical('directory name: {0}'.format(outputMTL))
-        raise ValueError('usetmp set to True but output directory not in tmp. Output directory is {0}'.format(outputMTL))
+        log.critical(
+            "You are trying to write to local tmp directories but \
+            your write directory is not in local tmp (/dev/shm/ or /tmp/)."
+        )
+        log.critical("directory name: {0}".format(outputMTL))
+        raise ValueError(
+            "usetmp set to True but output directory not in tmp. Output directory is {0}".format(
+                outputMTL
+            )
+        )
 
-        
     if debug:
-        log.info('initMTL')
+        log.info("initMTL")
         log.info(initMTL)
-    ztilefn = ztilefile.split('/')[-1]
-    fn = initMTL.split('/')[-1]
-    log.info('reading initial MTL(s)')
+    ztilefn = ztilefile.split("/")[-1]
+    fn = initMTL.split("/")[-1]
+    log.info("reading initial MTL(s)")
     allentries = Table.read(initMTL)
     if verbose or debug:
-        log.info('initial MTL size: {}'.format(len(allentries)))
-    
+        log.info("initial MTL size: {}".format(len(allentries)))
+
     meta = allentries.meta
     if verbose or debug:
-        log.info('MTL metadata')
+        log.info("MTL metadata")
         log.info(meta)
-        log.info('initial MTL')
+        log.info("initial MTL")
         log.info(initMTL)
-        log.info('output MTL')
+        log.info("output MTL")
         log.info(outputMTL)
-    
-    if not ('Univ' in outputMTL):
-        log.warning('Code currently relies on using Univ as realization delimiter. \
-            Code may function improperly.')
-    altmtldir = os.path.dirname(outputMTL).split('Univ')[0]
+
+    if not ("Univ" in outputMTL):
+        log.warning(
+            "Code currently relies on using Univ as realization delimiter. \
+            Code may function improperly."
+        )
+    altmtldir = os.path.dirname(outputMTL).split("Univ")[0]
     origmtldir = os.path.dirname(initMTL).split(survey)[0]
-    #zcatdir = os.path.dirname(ztilefile)
+    # zcatdir = os.path.dirname(ztilefile)
 
-    if (startDate is None) or (startDate == ''):
-
-        firstTS = allentries[0]["TIMESTAMP"] 
+    if (startDate is None) or (startDate == ""):
+        firstTS = allentries[0]["TIMESTAMP"]
         initialentries = allentries[allentries["TIMESTAMP"] == firstTS]
         subpriorsInit = initialentries["SUBPRIORITY"]
         startDateShort = 19990101
     else:
-        log.debug('startdate')
+        log.debug("startdate")
         log.debug(startDate)
         initialentries = allentries[allentries["TIMESTAMP"] <= startDate]
-        subpriorsInit = initialentries["SUBPRIORITY"] 
+        subpriorsInit = initialentries["SUBPRIORITY"]
 
-        origmtltilefn = os.path.join(origmtldir, get_mtl_tile_file_name(secondary=False))
+        origmtltilefn = os.path.join(
+            origmtldir, get_mtl_tile_file_name(secondary=False)
+        )
         altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=False))
-        startDateShort = int(startDate.split('T')[0].replace('-', ''))
-    if ('T' in endDate) & ('-' in endDate):
-        endDateShort = int(endDate.split('T')[0].replace('-', '')) 
+        startDateShort = int(startDate.split("T")[0].replace("-", ""))
+    if ("T" in endDate) & ("-" in endDate):
+        endDateShort = int(endDate.split("T")[0].replace("-", ""))
     else:
         endDateShort = int(endDate)
 
     if verbose or debug:
-        log.info('generate subset? {0}'.format(genSubset))
+        log.info("generate subset? {0}".format(genSubset))
     if not genSubset is None:
         if type(genSubset) == int:
             if debug:
-                log.info('genSubset Int')
+                log.info("genSubset Int")
             iterloop = [genSubset]
         elif (type(genSubset) == list) or (type(genSubset) == np.ndarray):
             if debug:
-                log.info('genSubset Arraylike')
+                log.info("genSubset Arraylike")
             iterloop = genSubset
     else:
         if debug:
-            log.info('genSubset None')
+            log.info("genSubset None")
         iterloop = range(nAlt)
     if verbose or debug:
-        log.info('starting iterloop')
+        log.info("starting iterloop")
     for n in iterloop:
         if verbose or debug:
-            log.info('Realization {0:d}'.format(n))
+            log.info("Realization {0:d}".format(n))
         outputMTLDir = outputMTL.format(n)
         if verbose or debug:
-            log.info('outputMTLDir')
+            log.info("outputMTLDir")
             log.info(outputMTLDir)
-        outfile = outputMTLDir +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn)
+        outfile = (
+            outputMTLDir
+            + "/"
+            + str(survey).lower()
+            + "/"
+            + str(obscon).lower()
+            + "/"
+            + str(fn)
+        )
         if verbose or debug:
-            log.info('outfile')
+            log.info("outfile")
             log.info(outfile)
         if os.path.exists(outfile):
-            if overwrite: 
+            if overwrite:
                 if verbose or debug:
-                    log.info('overwrite')
+                    log.info("overwrite")
                 os.remove(outfile)
             else:
                 if verbose or debug:
-                    log.info('continuing')
+                    log.info("continuing")
                 continue
         if type(hpnum) == str:
-            try: 
+            try:
                 hpnum = int(hpnum)
             except:
-                log.info('hpnum is string but not integer. Value is {0}'.format(hpnum))
-                raise ValueError('hpnum is string but not integer. Value is {0}'.format(hpnum))
+                log.info("hpnum is string but not integer. Value is {0}".format(hpnum))
+                raise ValueError(
+                    "hpnum is string but not integer. Value is {0}".format(hpnum)
+                )
             rand.seed(seed + hpnum + n)
         elif isinstance(hpnum, int) or isinstance(hpnum, np.int64):
             rand.seed(seed + hpnum + n)
         elif isinstance(hpnum, float) or isinstance(hpnum, np.float64):
-            assert(np.abs(hpnum - int(hpnum)) < 0.01)
+            assert np.abs(hpnum - int(hpnum)) < 0.01
             rand.seed(seed + int(hpnum) + n)
         else:
-            log.info('hpnum = {0}'.format(hpnum))
-            log.info('type(hpnum) = {0}'.format(type(hpnum)))
-            assert(0)
+            log.info("hpnum = {0}".format(hpnum))
+            log.info("type(hpnum) = {0}".format(type(hpnum)))
+            assert 0
             rand.seed(seed + n)
         if verbose or debug:
-            log.info('pre creating output dir')
+            log.info("pre creating output dir")
         if not os.path.exists(outputMTLDir):
             os.makedirs(outputMTLDir)
         if not os.path.exists(finalDir.format(n)):
             os.makedirs(finalDir.format(n))
-        if not os.path.isfile(finalDir.format(n) + '/' + ztilefn):
+        if not os.path.isfile(finalDir.format(n) + "/" + ztilefn):
             processTileFile(ztilefile, outputMTLDir + ztilefn, startDate, endDate)
-            #os.symlink(ztilefile, outputMTLDir + ztilefn)
+            # os.symlink(ztilefile, outputMTLDir + ztilefn)
         thisTileTrackerFN = makeTileTrackerFN(finalDir.format(n), survey, obscon)
-        log.info('path to tiletracker = {0}'.format(thisTileTrackerFN))
+        log.info("path to tiletracker = {0}".format(thisTileTrackerFN))
         if not os.path.isfile(thisTileTrackerFN):
-
-            #LGN 20260624 - Building tiletracker meta object here.
+            # LGN 20260624 - Building tiletracker meta object here.
             #              - Allows access to initialization keywords
-            tt_meta={'Name': 'AltMTLTileTracker', 'StartDate': startDateShort, 'EndDate': endDateShort, 'amtldir':finalDir.format(n),\
-                    'seed': seed, 'reproducing': reproducing, 'shuffleSubpriorities': shuffleSubpriorities, 'shuffleBrightPriorities': shuffleBrightPriorities,\
-                    'shuffleELGPriorities': shuffleELGPriorities, 'PromoteFracBGSFaint': PromoteFracBGSFaint, 'PromoteFracELG': PromoteFracELG}
+            tt_meta = {
+                "Name": "AltMTLTileTracker",
+                "StartDate": startDateShort,
+                "EndDate": endDateShort,
+                "amtldir": finalDir.format(n),
+                "seed": seed,
+                "reproducing": reproducing,
+                "shuffleSubpriorities": shuffleSubpriorities,
+                "shuffleBrightPriorities": shuffleBrightPriorities,
+                "shuffleELGPriorities": shuffleELGPriorities,
+                "PromoteFracBGSFaint": PromoteFracBGSFaint,
+                "PromoteFracELG": PromoteFracELG,
+            }
 
-            
-            makeTileTracker(finalDir.format(n), survey = survey, obscon = obscon,overwrite = False,
-             startDate = startDateShort, endDate = endDateShort, meta_info = tt_meta)
-            
-        elif (verbose or debug):
-            log.info('tiletracker already exists, not overwriting')
-        subpriors = initialentries['SUBPRIORITY']
+            makeTileTracker(
+                finalDir.format(n),
+                survey=survey,
+                obscon=obscon,
+                overwrite=False,
+                startDate=startDateShort,
+                endDate=endDateShort,
+                meta_info=tt_meta,
+            )
+
+        elif verbose or debug:
+            log.info("tiletracker already exists, not overwriting")
+        subpriors = initialentries["SUBPRIORITY"]
 
         if (not reproducing) and shuffleSubpriorities:
-            newSubpriors = rand.uniform(size = len(subpriors))
+            newSubpriors = rand.uniform(size=len(subpriors))
         else:
             newSubpriors = np.copy(subpriors)
         try:
-            
-            assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2) | ((not shuffleSubpriorities) and reproducing) )
+            assert (
+                (np.std(subpriorsInit - newSubpriors) > 0.001)
+                | (len(subpriors) < 2)
+                | ((not shuffleSubpriorities) and reproducing)
+            )
         except:
-            log.warning('first shuffle failed')
-            log.warning('size of initial subprior array')
+            log.warning("first shuffle failed")
+            log.warning("size of initial subprior array")
             log.warning(len(subpriorsInit))
 
-            newSubpriors = rand.uniform(size = len(subpriors))
-            assert((np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2))
+            newSubpriors = rand.uniform(size=len(subpriors))
+            assert (np.std(subpriorsInit - newSubpriors) > 0.001) | (len(subpriors) < 2)
 
-        initialentries['SUBPRIORITY'] = newSubpriors
-        
+        initialentries["SUBPRIORITY"] = newSubpriors
 
         # add main priority values
-        
-        if  (obscon.lower() == 'bright') and (shuffleBrightPriorities):
-            if (survey.lower() == 'sv3'):
+
+        if (obscon.lower() == "bright") and (shuffleBrightPriorities):
+            if survey.lower() == "sv3":
                 BGSHIPBit = 2**3
                 BGSBit = 2**0
                 BGSPriorityInit = 102000
                 BGSHIPPriority = 102100
-                BGSTargKey = 'SV3_BGS_TARGET'
-                
-            elif (survey.lower() == 'main'):
+                BGSTargKey = "SV3_BGS_TARGET"
+
+            elif survey.lower() == "main":
                 BGSHIPBit = 2**3
                 BGSBit = 2**0
                 BGSPriorityInit = 2000
                 BGSHIPPriority = 2100
-                #BGSBits = initialentries['BGS_TARGET']
-                BGSTargKey = 'BGS_TARGET'
+                # BGSBits = initialentries['BGS_TARGET']
+                BGSTargKey = "BGS_TARGET"
             else:
-                raise ValueError('Survey.lower should be `sv3` or `main` but is instead {0:s}'.format(survey.lower()))
+                raise ValueError(
+                    "Survey.lower should be `sv3` or `main` but is instead {0:s}".format(
+                        survey.lower()
+                    )
+                )
             BGSBits = initialentries[BGSTargKey]
-            BGSFaintHIP = ((BGSBits & BGSHIPBit) == BGSHIPBit)
+            BGSFaintHIP = (BGSBits & BGSHIPBit) == BGSHIPBit
             BGSFaintAll = ((BGSBits & BGSBit) == BGSBit) | BGSFaintHIP
 
-            #Set all BGS_FAINT_HIP to BGS_FAINT
-            
-            initialentries[BGSTargKey][BGSFaintHIP] = (BGSBits[BGSFaintHIP] & ~BGSHIPBit)
-            initialentries['PRIORITY'][BGSFaintHIP] = BGSPriorityInit*np.ones(np.sum(BGSFaintHIP))
-            #initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), BGSFaintHIP.shape)
-            initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), np.sum(BGSFaintHIP))
+            # Set all BGS_FAINT_HIP to BGS_FAINT
 
-            #Select 20% of BGS_FAINT to promote using function from desitarget
+            initialentries[BGSTargKey][BGSFaintHIP] = BGSBits[BGSFaintHIP] & ~BGSHIPBit
+            initialentries["PRIORITY"][BGSFaintHIP] = BGSPriorityInit * np.ones(
+                np.sum(BGSFaintHIP)
+            )
+            # initialentries['TARGET_STATE'][BGSFaintHIP] = np.broadcast_to(np.array(['BGS_FAINT|UNOBS']), BGSFaintHIP.shape)
+            initialentries["TARGET_STATE"][BGSFaintHIP] = np.broadcast_to(
+                np.array(["BGS_FAINT|UNOBS"]), np.sum(BGSFaintHIP)
+            )
+
+            # Select 20% of BGS_FAINT to promote using function from desitarget
             BGSFaintNewHIP = random_fraction_of_trues(PromoteFracBGSFaint, BGSFaintAll)
-            #Promote them
+            # Promote them
 
-            initialentries[BGSTargKey][BGSFaintNewHIP] = (BGSBits[BGSFaintNewHIP] | BGSHIPBit)
-            #initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), BGSFaintNewHIP.shape)
-            initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), np.sum(BGSFaintNewHIP))
-            initialentries['PRIORITY'][BGSFaintNewHIP] = BGSHIPPriority*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
-            initialentries['PRIORITY_INIT'][BGSFaintNewHIP] = BGSHIPPriority*np.ones(np.sum(BGSFaintNewHIP)).astype(int)
+            initialentries[BGSTargKey][BGSFaintNewHIP] = (
+                BGSBits[BGSFaintNewHIP] | BGSHIPBit
+            )
+            # initialentries['TARGET_STATE'][BGSFaintNewHIP] = np.broadcast_to(np.array(['BGS_FAINT_HIP|UNOBS']), BGSFaintNewHIP.shape)
+            initialentries["TARGET_STATE"][BGSFaintNewHIP] = np.broadcast_to(
+                np.array(["BGS_FAINT_HIP|UNOBS"]), np.sum(BGSFaintNewHIP)
+            )
+            initialentries["PRIORITY"][BGSFaintNewHIP] = BGSHIPPriority * np.ones(
+                np.sum(BGSFaintNewHIP)
+            ).astype(int)
+            initialentries["PRIORITY_INIT"][BGSFaintNewHIP] = BGSHIPPriority * np.ones(
+                np.sum(BGSFaintNewHIP)
+            ).astype(int)
 
-        elif (survey.lower() == 'main') and (obscon.lower() == 'dark') and (shuffleELGPriorities):
+        elif (
+            (survey.lower() == "main")
+            and (obscon.lower() == "dark")
+            and (shuffleELGPriorities)
+        ):
+            # desi_mask
 
-            #desi_mask
+            # evaluateMask(bit, mask, evalMultipleBits = False):
+            # flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
 
-            #evaluateMask(bit, mask, evalMultipleBits = False):
-            #flipBit(cat, bit2Flip, cond = None, fieldName = 'DESI_TARGET', mode = 'on'):
+            ELGBits = initialentries["DESI_TARGET"]
 
-            ELGBits = initialentries['DESI_TARGET']
-
-            #Set up condition arrays to select each type of target class
-            LRGs    = evaluateMask(ELGBits, desi_mask['LRG'])
-            ELGs    = evaluateMask(ELGBits, desi_mask['ELG'])
-            QSOs    = evaluateMask(ELGBits, desi_mask['QSO'])
-            ELGHIPs = evaluateMask(ELGBits, desi_mask['ELG_HIP'])
-            ELGLOPs = evaluateMask(ELGBits, desi_mask['ELG_LOP'])
-            ELGVLOs = evaluateMask(ELGBits, desi_mask['ELG_VLO'])
+            # Set up condition arrays to select each type of target class
+            LRGs = evaluateMask(ELGBits, desi_mask["LRG"])
+            ELGs = evaluateMask(ELGBits, desi_mask["ELG"])
+            QSOs = evaluateMask(ELGBits, desi_mask["QSO"])
+            ELGHIPs = evaluateMask(ELGBits, desi_mask["ELG_HIP"])
+            ELGLOPs = evaluateMask(ELGBits, desi_mask["ELG_LOP"])
+            ELGVLOs = evaluateMask(ELGBits, desi_mask["ELG_VLO"])
             if debug:
-                log.info('ELGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGs)))
-                log.info('LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(LRGs)))
-                log.info('QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(QSOs)))
-                log.info('ELGHIPs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs)))
-                log.info('ELGLOPs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPs)))
-                log.info('ELGVLOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOs)))
+                log.info("ELGs:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGs)))
+                log.info("LRGs:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(LRGs)))
+                log.info("QSOs:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(QSOs)))
+                log.info("ELGHIPs:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGHIPs)))
+                log.info("ELGLOPs:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGLOPs)))
+                log.info("ELGVLOs:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGVLOs)))
 
+                log.info(
+                    "ELGHIPs&ELGLOPs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPs & ELGLOPs)
+                    )
+                )
+                log.info(
+                    "ELGHIPs&ELGVLOs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPs & ELGVLOs)
+                    )
+                )
+                log.info(
+                    "ELGHIPs&LRGs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPs & LRGs)
+                    )
+                )
+                log.info(
+                    "ELGHIPs&QSOs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPs & QSOs)
+                    )
+                )
+                log.info(
+                    "ELGLOPs&LRGs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGLOPs & LRGs)
+                    )
+                )
+                log.info(
+                    "ELGLOPs&QSOs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGLOPs & QSOs)
+                    )
+                )
+                log.info(
+                    "ELGVLOs&LRGs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGVLOs & LRGs)
+                    )
+                )
+                log.info(
+                    "ELGVLOs&QSOs:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGVLOs & QSOs)
+                    )
+                )
 
-                log.info('ELGHIPs&ELGLOPs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&ELGLOPs)))
-                log.info('ELGHIPs&ELGVLOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&ELGVLOs)))
-                log.info('ELGHIPs&LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&LRGs)))
-                log.info('ELGHIPs&QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPs&QSOs)))
-                log.info('ELGLOPs&LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPs&LRGs)))
-                log.info('ELGLOPs&QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPs&QSOs)))
-                log.info('ELGVLOs&LRGs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOs&LRGs)))
-                log.info('ELGVLOs&QSOs:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOs&QSOs)))
+            # turn off the ELG_HIP bit
+            initialentries = flipBit(
+                initialentries,
+                desi_mask["ELG_HIP"],
+                cond=ELGHIPs,
+                mode="off",
+                fieldName="DESI_TARGET",
+            )
 
+            # reset object priority, priority_init, and numobs_init based on new target bits.
+            outpriority, outnumobs = initial_priority_numobs(
+                initialentries, obscon="DARK"
+            )
+            initialentries["PRIORITY"][ELGHIPs] = outpriority[ELGHIPs]
+            initialentries["PRIORITY_INIT"][ELGHIPs] = outpriority[ELGHIPs]
+            initialentries["NUMOBS_INIT"][ELGHIPs] = outnumobs[ELGHIPs]
 
-            #turn off the ELG_HIP bit
-            initialentries = flipBit(initialentries, desi_mask['ELG_HIP'], cond = ELGHIPs, mode = 'off', fieldName = 'DESI_TARGET')
+            # JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier.
+            initialentries["TARGET_STATE"][
+                ELGHIPs & ELGVLOs & np.invert(LRGs) & np.invert(QSOs)
+            ] = np.broadcast_to(
+                np.array(["ELG_VLO|UNOBS"]),
+                np.sum(ELGHIPs & ELGVLOs & np.invert(LRGs) & np.invert(QSOs)),
+            )
 
-            #reset object priority, priority_init, and numobs_init based on new target bits. 
-            outpriority, outnumobs = initial_priority_numobs(initialentries, obscon = 'DARK')
-            initialentries['PRIORITY'][ELGHIPs] = outpriority[ELGHIPs]
-            initialentries['PRIORITY_INIT'][ELGHIPs] = outpriority[ELGHIPs]
-            initialentries['NUMOBS_INIT'][ELGHIPs] = outnumobs[ELGHIPs]
+            initialentries["TARGET_STATE"][
+                ELGHIPs & ELGLOPs & np.invert(LRGs) & np.invert(QSOs)
+            ] = np.broadcast_to(
+                np.array(["ELG_LOP|UNOBS"]),
+                np.sum(ELGHIPs & ELGLOPs & np.invert(LRGs) & np.invert(QSOs)),
+            )
 
+            initialentries["TARGET_STATE"][ELGHIPs & LRGs] = np.broadcast_to(
+                np.array(["LRG|UNOBS"]), np.sum(ELGHIPs & LRGs)
+            )
 
-            #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
-            initialentries['TARGET_STATE'][ELGHIPs & ELGVLOs & np.invert(LRGs) & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_VLO|UNOBS']), np.sum(ELGHIPs & ELGVLOs & np.invert(LRGs) & np.invert(QSOs) ) )
-
-            initialentries['TARGET_STATE'][ELGHIPs & ELGLOPs & np.invert(LRGs) & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_LOP|UNOBS']), np.sum(ELGHIPs & ELGLOPs & np.invert(LRGs) & np.invert(QSOs) ) )
-
-            initialentries['TARGET_STATE'][ELGHIPs & LRGs] = np.broadcast_to(np.array(['LRG|UNOBS']), np.sum(ELGHIPs & LRGs) )
-
-
-            #For Debug. New Target bit flags after demoting all ELG_HIPs
-            ELGBitsMid = initialentries['DESI_TARGET']
-            LRGsMid    = evaluateMask(ELGBitsMid, desi_mask['LRG'])
-            ELGsMid    = evaluateMask(ELGBitsMid, desi_mask['ELG'])
-            QSOsMid    = evaluateMask(ELGBitsMid, desi_mask['QSO'])
-            ELGHIPsMid = evaluateMask(ELGBitsMid, desi_mask['ELG_HIP'])
-            ELGLOPsMid = evaluateMask(ELGBitsMid, desi_mask['ELG_LOP'])
-            ELGVLOsMid = evaluateMask(ELGBitsMid, desi_mask['ELG_VLO'])
+            # For Debug. New Target bit flags after demoting all ELG_HIPs
+            ELGBitsMid = initialentries["DESI_TARGET"]
+            LRGsMid = evaluateMask(ELGBitsMid, desi_mask["LRG"])
+            ELGsMid = evaluateMask(ELGBitsMid, desi_mask["ELG"])
+            QSOsMid = evaluateMask(ELGBitsMid, desi_mask["QSO"])
+            ELGHIPsMid = evaluateMask(ELGBitsMid, desi_mask["ELG_HIP"])
+            ELGLOPsMid = evaluateMask(ELGBitsMid, desi_mask["ELG_LOP"])
+            ELGVLOsMid = evaluateMask(ELGBitsMid, desi_mask["ELG_VLO"])
             if debug:
-                log.info('ELGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGsMid)))
-                log.info('LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(LRGsMid)))
-                log.info('QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(QSOsMid)))
-                log.info('ELGHIPsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid)))
-                log.info('ELGLOPsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsMid)))
-                log.info('ELGVLOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsMid)))
+                log.info("ELGsMid:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGsMid)))
+                log.info("LRGsMid:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(LRGsMid)))
+                log.info("QSOsMid:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(QSOsMid)))
+                log.info(
+                    "ELGHIPsMid:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGHIPsMid))
+                )
+                log.info(
+                    "ELGLOPsMid:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGLOPsMid))
+                )
+                log.info(
+                    "ELGVLOsMid:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGVLOsMid))
+                )
 
+                log.info(
+                    "ELGHIPsMid&ELGLOPsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsMid & ELGLOPsMid)
+                    )
+                )
+                log.info(
+                    "ELGHIPsMid&ELGVLOsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsMid & ELGVLOsMid)
+                    )
+                )
+                log.info(
+                    "ELGHIPsMid&LRGsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsMid & LRGsMid)
+                    )
+                )
+                log.info(
+                    "ELGHIPsMid&QSOsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsMid & QSOsMid)
+                    )
+                )
+                log.info(
+                    "ELGLOPsMid&LRGsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGLOPsMid & LRGsMid)
+                    )
+                )
+                log.info(
+                    "ELGLOPsMid&QSOsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGLOPsMid & QSOsMid)
+                    )
+                )
+                log.info(
+                    "ELGVLOsMid&LRGsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGVLOsMid & LRGsMid)
+                    )
+                )
+                log.info(
+                    "ELGVLOsMid&QSOsMid:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGVLOsMid & QSOsMid)
+                    )
+                )
 
-                log.info('ELGHIPsMid&ELGLOPsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&ELGLOPsMid)))
-                log.info('ELGHIPsMid&ELGVLOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&ELGVLOsMid)))
-                log.info('ELGHIPsMid&LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&LRGsMid)))
-                log.info('ELGHIPsMid&QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsMid&QSOsMid)))
-                log.info('ELGLOPsMid&LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsMid&LRGsMid)))
-                log.info('ELGLOPsMid&QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsMid&QSOsMid)))
-                log.info('ELGVLOsMid&LRGsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsMid&LRGsMid)))
-                log.info('ELGVLOsMid&QSOsMid:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsMid&QSOsMid)))
+            # Determine which 10% of ELGLOP and ELGVLO will be promoted to ELGHIP. These are done separately.
 
+            # ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGLOPs)
 
-
-            #Determine which 10% of ELGLOP and ELGVLO will be promoted to ELGHIP. These are done separately.
-
-            #ELGNewHIP = random_fraction_of_trues(PromoteFracELG, ELGLOPs)
-
-            #ELGNewHIP = ELGNewHIP | random_fraction_of_trues(PromoteFracELG, ELGVLOs)
+            # ELGNewHIP = ELGNewHIP | random_fraction_of_trues(PromoteFracELG, ELGVLOs)
 
             chosenLOP = rand.random(len(ELGLOPs)) < PromoteFracELG
-            ELGNewHIP_FromLOP = ELGLOPs & chosenLOP 
+            ELGNewHIP_FromLOP = ELGLOPs & chosenLOP
 
             chosenVLO = rand.random(len(ELGVLOs)) < PromoteFracELG
             ELGNewHIP_FromVLO = ELGVLOs & chosenVLO
 
             ELGNewHIP = ELGNewHIP_FromLOP | ELGNewHIP_FromVLO
             if debug:
-                log.info('ELGNewHIP_FromVLO:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGNewHIP_FromVLO)))
-                log.info('ELGNewHIP_FromLOP:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGNewHIP_FromLOP)))
-                log.info('ELGNewHIP:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGNewHIP)))
+                log.info(
+                    "ELGNewHIP_FromVLO:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGNewHIP_FromVLO)
+                    )
+                )
+                log.info(
+                    "ELGNewHIP_FromLOP:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGNewHIP_FromLOP)
+                    )
+                )
+                log.info("ELGNewHIP:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGNewHIP)))
 
-            #promote the just-determined 10% of ELG_LOP/ELG_VLO
-            initialentries = flipBit(initialentries, desi_mask['ELG_HIP'], cond = ELGNewHIP, mode = 'on', fieldName = 'DESI_TARGET')
+            # promote the just-determined 10% of ELG_LOP/ELG_VLO
+            initialentries = flipBit(
+                initialentries,
+                desi_mask["ELG_HIP"],
+                cond=ELGNewHIP,
+                mode="on",
+                fieldName="DESI_TARGET",
+            )
 
-
-            #For Debug. New Target bit flags after promoting 10% of ELGs to HIP
-            ELGBitsFinal = initialentries['DESI_TARGET']
-            LRGsFinal    = evaluateMask(ELGBitsFinal, desi_mask['LRG'])
-            ELGsFinal    = evaluateMask(ELGBitsFinal, desi_mask['ELG'])
-            QSOsFinal    = evaluateMask(ELGBitsFinal, desi_mask['QSO'])
-            ELGHIPsFinal = evaluateMask(ELGBitsFinal, desi_mask['ELG_HIP'])
-            ELGLOPsFinal = evaluateMask(ELGBitsFinal, desi_mask['ELG_LOP'])
-            ELGVLOsFinal = evaluateMask(ELGBitsFinal, desi_mask['ELG_VLO'])
+            # For Debug. New Target bit flags after promoting 10% of ELGs to HIP
+            ELGBitsFinal = initialentries["DESI_TARGET"]
+            LRGsFinal = evaluateMask(ELGBitsFinal, desi_mask["LRG"])
+            ELGsFinal = evaluateMask(ELGBitsFinal, desi_mask["ELG"])
+            QSOsFinal = evaluateMask(ELGBitsFinal, desi_mask["QSO"])
+            ELGHIPsFinal = evaluateMask(ELGBitsFinal, desi_mask["ELG_HIP"])
+            ELGLOPsFinal = evaluateMask(ELGBitsFinal, desi_mask["ELG_LOP"])
+            ELGVLOsFinal = evaluateMask(ELGBitsFinal, desi_mask["ELG_VLO"])
             if debug:
-                log.info('ELGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGsFinal)))
-                log.info('LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(LRGsFinal)))
-                log.info('QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(QSOsFinal)))
-                log.info('ELGHIPsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal)))
-                log.info('ELGLOPsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsFinal)))
-                log.info('ELGVLOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsFinal)))
+                log.info("ELGsFinal:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGsFinal)))
+                log.info("LRGsFinal:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(LRGsFinal)))
+                log.info("QSOsFinal:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(QSOsFinal)))
+                log.info(
+                    "ELGHIPsFinal:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGHIPsFinal))
+                )
+                log.info(
+                    "ELGLOPsFinal:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGLOPsFinal))
+                )
+                log.info(
+                    "ELGVLOsFinal:HPNUM:{0}:Sum:{1}".format(hpnum, np.sum(ELGVLOsFinal))
+                )
 
+                log.info(
+                    "ELGHIPsFinal&ELGLOPsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsFinal & ELGLOPsFinal)
+                    )
+                )
+                log.info(
+                    "ELGHIPsFinal&ELGVLOsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsFinal & ELGVLOsFinal)
+                    )
+                )
+                log.info(
+                    "ELGHIPsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsFinal & LRGsFinal)
+                    )
+                )
+                log.info(
+                    "ELGHIPsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGHIPsFinal & QSOsFinal)
+                    )
+                )
+                log.info(
+                    "ELGLOPsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGLOPsFinal & LRGsFinal)
+                    )
+                )
+                log.info(
+                    "ELGLOPsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGLOPsFinal & QSOsFinal)
+                    )
+                )
+                log.info(
+                    "ELGVLOsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGVLOsFinal & LRGsFinal)
+                    )
+                )
+                log.info(
+                    "ELGVLOsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}".format(
+                        hpnum, np.sum(ELGVLOsFinal & QSOsFinal)
+                    )
+                )
 
-                log.info('ELGHIPsFinal&ELGLOPsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&ELGLOPsFinal)))
-                log.info('ELGHIPsFinal&ELGVLOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&ELGVLOsFinal)))
-                log.info('ELGHIPsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&LRGsFinal)))
-                log.info('ELGHIPsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGHIPsFinal&QSOsFinal)))
-                log.info('ELGLOPsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsFinal&LRGsFinal)))
-                log.info('ELGLOPsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGLOPsFinal&QSOsFinal)))
-                log.info('ELGVLOsFinal&LRGsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsFinal&LRGsFinal)))
-                log.info('ELGVLOsFinal&QSOsFinal:HPNUM:{0}:Sum:{1}'.format(hpnum, np.sum(ELGVLOsFinal&QSOsFinal)))
+            # reset object priority, priority_init, and numobs_init based on new target bits.
+            outpriority, outnumobs = initial_priority_numobs(
+                initialentries, obscon="DARK"
+            )
+            initialentries["PRIORITY"][ELGNewHIP] = outpriority[ELGNewHIP]
+            initialentries["PRIORITY_INIT"][ELGNewHIP] = outpriority[ELGNewHIP]
+            initialentries["NUMOBS_INIT"][ELGNewHIP] = outnumobs[ELGNewHIP]
 
+            # JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier.
+            initialentries["TARGET_STATE"][ELGNewHIP & np.invert(QSOs)] = (
+                np.broadcast_to(
+                    np.array(["ELG_HIP|UNOBS"]), np.sum(ELGNewHIP & np.invert(QSOs))
+                )
+            )
 
-
-            #reset object priority, priority_init, and numobs_init based on new target bits. 
-            outpriority, outnumobs = initial_priority_numobs(initialentries, obscon = 'DARK')
-            initialentries['PRIORITY'][ELGNewHIP] = outpriority[ELGNewHIP]
-            initialentries['PRIORITY_INIT'][ELGNewHIP] = outpriority[ELGNewHIP]
-            initialentries['NUMOBS_INIT'][ELGNewHIP] = outnumobs[ELGNewHIP]
-
-            #JL - reset TARGET_STATES based on new target bits. This step isn't necessary for AMTL function but makes debugging using target states vastly easier. 
-            initialentries['TARGET_STATE'][ELGNewHIP & np.invert(QSOs)] = np.broadcast_to(np.array(['ELG_HIP|UNOBS']), np.sum(ELGNewHIP & np.invert(QSOs)  ) )
-        
-        if (verbose or debug):
-            log.info('Initial Entries Size: {}'.format(len(initialentries)))
-        retval = desitarget.io.write_mtl(outputMTLDir, initialentries, survey=survey, obscon=obscon, extra=meta, nsidefile=meta['FILENSID'], hpxlist = [meta['FILEHPX']])
-        if (verbose or debug):
-            log.info('write_mtl return value: {}'.format(retval))
+        if verbose or debug:
+            log.info("Initial Entries Size: {}".format(len(initialentries)))
+        retval = desitarget.io.write_mtl(
+            outputMTLDir,
+            initialentries,
+            survey=survey,
+            obscon=obscon,
+            extra=meta,
+            nsidefile=meta["FILENSID"],
+            hpxlist=[meta["FILEHPX"]],
+        )
+        if verbose or debug:
+            log.info("write_mtl return value: {}".format(retval))
         if debug or verbose:
-            log.info('(nowrite = False) ntargs, fn = {0}'.format(retval))
-        log.info('wrote MTLs to {0}'.format(outputMTLDir))
+            log.info("(nowrite = False) ntargs, fn = {0}".format(retval))
+        log.info("wrote MTLs to {0}".format(outputMTLDir))
         if saveBackup and (not usetmp):
-            if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/'):
-                os.makedirs(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
-            
-            
-            if not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn)):
+            if not os.path.exists(
+                str(outputMTLDir)
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/orig/"
+            ):
+                os.makedirs(
+                    str(outputMTLDir)
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/orig/"
+                )
+
+            if not os.path.exists(
+                str(outputMTLDir)
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/orig/"
+                + str(fn)
+            ):
                 from shutil import copyfile
-                copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
+
+                copyfile(
+                    str(outputMTLDir)
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/"
+                    + str(fn),
+                    str(outputMTLDir)
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/orig/"
+                    + str(fn),
+                )
         if usetmp:
             from shutil import copyfile
 
-            if not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() ):
-                os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() )
-            if saveBackup and (not os.path.exists(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')):
-                os.makedirs(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/')
+            if not os.path.exists(
+                str(finalDir.format(n))
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+            ):
+                os.makedirs(
+                    str(finalDir.format(n))
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                )
+            if saveBackup and (
+                not os.path.exists(
+                    str(finalDir.format(n))
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/orig/"
+                )
+            ):
+                os.makedirs(
+                    str(finalDir.format(n))
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/orig/"
+                )
             if debug:
-                log.info('tempdir contents before copying')
-                log.info(glob.glob(outputMTLDir + '/*' ))
-                log.info(glob.glob(outputMTLDir + '/main/dark/*' ))
-            copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/' + str(fn))
+                log.info("tempdir contents before copying")
+                log.info(glob.glob(outputMTLDir + "/*"))
+                log.info(glob.glob(outputMTLDir + "/main/dark/*"))
+            copyfile(
+                str(outputMTLDir)
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/"
+                + str(fn),
+                str(finalDir.format(n))
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/"
+                + str(fn),
+            )
             if debug:
-                log.info('tempdir contents after copying')
-                log.info(glob.glob(outputMTLDir + '/*' ))
-                log.info(glob.glob(outputMTLDir + '/main/dark/*' ))
+                log.info("tempdir contents after copying")
+                log.info(glob.glob(outputMTLDir + "/*"))
+                log.info(glob.glob(outputMTLDir + "/main/dark/*"))
 
-            if saveBackup and not os.path.exists(str(outputMTLDir) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn)):
-                #JL Potentially move the saveBackup copying to an afterburner
-                #JL to speed up afterburner process. Copy all at once
-                copyfile(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn), str(finalDir.format(n)) +'/' + str(survey).lower() + '/' +str(obscon).lower() + '/orig/' + str(fn))
-                
-            os.remove(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn))
+            if saveBackup and not os.path.exists(
+                str(outputMTLDir)
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/orig/"
+                + str(fn)
+            ):
+                # JL Potentially move the saveBackup copying to an afterburner
+                # JL to speed up afterburner process. Copy all at once
+                copyfile(
+                    str(outputMTLDir)
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/"
+                    + str(fn),
+                    str(finalDir.format(n))
+                    + "/"
+                    + str(survey).lower()
+                    + "/"
+                    + str(obscon).lower()
+                    + "/orig/"
+                    + str(fn),
+                )
+
+            os.remove(
+                str(outputMTLDir)
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/"
+                + str(fn)
+            )
             if debug:
-                log.info('tempdir contents after removing')
-                log.info(glob.glob(outputMTLDir + '/*' ))
+                log.info("tempdir contents after removing")
+                log.info(glob.glob(outputMTLDir + "/*"))
     if usetmp:
-        
         if verbose or debug:
-            log.info('cleaning up tmpdir')
-            log.info(glob.glob(outputMTLDir + '*' ))
-        f2c = glob.glob(outputMTLDir + '*' )
+            log.info("cleaning up tmpdir")
+            log.info(glob.glob(outputMTLDir + "*"))
+        f2c = glob.glob(outputMTLDir + "*")
         if verbose or debug:
-            log.info('finaldir')
+            log.info("finaldir")
             log.info(finalDir.format(n))
         for tempfn in f2c:
-            if '.' in str(os.path.split(tempfn)[1]):
+            if "." in str(os.path.split(tempfn)[1]):
                 if verbose or debug:
-                    log.info('copying tempfn: {0}'.format(tempfn))
-                copyfile(tempfn , str(finalDir.format(n)) +'/' + os.path.basename(tempfn) )
+                    log.info("copying tempfn: {0}".format(tempfn))
+                copyfile(
+                    tempfn, str(finalDir.format(n)) + "/" + os.path.basename(tempfn)
+                )
 
         if verbose or debug:
-            log.info('tempdir contents after copying')
-            log.info(glob.glob(outputMTLDir + '*' ))
+            log.info("tempdir contents after copying")
+            log.info(glob.glob(outputMTLDir + "*"))
 
     if profile:
         pr.disable()
@@ -1320,47 +1786,98 @@ def initializeAlternateMTLs(initMTL, outputMTL, nAlt = 2, genSubset = None, seed
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         if usetmp:
-
-            ps.dump_stats(str(finalDir.format(n)) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn) + '.prof')
+            ps.dump_stats(
+                str(finalDir.format(n))
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/"
+                + str(fn)
+                + ".prof"
+            )
         else:
-            ps.dump_stats(str(outputMTLDir) +'/' + str(survey).lower() + '/' + str(obscon).lower() + '/' + str(fn) + '.prof')
+            ps.dump_stats(
+                str(outputMTLDir)
+                + "/"
+                + str(survey).lower()
+                + "/"
+                + str(obscon).lower()
+                + "/"
+                + str(fn)
+                + ".prof"
+            )
         print(s.getvalue())
-        
-        
 
-def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'dark', multiproc =False, nproc = None, verbose = False, debug = False):
+
+def quickRestartFxn(
+    ndirs=1,
+    altmtlbasedir=None,
+    survey="sv3",
+    obscon="dark",
+    multiproc=False,
+    nproc=None,
+    verbose=False,
+    debug=False,
+):
     if verbose or debug:
-        log.info('quick restart running')
+        log.info("quick restart running")
     from shutil import copyfile, move
     from glob import glob as ls
+
     if multiproc:
-        iterloop = range(nproc, nproc+1)
+        iterloop = range(nproc, nproc + 1)
     else:
         iterloop = range(ndirs)
     for nRestart in iterloop:
         if verbose or debug:
             log.info(nRestart)
-        altmtldirRestart = altmtlbasedir + '/Univ{0:03d}/'.format(nRestart)
-        if os.path.exists(altmtldirRestart + 'mtl-done-tiles.ecsv'):
-            move(altmtldirRestart + 'mtl-done-tiles.ecsv',altmtldirRestart + 'mtl-done-tiles.ecsv.old')
-        restartMTLs = ls(altmtldirRestart +'/' + survey + '/' + obscon + '/' + '/orig/*')
+        altmtldirRestart = altmtlbasedir + "/Univ{0:03d}/".format(nRestart)
+        if os.path.exists(altmtldirRestart + "mtl-done-tiles.ecsv"):
+            move(
+                altmtldirRestart + "mtl-done-tiles.ecsv",
+                altmtldirRestart + "mtl-done-tiles.ecsv.old",
+            )
+        restartMTLs = ls(
+            altmtldirRestart + "/" + survey + "/" + obscon + "/" + "/orig/*"
+        )
         for fn in restartMTLs:
-            copyfile(fn, altmtldirRestart +'/' + survey + '/' + obscon + '/' + fn.split('/')[-1])
+            copyfile(
+                fn,
+                altmtldirRestart
+                + "/"
+                + survey
+                + "/"
+                + obscon
+                + "/"
+                + fn.split("/")[-1],
+            )
 
-def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark', 
-    verbose = False, debug = False, getosubp = False, redoFA = False, mock = False, reproducing = False):
-    #FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
+
+def do_fiberassignment(
+    altmtldir,
+    FATiles,
+    survey="sv3",
+    obscon="dark",
+    verbose=False,
+    debug=False,
+    getosubp=False,
+    redoFA=False,
+    mock=False,
+    reproducing=False,
+):
+    # FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
+    START_BEGIN = datetime.now()
     if len(FATiles):
         try:
-            log.info('FATiles[0] = {0}'.format(FATiles[0]))
+            log.info("FATiles[0] = {0}".format(FATiles[0]))
             if isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray)):
-                pass 
+                pass
             else:
                 FATiles = [FATiles]
         except:
-            log.info('cannot access element 0 of FATiles')
-    log.info('FATiles = {0}'.format(FATiles))
-
+            log.info("cannot access element 0 of FATiles")
+    log.info("FATiles = {0}".format(FATiles))
 
     OrigFAs = []
     AltFAs = []
@@ -1368,75 +1885,84 @@ def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark',
     TSs = []
     fadates = []
 
-
-    #if len(FATiles):
+    # if len(FATiles):
     #    log.info('len FATiles = {0}'.format(len(FATiles)))
-    #    pass 
-    #else:
+    #    pass
+    # else:
     #    return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
+    log.info(type(FATiles))
     for t in FATiles:
-        log.info('t = {0}'.format(t))
-        #JL This loop takes each of the original fiberassignments for each of the tiles on $date
-        #JL and opens them to obtain information for the alternative fiber assignments.
-        #JL Then it runs the alternative fiber assignments, stores the results in an array (AltFAs)
-        #JL while also storing the original fiber assignment files in a different array (OrigFA)
+        log.info("========================================= do_fiberassignment")
+        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+        log.info(type(t))
+        log.info(t)
+        # JL This loop takes each of the original fiberassignments for each of the tiles on $date
+        # JL and opens them to obtain information for the alternative fiber assignments.
+        # JL Then it runs the alternative fiber assignments, stores the results in an array (AltFAs)
+        # JL while also storing the original fiber assignment files in a different array (OrigFA)
 
-        ts = str(t['TILEID']).zfill(6)
-        #JL Full path to the original fiber assignment from the real survey
-        FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+        ts = str(t["TILEID"]).zfill(6)
+        # JL Full path to the original fiber assignment from the real survey
+        FAOrigName = (
+            "/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/"
+            + ts[:3]
+            + "/fiberassign-"
+            + ts
+            + ".fits.gz"
+        )
         fhtOrig = fitsio.read_header(FAOrigName)
-        fadate = fhtOrig['RUNDATE']
+        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+        fadate = fhtOrig["RUNDATE"]
         # e.g. DESIROOT/target/catalogs/dr9/1.0.0/targets/main/resolve/dark
-        targver = fhtOrig['TARG'].split('/targets')[0].split('/')[-1]
-        assert(not ('/' in targver))
-        log.info('fadate = {0}'.format(fadate))
-        #JL stripping out the time of fiber assignment to leave only the date
-        #JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
-        fadate = ''.join(fadate.split('T')[0].split('-'))
-        log.info('fadate stripped = {0}'.format(fadate))
-        fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
-        
-        log.info('fbadirbase = {0}'.format(fbadirbase))
-        log.info('ts = {0}'.format(ts))
+        targver = fhtOrig["TARG"].split("/targets")[0].split("/")[-1]
+        assert not ("/" in targver)
+        log.info("fadate = {0}".format(fadate))
+        # JL stripping out the time of fiber assignment to leave only the date
+        # JL THIS SHOULD ONLY BE USED IN DIRECTORY NAMES. THE ACTUAL RUNDATE VALUE SHOULD INCLUDE A TIME
+        fadate = "".join(fadate.split("T")[0].split("-"))
+        log.info("fadate stripped = {0}".format(fadate))
+        fbadirbase = altmtldir + "/fa/" + survey.upper() + "/" + fadate + "/"
+
+        log.info("fbadirbase = {0}".format(fbadirbase))
+        log.info("ts = {0}".format(ts))
         ##log.info('t[reprocflag] (should be false if here)= {0}'.format(t['REPROCFLAG']))
         ##assert(not bool(t['REPROCFLAG']))
-        #if str(ts) == str(3414).zfill(6):
+        # if str(ts) == str(3414).zfill(6):
         #    raise ValueError('Not only do I create the backup here but I also need to fix the reproc flag')
-        
+
         if getosubp:
-            #JL When we are trying to reproduce a prior survey and/or debug, create a separate
-            #JL directory in fbadirbase + /orig/ to store the reproduced FA files. 
-            FAAltName = fbadirbase + '/orig/fba-' + ts+ '.fits'
-            #FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
-            fbadir = fbadirbase + '/orig/'
+            # JL When we are trying to reproduce a prior survey and/or debug, create a separate
+            # JL directory in fbadirbase + /orig/ to store the reproduced FA files.
+            FAAltName = fbadirbase + "/orig/fba-" + ts + ".fits"
+            # FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+            fbadir = fbadirbase + "/orig/"
         else:
+            # JL For normal "alternate" operations, store the fiber assignments
+            # JL in the fbadirbase directory.
 
-            #JL For normal "alternate" operations, store the fiber assignments
-            #JL in the fbadirbase directory. 
-
-            FAAltName = fbadirbase + '/fba-' + ts+ '.fits'
-            #FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+            FAAltName = fbadirbase + "/fba-" + ts + ".fits"
+            # FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
             fbadir = fbadirbase
         if verbose or debug:
-            log.info('FAOrigName = {0}'.format(FAOrigName))
+            log.info("FAOrigName = {0}".format(FAOrigName))
+            log.info("FAAltName = {0}".format(FAAltName))
+        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
 
-            log.info('FAAltName = {0}'.format(FAAltName))
-
-        #JL Sometimes fiberassign leaves around temp files if a run is aborted. 
-        #JL This command removes those temp files to prevent endless crashes. 
-        if os.path.exists(FAAltName + '.tmp'):
-            os.remove(FAAltName + '.tmp')
-        #JL If the alternate fiberassignment was already performed, don't repeat it
-        #JL Unless the 'redoFA' flag is set to true
+        # JL Sometimes fiberassign leaves around temp files if a run is aborted.
+        # JL This command removes those temp files to prevent endless crashes.
+        if os.path.exists(FAAltName + ".tmp"):
+            os.remove(FAAltName + ".tmp")
+        # JL If the alternate fiberassignment was already performed, don't repeat it
+        # JL Unless the 'redoFA' flag is set to true
         if verbose or debug:
-            log.info('redoFA = {0}'.format(redoFA))
-            log.info('FAAltName = {0}'.format(FAAltName))
+            log.info("redoFA = {0}".format(redoFA))
+            log.info("FAAltName = {0}".format(FAAltName))
 
-        if  redoFA or (not os.path.exists(FAAltName)):
+        if redoFA or (not os.path.exists(FAAltName)):
             if verbose and os.path.exists(FAAltName):
-                log.info('repeating fiberassignment')
+                log.info("repeating fiberassignment")
             elif verbose:
-                log.info('fiberassignment not found, running fiberassignment')
+                log.info("fiberassignment not found, running fiberassignment")
             if verbose:
                 log.info(ts)
                 log.info(altmtldir + survey.lower())
@@ -1444,81 +1970,145 @@ def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark',
                 log.info(getosubp)
                 log.info(redoFA)
             if getosubp and verbose:
-                log.info('checking contents of fiberassign directory before calling get_fba_from_newmtl')
-                log.info(glob.glob(fbadir + '/*' ))
-            #get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
-            get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver, reproducing = reproducing)#, targets = targets)
-            command_run = (['bash', fbadir + 'fa-' + ts + '.sh']) 
+                log.info(
+                    "checking contents of fiberassign directory before calling get_fba_from_newmtl"
+                )
+                log.info(glob.glob(fbadir + "/*"))
+            # get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
+            log.info("========== get_fba_fromnewmtl")
+            log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+            get_fba_fromnewmtl(
+                ts,
+                mtldir=altmtldir + survey.lower() + "/",
+                outdir=fbadirbase,
+                getosubp=getosubp,
+                overwriteFA=redoFA,
+                verbose=verbose,
+                mock=mock,
+                targver=targver,
+                reproducing=reproducing,
+            )  # , targets = targets)
+            # JMC
+            log.info("========== fba_run")
+            log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
+            command_run = ["bash", fbadir + "fa-" + ts + ".sh"]
             if verbose:
-                log.info('fa command_run')
-                log.info(command_run)
-            result = subprocess.run(command_run, capture_output = True)
-        else: 
-            log.info('not repeating fiberassignment')
-        log.info('adding fiberassignments to arrays')
+                log.info(f"fa command_run: {command_run}")
+            run_script(command_run)
+            log.info("fa command end")
+            #result = subprocess.run(command_run, capture_output=True)
+        else:
+            log.info("not repeating fiberassignment")
+        log.info("adding fiberassignments to arrays")
         OrigFAs.append(pf.open(FAOrigName)[1].data)
         AltFAs.append(pf.open(FAAltName)[1].data)
         AltFAs2.append(pf.open(FAAltName)[2].data)
         TSs.append(ts)
         fadates.append(fadate)
+        log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
         
+    log.info(f"Duration (h:m:s): {datetime.now()-START_BEGIN}")
     return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
 
-def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, survey = 'sv3', obscon = 'dark', changeFiberOpt = None, verbose = False, debug = False, getosubp = False, redoFA = False):
+
+def make_fibermaps(
+    altmtldir,
+    OrigFAs,
+    AltFAs,
+    AltFAs2,
+    TSs,
+    fadates,
+    tiles,
+    survey="sv3",
+    obscon="dark",
+    changeFiberOpt=None,
+    verbose=False,
+    debug=False,
+    getosubp=False,
+    redoFA=False,
+):
     A2RMap = {}
     R2AMap = {}
     if verbose:
-        log.info('beginning loop through FA files')
-    for ofa, afa, afa2, ts, fadate, t in zip(OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles):
-        log.info('ts = {0}'.format(ts))
+        log.info("beginning loop through FA files")
+    for ofa, afa, afa2, ts, fadate, t in zip(
+        OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles
+    ):
+        log.info("ts = {0}".format(ts))
         if changeFiberOpt is None:
-            A2RMap, R2AMap = createFAmap(ofa, afa, changeFiberOpt = changeFiberOpt)
+            A2RMap, R2AMap = createFAmap(ofa, afa, changeFiberOpt=changeFiberOpt)
         else:
-            raise NotImplementedError('changeFiberOpt has not yet been implemented')
+            raise NotImplementedError("changeFiberOpt has not yet been implemented")
 
-            #FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
-            
-            A2RMap, R2AMap = createFAmap(ofa, afa, TargAlt = afa2, changeFiberOpt = changeFiberOpt)
+            # FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
 
-        fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
+            A2RMap, R2AMap = createFAmap(
+                ofa, afa, TargAlt=afa2, changeFiberOpt=changeFiberOpt
+            )
+
+        fbadirbase = altmtldir + "/fa/" + survey.upper() + "/" + fadate + "/"
         if getosubp:
-            FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/fba-' + ts+ '.fits'
-            FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
-            fbadir = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/orig/'
+            FAAltName = (
+                altmtldir
+                + "/fa/"
+                + survey.upper()
+                + "/"
+                + fadate
+                + "/orig/fba-"
+                + ts
+                + ".fits"
+            )
+            FAMapName = fbadirbase + "/orig/famap-" + ts + ".pickle"
+            fbadir = altmtldir + "/fa/" + survey.upper() + "/" + fadate + "/orig/"
         else:
-
-            FAAltName = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/fba-' + ts+ '.fits'
-            FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+            FAAltName = (
+                altmtldir
+                + "/fa/"
+                + survey.upper()
+                + "/"
+                + fadate
+                + "/fba-"
+                + ts
+                + ".fits"
+            )
+            FAMapName = fbadirbase + "/famap-" + ts + ".pickle"
             fbadir = fbadirbase
 
-
         if debug:
-            log.info('ts = {0}'.format(ts))
-            log.info('FAMapName = {0}'.format(FAMapName))
-        
-        
+            log.info("ts = {0}".format(ts))
+            log.info("FAMapName = {0}".format(FAMapName))
+
         if redoFA or (not (os.path.isfile(FAMapName))):
             if verbose:
-                log.info('dumping out fiber map to pickle file')
+                log.info("dumping out fiber map to pickle file")
             safe_pickle_dump((A2RMap, R2AMap), FAMapName)
-#            with open(FAMapName, 'wb') as handle:
-#                pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
-        #thisUTCDate = get_utc_date(survey=survey)
+        #            with open(FAMapName, 'wb') as handle:
+        #                pickle.dump((A2RMap, R2AMap), handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # thisUTCDate = get_utc_date(survey=survey)
         if verbose:
-            log.info('---')
-            log.info('unique keys in R2AMap = {0:d}'.format(np.unique(R2AMap.keys()).shape[0]))
-            log.info('---')
+            log.info("---")
+            log.info(
+                "unique keys in R2AMap = {0:d}".format(
+                    np.unique(R2AMap.keys()).shape[0]
+                )
+            )
+            log.info("---")
 
-            log.info('---')
-            log.info('unique keys in A2RMap = {0:d}'.format(np.unique(A2RMap.keys()).shape[0]))
-            log.info('---')
-        #retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'fa')
-        retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey)
-        log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
+            log.info("---")
+            log.info(
+                "unique keys in A2RMap = {0:d}".format(
+                    np.unique(A2RMap.keys()).shape[0]
+                )
+            )
+            log.info("---")
+        # retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'fa')
+        retval = write_amtl_tile_tracker(altmtldir, [t], obscon=obscon, survey=survey)
+        log.info("write_amtl_tile_tracker retval = {0}".format(retval))
 
     return A2RMap, R2AMap
 
-# LGN 20260609 Moving endian conversion helper outside of update_alt_ledger 
+
+# LGN 20260609 Moving endian conversion helper outside of update_alt_ledger
 def to_big_endian_table(tab):
     arr = tab.as_array()
 
@@ -1527,108 +2117,134 @@ def to_big_endian_table(tab):
     for name in arr.dtype.names:
         dt = arr.dtype[name]
 
-        if dt.byteorder == '<':
+        if dt.byteorder == "<":
             needs_conversion = True
             break
-        if dt.byteorder == '=' and np.little_endian:
+        if dt.byteorder == "=" and np.little_endian:
             needs_conversion = True
             break
 
     if not needs_conversion:
         return tab.copy()
 
-    arr_be = arr.byteswap().view(arr.dtype.newbyteorder('>'))
+    arr_be = arr.byteswap().view(arr.dtype.newbyteorder(">"))
     return Table(arr_be)
-    
+
+
 # LGN 20260220 Adding tiletracker as a passed argument
 # LGN 20260220 Necessary to check the fa date of an update action
 # LGN 20260220 In order to check if we should pass the ext keyword
-def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracker, survey = 'sv3', obscon = 'dark', today = None, 
-    getosubp = False, zcatdir = None, mock = False, numobs_from_ledger = True, targets = None, verbose = False, debug = False, zfix = None):
+def update_alt_ledger(
+    altmtldir,
+    althpdirname,
+    altmtltilefn,
+    actions,
+    tiletracker,
+    survey="sv3",
+    obscon="dark",
+    today=None,
+    getosubp=False,
+    zcatdir=None,
+    mock=False,
+    numobs_from_ledger=True,
+    targets=None,
+    verbose=False,
+    debug=False,
+    zfix=None,
+):
     if verbose or debug:
-        log.info('today = {0}'.format(today))
-        log.info('obscon = {0}'.format(obscon))
-        log.info('survey = {0}'.format(survey))
-    #UpdateTiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'update')
-    #log.info('updatetiles = {0}'.format(UpdateTiles))
+        log.info("today = {0}".format(today))
+        log.info("obscon = {0}".format(obscon))
+        log.info("survey = {0}".format(survey))
+    # UpdateTiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'update')
+    # log.info('updatetiles = {0}'.format(UpdateTiles))
     # ADM grab the zcat directory (in case we're relying on $ZCAT_DIR).
     zcatdir = get_zcat_dir(zcatdir)
     # ADM And contruct the associated ZTILE filename.
     ztilefn = os.path.join(zcatdir, get_ztile_file_name())
 
     if zfix is not None:
-        log.info('zfix is not None, therefore we will fix Z for sources in {zfix}'.format(zfix=zfix))
+        log.info(
+            "zfix is not None, therefore we will fix Z for sources in {zfix}".format(
+                zfix=zfix
+            )
+        )
         idqso, zalt = np.loadtxt(zfix, unpack=True)
 
-    #if len(UpdateTiles):
-    #    pass 
-    #else:
+    # if len(UpdateTiles):
+    #    pass
+    # else:
     #    return althpdirname, altmtltilefn, ztilefn, None
-    #isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray))
-    if not isinstance(actions['TILEID'], (collections.abc.Sequence, np.ndarray)):
+    # isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray))
+    if not isinstance(actions["TILEID"], (collections.abc.Sequence, np.ndarray)):
         actions = [actions]
-    log.info('actions = {0}'.format(actions))
+    log.info("actions = {0}".format(actions))
     for t in actions:
-        log.info('t = {0}'.format(t))
-        if t['ACTIONTYPE'].lower() == 'reproc':
-            raise ValueError('Reprocessing should be handled elsewhere.')
-            #raise ValueError('Make sure backup is made and reprocessing logic is correct before beginning reprocessing.')
-        ts = str(t['TILEID']).zfill(6)
+        log.info("t = {0}".format(t))
+        if t["ACTIONTYPE"].lower() == "reproc":
+            raise ValueError("Reprocessing should be handled elsewhere.")
+            # raise ValueError('Make sure backup is made and reprocessing logic is correct before beginning reprocessing.')
+        ts = str(t["TILEID"]).zfill(6)
 
-        FAOrigName = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
+        FAOrigName = (
+            "/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/"
+            + ts[:3]
+            + "/fiberassign-"
+            + ts
+            + ".fits.gz"
+        )
         fhtOrig = fitsio.read_header(FAOrigName)
-        fadate = fhtOrig['RUNDATE']
-        fadate = ''.join(fadate.split('T')[0].split('-'))
-        fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + fadate + '/'
-        log.info('t = {0}'.format(t))
-        log.info('fbadirbase = {0}'.format(fbadirbase))
-        log.info('ts = {0}'.format(ts))
+        fadate = fhtOrig["RUNDATE"]
+        fadate = "".join(fadate.split("T")[0].split("-"))
+        fbadirbase = altmtldir + "/fa/" + survey.upper() + "/" + fadate + "/"
+        log.info("t = {0}".format(t))
+        log.info("fbadirbase = {0}".format(fbadirbase))
+        log.info("ts = {0}".format(ts))
 
         if getosubp:
-            FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+            FAMapName = fbadirbase + "/orig/famap-" + ts + ".pickle"
         else:
-            FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+            FAMapName = fbadirbase + "/famap-" + ts + ".pickle"
 
-        log.info('FAMapName = {0}'.format(FAMapName))
-        with open(FAMapName,'rb') as fl:
-            (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
+        log.info("FAMapName = {0}".format(FAMapName))
+        with open(FAMapName, "rb") as fl:
+            (A2RMap, R2AMap) = pickle.load(fl, fix_imports=True)
 
         # ADM create the catalog of updated redshifts.
-        log.info('making zcats')
-        log.info('zcatdir = {0}'.format(zcatdir))
-        log.info('t = {0}'.format(t))
+        log.info("making zcats")
+        log.info("zcatdir = {0}".format(zcatdir))
+        log.info("t = {0}".format(t))
         zcat = make_zcat(zcatdir, [t], obscon, survey)
 
         # LGN Bug fix - converting zcat from little to big endianness
         zcat = to_big_endian_table(zcat)
 
-        altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap, debug = debug, verbose = verbose)
+        altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap, debug=debug, verbose=verbose)
         # ADM insist that for an MTL loop with real observations, the zcat
         # ADM must conform to the data model. In particular, it must include
         # ADM ZTILEID, and other columns addes for the Main Survey. These
         # ADM columns may not be needed for non-ledger simulations.
         # ADM Note that the data model differs with survey type.
-        
+
         if zfix is not None:
-            #idqso, zalt = np.loadtxt(zfix, unpack=True)
-            idqso = idqso.astype(altZCat['TARGETID'].dtype)
-            zalt = zalt.astype(altZCat['Z'].dtype)
+            # idqso, zalt = np.loadtxt(zfix, unpack=True)
+            idqso = idqso.astype(altZCat["TARGETID"].dtype)
+            zalt = zalt.astype(altZCat["Z"].dtype)
             sort_idx = np.argsort(idqso)
             sorted_src_ids = idqso[sort_idx]
             sorted_src_zalt = zalt[sort_idx]
 
-            mask = np.isin(altZCat['TARGETID'], sorted_src_ids)
-            pos = np.searchsorted(sorted_src_ids, altZCat['TARGETID'][mask])
+            mask = np.isin(altZCat["TARGETID"], sorted_src_ids)
+            pos = np.searchsorted(sorted_src_ids, altZCat["TARGETID"][mask])
 
-
-            altZCat['Z'][mask] = sorted_src_zalt[pos]
-            altZCat['Z_QN'][mask] = 0.
-        
+            altZCat["Z"][mask] = sorted_src_zalt[pos]
+            altZCat["Z_QN"][mask] = 0.0
 
         zcatdm = survey_data_model(zcatdatamodel, survey=survey)
         if zcat.dtype.descr != zcatdm.dtype.descr:
             msg = "zcat data model must be {} not {}!".format(
-                zcatdm.dtype.descr, zcat.dtype.descr)
+                zcatdm.dtype.descr, zcat.dtype.descr
+            )
             log.critical(msg)
             raise ValueError(msg)
         # ADM useful to know how many targets were updated.
@@ -1640,71 +2256,118 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
 
         # setting up update info
         didUpdateHappen = False
-        if obscon.lower() == 'dark1b' or obscon.lower() == 'bright1b':
-            log.info('setting 1B flag for update')
+        if obscon.lower() == "dark1b" or obscon.lower() == "bright1b":
+            log.info("setting 1B flag for update")
             is_1b = True
 
             # LGN 20260220 In order to determine if we pass ext=True we need to check the fiberassign date associated with this update
-            #fa_time = tiletracker[(tiletracker['TILEID'] == t['TILEID']) & (tiletracker['ACTIONTYPE'] == 'fa')]['ACTIONTIME']
-            if t['ACTIONTIME'] < '2025-07-21T23:36:04+00:00':
-                log.info('setting ext flag = False for 1B tile')
+            # fa_time = tiletracker[(tiletracker['TILEID'] == t['TILEID']) & (tiletracker['ACTIONTYPE'] == 'fa')]['ACTIONTIME']
+            if t["ACTIONTIME"] < "2025-07-21T23:36:04+00:00":
+                log.info("setting ext flag = False for 1B tile")
                 is_ext = False
             else:
-                log.info('setting ext flag = True for update')
+                log.info("setting ext flag = True for update")
                 is_ext = True
         else:
             is_1b = False
-            
+
         # ADM update the appropriate ledger.
         # LGN 20250909 Revising this section to update for 1B changes and simplifying
 
         if is_1b:
-            #getting abbreviated obscon/path for non 1B survey (i.e. dark1b -> dark)
-            althpdirname_short = os.path.join(os.path.dirname(althpdirname), os.path.basename(althpdirname).replace('1b', ''))
-            obscon_short = obscon.replace('1B','')
+            # getting abbreviated obscon/path for non 1B survey (i.e. dark1b -> dark)
+            althpdirname_short = os.path.join(
+                os.path.dirname(althpdirname),
+                os.path.basename(althpdirname).replace("1b", ""),
+            )
+            obscon_short = obscon.replace("1B", "")
 
+            # Updating the non-1b ledger
+            update_ledger(
+                althpdirname_short,
+                altZCat,
+                obscon=obscon_short.upper(),
+                numobs_from_ledger=numobs_from_ledger,
+                tabform="ascii.ecsv",
+                ext=is_ext,
+                targets=targets,
+            )
+            # Updating the 1b ledger
+            update_ledger(
+                althpdirname,
+                altZCat,
+                obscon=obscon.upper(),
+                numobs_from_ledger=numobs_from_ledger,
+                tabform="ascii.ecsv",
+                ext=is_ext,
+                targets=targets,
+            )
 
-            #Updating the non-1b ledger
-            update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
-            #Updating the 1b ledger
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
-             
         else:
-            #Updating ledger (No ext keyword)
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', targets = targets)
+            # Updating ledger (No ext keyword)
+            update_ledger(
+                althpdirname,
+                altZCat,
+                obscon=obscon.upper(),
+                numobs_from_ledger=numobs_from_ledger,
+                tabform="ascii.ecsv",
+                targets=targets,
+            )
 
         if verbose or debug:
-            log.info('if main, should sleep 1 second')
-        #thisUTCDate = get_utc_date(survey=survey)
+            log.info("if main, should sleep 1 second")
+        # thisUTCDate = get_utc_date(survey=survey)
         if survey == "main":
             sleep(1)
             if verbose or debug:
-                log.info('has slept one second')
-            #t["ALTARCHIVEDATE"] = thisUTCDate
+                log.info("has slept one second")
+            # t["ALTARCHIVEDATE"] = thisUTCDate
         if verbose or debug:
-            log.info('now writing to amtl_tile_tracker')
-        #io.write_mtl_tile_file(altmtltilefn,dateTiles)
-        #write_amtl_tile_tracker(altmtldir, dateTiles, thisUTCDate, obscon = obscon, survey = survey)
-        log.info('changes are being registered')
-        log.info('altmtldir = {0}'.format(altmtldir))
-        log.info('t = {0}'.format(t))
-        #log.info('thisUTCDate = {0}'.format(thisUTCDate))
-        log.info('today = {0}'.format(today))
-        #retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'update')
-        retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey)
-        log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
+            log.info("now writing to amtl_tile_tracker")
+        # io.write_mtl_tile_file(altmtltilefn,dateTiles)
+        # write_amtl_tile_tracker(altmtldir, dateTiles, thisUTCDate, obscon = obscon, survey = survey)
+        log.info("changes are being registered")
+        log.info("altmtldir = {0}".format(altmtldir))
+        log.info("t = {0}".format(t))
+        # log.info('thisUTCDate = {0}'.format(thisUTCDate))
+        log.info("today = {0}".format(today))
+        # retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'update')
+        retval = write_amtl_tile_tracker(altmtldir, [t], obscon=obscon, survey=survey)
+        log.info("write_amtl_tile_tracker retval = {0}".format(retval))
         if verbose or debug:
-            log.info('has written to amtl_tile_tracker')
+            log.info("has written to amtl_tile_tracker")
 
     return althpdirname, altmtltilefn, ztilefn, actions
-#@profile
-def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
-                altmtlbasedir=None, ndirs = 3, numobs_from_ledger=True, 
-                secondary=False, singletile = None, singleDate = None, debugOrig = False, 
-                    getosubp = False, quickRestart = False, redoFA = False,
-                    multiproc = False, nproc = None, testDoubleDate = False, 
-                    changeFiberOpt = None, targets = None, mock = False,
-                    debug = False, verbose = False, reproducing = False, single_action = False, zfix = None):
+
+
+# @profile
+def loop_alt_ledger(
+    obscon,
+    survey="sv3",
+    zcatdir=None,
+    mtldir=None,
+    altmtlbasedir=None,
+    ndirs=3,
+    numobs_from_ledger=True,
+    secondary=False,
+    singletile=None,
+    singleDate=None,
+    debugOrig=False,
+    getosubp=False,
+    quickRestart=False,
+    redoFA=False,
+    multiproc=False,
+    nproc=None,
+    testDoubleDate=False,
+    changeFiberOpt=None,
+    targets=None,
+    mock=False,
+    debug=False,
+    verbose=False,
+    reproducing=False,
+    single_action=False,
+    zfix=None,
+):
     """Execute full MTL loop, including reading files, updating ledgers.
 
     Parameters
@@ -1726,7 +2389,7 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         tile file. If ``None``, then look up the MTL directory from the
         $MTL_DIR environment variable.
     altmtlbasedir : :class:`str`, optional, defaults to ``None``
-        Formattable path to a directory that hosts alternate MTL ledgers  
+        Formattable path to a directory that hosts alternate MTL ledgers
         If ``None``, then look up the MTL directory from the
         $ALT_MTL_DIR environment variable. This will fail since that variable
         is not currently set in the desi code setup.
@@ -1740,8 +2403,8 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         If ``True`` then process secondary targets instead of primaries
         for passed `survey` and `obscon`.
     quickRestart : :class:`bool`, optional, defaults to ``False``
-        If ``True`` then copy original alternate MTLs from 
-        altmtlbasedir/Univ*/survey/obscon/orig and  
+        If ``True`` then copy original alternate MTLs from
+        altmtlbasedir/Univ*/survey/obscon/orig and
     redoFA : :class:`bool`, optional, defaults to ``False``
         If ``True`` then automatically redo fiberassignment regardless of
         existence of fiberassign file in alternate fiberassign directory
@@ -1749,13 +2412,13 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         If ``True`` then run a single MTL update in a directory specified by
         nproc.
     nproc : :class:`int`, optional, defaults to None
-        If multiproc is ``True`` this must be specified. Integer determines 
+        If multiproc is ``True`` this must be specified. Integer determines
         directory of alternate MTLs to update.
     single_action : :class:`bool`, optional, defaults to False
         If ``True`` then run a single dateloop iteration. Used in profiling.
     zfix : :class:`str`, optional, defaults to ``None``
-        txt filename with 2 columns, TARGETID and z. These will be fixed 
-        during update_ledger when creating the Altzcat, which normally reads 
+        txt filename with 2 columns, TARGETID and z. These will be fixed
+        during update_ledger when creating the Altzcat, which normally reads
         from the zmtl files. Use these redshifts instead
 
 
@@ -1777,20 +2440,20 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
     """
 
-
     if debug:
-        log.info('getosubp value: {0}'.format(getosubp))
-    if ('trunk' in altmtlbasedir.lower()) or  ('ops' in altmtlbasedir.lower()):
-        raise ValueError("In order to prevent accidental overwriting of the real MTLs, please remove \'ops\' and \'trunk\' from your MTL output directory")
-    assert((singleDate is None) or (type(singleDate) == bool))
+        log.info("getosubp value: {0}".format(getosubp))
+    if ("trunk" in altmtlbasedir.lower()) or ("ops" in altmtlbasedir.lower()):
+        raise ValueError(
+            "In order to prevent accidental overwriting of the real MTLs, please remove 'ops' and 'trunk' from your MTL output directory"
+        )
+    assert (singleDate is None) or (type(singleDate) == bool)
     if multiproc:
         import multiprocessing as mp
         import logging
 
-        logger=mp.log_to_stderr(logging.DEBUG)
+        logger = mp.log_to_stderr(logging.DEBUG)
 
     ### JL - Start of directory/loop variable construction ###
-
 
     # ADM first grab all of the relevant files.
     # ADM grab the MTL directory (in case we're relying on $MTL_DIR).
@@ -1807,48 +2470,69 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         resolve = None
     else:
         log.info(msg.format("PRIMARY", obscon, survey))
-    
-    
-    
+
     if altmtlbasedir is None:
-        log.critical('This will automatically find the alt mtl dir in the future but fails now. Bye.')
-        assert(0)
+        log.critical(
+            "This will automatically find the alt mtl dir in the future but fails now. Bye."
+        )
+        assert 0
     if debugOrig:
         iterloop = range(1)
     elif multiproc:
-        iterloop = range(nproc, nproc+1)
+        iterloop = range(nproc, nproc + 1)
     else:
         iterloop = range(ndirs)
     ### JL - End of directory/loop variable construction ###
 
-
     if quickRestart:
-        raise NotImplementedError('There is no way the quick restart will work properly post refactor.')
-        quickRestartFxn(ndirs = ndirs, altmtlbasedir = altmtlbasedir, survey = survey, obscon = obscon, multiproc = multiproc, nproc = nproc)
+        raise NotImplementedError(
+            "There is no way the quick restart will work properly post refactor."
+        )
+        quickRestartFxn(
+            ndirs=ndirs,
+            altmtlbasedir=altmtlbasedir,
+            survey=survey,
+            obscon=obscon,
+            multiproc=multiproc,
+            nproc=nproc,
+        )
 
     ### JL - this loop is through all realizations serially or (usually) one realization parallelized
+    cpt = 0
     for n in iterloop:
+        if cpt==1:
+            break
+        cpt += 1
+        log.info(f'============================== iterloop : {n}')
         if debugOrig:
-            altmtldir = altmtlbasedir + '/Univ000/'
+            altmtldir = altmtlbasedir + "/Univ000/"
         else:
-            altmtldir = altmtlbasedir + '/Univ{0:03d}/'.format(n)
-        altmtltilefn = os.path.join(altmtldir, get_mtl_tile_file_name(secondary=secondary))
- 
-        althpdirname = desitarget.io.find_target_files(altmtldir, flavor="mtl", resolve=resolve,
-                                     survey=survey, obscon=obscon, ender=form)
-        
-        altMTLTileTrackerFN = makeTileTrackerFN(altmtldir, survey = survey, obscon = obscon)
+            altmtldir = altmtlbasedir + "/Univ{0:03d}/".format(n)
+        altmtltilefn = os.path.join(
+            altmtldir, get_mtl_tile_file_name(secondary=secondary)
+        )
+
+        althpdirname = desitarget.io.find_target_files(
+            altmtldir,
+            flavor="mtl",
+            resolve=resolve,
+            survey=survey,
+            obscon=obscon,
+            ender=form,
+        )
+
+        altMTLTileTrackerFN = makeTileTrackerFN(altmtldir, survey=survey, obscon=obscon)
         altMTLTileTracker = Table.read(altMTLTileTrackerFN)
-        #today = altMTLTileTracker.meta['Today']
-        #endDate = altMTLTileTracker.meta['EndDate']
+        # today = altMTLTileTracker.meta['Today']
+        # endDate = altMTLTileTracker.meta['EndDate']
 
-        actionList = altMTLTileTracker[np.invert(altMTLTileTracker['DONEFLAG'])]
+        actionList = altMTLTileTracker[np.invert(altMTLTileTracker["DONEFLAG"])]
 
-        actionList.sort(['ACTIONTIME'])
-        #if not (singletile is None):
+        actionList.sort(["ACTIONTIME"])
+        # if not (singletile is None):
         #   tiles = tiles[tiles['TILEID'] == singletile]
-        
-        #if testDoubleDate:
+
+        # if testDoubleDate:
         #    raise NotImplementedError('this block needs to be moved for new organization of tiletracker.')
         #    log.info('Testing Rosette with Doubled Date only')
         #    cond1 = ((tiles['TILEID'] >= 298) & (tiles['TILEID'] <= 324))
@@ -1856,103 +2540,177 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
         #    log.info(tiles[tiles['TILEID' ] == 314])
         #    log.info(tiles[tiles['TILEID' ] == 315])
         #    tiles = tiles[cond1 | cond2 ]
-        
 
-        #for ots,famtlt,reprocFlag in datepairs:
-        #while int(today) <= int(endDate):
+        # for ots,famtlt,reprocFlag in datepairs:
+        # while int(today) <= int(endDate):
 
-        #restricting to a single action for profiling use, is this overlapping with some other option? multiproc?
+        # restricting to a single action for profiling use, is this overlapping with some other option? multiproc?
         if single_action:
             actionList = actionList[:1]
         
         for action in actionList:
+            log.info(f'============== actionList : {action}')
             
-            if action['ACTIONTYPE'] == 'fa':
-                OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = redoFA, mock = mock, reproducing = reproducing)
-                assert(len(OrigFAs))
-                A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = changeFiberOpt, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = redoFA )
+            if action["ACTIONTYPE"] == "fa":
+                OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(
+                    altmtldir,
+                    [action],
+                    survey=survey,
+                    obscon=obscon,
+                    verbose=verbose,
+                    debug=debug,
+                    getosubp=getosubp,
+                    redoFA=redoFA,
+                    mock=mock,
+                    reproducing=reproducing,
+                )
+                assert len(OrigFAs)
+                A2RMap, R2AMap = make_fibermaps(
+                    altmtldir,
+                    OrigFAs,
+                    AltFAs,
+                    AltFAs2,
+                    TSs,
+                    fadates,
+                    tiles,
+                    changeFiberOpt=changeFiberOpt,
+                    verbose=verbose,
+                    debug=debug,
+                    survey=survey,
+                    obscon=obscon,
+                    getosubp=getosubp,
+                    redoFA=redoFA,
+                )
 
             # LGN 20260220 Adding tiletracker as a passed argument
             # LGN 20260220 Necessary to check the fa date of an update action
             # LGN 20260220 In order to check if we should pass the ext keyword
-            elif action['ACTIONTYPE'] == 'update':
-                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(altmtldir,althpdirname, altmtltilefn, action, altMTLTileTracker, survey = survey, obscon = obscon ,getosubp = getosubp, zcatdir = zcatdir, mock = mock, numobs_from_ledger = numobs_from_ledger, targets = targets, verbose = verbose, debug = debug)
-                
-            elif action['ACTIONTYPE'] == 'reproc':
-                #returns timedict
+            elif action["ACTIONTYPE"] == "update":
+                althpdirname, altmtltilefn, ztilefn, tiles = update_alt_ledger(
+                    altmtldir,
+                    althpdirname,
+                    altmtltilefn,
+                    action,
+                    altMTLTileTracker,
+                    survey=survey,
+                    obscon=obscon,
+                    getosubp=getosubp,
+                    zcatdir=zcatdir,
+                    mock=mock,
+                    numobs_from_ledger=numobs_from_ledger,
+                    targets=targets,
+                    verbose=verbose,
+                    debug=debug,
+                )
 
-                #raise NotImplementedError('make backup here before reprocessing. Then resume Debugging.')
-                retval = reprocess_alt_ledger(altmtldir, action, obscon=obscon, survey = survey)
+            elif action["ACTIONTYPE"] == "reproc":
+                # returns timedict
+
+                # raise NotImplementedError('make backup here before reprocessing. Then resume Debugging.')
+                retval = reprocess_alt_ledger(
+                    altmtldir, action, obscon=obscon, survey=survey
+                )
                 if debug or verbose:
-                    log.info(f'retval = {retval}')
-            
-            #LGN 07/29/25: Adding new LyA1B case
-            elif action['ACTIONTYPE'] == 'lya1b':
-                log.info('Running LyA1B Ledger Update')
-                #run update on the realization
-                update_lya_1b(obscon=obscon, mtldir=altmtldir, timestamp=action['ACTIONTIME'], donefile=False)
-                #record succesful update in ledger
-                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
+                    log.info(f"retval = {retval}")
 
-            #LGN 20260407: Adding new 'addnew' case for ledger addition actions
-            elif action['ACTIONTYPE'] == 'addnew':
-                log.info('Running ledger addition action')
-                #run action
-                add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, nproc=nproc, survey=survey, obscon=obscon, debug=debug, verbose=verbose)
-                #record success in the ledger
-                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
+            # LGN 07/29/25: Adding new LyA1B case
+            elif action["ACTIONTYPE"] == "lya1b":
+                log.info("Running LyA1B Ledger Update")
+                # run update on the realization
+                update_lya_1b(
+                    obscon=obscon,
+                    mtldir=altmtldir,
+                    timestamp=action["ACTIONTIME"],
+                    donefile=False,
+                )
+                # record succesful update in ledger
+                retval = write_amtl_tile_tracker(
+                    altmtldir, [action], obscon=obscon, survey=survey
+                )
 
-            #LGN 20260506: Adding new 'veto' action for BRIGHT1B vetoes
-            elif action['ACTIONTYPE'] == 'veto':
-                log.info('Running veto action')
-                #run action
-                process_vetoes_altmtl(altmtldir, action, obscon = obscon, survey = survey)
-                #record action in tile tracker
-                retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
-                
+            # LGN 20260407: Adding new 'addnew' case for ledger addition actions
+            elif action["ACTIONTYPE"] == "addnew":
+                log.info("Running ledger addition action")
+                # run action
+                add_new_ledgers(
+                    altmtldir,
+                    altmtlbasedir,
+                    action,
+                    altMTLTileTracker,
+                    nproc=nproc,
+                    survey=survey,
+                    obscon=obscon,
+                    debug=debug,
+                    verbose=verbose,
+                )
+                # record success in the ledger
+                retval = write_amtl_tile_tracker(
+                    altmtldir, [action], obscon=obscon, survey=survey
+                )
+
+            # LGN 20260506: Adding new 'veto' action for BRIGHT1B vetoes
+            elif action["ACTIONTYPE"] == "veto":
+                log.info("Running veto action")
+                # run action
+                process_vetoes_altmtl(altmtldir, action, obscon=obscon, survey=survey)
+                # record action in tile tracker
+                retval = write_amtl_tile_tracker(
+                    altmtldir, [action], obscon=obscon, survey=survey
+                )
+
             else:
-                raise ValueError('actiontype must be `fa`, `update`, `reproc`, `lya1b`, `addnew` or `veto`.')
-            #retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
-            #log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
+                raise ValueError(
+                    "actiontype must be `fa`, `update`, `reproc`, `lya1b`, `addnew` or `veto`."
+                )
+            # retval = write_amtl_tile_tracker(altmtldir, None, None, today, obscon = obscon, survey = survey, mode = 'endofday')
+            # log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
 
-            #today = nextDate(today)
-            #log.info('----------')
-            #log.info('----------')
-            #log.info('----------')
-            #log.info('moving to next day: {0}'.format(today))
-            #log.info('----------')
-            #log.info('----------')
-            #log.info('----------')
+            # today = nextDate(today)
+            # log.info('----------')
+            # log.info('----------')
+            # log.info('----------')
+            # log.info('moving to next day: {0}'.format(today))
+            # log.info('----------')
+            # log.info('----------')
+            # log.info('----------')
 
-            
         return althpdirname, altmtltilefn, altMTLTileTrackerFN, actionList
+
 
 # 20260506 LGN - Adding new function to apply vetoes to alt mtl ledgers
 # 20260506 LGN - Modified from desitarget.mtl.process_vetoes https://github.com/desihub/desitarget/blob/main/py/desitarget/mtl.py#L1717
-def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
-    
+def process_vetoes_altmtl(
+    altmtldir,
+    action,
+    obscon,
+    survey,
+    nside=32,
+    mtldir="/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl",
+    tabform="ascii.basic",
+):
+
     # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
-    MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
+    MTLDVFN = os.path.join(mtldir, "mtl-done-vetoes.ecsv")
     MTLDV = Table.read(MTLDVFN)
 
     # LGN 20260528 Subtracting 2 seconds from veto actiontime to align with mtl-done-vetoes
-    actiontime_dt = datetime.fromisoformat(action['ACTIONTIME'])
-    actiontime_ts_dec2s = (actiontime_dt-timedelta(seconds=2)).isoformat()
-    
+    actiontime_dt = datetime.fromisoformat(action["ACTIONTIME"])
+    actiontime_ts_dec2s = (actiontime_dt - timedelta(seconds=2)).isoformat()
+
     # LGN Select appropriate set of vetoes based on timestamps of current and previous veto events
     # LGN If this is the first veto action, set low timestamp
-    DV_idx = (actiontime_ts_dec2s == MTLDV['TIMESTAMP']).argmax()
-    
-    tslow = MTLDV[DV_idx-1]['TIMESTAMP']
-    tshigh = MTLDV[DV_idx]['TIMESTAMP']
-    
+    DV_idx = (actiontime_ts_dec2s == MTLDV["TIMESTAMP"]).argmax()
+
+    tslow = MTLDV[DV_idx - 1]["TIMESTAMP"]
+    tshigh = MTLDV[DV_idx]["TIMESTAMP"]
+
     if DV_idx == 0:
         tslow = "0000-00-00T00:00:00+00:00"
 
     # ADM grab the list of files in the veto directory.
-    vetodir = os.path.join(mtldir,survey,'veto',obscon.lower())
+    vetodir = os.path.join(mtldir, survey, "veto", obscon.lower())
     fns = sorted(glob.glob(os.path.join(vetodir, "*", "*ecsv")))
-    
+
     # ADM read and concatenate the veto files, keeping only the relevant
     # ADM columns and entries later than the most recent final TIMESTAMP.
     vetocat = []
@@ -1960,12 +2718,12 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
         vetodat = io.read_mtl_veto_file(fn)
         ii = (vetodat["TIMESTAMP"] > tslow) & (vetodat["TIMESTAMP"] < tshigh)
         vetocat.append(vetodat[ii])
-    
+
     # ADM stack all the stacks of objects to be vetoed into one catalog.
     vetocat = vstack(vetocat)
-    
+
     # ADM loop through and veto MTL entries in the pixel-based ledgers.
-    pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
+    pixnum = np.unique(radec2pix(nside, vetocat["RA"], vetocat["DEC"]))
 
     altmtldir_srv = os.path.join(altmtldir, survey, obscon.lower())
 
@@ -1982,54 +2740,104 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
         updates["PRIORITY"] = 2
         updates["TARGET_STATE"] = "VETO|DONE"
         updates["TIMESTAMP"] = get_utc_date(survey=survey)
-        updates["VERSION"] = MTLDV[DV_idx]['VERSION']
+        updates["VERSION"] = MTLDV[DV_idx]["VERSION"]
 
         # ADM finally, append the new updates to the ledger.
         nups, fn = io.write_mtl(
-            altmtldir, updates, ecsv=True, survey=survey, obscon=obscon,
-            nsidefile=nside, hpxlist=hpx, append=True)
+            altmtldir,
+            updates,
+            ecsv=True,
+            survey=survey,
+            obscon=obscon,
+            nsidefile=nside,
+            hpxlist=hpx,
+            append=True,
+        )
 
     return
-    
+
 
 # 20260420 LGN - Adding new function to create new ledger files when needed
-def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey, obscon, nproc, debug, verbose, mtldir='/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/', YAMLdir = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL'):
+def add_new_ledgers(
+    altmtldir,
+    altmtlbasedir,
+    action,
+    altMTLTileTracker,
+    survey,
+    obscon,
+    nproc,
+    debug,
+    verbose,
+    mtldir="/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/",
+    YAMLdir="/global/cfs/cdirs/desi/survey/fiberassign/AltMTL",
+):
     # 20260420 LGN - Extract the date, and the list of new ledgers using the YAML file
-    date_short = action['ACTIONTIME'][:10]
+    date_short = action["ACTIONTIME"][:10]
 
-    yaml_fn = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
+    yaml_fn = os.path.join(YAMLdir, f"{obscon.upper()}-ledgers.yaml")
     with open(yaml_fn) as f:
         hp_tracker = yaml.safe_load(f)
         new_hps = np.array(hp_tracker[date_short]).astype(int)
 
     # initializeAlternateMTLs expects these to be strings
-    #startDate = str(altMTLTileTracker.meta['StartDate']) #actually we don't want to pass startDate, if we don't it just uses all initial entries.
-    endDate = str(altMTLTileTracker.meta['EndDate'])
+    # startDate = str(altMTLTileTracker.meta['StartDate']) #actually we don't want to pass startDate, if we don't it just uses all initial entries.
+    endDate = str(altMTLTileTracker.meta["EndDate"])
 
     # 20260624 LGN - We can now read the other necessary keywords directly from the tile tracker meta info. No type casting necessary
-    seed = altMTLTileTracker.meta['seed']
-    reproducing = altMTLTileTracker.meta['reproducing']
-    shuffleSubpriorities = altMTLTileTracker.meta['shuffleSubpriorities']
-    shuffleBrightPriorities = altMTLTileTracker.meta['shuffleBrightPriorities']
-    shuffleELGPriorities = altMTLTileTracker.meta['shuffleELGPriorities']
-    PromoteFracBGSFaint = altMTLTileTracker.meta['PromoteFracBGSFaint']
-    PromoteFracELG = altMTLTileTracker.meta['PromoteFracELG']
-    
+    seed = altMTLTileTracker.meta["seed"]
+    reproducing = altMTLTileTracker.meta["reproducing"]
+    shuffleSubpriorities = altMTLTileTracker.meta["shuffleSubpriorities"]
+    shuffleBrightPriorities = altMTLTileTracker.meta["shuffleBrightPriorities"]
+    shuffleELGPriorities = altMTLTileTracker.meta["shuffleELGPriorities"]
+    PromoteFracBGSFaint = altMTLTileTracker.meta["PromoteFracBGSFaint"]
+    PromoteFracELG = altMTLTileTracker.meta["PromoteFracELG"]
+
     # 20260420 LGN - Run initialize ledger function for each new healpixel
     # 20260420 LGN - Adapted from InitializeAltMTLsParallel script
     for hpnum in new_hps:
-        exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon.lower())
+        exampleLedger = mtldir + "/{0}/{2}/mtl-{2}-hp-{1}.ecsv".format(
+            survey, hpnum, obscon.lower()
+        )
 
-        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = seed,obscon = obscon.lower(), survey = survey,\
-                        saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = reproducing,\
-                        shuffleSubpriorities = shuffleSubpriorities,endDate = endDate, profile = False, usetmp=False,\
-                        debug = debug, verbose = verbose, shuffleBrightPriorities = shuffleBrightPriorities,\
-                        shuffleELGPriorities = shuffleELGPriorities, PromoteFracBGSFaint = PromoteFracBGSFaint,\
-                        PromoteFracELG = PromoteFracELG,finalDir=altmtlbasedir+'/Univ{0:03d}')
+        initializeAlternateMTLs(
+            exampleLedger,
+            altmtldir,
+            genSubset=nproc,
+            seed=seed,
+            obscon=obscon.lower(),
+            survey=survey,
+            saveBackup=False,
+            hpnum=hpnum,
+            overwrite=False,
+            reproducing=reproducing,
+            shuffleSubpriorities=shuffleSubpriorities,
+            endDate=endDate,
+            profile=False,
+            usetmp=False,
+            debug=debug,
+            verbose=verbose,
+            shuffleBrightPriorities=shuffleBrightPriorities,
+            shuffleELGPriorities=shuffleELGPriorities,
+            PromoteFracBGSFaint=PromoteFracBGSFaint,
+            PromoteFracELG=PromoteFracELG,
+            finalDir=altmtlbasedir + "/Univ{0:03d}",
+        )
 
     return
 
-def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey = 'sv3', outFileName = None, outFileType = '.png', jupyter = False, debug = False, verbose = False):
+
+def plotMTLProb(
+    mtlBaseDir,
+    ndirs=10,
+    hplist=None,
+    obscon="dark",
+    survey="sv3",
+    outFileName=None,
+    outFileType=".png",
+    jupyter=False,
+    debug=False,
+    verbose=False,
+):
     """Plots probability that targets were observed among {ndirs} alternate realizations
     of SV3. Uses default matplotlib colorbar to plot between 1-{ndirs} observations.
 
@@ -2046,78 +2854,104 @@ def plotMTLProb(mtlBaseDir, ndirs = 10, hplist = None, obscon = 'dark', survey =
         for the main survey and different iterations of SV, respectively.
     obscon : :class:`str`, optional, defaults to "dark"
         Used to look up the correct ledger, in combination with `survey`.
-        Options are ``'dark'`` and ``'bright``' 
+        Options are ``'dark'`` and ``'bright``'
     hplist : :class:`arraylike`, optional, defaults to None
         List of healpixels to plot. If None, defaults to plotting all available
         healpixels
     outFileName : :class:`str`, optional, defaults to None
-        If desired, save file to this location. This will 
+        If desired, save file to this location. This will
         usually be desired, but was made optional for use in
         ipython notebooks.
     outFileType : :class:`str`, optional, defaults to '.png'
         If desired, save file with name "outFileName" with
-        type/suffix outFileType. This will usually be desired, 
+        type/suffix outFileType. This will usually be desired,
         but was made optional for use in ipython notebooks.
 
 
-    
+
     Returns
     -------
     Nothing
-    
+
     """
     ObsFlagList = np.array([])
     for i in range(ndirs):
-        mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
-        MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+        mtldir = mtlBaseDir.format(i) + "/" + survey + "/" + obscon
+        MTL = np.sort(
+            desitarget.io.read_mtl_in_hp(
+                mtldir,
+                32,
+                hplist,
+                unique=True,
+                isodate=None,
+                returnfn=False,
+                initial=False,
+                leq=False,
+            ),
+            order="TARGETID",
+        )
         try:
-            ObsFlagList = np.column_stack((ObsFlagList,MTL['NUMOBS'] > 0.5))
+            ObsFlagList = np.column_stack((ObsFlagList, MTL["NUMOBS"] > 0.5))
         except:
-            log.info('This message should appear once, only for the first realization.')
-            ObsFlagList = MTL['NUMOBS'] > 0.5
+            log.info("This message should appear once, only for the first realization.")
+            ObsFlagList = MTL["NUMOBS"] > 0.5
     if verbose or debug:
         log.info(ObsFlagList.shape)
-    ObsArr = np.sum(ObsFlagList, axis = 1)
+    ObsArr = np.sum(ObsFlagList, axis=1)
 
+    # MTLList[i] = rfn.append_fields(MTLList[i], 'OBSFLAG', MTLList[i]['NUMOBS'] > 0, dtypes=np.dtype(bool))
 
-    #MTLList[i] = rfn.append_fields(MTLList[i], 'OBSFLAG', MTLList[i]['NUMOBS'] > 0, dtypes=np.dtype(bool))
-    
-    hist, bins = np.histogram(ObsArr, bins = np.arange(ndirs)+ 0.1)
+    hist, bins = np.histogram(ObsArr, bins=np.arange(ndirs) + 0.1)
 
     plt.figure()
-    plt.plot(bins[1:]- 0.01, hist)
-    plt.xlabel('Number of Realizations in which a target was observed')
-    plt.ylabel('Number of targets')
-    #plt.yscale('log')
-    if len(hplist )> 100:
+    plt.plot(bins[1:] - 0.01, hist)
+    plt.xlabel("Number of Realizations in which a target was observed")
+    plt.ylabel("Number of targets")
+    # plt.yscale('log')
+    if len(hplist) > 100:
         plt.ylim(0, 8000)
-    elif (len(hplist) > 4) & (obscon == 'dark'):
+    elif (len(hplist) > 4) & (obscon == "dark"):
         plt.ylim(0, 1500)
-    elif (len(hplist) > 4) & (obscon == 'bright'):
+    elif (len(hplist) > 4) & (obscon == "bright"):
         plt.ylim(0, 500)
     if not (outFileName is None):
-        plt.savefig(outFileName + '_vsNtarget' + outFileType)
+        plt.savefig(outFileName + "_vsNtarget" + outFileType)
     if not jupyter:
         plt.close()
     plt.figure()
-    plt.scatter(MTL['RA'][ObsArr > 0], MTL['DEC'][ObsArr > 0], c = ObsArr[ObsArr > 0], s = 0.1)
-    plt.xlabel('RA')
-    plt.ylabel('DEC')
+    plt.scatter(
+        MTL["RA"][ObsArr > 0], MTL["DEC"][ObsArr > 0], c=ObsArr[ObsArr > 0], s=0.1
+    )
+    plt.xlabel("RA")
+    plt.ylabel("DEC")
     cbar = plt.colorbar()
-    cbar.set_label('Number of Realizations in which target was observed')
+    cbar.set_label("Number of Realizations in which target was observed")
     if not (outFileName is None):
-        plt.savefig(outFileName + '_vsRADEC' + outFileType )
+        plt.savefig(outFileName + "_vsRADEC" + outFileType)
     if not jupyter:
         plt.close()
+
 
 def return_path_fba(zz, path):
     import glob
-    curr = glob.glob(os.path.join(path,'*','fba-%s.fits' % zz))[0]
+
+    curr = glob.glob(os.path.join(path, "*", "fba-%s.fits" % zz))[0]
     return curr
 
 
-#@profile
-def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', survey = 'sv3', debug = False, obsprob = False, splitByReal = False, verbose = False, gtl = None):
+# @profile
+def makeBitweights(
+    mtlBaseDir,
+    ndirs=64,
+    hplist=None,
+    obscon="dark",
+    survey="sv3",
+    debug=False,
+    obsprob=False,
+    splitByReal=False,
+    verbose=False,
+    gtl=None,
+):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations
 
@@ -2127,14 +2961,14 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
         The home directory of your alternate MTLs. Should not contain obscon
         or survey. String should be formattable (i.e. '/path/to/dirs/Univ{0:03d}')
     ndirs   : :class:`int`
-        The number of alternate realizations to process. 
+        The number of alternate realizations to process.
     survey : :class:`str`, optional, defaults to "sv3"
         Used to look up the correct ledger, in combination with `obscon`.
         Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
         for the main survey and different iterations of SV, respectively.
     obscon : :class:`str`, optional, defaults to "dark"
         Used to look up the correct ledger, in combination with `survey`.
-        Options are ``'dark'`` and ``'bright``' 
+        Options are ``'dark'`` and ``'bright``'
     hplist : :class:`arraylike`, optional, defaults to None
         List of healpixels to plot. If None, defaults to plotting all available
         healpixels
@@ -2143,7 +2977,7 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
         and output bitweight information for the first few targets as well as
         the first few targets that were observed in at least one realization
     obsprob: class:`bool`, optional, defaults to False
-        If True, returns TARGETID, BITWEIGHT, and OBSPROB. Else returns TARGETID 
+        If True, returns TARGETID, BITWEIGHT, and OBSPROB. Else returns TARGETID
         and BITWEIGHT only
     splitByReal: class:`bool`, optional, defaults to False
         If True, run for only a single realization but for all healpixels in hplist.
@@ -2151,147 +2985,205 @@ def makeBitweights(mtlBaseDir, ndirs = 64, hplist = None, obscon = 'dark', surve
     Returns
     -------
     :class:`~numpy.array`
-        Array of Target IDs 
+        Array of Target IDs
     :class:`~numpy.array`
         Array of bitweights for those target ids
     :class:`~numpy.array`, optional if obsprob is True
         Array of probabilities a target gets observed over {ndirs} realizations
-        
+
     """
-   
+
     TIDs = None
     if splitByReal:
-
         from mpi4py import MPI
+
         if debug or verbose:
-            log.info('mtlbasedir')
+            log.info("mtlbasedir")
             log.info(mtlBaseDir)
             log.info(mtlBaseDir.format(0))
-        ntar = desitarget.io.read_mtl_in_hp(mtlBaseDir.format(0) + '/' + survey + '/' + obscon, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False).shape[0]
-        
+        ntar = desitarget.io.read_mtl_in_hp(
+            mtlBaseDir.format(0) + "/" + survey + "/" + obscon,
+            32,
+            hplist,
+            unique=True,
+            isodate=None,
+            returnfn=False,
+            initial=False,
+            leq=False,
+        ).shape[0]
+
         comm = MPI.COMM_WORLD
         mpi_procs = comm.size
         mpi_rank = comm.rank
         if debug or verbose:
-            log.info('running on {0:d} cores'.format(mpi_procs))
+            log.info("running on {0:d} cores".format(mpi_procs))
         n_realization = ndirs
         realizations = np.arange(ndirs, dtype=np.int32)
         my_realizations = np.array_split(realizations, mpi_procs)[mpi_rank]
-        MyObsFlagList = np.empty((my_realizations.shape[0], ntar), dtype = bool)
+        MyObsFlagList = np.empty((my_realizations.shape[0], ntar), dtype=bool)
 
-
-
-
-        #MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+        # MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
         for i, r in enumerate(my_realizations):
-            mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
-            MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID') 
+            mtldir = mtlBaseDir.format(i) + "/" + survey + "/" + obscon
+            MTL = np.sort(
+                desitarget.io.read_mtl_in_hp(
+                    mtldir,
+                    32,
+                    hplist,
+                    unique=True,
+                    isodate=None,
+                    returnfn=False,
+                    initial=False,
+                    leq=False,
+                ),
+                order="TARGETID",
+            )
             if TIDs is None:
-                TIDs = MTL['TARGETID']
+                TIDs = MTL["TARGETID"]
             else:
-                assert(np.array_equal(TIDs, MTL['TARGETID']))
-            MyObsFlagList[i][:] = MTL['NUMOBS'] > 0.5
-        
+                assert np.array_equal(TIDs, MTL["TARGETID"])
+            MyObsFlagList[i][:] = MTL["NUMOBS"] > 0.5
+
         ObsFlagList = None
         bitweights = None
         obsprobs = None
-        #gather_weights = None
+        # gather_weights = None
         if mpi_rank == 0:
-            #gather_weights = np.empty(len(bitweights), dtype=bool)
-            ObsFlagList = np.empty ((ndirs, ntar), dtype = bool)
+            # gather_weights = np.empty(len(bitweights), dtype=bool)
+            ObsFlagList = np.empty((ndirs, ntar), dtype=bool)
         comm.Gather(MyObsFlagList, ObsFlagList, root=0)
-        if mpi_rank == 0:    
+        if mpi_rank == 0:
             if debug or verbose:
                 print(ObsFlagList.shape)
-            ObsArr = np.sum(ObsFlagList, axis = 0)
-            obsprobs = ObsArr/ndirs
+            ObsArr = np.sum(ObsFlagList, axis=0)
+            obsprobs = ObsArr / ndirs
             if debug or verbose:
                 print(np.min(ObsArr))
                 print(np.max(ObsArr))
                 print("ObsFlagList shape here: {0}".format(ObsFlagList.shape))
             bitweights = pack_bitweights(ObsFlagList.T)
             if debug or verbose:
-                print('bitweights shape here: {0}'.format(bitweights.shape))
-                print('TIDs shape here: {0}'.format(TIDs.shape))
-            assert(not (TIDs is None))
+                print("bitweights shape here: {0}".format(bitweights.shape))
+                print("TIDs shape here: {0}".format(TIDs.shape))
+            assert not (TIDs is None)
         if obsprob:
             return TIDs, bitweights, obsprobs
         else:
             return TIDs, bitweights
-            
+
     else:
         ObsFlagList = np.empty(ndirs)
         for i in range(ndirs):
-            mtldir = mtlBaseDir.format(i) + '/' + survey + '/' + obscon
-            MTL = np.sort(desitarget.io.read_mtl_in_hp(mtldir, 32, hplist, unique=True, isodate=None, returnfn=False, initial=False, leq=False), order = 'TARGETID')
+            mtldir = mtlBaseDir.format(i) + "/" + survey + "/" + obscon
+            MTL = np.sort(
+                desitarget.io.read_mtl_in_hp(
+                    mtldir,
+                    32,
+                    hplist,
+                    unique=True,
+                    isodate=None,
+                    returnfn=False,
+                    initial=False,
+                    leq=False,
+                ),
+                order="TARGETID",
+            )
 
             if gtl is not None:
-                ztile = MTL['ZTILEID']
+                ztile = MTL["ZTILEID"]
                 unique_tiles = np.unique(ztile)
                 unique_tiles = unique_tiles[unique_tiles != -1]
-                
+
                 if len(unique_tiles) == 0:
                     new_column_data = np.full(len(MTL), -1, dtype=int)
-                    new_MTL = np.empty(MTL.shape, dtype = MTL.dtype.descr + [('TILELOCID', int)])
+                    new_MTL = np.empty(
+                        MTL.shape, dtype=MTL.dtype.descr + [("TILELOCID", int)]
+                    )
                     for field in MTL.dtype.names:
                         new_MTL[field] = MTL[field]  # Copy existing columns
-                        new_MTL['TILELOCID'] = new_column_data  # Add the new column filled with -1
+                        new_MTL["TILELOCID"] = (
+                            new_column_data  # Add the new column filled with -1
+                        )
                     MTL = new_MTL
 
                 else:
                     cat = Table()
                     for zz in unique_tiles:
-                        fba_file = return_path_fba(str(zz).zfill(6), os.path.join(mtlBaseDir.format(i), 'fa', 'MAIN'))
-                        with fitsio.FITS(fba_file.replace('global', 'dvs_ro')) as hdulist:
-                            ff_temp = hdulist['FASSIGN'].read()
+                        fba_file = return_path_fba(
+                            str(zz).zfill(6),
+                            os.path.join(mtlBaseDir.format(i), "fa", "MAIN"),
+                        )
+                        with fitsio.FITS(
+                            fba_file.replace("global", "dvs_ro")
+                        ) as hdulist:
+                            ff_temp = hdulist["FASSIGN"].read()
                         ff_temp = Table(ff_temp)
-    #                    print(ff_temp.columns)
-                        ff_temp['TILELOCID'] = 10000*zz +ff_temp['LOCATION']
-                        ff_temp['ZTILEID'] = [zz]*len(ff_temp)
+                        #                    print(ff_temp.columns)
+                        ff_temp["TILELOCID"] = 10000 * zz + ff_temp["LOCATION"]
+                        ff_temp["ZTILEID"] = [zz] * len(ff_temp)
                         cat = vstack([cat, ff_temp])
-                    MTL = join(MTL, cat, join_type='left', keys=['TARGETID', 'ZTILEID'])
+                    MTL = join(MTL, cat, join_type="left", keys=["TARGETID", "ZTILEID"])
                     del cat
-                
+
             if TIDs is None:
-                TIDs = MTL['TARGETID']
+                TIDs = MTL["TARGETID"]
             else:
-                assert(np.array_equal(TIDs, MTL['TARGETID']))
+                assert np.array_equal(TIDs, MTL["TARGETID"])
             try:
                 if gtl is not None:
-                    print('Create ObsFlagList')
-                    ObsFlagList = np.column_stack((ObsFlagList, (MTL['NUMOBS'] > 0.5)&(np.isin(MTL['TILELOCID'], gtl))))
+                    print("Create ObsFlagList")
+                    ObsFlagList = np.column_stack(
+                        (
+                            ObsFlagList,
+                            (MTL["NUMOBS"] > 0.5) & (np.isin(MTL["TILELOCID"], gtl)),
+                        )
+                    )
                 else:
-                    ObsFlagList = np.column_stack((ObsFlagList, (MTL['NUMOBS'] > 0.5)))
+                    ObsFlagList = np.column_stack((ObsFlagList, (MTL["NUMOBS"] > 0.5)))
 
             except:
-                log.info('hplist[0] = {0:d}'.format(hplist[0]))
-                log.info('This message should only appear once for the first realization.')
+                log.info("hplist[0] = {0:d}".format(hplist[0]))
+                log.info(
+                    "This message should only appear once for the first realization."
+                )
                 if gtl is not None:
-                    ObsFlagList = (MTL['NUMOBS'] > 0.5)&(np.isin(MTL['TILELOCID'], gtl))
+                    ObsFlagList = (MTL["NUMOBS"] > 0.5) & (
+                        np.isin(MTL["TILELOCID"], gtl)
+                    )
                 else:
-                    ObsFlagList = (MTL['NUMOBS'] > 0.5)
+                    ObsFlagList = MTL["NUMOBS"] > 0.5
         if debug or verbose:
             log.info(ObsFlagList.shape)
-        ObsArr = np.sum(ObsFlagList, axis = 1)
+        ObsArr = np.sum(ObsFlagList, axis=1)
         if debug or verbose:
             log.info(np.min(ObsArr))
             log.info(np.max(ObsArr))
         bitweights = pack_bitweights(ObsFlagList)
 
-        assert(not (TIDs is None))
+        assert not (TIDs is None)
         if obsprob:
-            
-            obsprobs = ObsArr/ndirs
+            obsprobs = ObsArr / ndirs
 
             return TIDs, bitweights, obsprobs
         else:
             return TIDs, bitweights
 
 
-
-
-
-def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outdir = None, obscon = "dark", survey = 'sv3', overwrite = False, allFiles = False, splitByReal = False, splitNChunks = None, verbose = False, gtl=None):
+def writeBitweights(
+    mtlBaseDir,
+    ndirs=None,
+    hplist=None,
+    debug=False,
+    outdir=None,
+    obscon="dark",
+    survey="sv3",
+    overwrite=False,
+    allFiles=False,
+    splitByReal=False,
+    splitNChunks=None,
+    verbose=False,
+    gtl=None,
+):
     """Takes a set of {ndirs} realizations of DESI/SV3 and converts their MTLs into bitweights
     and an optional PROBOBS, the probability that the target was observed over the realizations.
     Then writes them to (a) file(s)
@@ -2302,14 +3194,14 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         The home directory of your alternate MTLs. Should not contain obscon
         or survey. String should be formattable (i.e. '/path/to/dirs/Univ{0:03d}')
     ndirs   : :class:`int`
-        The number of alternate realizations to process. 
+        The number of alternate realizations to process.
     survey : :class:`str`, optional, defaults to "sv3"
         Used to look up the correct ledger, in combination with `obscon`.
         Options are ``'main'`` and ``'svX``' (where X is 1, 2, 3 etc.)
         for the main survey and different iterations of SV, respectively.
     obscon : :class:`str`, optional, defaults to "dark"
         Used to look up the correct ledger, in combination with `survey`.
-        Options are ``'dark'`` and ``'bright``' 
+        Options are ``'dark'`` and ``'bright``'
     hplist : :class:`arraylike`, optional, defaults to None
         List of healpixels to plot. If None, defaults to plotting all available
         healpixels
@@ -2318,10 +3210,10 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         and output bitweight information for the first few targets as well as
         the first few targets that were observed in at least one realization
     obsprob: class:`bool`, optional, defaults to False
-        If True, returns TARGETID, BITWEIGHT, and OBSPROB. Else returns TARGETID 
+        If True, returns TARGETID, BITWEIGHT, and OBSPROB. Else returns TARGETID
         and BITWEIGHT only
     outdir : :class:`str`, optional, defaults to None
-        The base directory in which to create the BitweightFiles output directory. 
+        The base directory in which to create the BitweightFiles output directory.
         If None, defaults to one level above mtlBaseDir
     overwrite: class:`bool`, optional, defaults to False
         If True, will clobber already existing bitweight files.
@@ -2331,113 +3223,162 @@ def writeBitweights(mtlBaseDir, ndirs = None, hplist = None, debug = False, outd
         one "allTiles" file for the combination of healpixels
     splitByReal: class:`bool`, optional, defaults to False
         If True, run for only a single realization but for all healpixels in hplist
-    
+
 
     Returns
     -------
     :class:`~numpy.array`
-        Array of Target IDs 
+        Array of Target IDs
     :class:`~numpy.array`
         Array of bitweights for those target ids
     :class:`~numpy.array`, optional if obsprob is True
         Array of probabilities a target gets observed over {ndirs} realizations
-        
+
     """
     if outdir is None:
-        log.info('No outdir provided')
-        outdir = mtlBaseDir.split('/')[:-1]
-        log.info('autogenerated outdir')
+        log.info("No outdir provided")
+        outdir = mtlBaseDir.split("/")[:-1]
+        log.info("autogenerated outdir")
         log.info(outdir)
     if splitByReal:
-        from mpi4py import MPI        
+        from mpi4py import MPI
+
         comm = MPI.COMM_WORLD
         mpi_procs = comm.size
         mpi_rank = comm.rank
         if mpi_rank == 0:
-            if not os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon):
-                os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
-    elif not os.path.exists(outdir + '/BitweightFiles/' + survey + '/' + obscon):
+            if not os.path.exists(outdir + "/BitweightFiles/" + survey + "/" + obscon):
+                os.makedirs(outdir + "/BitweightFiles/" + survey + "/" + obscon)
+    elif not os.path.exists(outdir + "/BitweightFiles/" + survey + "/" + obscon):
         try:
-            os.makedirs(outdir + '/BitweightFiles/' + survey + '/' + obscon)
+            os.makedirs(outdir + "/BitweightFiles/" + survey + "/" + obscon)
         except:
-            log.info('makedir exist already for %s/BitweightFiles/%s/%s' %(outdir, survey, obscon))
+            log.info(
+                "makedir exist already for %s/BitweightFiles/%s/%s"
+                % (outdir, survey, obscon)
+            )
     if type(hplist) == int:
         hplist = [hplist]
     if allFiles:
-        hpstring = 'AllTiles'
+        hpstring = "AllTiles"
     else:
-        hpstring = 'hp-'
+        hpstring = "hp-"
 
         for hp in hplist:
             hpstring += str(hp)
-    fn = outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'
+    fn = (
+        outdir
+        + "/BitweightFiles/"
+        + survey
+        + "/"
+        + obscon
+        + "/{0}bw-{1}-".format(survey.lower(), obscon.lower())
+        + hpstring
+        + ".fits"
+    )
     #    outdir + '/BitweightFiles/' + survey + '/' + obscon + '/{0}bw-{1}-'.format(survey.lower(), obscon.lower()) + hpstring + '.fits'
     if (not overwrite) and os.path.exists(fn):
-        print('overwrite')
+        print("overwrite")
         print(overwrite)
-        print('fn')
+        print("fn")
         print(fn)
         return None
-    
+
     if not (splitNChunks is None):
         if debug or verbose:
-            log.info('makeBitweights1')
+            log.info("makeBitweights1")
             log.info("splitting into {0} chunks".format(splitNChunks))
         splits = np.array_split(hplist, int(splitNChunks))
 
-
         for i, split in enumerate(splits):
             if debug or verbose:
-                log.info('split {0}'.format(i))
+                log.info("split {0}".format(i))
                 log.info(split)
             if i == 0:
-                TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal, gtl=gtl)
+                TIDs, bitweights, obsprobs = makeBitweights(
+                    mtlBaseDir,
+                    ndirs=ndirs,
+                    hplist=split,
+                    debug=False,
+                    obsprob=True,
+                    obscon=obscon,
+                    survey=survey,
+                    splitByReal=splitByReal,
+                    gtl=gtl,
+                )
             else:
-                TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = split, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal, gtl=gtl)
-                
+                TIDsTemp, bitweightsTemp, obsprobsTemp = makeBitweights(
+                    mtlBaseDir,
+                    ndirs=ndirs,
+                    hplist=split,
+                    debug=False,
+                    obsprob=True,
+                    obscon=obscon,
+                    survey=survey,
+                    splitByReal=splitByReal,
+                    gtl=gtl,
+                )
+
                 if mpi_rank == 0:
                     if debug or verbose:
-                        log.info('----')
-                        log.info('mpi_rank: {0}'.format(mpi_rank))
+                        log.info("----")
+                        log.info("mpi_rank: {0}".format(mpi_rank))
                         log.info("TIDs shape: {0}".format(TIDs.shape))
                         log.info("bitweights shape: {0}".format(bitweights.shape))
                         log.info("obsprobs shape: {0}".format(obsprobs.shape))
-                        log.info('----')
-                        log.info('mpi_rank: {0}'.format(mpi_rank))
+                        log.info("----")
+                        log.info("mpi_rank: {0}".format(mpi_rank))
                         log.info("TIDsTemp shape: {0}".format(TIDsTemp.shape))
-                        log.info("bitweightsTemp shape: {0}".format(bitweightsTemp.shape))
+                        log.info(
+                            "bitweightsTemp shape: {0}".format(bitweightsTemp.shape)
+                        )
                         log.info("obsprobsTemp shape: {0}".format(obsprobsTemp.shape))
                     TIDs = np.hstack((TIDs, TIDsTemp))
                     bitweights = np.vstack((bitweights, bitweightsTemp))
                     obsprobs = np.hstack((obsprobs, obsprobsTemp))
     else:
         if debug or verbose:
-            log.info('makeBitweights2')
-        TIDs, bitweights, obsprobs = makeBitweights(mtlBaseDir, ndirs = ndirs, hplist = hplist, debug = False, obsprob = True, obscon = obscon, survey = survey, splitByReal = splitByReal, gtl=gtl)
+            log.info("makeBitweights2")
+        TIDs, bitweights, obsprobs = makeBitweights(
+            mtlBaseDir,
+            ndirs=ndirs,
+            hplist=hplist,
+            debug=False,
+            obsprob=True,
+            obscon=obscon,
+            survey=survey,
+            splitByReal=splitByReal,
+            gtl=gtl,
+        )
     if splitByReal:
         if debug or verbose:
-            log.info('----')
-            log.info('mpi_rank: {0}'.format(mpi_rank))
+            log.info("----")
+            log.info("mpi_rank: {0}".format(mpi_rank))
         if mpi_rank == 0:
             if debug or verbose:
                 log.info("TIDs shape: {0}".format(TIDs.shape))
                 log.info("bitweights shape: {0}".format(bitweights.shape))
                 log.info("obsprobs shape: {0}".format(obsprobs.shape))
-            data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
-                      names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
-            
-            data.write(fn, overwrite = overwrite)
+            data = Table(
+                {"TARGETID": TIDs, "BITWEIGHTS": bitweights, "PROB_OBS": obsprobs},
+                names=["TARGETID", "BITWEIGHTS", "PROB_OBS"],
+            )
+
+            data.write(fn, overwrite=overwrite)
     else:
         if debug or verbose:
             log.info("TIDs shape: {0}".format(TIDs.shape))
             log.info("bitweights shape: {0}".format(bitweights.shape))
             log.info("obsprobs shape: {0}".format(obsprobs.shape))
-        data = Table({'TARGETID': TIDs, 'BITWEIGHTS': bitweights, 'PROB_OBS': obsprobs},
-              names=['TARGETID', 'BITWEIGHTS', 'PROB_OBS'])
-    
-        data.write(fn, overwrite = overwrite)
-    
-def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcatdir = None):
+        data = Table(
+            {"TARGETID": TIDs, "BITWEIGHTS": bitweights, "PROB_OBS": obsprobs},
+            names=["TARGETID", "BITWEIGHTS", "PROB_OBS"],
+        )
+
+        data.write(fn, overwrite=overwrite)
+
+
+def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey="main", zcatdir=None):
     """
     Reprocess HEALPixel-split ledgers for targets with new redshifts.
 
@@ -2463,43 +3404,44 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
         are the TIMESTAMP at which that tile was reprocessed.
 
     """
-    tileid = action['TILEID']
+    tileid = action["TILEID"]
     ts = str(tileid).zfill(6)
-    FABaseDir = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'
-    FAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
+    FABaseDir = "/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/"
+    FAFN = FABaseDir + f"/{ts[0:3]}/fiberassign-{ts}.fits"
 
     fhtOrig = fitsio.read_header(FAFN)
-    fadate = fhtOrig['RUNDATE']
-    fanite = int(''.join(fadate.split('T')[0].split('-')))
+    fadate = fhtOrig["RUNDATE"]
+    fanite = int("".join(fadate.split("T")[0].split("-")))
 
-    hpdirname = altmtldir + f'/{survey.lower()}/{obscon.lower()}/'
+    hpdirname = altmtldir + f"/{survey.lower()}/{obscon.lower()}/"
 
-    fbadirbase = altmtldir + '/fa/' + survey.upper() +  '/' + str(fanite) + '/'
+    fbadirbase = altmtldir + "/fa/" + survey.upper() + "/" + str(fanite) + "/"
 
-    #if getosubp:
+    # if getosubp:
     #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
-    #else:
-    FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
-    with open(FAMapName,'rb') as fl:
-        (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
+    # else:
+    FAMapName = fbadirbase + "/famap-" + ts + ".pickle"
+    with open(FAMapName, "rb") as fl:
+        (A2RMap, R2AMap) = pickle.load(fl, fix_imports=True)
 
-    #zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
+    # zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
     zcatdir = get_zcat_dir(zcatdir)
-    zcat = make_zcat(zcatdir, [action], obscon, survey, allow_overlaps = True)
-    log.info('ts = {0}'.format(ts))
+    zcat = make_zcat(zcatdir, [action], obscon, survey, allow_overlaps=True)
+    log.info("ts = {0}".format(ts))
     altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap)
 
-
-
-    #if getosubp:
+    # if getosubp:
     #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
-    #else:
+    # else:
     #    FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
-    #with open(FAMapName,'rb') as fl:
+    # with open(FAMapName,'rb') as fl:
     #    (A2RMapTemp, R2AMapTemp) = pickle.load(fl,fix_imports = True)
     t0 = time()
-    log.info("Reprocessing based on altZCat with {} entries...t={:.1f}s"
-             .format(len(altZCat), time()-t0))
+    log.info(
+        "Reprocessing based on altZCat with {} entries...t={:.1f}s".format(
+            len(altZCat), time() - t0
+        )
+    )
 
     # ADM the output dictionary.
     timedict = {}
@@ -2509,10 +3451,13 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
 
     # ADM find the general format for the ledger files in `hpdirname`.
     # ADM also returning the obsconditions.
-    fileform, oc = desitarget.io.find_mtl_file_format_from_header(hpdirname, returnoc=True)
+    fileform, oc = desitarget.io.find_mtl_file_format_from_header(
+        hpdirname, returnoc=True
+    )
     # ADM also find the format for any associated override ledgers.
-    overrideff = desitarget.io.find_mtl_file_format_from_header(hpdirname,
-                                                     forceoverride=True)
+    overrideff = desitarget.io.find_mtl_file_format_from_header(
+        hpdirname, forceoverride=True
+    )
 
     # ADM check the obscondition is as expected.
     if obscon != oc:
@@ -2531,13 +3476,18 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     reproctiles = set(altZCat["ZTILEID"])
 
     # ADM read ALL targets from the relevant ledgers.
-    log.info("Reading (all instances of) targets for {} tiles...t={:.1f}s"
-             .format(len(reproctiles), time()-t0))
+    log.info(
+        "Reading (all instances of) targets for {} tiles...t={:.1f}s".format(
+            len(reproctiles), time() - t0
+        )
+    )
     nside = desitarget.mtl._get_mtl_nside()
-    theta, phi = np.radians(90-altZCat["DEC"]), np.radians(altZCat["RA"])
+    theta, phi = np.radians(90 - altZCat["DEC"]), np.radians(altZCat["RA"])
     pixnum = hp.ang2pix(nside, theta, phi, nest=True)
     pixnum = list(set(pixnum))
-    targets = desitarget.io.read_mtl_in_hp(hpdirname, nside, pixnum, unique=False, tabform='ascii.ecsv')
+    targets = desitarget.io.read_mtl_in_hp(
+        hpdirname, nside, pixnum, unique=False, tabform="ascii.ecsv"
+    )
 
     # ADM remove OVERRIDE entries, which should never need reprocessing.
     targets, _ = desitarget.mtl.remove_overrides(targets)
@@ -2548,16 +3498,25 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     # ADM for speed, we only need to work with targets with a altZCat entry.
     ntargs = len(targets)
     nuniq = len(set(targets["TARGETID"]))
-    log.info("Read {} targets with {} unique TARGETIDs...t={:.1f}s"
-             .format(ntargs, nuniq, time()-t0))
-    log.info("Limiting targets to {} (unique) TARGETIDs in the altZCat...t={:.1f}s"
-             .format(len(set(altZCat["TARGETID"])), time()-t0))
+    log.info(
+        "Read {} targets with {} unique TARGETIDs...t={:.1f}s".format(
+            ntargs, nuniq, time() - t0
+        )
+    )
+    log.info(
+        "Limiting targets to {} (unique) TARGETIDs in the altZCat...t={:.1f}s".format(
+            len(set(altZCat["TARGETID"])), time() - t0
+        )
+    )
     s = set(altZCat["TARGETID"])
     ii = np.array([tid in s for tid in targets["TARGETID"]])
     targets = targets[ii]
     nuniq = len(set(targets["TARGETID"]))
-    log.info("Retained {}/{} targets with {} unique TARGETIDs...t={:.1f}s"
-             .format(len(targets), ntargs, nuniq, time()-t0))
+    log.info(
+        "Retained {}/{} targets with {} unique TARGETIDs...t={:.1f}s".format(
+            len(targets), ntargs, nuniq, time() - t0
+        )
+    )
 
     # ADM split off the updated target states from the unobserved states.
     _, ii = np.unique(targets["TARGETID"], return_index=True)
@@ -2576,8 +3535,11 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
         log.critical(msg)
         raise RuntimeError(msg)
 
-    log.info("{} ({}) targets are in the unobserved (observed) state...t={:.1f}s"
-             .format(len(unobs), len(targets), time()-t0))
+    log.info(
+        "{} ({}) targets are in the unobserved (observed) state...t={:.1f}s".format(
+            len(unobs), len(targets), time() - t0
+        )
+    )
 
     # ADM store first-time-through tile order to reproduce processing.
     # ADM ONLY WORKS because we sorted by TIMESTAMP, above!
@@ -2592,8 +3554,11 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     # ADM note that we'll retain the TIMESTAMPed order of the old ledger
     # ADM entries and new redshifts will (deliberately) be listed last.
     allaltZCat = np.concatenate([altZCatfromtargs, altZCat])
-    log.info("Assembled a altZCat of {} total observations...t={:.1f}s"
-             .format(len(allaltZCat), time()-t0))
+    log.info(
+        "Assembled a altZCat of {} total observations...t={:.1f}s".format(
+            len(allaltZCat), time() - t0
+        )
+    )
 
     # ADM determine the FINAL observation for each TILED-TARGETID combo.
     # ADM must flip first as np.unique finds the FIRST unique entries.
@@ -2606,13 +3571,18 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
     ii = sorted(ii)
     # ADM condition on indexes-of-uniqueness and flip back.
     allaltZCat = np.flip(allaltZCat[ii])
-    log.info("Found {} final TARGETID/TILEID combinations...t={:.1f}s"
-             .format(len(allaltZCat), time()-t0))
+    log.info(
+        "Found {} final TARGETID/TILEID combinations...t={:.1f}s".format(
+            len(allaltZCat), time() - t0
+        )
+    )
 
     # ADM mock up a dictionary of timestamps in advance. This is faster
     # ADM as no delays need to be built into the code.
     now = get_utc_date(survey="main")
-    timestamps = {t: desitarget.mtl.add_to_iso_date(now, s) for s, t in enumerate(orderedtiles)}
+    timestamps = {
+        t: desitarget.mtl.add_to_iso_date(now, s) for s, t in enumerate(orderedtiles)
+    }
 
     # ADM make_mtl() expects altZCats to be in Table form.
     allaltZCat = Table(allaltZCat)
@@ -2640,8 +3610,11 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
 
         # ADM restrict to just objects in the altZCat that match an UNOBS
         # ADM target (i,e that match something in the MTL).
-        log.info("Processing {}/{} observations from altZCat on tile {}...t={:.1f}s"
-                 .format(len(zii), len(altZCatmini), tileid, time()-t0))
+        log.info(
+            "Processing {}/{} observations from altZCat on tile {}...t={:.1f}s".format(
+                len(zii), len(altZCatmini), tileid, time() - t0
+            )
+        )
         log.info("(i.e. removed secondaries-if-running-primaries or vice versa)")
         altZCatmini = altZCatmini[zii]
 
@@ -2652,15 +3625,17 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
         # ADM complexity somewhere, hence trimtozcat=True/matching-back.
         # ADM ------
         # ADM push the observations on this tile through MTL.
-        zmtl = desitarget.mtl.make_mtl(mtl, oc, zcat=altZCatmini, trimtozcat=True, trimcols=True)
+        zmtl = desitarget.mtl.make_mtl(
+            mtl, oc, zcat=altZCatmini, trimtozcat=True, trimcols=True
+        )
 
         # ADM match back to overall merged target list to update states.
         mii, zii = desitarget.geomask.match(mtl["TARGETID"], zmtl["TARGETID"])
         # ADM update the overall merged target list.
         for col in mtl.dtype.names:
-            if col.upper() == 'RA':
+            if col.upper() == "RA":
                 continue
-            elif col.upper() == 'DEC':
+            elif col.upper() == "DEC":
                 continue
             mtl[col][mii] = zmtl[col][zii]
         # ADM also update the TIMESTAMP for changes on this tile.
@@ -2676,17 +3651,22 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
             msg = msg.format(tileid)
             log.critical(msg)
             raise RuntimeError(msg)
-        log.info("Adding back {} bad observations from altZCat...t={:.1f}s"
-                 .format(len(zbadmiss), time()-t0))
+        log.info(
+            "Adding back {} bad observations from altZCat...t={:.1f}s".format(
+                len(zbadmiss), time() - t0
+            )
+        )
 
         # ADM update redshift information in MTL for bad observations.
         mii, zii = desitarget.geomask.match(mtl["TARGETID"], zbadmiss["TARGETID"])
         # ADM update the overall merged target list.
         # ADM Never update NUMOBS or NUMOBS_MORE using bad observations.
-        for col in set(zbadmiss.dtype.names) - set(["NUMOBS", "NUMOBS_MORE", "RA", "DEC"]):
-            if col.upper() == 'RA':
+        for col in set(zbadmiss.dtype.names) - set(
+            ["NUMOBS", "NUMOBS_MORE", "RA", "DEC"]
+        ):
+            if col.upper() == "RA":
                 continue
-            elif col.upper() == 'DEC':
+            elif col.upper() == "DEC":
                 continue
             mtl[col][mii] = zbadmiss[col][zii]
         # ADM also update the TIMESTAMP for changes on this tile.
@@ -2705,7 +3685,7 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
 
     # ADM re-collect everything on pixels for writing to ledgers.
     nside = desitarget.mtl._get_mtl_nside()
-    theta, phi = np.radians(90-mtl["DEC"]), np.radians(mtl["RA"])
+    theta, phi = np.radians(90 - mtl["DEC"]), np.radians(mtl["RA"])
     pixnum = hp.ang2pix(nside, theta, phi, nest=True)
 
     # ADM loop through the pixels and update the ledger, depending
@@ -2728,21 +3708,21 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey = 'main', zcat
             mtlpix = vstack([mtlpix, overmtl])
 
         # ADM if we're working with .ecsv, simply append to the ledger.
-        if ender == 'ecsv':
+        if ender == "ecsv":
             f = open(fn, "a")
-            astropy.io.ascii.write(mtlpix, f, format='no_header', formats=mtlformatdict)
+            astropy.io.ascii.write(mtlpix, f, format="no_header", formats=mtlformatdict)
             f.close()
         # ADM otherwise, for FITS, we'll have to read in the whole file.
         else:
             ledger, hd = fitsio.read(fn, extname="MTL", header=True)
             done = np.concatenate([ledger, mtlpix.as_array()])
-            fitsio.write(fn+'.tmp', done, extname='MTL', header=hd, clobber=True)
-            os.rename(fn+'.tmp', fn)
-    retval = write_amtl_tile_tracker(altmtldir, [action], obscon = obscon, survey = survey)
-    return timedict    
+            fitsio.write(fn + ".tmp", done, extname="MTL", header=hd, clobber=True)
+            os.rename(fn + ".tmp", fn)
+    retval = write_amtl_tile_tracker(altmtldir, [action], obscon=obscon, survey=survey)
+    return timedict
 
- 
-def write_amtl_tile_tracker(dirname, tiles, obscon = 'dark', survey = 'main'):
+
+def write_amtl_tile_tracker(dirname, tiles, obscon="dark", survey="main"):
     """Write AMTL Processing times into TileTrackers
 
     Parameters
@@ -2765,38 +3745,44 @@ def write_amtl_tile_tracker(dirname, tiles, obscon = 'dark', survey = 'main'):
     :class:`str`
         The name of the file to which targets were written.
     """
-    #if len(tiles) == 1:
+    # if len(tiles) == 1:
     #    tiles = [tiles]
-    TileTrackerFN =  makeTileTrackerFN(dirname, survey, obscon)
+    TileTrackerFN = makeTileTrackerFN(dirname, survey, obscon)
     log.info(TileTrackerFN)
     if os.path.isfile(TileTrackerFN):
-        TileTracker = Table.read(TileTrackerFN, format = 'ascii.ecsv')
+        TileTracker = Table.read(TileTrackerFN, format="ascii.ecsv")
 
-    #if mode.lower() == 'update':
+    # if mode.lower() == 'update':
     #    dateKey = 'ALTARCHIVEDATE'
-    #elif mode.lower() == 'fa':
+    # elif mode.lower() == 'fa':
     #    dateKey = 'ALTFADATE'
-    #elif mode.lower() == 'endofday':
+    # elif mode.lower() == 'endofday':
     #    TileTracker.meta['Today'] = today
     #    TileTracker.write(TileTrackerFN, format = 'ascii.ecsv', overwrite = True)
     #    return 'only wrote today in metadata'
     for t in tiles:
-        log.info('t = {0}'.format(t))
-        tileid = t['TILEID']
-        #reprocFlag = t['REPROCFLAG']
-        actionType = t['ACTIONTYPE']
-        #LGN 20251103 - Adding actiontime as an additional condition due to the existance of tiles with multiple reproc actions
-        actionTime = t['ACTIONTIME']
-        cond = (TileTracker['TILEID'] == tileid) & (TileTracker['ACTIONTYPE'] == actionType) & (TileTracker['ACTIONTIME'] == actionTime)
-        log.info('for tile {0}, number of matching tiles = {1}'.format(tileid, np.sum(cond)))
-        #debugTrap = np.copy(TileTracker[dateKey])
-        TileTracker['DONEFLAG'][cond] = True
-    
-    assert(not (np.all(np.invert(TileTracker['DONEFLAG']))))
+        log.info("t = {0}".format(t))
+        tileid = t["TILEID"]
+        # reprocFlag = t['REPROCFLAG']
+        actionType = t["ACTIONTYPE"]
+        # LGN 20251103 - Adding actiontime as an additional condition due to the existance of tiles with multiple reproc actions
+        actionTime = t["ACTIONTIME"]
+        cond = (
+            (TileTracker["TILEID"] == tileid)
+            & (TileTracker["ACTIONTYPE"] == actionType)
+            & (TileTracker["ACTIONTIME"] == actionTime)
+        )
+        log.info(
+            "for tile {0}, number of matching tiles = {1}".format(tileid, np.sum(cond))
+        )
+        # debugTrap = np.copy(TileTracker[dateKey])
+        TileTracker["DONEFLAG"][cond] = True
 
-    #if mode == 'update':
+    assert not (np.all(np.invert(TileTracker["DONEFLAG"])))
+
+    # if mode == 'update':
     #    todaysTiles = TileTracker[TileTracker['ORIGMTLDATE'] == today]
     #    #if np.sum(todaysTiles['ALTARCHIVEDATE'] == None) == 0:
-            
-    TileTracker.write(TileTrackerFN, format = 'ascii.ecsv', overwrite = True)
-    return 'done'
+
+    TileTracker.write(TileTrackerFN, format="ascii.ecsv", overwrite=True)
+    return "done"
