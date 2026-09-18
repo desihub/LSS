@@ -153,7 +153,7 @@ def _make_rancat(rdmnb):
                 rcat[i]['WEIGHT'][np.isin(rcat[i]['TARGETID'], targetids_sel)] *= len(current_targetids) / len(targetids_sel) # upweight the selected randoms to account for the fact that we are keeping only targetids_sel out of current_targetids for this tracer. in-place multiplication is fine, as this set of random should not be encountered again. NB: this simple number-based upscaling could cause additional fluctuations in weighted random density in redshift and/or on sky; using the weight ratio may be better in that respect, but may have an issue of overly fine tuning for small intersections (and we also may need to be more careful about multiplying the weights in place)
             del current_targetids, targetids_sel_all # no longer needed, free memory
         # re-apply the global rescaling to match the random-to-data ratio (default x FKP weighted) for each tracer to the first tracer's original ratio. doesn't exactly help with the fluctuations in weighted random density in redshift and/or on sky, however
-        for i in range(ntracers): rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / np.sum(rcat[i]['WEIGHT']) / (N_d[0] / N_r[0]) # N_d and N_r did not include the bias in the weights
+        for i in range(ntracers): rcat[i]['WEIGHT'] *= bias_list[i] * N_d[i] / np.sum(rcat[i]['WEIGHT'] * rcat[i]['WEIGHT_FKP']) / (N_d[0] / N_r[0]) # N_d and N_r did not include the bias in the weights
     
     rcat_concat = vstack(rcat) # simply concatenate catalogs
     del rcat # no longer needed, free memory
