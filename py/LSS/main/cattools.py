@@ -3645,7 +3645,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
 
     if calc_ctile == 'y':
         tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
-        n_of_tiles = len(tlslu)
+        # n_of_tiles = len(tlslu)
         laa = dz['LOCATION_ASSIGNED']
         acnts = np.bincount(indices,laa)
         compa = acnts/cnts
@@ -3676,11 +3676,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
 #            compa.append(cp)
 #            tll.append(tlslu[ti])
 #            ti += 1
-        comp_dicta = dict(zip(tlslu, compa))
-        fcompa = []
-        for tl in dz['TILES']:
-            fcompa.append(comp_dicta[tl])
-        dz['COMP_TILE'] = np.array(fcompa)
+        dz['COMP_TILE'] = compa[indices] # compa is the assignment completeness for each unique tile combination, indices contain the unique tile combination index for each row in dz, so compa[indices] gives the completeness for each row in dz
         wc0 = dz['COMP_TILE'] == 0
         common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
     else:
