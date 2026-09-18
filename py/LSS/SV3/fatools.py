@@ -23,6 +23,9 @@ from desitarget import io
 from desitarget.mtl import inflate_ledger
 from desiutil.log import get_logger
 
+# fiberassign
+from fiberassign.utils import get_whether_to_reorder_mtl, get_whether_to_use_np_concatenate
+
 log = get_logger()
 
 
@@ -595,6 +598,22 @@ def altcreate_mtl(
         if 'dark1b' in mtldir or 'bright1b' in mtldir:
             log.info('Running with maketwostyle=True')
             is_ext = True
+
+            # 20260909 LGN: Adding new handling here for the BRIGHT1B order bug: https://github.com/desihub/fiberassign/pull/512
+            # this requires getting the tile rundate, I'm grabbing it from the fiberassign header (matching makeTileTracker)
+            ts = str(tileIDs[0])
+            thisFAFN = os.path.join(os.getenv("DESI_ROOT"),'target','fiberassign','tiles','trunk', f'{ts[0:3]}', f'fiberassign-{ts}.fits')
+            thisfhtOrig = fitsio.read_header(thisFAFN)
+            tile_rundate = thisfhtOrig['RUNDATE']
+
+            # use the rundate to get extra argument values, set and pass to read_targets_in_tiles
+            reorder_mtl = get_whether_to_reorder_mtl(tile_rundate)
+            use_np_concatenate = get_whether_to_use_np_concatenate(tile_rundate)
+
+            extra_args = {}
+            extra_args["reorder"] = reorder_mtl
+            extra_args["use_concatenate"] = use_np_concatenate
+            
             # LGN Formatting the path to bright or dark ledgers
             # LGN Passing list of directories to read_targets_in_tiles
             mtldir_short = os.path.join(
@@ -611,7 +630,8 @@ def altcreate_mtl(
                 isodate=mtltime,
                 verbose=verbose,
                 tabform='ascii.ecsv',
-                maketwostyle = is_ext
+                maketwostyle = is_ext,
+                **extra_args
             )
         
         else:

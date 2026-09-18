@@ -691,12 +691,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     archiveDates = []
     
     for tileid in TilesSel:
-        print('tileid = {0}'.format(tileid))
         
         ts = str(tileid).zfill(6)
         
         thisTileMTLDT = MTLDT[MTLDT['TILEID'] == tileid]
-        
         # 20260302 LGN Rewriting to remove ARCHIVEDATE check. 
         # 20260302 LGN We want fa actions before the endDate to be included.
         if len(thisTileMTLDT) == 0:
@@ -713,12 +711,31 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         thisFAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
 
         thisfhtOrig = fitsio.read_header(thisFAFN)
-        thisfadate = thisfhtOrig['MTLTIME']
+
+        # 20260909 LGN: In order to fix the MTLTIME ordering bug: github.com/desihub/fiberassign/issues/517
+        # We now need to get the fa action timestamp manually, this requires finding the final entry from
+        # the same program (1B inclusive) that occured before the tiles NOWTIME.
+        # Code adapted from: https://github.com/desihub/fiberassign/blob/48a0e6a7361c1230ae48d9fb55fe08fae6594ae6/py/fiberassign/fba_launch_io.py
+        if obscon.upper() in ["DARK1B","BRIGHT1B"]:
+            d = MTLDT.copy(copy_data=True)
+            if obscon.upper() == "DARK1B":
+                keep = np.isin(d["PROGRAM"], ["DARK", "DARK1B"])
+            elif obscon.upper() == "BRIGHT1B":
+                keep = np.isin(d["PROGRAM"], ["BRIGHT", "BRIGHT1B"])
+        
+            keep &= d["TIMESTAMP"] < thisfhtOrig['NOWTIME']
+            
+            # AR taking the latest timestamp
+            thisfadate = np.unique(d[keep]["TIMESTAMP"])[-1]
+        # If a standard DARK/BRIGHT tile there's no timing issue, revert to original behavior
+        else:
+            thisfadate = thisfhtOrig['MTLTIME']
+    
         thisfadate = desitarget.mtl.add_to_iso_date(thisfadate, 1)
         thisfanite = int(''.join(thisfadate.split('T')[0].split('-')))
         if thisfanite > endDate:
             continue
-        
+
         TileIDs.append(tileid)
         TypeOfActions.append('fa')
         TimesOfActions.append(thisfadate)
@@ -775,7 +792,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TimesOfActions.append('2025-07-21T23:36:04+00:00')
         doneFlag.append(False)
         archiveDates.append(20250721)
-    else:
+    elif (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
+        log.info(f'Obscon = {obscon} but lya1b = {lya1b}')
         log.info('NOT adding QSO NUMOBS Increase Action')
         log.info('You will not mimic real survey decisions after 2025-07-21T23:36:04+00:00')
 
