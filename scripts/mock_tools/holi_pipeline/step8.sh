@@ -31,7 +31,7 @@ export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
 
 export OMP_NUM_THREADS=1
 
-path2LSS=$LSS_DIR/bin
+
 ALTMTLHOME=$DS_DIR
 
 simName="altmtl{mock_number:04d}"
@@ -51,20 +51,18 @@ mock='--mock'
 targfile="--targfile=${ALTMTLHOME}/forFA{mock_number:04d}.fits"
 multiDate='--multiDate'
 reproducing=''
-mockinit=$IDS
-mockend=$((IDS + 1))
-mocklist=''
+mockid=$IDS
 zfix="${ALTMTLHOME}/qsos/qso{mock_number:04d}.txt"
 
-argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockmin=$mockinit --mockmax=$mockend --mocklist=$mocklist --zfix=$zfix"
-echo "argstring for dateloop"
+argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=$survey --ProcPerNode=$ProcPerNode $numobs_from_ledger $redoFA $getosubp $debug $verbose $secondary $mock $targfile $multiDate $reproducing --mockid=$mockid --zfix=$zfix"
+
 echo $argstring
 
-python $path2LSS/runAltMTLRealizations.py $argstring
+#python $path2LSS/runAltMTLRealizations.py $argstring
+runAltMTL.py $argstring
 
 # python "$path2LSS/runAltMTLRealizations.py" $argstring &
 # parent_pid=$!
-# LSS
 # sleep 10
 # worker_pid=$(pgrep -P "$parent_pid" | head -n 1)
 
@@ -80,3 +78,8 @@ python $path2LSS/runAltMTLRealizations.py $argstring
 #   --output "profile_worker_${IDS}.json" &
 
 # wait "$parent_pid"
+
+
+# py-spy record --duration 120 --rate 140 --format speedscope \
+#   --output "profile_worker_${IDS}.json" \
+#   -- python runAltMTL.py $argstring
