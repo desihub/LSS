@@ -2516,11 +2516,7 @@ def loop_alt_ledger(
         )
 
     ### JL - this loop is through all realizations serially or (usually) one realization parallelized
-    cpt = 0
     for n in iterloop:
-        if cpt == 1:
-            break
-        cpt += 1
         log.info(f"============================== iterloop : {n}")
         if debugOrig:
             altmtldir = altmtlbasedir + "/Univ000/"
