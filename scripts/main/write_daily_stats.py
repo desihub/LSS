@@ -29,9 +29,9 @@ tps = ['LGE','QSO','LRG','ELG','ELG_LOP','ELG_LOPnotqso','BGS_ANY','BGS_BRIGHT']
 zcol = 'Z_not4clus'
 for tp in tps:
     print(tp+':')
-    prog='dark'
+    prog='darkp1b'
     if 'BGS' in tp:
-        prog = 'bright'
+        prog = 'brightp1b'
     if 'LGE' in tp:
         prog = 'dark1b'
     rtnv = fitsio.read_header('/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/LSScats/test/'+prog+'_0_full_noveto.ran.fits',ext=1)
