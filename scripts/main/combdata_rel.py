@@ -162,7 +162,7 @@ if specrel != 'daily':
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/' + \
         specrell[0]+'/tiles/cumulative/'
     specf = Table.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative.fits') # this will get used again below
+                       specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative.fits') # this will get used again below
     wd &= np.isin(mt['TILEID'], np.unique(specf['TILEID']))
 else:
     coaddir = '/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/'
