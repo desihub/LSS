@@ -611,24 +611,26 @@ if specrel != 'daily' and args.dospec:
         # tarfo = ldirspec+'datcomb_'+prog+'_tarwdup_zdone.fits'
         tps = [prog]
         notqsos = ['']
-    else:
-        # tar
-        notqso = ''
-        if prog == 'dark':
-            
-            if args.tracer == 'all':
-                tps = ['LRG', 'ELG', 'QSO']#, 'ELG_LOP', 'ELG_LOP']
-                #notqsos = ['', '', '', '', 'notqso']
-            else:
-                tps = [args.tracer.strip('notqso')]
-                #notqsos = ['']
-                #if 'notqso' in args.tracer:
-                #    notqsos = ['notqso']
-        if prog == 'bright':
-            tps = ['BGS_ANY']#, 'BGS_BRIGHT']  # ,'MWS_ANY']
-            #notqsos = ['', '']
+#     else:
+#         # tar
+#         notqso = ''
+#         if prog == 'dark':
+#             
+#             if args.tracer == 'all':
+#                 tps = ['LRG', 'ELG', 'QSO']#, 'ELG_LOP', 'ELG_LOP']
+#                 #notqsos = ['', '', '', '', 'notqso']
+#             else:
+#                 tps = [args.tracer.strip('notqso')]
+#                 #notqsos = ['']
+#                 #if 'notqso' in args.tracer:
+#                 #    notqsos = ['notqso']
+#         if prog == 'bright':
+#             tps = ['BGS_ANY']#, 'BGS_BRIGHT']  # ,'MWS_ANY']
+#             #notqsos = ['', '']
+    
     if args.dotarspec:
         #for tp, notqso in zip(tps, notqsos):
+        #tps should have been defined above
         for tp in tps:
             # first test to see if we need to update any
             logger.info('now doing '+tp+notqso)
