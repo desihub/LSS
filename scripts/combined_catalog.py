@@ -31,6 +31,7 @@ bias_dict = {'LRG': 2.0, 'ELG_LOPnotqso': 1.2, 'QSO': 2.1}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--base_dir', help='directory to load from')
+parser.add_argument('--nz_dir', help='directory to load n(z) file, basedir if None', default=None)
 parser.add_argument('--save_dir', help='directory to write combined catalogs to')
 parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'], choices=bias_dict.keys())
 parser.add_argument('--out_tracer', help='name of the tracer in output files', default='LRG+ELG_LOPnotqso')
@@ -44,6 +45,11 @@ save_dir = args.save_dir
 cap = args.cap
 verbose = args.verbose
 out_tracer = args.out_tracer
+
+nz_dir = base_dir
+if args.nz_dir:
+    nz_dir = args.nz_dir
+
 if verbose:
     logger.info(f'Loading from {base_dir}')
     logger.info(f'Saving to {save_dir}')
@@ -76,7 +82,7 @@ N_d = [None] * ntracers
 for i, tracer in enumerate(tracers):
     fb = base_dir + f'{tracer}_{cap}'
     comp_ntl[i] = comb.get_comp(fb, logger=logger)
-    nz[i] = np.loadtxt(base_dir + f'{tracer}_{cap}_nz.txt')
+    nz[i] = np.loadtxt(nz_dir + f'{tracer}_{cap}_nz.txt')
 
 # get neff
 neff, nz_comb_all, beff = comb.calc_neff(nz, bias_list, zmin, zmax, dz, verbose, logger=logger)
