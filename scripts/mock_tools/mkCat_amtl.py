@@ -66,6 +66,7 @@ parser.add_argument("--usepota", help="use the already calculated potential assi
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_oldfoot", help="whether to cut randoms based on old tile list for full survey",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data; needed on only for 1st steps",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
@@ -390,6 +391,8 @@ if args.combd == 'y':
     #outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
     #ommon.write_LSS_scratchcp(asn,outf,logger=logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    if args.outmd == 'scratch':
+        outfs = outfs.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
     common.write_LSShdf5_scratchcp(asn,outf,logger=logger)
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
@@ -1087,6 +1090,12 @@ if args.mkclusran == 'y':
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
+        if args.apply_oldfoot == 'y':
+            tiles = Table.read('/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/code/desimodel/main/data/footprint/desi-tiles.ecsv')
+            mask_y5 = mask_y5 = (tiles['PROGRAM'] == 'BRIGHT')&(tiles['IN_DESI']==1) #needing the explicit ==1 here is the new important aspect
+            tiles = tiles[mask_y5]
+            selY5 = is_point_in_desi(tiles, fr['RA'], fr['DEC']) #fr being the array of randoms
+            fr = fr[selY5] #randoms should now be cut to matching footprint
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
