@@ -1,5 +1,5 @@
 #!/bin/bash
-source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 
 for ((i=$1;i<=$2;i++ ))
 do
