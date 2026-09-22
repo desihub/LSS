@@ -186,7 +186,7 @@ else:
 mockz = 'RSDZ'
 
 if args.targDir == None:
-    args.targDir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/'
+    args.targDir = args.base_altmtl_dir.replace('global','dvs_ro')+'/'+args.survey+'/mocks/'+args.simName+'/'
 
 
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+surveycat+'/LSS/tiles-'+pr+'.fits'
