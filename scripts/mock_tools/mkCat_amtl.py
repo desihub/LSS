@@ -1066,11 +1066,10 @@ if args.mkclusran == 'y':
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
     #mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
-    mockobs_fn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5'
-    if args.outmd == 'scratch':
-        
+    mockobs_fn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    if args.outmd == 'scratch':        
         mockobs_fn = mockobs_fn.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
-    mockobs = common.read_hdf5_blosc(mockobs_fn),columns=['TILEID','LOCATION','PRIORITY'])
+    mockobs = common.read_hdf5_blosc(mockobs_fn,columns=['TILEID','LOCATION','PRIORITY'])
     mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
     badpri = mockobs['PRIORITY'] > maxp
     bad_tlid = mockobs_tlid[badpri]
