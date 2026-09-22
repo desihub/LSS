@@ -1100,12 +1100,14 @@ if args.mkclusran == 'y':
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
+        common.printlog(str(rann)+' length after read '+str(len(datain)),logger=logger)
         if args.apply_oldfoot == 'y':
             tiles = Table.read('/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/code/desimodel/main/data/footprint/desi-tiles.ecsv')
             mask_y5 = mask_y5 = (tiles['PROGRAM'] == 'BRIGHT')&(tiles['IN_DESI']==1) #needing the explicit ==1 here is the new important aspect
             tiles = tiles[mask_y5]
-            selY5 = is_point_in_desi(tiles, fr['RA'], fr['DEC']) #fr being the array of randoms
-            fr = fr[selY5] #randoms should now be cut to matching footprint
+            selY5 = is_point_in_desi(tiles, datain['RA'], datain['DEC']) #fr being the array of randoms
+            datain = datain[selY5] #randoms should now be cut to matching footprint
+            common.printlog(str(rann)+' length after cut to old footprint '+str(len(datain)),logger=logger)
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
