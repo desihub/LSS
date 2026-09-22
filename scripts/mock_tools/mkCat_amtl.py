@@ -392,7 +392,7 @@ if args.combd == 'y':
     #ommon.write_LSS_scratchcp(asn,outf,logger=logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
     if args.outmd == 'scratch':
-        outfs = outfs.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
+        outf = outf.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
     common.write_LSShdf5_scratchcp(asn,outf,logger=logger)
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
@@ -1079,6 +1079,8 @@ if args.mkclusran == 'y':
     common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
+    if args.apply_oldfoot == 'y':
+        from desimodel.footprint import is_point_in_desi
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
