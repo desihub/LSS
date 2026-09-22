@@ -313,7 +313,7 @@ test_dir(clusdir)
 
 
 test_dir(outdir)
-test_dir(outdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+test_dir(outdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/'))
 
 if args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
