@@ -1772,7 +1772,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff.sort('TILES')
         nts = len(np.unique(ff['TILES']))
         tlsl = ff['TILES']
-        tlslu = np.unique(tlsl)
+        tlslu = np.unique(tlsl).astype(str)
         laa = ff['LOCATION_ASSIGNED']
         lta = ff['TILELOCID_ASSIGNED']
         # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
