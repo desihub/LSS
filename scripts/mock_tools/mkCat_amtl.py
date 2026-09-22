@@ -442,7 +442,7 @@ if args.combd == 'y':
             #pota_cols.append('REST_GMR_0P1')
             
         #BGS_TARGET
-        pa = fitsio.read(pota_fn,columns=pota_cols)
+        pa = fitsio.read(pota_fn.replace('global','dvs_ro'),columns=pota_cols)
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
         sel_coll = pa['COLLISION'] == 0
         pa = pa[sel_coll]
