@@ -157,10 +157,12 @@ def dvs_ro(path):
 
 def get_catdir(release):
     """Return the directory holding the input zcatalog files for a given release."""
-    if release == 'loa':
-        return '/global/cfs/cdirs/desicollab/users/rongpu/data/redux/loa/zcatalog/v2/main/'
-    # matterhorn / nevis
-    return f'/global/cfs/cdirs/desi/spectro/redux/{release}/zcatalog/v2/main/'
+    #if release == 'loa':
+    #    return '/global/cfs/cdirs/desicollab/users/rongpu/data/redux/loa/zcatalog/v2/main/'
+    ## matterhorn / nevis
+    #return f'/global/cfs/cdirs/desi/spectro/redux/{release}/zcatalog/v2/main/'
+    # debug
+    return f'/pscratch/sd/r/rongpu/tmp/matterhorn/zcatalog/v2_20260805/main/'
 
 
 def as_str(arr):
@@ -311,7 +313,7 @@ def main():
                         help='directory to write the output QSO catalogs (default: current directory)')
     parser.add_argument('--version', default=None,
                         help="catalog version string (e.g. 'v0'); default auto-increments from 'v0'")
-    parser.add_argument('--keep_variable', action=store_true,
+    parser.add_argument('--keep_variable', action='store_true',
                         help="should objects with FIBERSTATUS bit 20 set be included? Default removes them")
     args = parser.parse_args()
 
@@ -423,23 +425,25 @@ def main():
     # how was the spectrum identified, see desispec validredshifts.py
     # good_z_qso == from_qso
     from_ELG = good_z_lya & ~good_z_qso & is_ELG
-    from_VAR = good_z_lya & is_VAR & ~from_ELG
+    from_VAR = good_z_lya & is_VAR & ~good_z_qso & ~from_ELG
 
     tot = np.sum(good_z_lya)
-    assert tot == (from_ELG.sum() + from_VAR.sum + good_z_qso.sum())
+    assert tot == (from_ELG.sum() + from_VAR.sum() + good_z_qso.sum())
 
     logger.info(f'identified QSOs: {int(good_z_qso.sum())} QSO, {int(from_ELG.sum())} ELG, '
-                f'{int(from_WISE.sum())} VAR'
+                f'{int(from_VAR.sum())} VAR'
                 f'-> {int(good_z_lya.sum())} total')
     logger.info(f'QSO targets (all): {int(is_QSO.sum())}')
 
     # ----- redshift assembly ------------------------------------------------- #
     # Z_QSO is set by redrock, unless Z_QN != Z_RR for a QN99 QSO/WISE target or QN6 ELG target 
     # then Z_QSO is taken from the redrock rerun with QN prior
-    z_out = zextra['Z_QSO'].copy()
+    # AB note: if GOOD_Z_LYA set, Z in zcatalog == Z_QSO
+    spectype_out = zextra['SPECTYPE'].copy()
     # here we distinguish between a new redshift existing vs overwriting the original RR redshift
     is_qn_new_rr = is_qn_new_rr_exists & (is_QSO | from_VAR) & QN99
     is_qn_new_rr |= is_qn_new_rr_exists & from_ELG & QN6
+    spectype_out[is_qn_new_rr] = zextra['SPECTYPE_NEW'][is_qn_new_rr]
 
     # ----- QSO_MASKBITS (canonical bit definition) --------------------------- #
     qso_maskbits = np.zeros(n, dtype=np.int32)
@@ -469,11 +473,12 @@ def main():
                 f'({len(idx_qso)} QSO targets)')
 
     # ----- assemble the output table ----------------------------------------- #
+    # AB note: if GOOD_Z_LYA set, Z in zcatalog == Z_QSO
     out = Table()
     out['TARGETID'] = zcat['TARGETID'][idx]
-    out['Z'] = z_out[idx]
-    out['ZERR'] = zerr_out[idx]
-    out['ZWARN'] = zwarn_out[idx]
+    out['Z'] = zextra['Z_QSO'][idx]
+    out['ZERR'] = zextra['ZERR'][idx]
+    out['ZWARN'] = zextra['ZWARN'][idx]
     out['SPECTYPE'] = spectype_out[idx]
     out['COADD_FIBERSTATUS'] = zcat['COADD_FIBERSTATUS'][idx]
     out['TARGET_RA'] = zcat['TARGET_RA'][idx]
