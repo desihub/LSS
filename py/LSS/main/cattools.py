@@ -3076,54 +3076,20 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     probl = np.zeros(len(dz))
 
     #get completeness based on unique sets of tiles
-    compa = []
-    tll = []
-    ti = 0
     common.printlog('getting completeness',logger)
-    dz['TILES'] = dz['TILES'].filled('0')
-    dz.sort('TILES')
-    tlsl = dz['TILES']
-    #tlsl.sort()
-    nts = len(tlsl)
+    dz['TILES'] = dz['TILES'].filled('0') # should not be necessary for the following computation anymore, but leave for compatibility for now
+    dz.sort('TILES') # should not be necessary for the following computation anymore, but leave for compatibility for now
     
-    tlslu = np.unique(tlsl)
-    laa = dz['LOCATION_ASSIGNED']
+    tlslu, tlslu_counts, tlslu_indices = np.unique(dz['TILES'], return_counts=True, return_inverse=True)
 
-    i = 0
-    while i < len(dz):
-        tls  = []
-        tlis = []
-        nli = 0
-        nai = 0
+    tlslu_counts_assigned = np.bincount(tlslu_indices, weights=dz['LOCATION_ASSIGNED'])
+    tlslu_fcomp = tlslu_counts_assigned/tlslu_counts
 
-        while tlsl[i] == tlslu[ti]:
-            nli += 1
-            nai += laa[i]
-            i += 1
-            if i == len(dz):
-                break
-
-        if ti%1000 == 0:
-            common.printlog('at tiles '+str(ti)+' of '+str(nts),logger)
-
-        if nli == 0:
-            common.printlog('no data for '+str(tlslu[ti]),logger)
-            cp = 0
-        else:
-            cp = nai/nli#no/nt
-        
-        compa.append(cp)
-        tll.append(tlslu[ti])
-        ti += 1
-    comp_dicta = dict(zip(tll, compa))
-    fcompa = []
-    for tl in dz['TILES']:
-        fcompa.append(comp_dicta[tl])
-    dz['COMP_TILE'] = np.array(fcompa)
+    dz['COMP_TILE'] = tlslu_fcomp[tlslu_indices]
     wc0 = dz['COMP_TILE'] == 0
     common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
 
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+    locl, nlocl, ilocl = np.unique(dz['TILELOCID'], return_counts=True, return_inverse=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
 
@@ -3135,21 +3101,13 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
 
     common.printlog('getting fraction assigned for each tilelocid',logger)
-    nm = 0
-    nmt =0
-    pd = []
-    nloclt = len(locl)
-    lzs = np.isin(locl,loclz)
-    for i in range(0,len(locl)):
-        if i%100000 == 0:
-            common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
-        nt = nlocl[i]
-        nz = lzs[i]
-        loc = locl[i]
-        pd.append((loc,nz/nt))
-    pd = dict(pd)
-    for i in range(0,len(dz)):
-        probl[i] = pd[dz['TILELOCID'][i]]
+    lzs = np.isin(locl, loclz)
+    locl_prob = lzs / nlocl # I guess lzs works as a numerator because only one assignment can be made per tilelocid?
+    probl = locl_prob[ilocl]
+
+    # these were not assigned, not sure if I guessed the meaning right
+    nm = np.sum(~lzs)
+    nmt = np.sum(nlocl[~lzs])
     
     #print('number of fibers with no observation, number targets on those fibers')
     #print(nm,nmt)
@@ -3160,7 +3118,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
 
     #print(np.unique(dz['NTILE']))
 
-    common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
+    common.printlog('number of fibers with no observation, number of targets on those fibers: '+str(nm)+','+str(nmt),logger)
     #print(nm,nmt)
 
     dz['FRACZ_TILELOCID'] = probl
@@ -3626,9 +3584,6 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
     probl = np.zeros(len(dz))
 
     #get completeness based on unique sets of tiles
-    compa = []
-    tll = []
-    ti = 0
     common.printlog('getting completeness',logger)
     #if dz['TILES'].masked:
     try:

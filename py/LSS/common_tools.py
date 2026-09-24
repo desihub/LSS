@@ -789,38 +789,17 @@ def find_znotposs(dz, logname=None):
 
 
 def comp_tile(dz):
-    compa = []
-    tll = []
-    ti = 0
     print('getting completenes')
-    # sorting by tiles makes things quicker with while statements below
-    dz.sort('TILES')
-    nts = len(np.unique(dz['TILES']))
-    tlsl = dz['TILES']
-    tlslu = np.unique(tlsl)
-    laa = dz['LOCATION_ASSIGNED']
+    dz.sort('TILES') # should not be necessary for the following computation anymore, but leave it for compatibility for now
+    
+    tlslu, ntlslu, itlslu = np.unique(dz['TILES'], return_counts=True, return_inverse=True)
+    print('TILELOCID_ASSIGNED', np.unique(dz['TILELOCID_ASSIGNED'], return_counts=True), len(dz))
+    nai = np.bincount(itlslu, weights=dz['LOCATION_ASSIGNED'])
+    # nti = np.bincount(itlslu, weights=dz['TILELOCID_ASSIGNED'])
+    compa = nai / ntlslu
+    # fractl = nti / ntlslu
 
-    i = 0
-    while i < len(dz):
-        tls = []
-        tlis = []
-        nli = 0
-        nai = 0
-
-        while tlsl[i] == tlslu[ti]:
-            nli += 1  # counting unique targetids within the given TILES value
-            nai += laa[i]  # counting the number assigned
-            i += 1
-            if i == len(dz):
-                break
-
-        if ti % 1000 == 0:
-            print('at tiles '+str(ti)+' of '+str(nts))
-        cp = nai/nli  # completeness is number assigned over number total
-        compa.append(cp)
-        tll.append(tlslu[ti])
-        ti += 1
-    return tll, compa
+    return tlslu, compa
 
 
 def comp_tileloc(dz):
@@ -1765,55 +1744,14 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
     if '.dat' in fout:
         ff['Z'].name = 'Z_not4clus'
         printlog('updating completeness', logger)
-        compa = []
-        fractl = []
-        tll = []
-        ti = 0
-        ff.sort('TILES')
-        nts = len(np.unique(ff['TILES']))
-        tlsl = ff['TILES']
-        tlslu = np.unique(tlsl)
-        laa = ff['LOCATION_ASSIGNED']
-        lta = ff['TILELOCID_ASSIGNED']
+        ff.sort('TILES') # should not be necessary for the following computation anymore, but leave for compatibility for now
+        tlslu, ntlslu, itlslu = np.unique(ff['TILES'], return_counts=True, return_inverse=True)
         # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
+        nai = np.bincount(itlslu, weights=ff['LOCATION_ASSIGNED'])
+        nti = np.bincount(itlslu, weights=ff['TILELOCID_ASSIGNED'])
+        compa = nai / ntlslu
+        fractl = nti / ntlslu
 
-        # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
-        i = 0
-        tot = 0
-        atot = 0
-        tltot = 0
-        while i < len(ff):
-            tls = []
-            tlis = []
-            nli = 0  # initialize total available per tile group
-            nai = 0  # initialize total assigned
-            nti = 0  # initialize total at location where something of the same type was assigned
-
-            while tlsl[i] == tlslu[ti]:
-                nli += 1
-                nai += laa[i]  # laa is true/false assigned
-                # lta is true/false something of the same type was assigned
-                nti += lta[i]
-                i += 1
-                if i == len(ff):
-                    break
-
-            if ti % 10000 == 0:
-                printlog('at tiles ' + str(ti) + ' of ' + str(nts), logger)
-
-            tot += nli
-            atot += nai
-            tltot += nti
-            cp = nai / nli
-            fract = nti/nli
-            # print(tls,cp,no,nt)
-            compa.append(cp)
-            fractl.append(fract)
-            tll.append(tlslu[ti])
-            ti += 1
-        # print(tot,atot,tltot)
-        comp_dicta = dict(zip(tll, compa))
-        fract_dicta = dict(zip(tll, fractl))
         if '.fits' in fout:
             tlobs_fn = fout.replace(
                 'full'+mapveto+'.dat.fits', 'frac_tlobs.fits')
@@ -1822,17 +1760,12 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
                 'full'+mapveto+'.dat.h5', 'frac_tlobs.fits')
         printlog('tlobs file will get written to '+tlobs_fn)
         tlobs = Table()
-        tlobs['TILES'] = tll
+        tlobs['TILES'] = tlslu
         tlobs['FRAC_TLOBS_TILES'] = fractl
         write_LSS_scratchcp(tlobs, tlobs_fn, logger=logger)
         del tlobs
-        fcompa = []
-        fracta = []
-        for tl in ff['TILES']:
-            fcompa.append(comp_dicta[tl])
-            fracta.append(fract_dicta[tl])
-        ff['COMP_TILE'] = np.array(fcompa)
-        ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        ff['COMP_TILE'] = compa[itlslu]
+        ff['FRAC_TLOBS_TILES'] = fractl[itlslu]
         printlog('data quantities measured, moving to write-out phase', logger)
         # print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         # if comp_only:
@@ -1951,59 +1884,17 @@ def get_tlcomp(fin):
     '''
     ff = Table(fitsio.read(fin))  # +'full_noveto.'+dr+'.fits')
     print('getting completeness')
-    compa = []
-    fractl = []
-    tll = []
-    ti = 0
-    ff.sort('TILES')
-    nts = len(np.unique(ff['TILES']))
-    tlsl = ff['TILES']
-    tlslu = np.unique(tlsl)
-    laa = ff['LOCATION_ASSIGNED']
-    lta = ff['TILELOCID_ASSIGNED']
-    print('TILELOCID_ASSIGNED', np.unique(
-        ff['TILELOCID_ASSIGNED'], return_counts=True), len(ff))
+    
+    tlslu, ntlslu, itlslu = np.unique(ff['TILES'], return_counts=True, return_inverse=True)
+    print('TILELOCID_ASSIGNED', np.unique(ff['TILELOCID_ASSIGNED'], return_counts=True), len(ff))
+    # nai = np.bincount(itlslu, weights=ff['LOCATION_ASSIGNED'])
+    nti = np.bincount(itlslu, weights=ff['TILELOCID_ASSIGNED'])
+    # compa = nai / ntlslu
+    fractl = nti / ntlslu
 
-    # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
-    i = 0
-    tot = 0
-    atot = 0
-    tltot = 0
-    while i < len(ff):
-        tls = []
-        tlis = []
-        nli = 0  # initialize total available per tile group
-        nai = 0  # initialize total assigned
-        nti = 0  # initialize total at location where something of the same type was assigned
-
-        while tlsl[i] == tlslu[ti]:
-            nli += 1
-            nai += laa[i]  # laa is true/false assigned
-            # lta is true/false something of the same type was assigned
-            nti += lta[i]
-            i += 1
-            if i == len(ff):
-                break
-
-        if ti % 10000 == 0:
-            print('at tiles ' + str(ti) + ' of ' + str(nts))
-
-        tot += nli
-        atot += nai
-        tltot += nti
-        cp = nai / nli
-        fract = nti/nli
-        # print(tls,cp,no,nt)
-        compa.append(cp)
-        fractl.append(fract)
-        tll.append(tlslu[ti])
-        ti += 1
-    # print(tot,atot,tltot)
-    comp_dicta = dict(zip(tll, compa))
-    fract_dicta = dict(zip(tll, fractl))
     tlobs_fn = fin.replace('full.dat.fits', 'frac_tlobs.fits')
     tlobs = Table()
-    tlobs['TILES'] = tll
+    tlobs['TILES'] = tlslu
     tlobs['FRAC_TLOBS_TILES'] = fractl
     write_LSS(tlobs, tlobs_fn)
 
