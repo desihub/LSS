@@ -19,7 +19,7 @@ def create_dirs(value):
                 raise
 
 
-def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=False):
+def init_amtl(concate_tracers, out_dir, obscon, paral=False, recreate_tileTrack=False):
     """
     File access out parameters
     
