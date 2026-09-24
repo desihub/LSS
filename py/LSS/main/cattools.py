@@ -4461,17 +4461,15 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
 def add_comptile_ran(ranf, fulld_fname):
     "load the full data file to retrieve the COMP_TILE data for randoms by matching on TILES"
     fd = fitsio.read(fulld_fname, columns=['TILES', 'COMP_TILE'])
-    tlu, ntlu, itlu = np.unique(fd['TILES'], return_counts=True, return_inverse=True)
-    comp_tlu = np.bincount(itlu, weights=fd['COMP_TILE']) / ntlu # this is the (average) COMP_TILE for each unique TILES value. the averaged values should actually be the same
-    del fd, ntlu, itlu # no longer needed, free memory
-    # retrieve the COMP_TILE values for the randoms based on the table for the unique TILES values
-    ran_itlu = np.searchsorted(tlu, ranf['TILES']) # indices should be right for random TILES values present in the data, but would not be right for those not in the data
-    ran_itlu = np.clip(ran_itlu, 0, len(tlu)-1) # ensure indices are within bounds to avoid errors. clipping should only happen for TILES values not in the data, which will be overwritten later
-    ranf['COMP_TILE'] = comp_tlu[ran_itlu]
-    del comp_tlu, ran_itlu # no longer needed, free memory
-    # overwrite the default value for TILES values present in randoms but not in data
-    ran_atlu = np.isin(ranf['TILES'], tlu, invert=True)
-    ranf['COMP_TILE'][ran_atlu] = 1 # reset COMP_TILE to 1 for TILES values not found in the data
+    tlud, ntlud, itlud = np.unique(fd['TILES'], return_counts=True, return_inverse=True)
+    comp_tlud = np.bincount(itlud, weights=fd['COMP_TILE']) / ntlud # this is the (average) COMP_TILE for each unique TILES value; the averaged values should actually be the same
+    del fd, ntlud, itlud # no longer needed, free memory
+    # find the unique (and sorted) TILES values in randoms
+    tlur, itlur = np.unique(ranf['TILES'], return_inverse=True) # won't need counts but will need the inverse mapping (indices)
+    comp_tlur = np.ones_like(tlur, dtype=float) # initialize COMP_TILE array for unique TILES with 1, which will be the default value for TILES not found in the data
+    comp_tlur[np.isin(tlur, tlud, assume_unique=True)] = comp_tlud[np.isin(tlud, tlur, assume_unique=True)] # for random TILEIDs that occur in data, use the corresponding COMP_TILE values from the data. both arrays are sorted by tlu, so with the restriction to the common tlu values they should simply match. to be safe, also account for the possibility of TILES values from data not occuring in the randoms, although it seems unlikely
+    del tlur, tlud, comp_tlud # no longer needed, free memory
+    ranf['COMP_TILE'] = comp_tlur[itlur] # assign the COMP_TILE values for all the randoms from the table for unique TILES
     return ranf
 
     
