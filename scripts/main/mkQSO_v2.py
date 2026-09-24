@@ -13,7 +13,7 @@ Two catalogs are produced:
                           QSO targets with QSO_MASKBITS > 0, after the bad_qso cut).
         --> QSO_cat_{release}_main_dark_healpix_only_qso_targets_{version}.fits
     * "all QSOs"        : every object identified as a QSO, defined as the union of
-                          three mutually-exclusive subsamples (QSO / ELG / WISE-VAR /
+                          three mutually-exclusive subsamples (QSO / ELG / WISE-VAR 
                           that pass the relevant QSO identification).
         --> QSO_cat_{release}_main_dark_healpix_{version}.fits
 
@@ -433,7 +433,7 @@ def main():
     assert tot == (from_ELG.sum() + from_VAR.sum() + good_z_qso.sum())
 
     logger.info(f'identified QSOs: {int(good_z_qso.sum())} QSO, {int(from_ELG.sum())} ELG, '
-                f'{int(from_VAR.sum())} VAR'
+                f'{int(from_VAR.sum())} VAR '
                 f'-> {int(good_z_lya.sum())} total')
     logger.info(f'QSO targets (all): {int(is_QSO.sum())}')
 
