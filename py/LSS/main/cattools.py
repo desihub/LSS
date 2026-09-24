@@ -4463,7 +4463,7 @@ def add_comptile_ran(ranf, fulld_fname, logger=None):
     import LSS.common_tools as common
     common.printlog('adding COMP_TILE',logger)
     fd = fitsio.read(fulld_fname, columns=['TILES', 'COMP_TILE'])
-    tlud, ntlud, itlud = np.unique(fd['TILES'], return_counts=True, return_inverse=True)
+    tlud, itlud, ntlud = np.unique(fd['TILES'], return_inverse=True, return_counts=True) # NB: inverse is returned before counts
     comp_tlud = np.bincount(itlud, weights=fd['COMP_TILE']) / ntlud # this is the (average) COMP_TILE for each unique TILES value; the averaged values should actually be the same
     del fd, ntlud, itlud # no longer needed, free memory
     # find the unique (and sorted) TILES values in randoms
@@ -4472,7 +4472,7 @@ def add_comptile_ran(ranf, fulld_fname, logger=None):
     tlur_is_in_tlud = np.isin(tlur, tlud, assume_unique=True)
     common.printlog('number of tiles not found in the data '+str(np.count_nonzero(~tlur_is_in_tlud)), logger)
     comp_tlur[tlur_is_in_tlud] = comp_tlud[np.isin(tlud, tlur, assume_unique=True)] # for random TILEIDs that occur in data, use the corresponding COMP_TILE values from the data. both arrays are sorted by tlu, so with the restriction to the common tlu values they should simply match. to be safe, also account for the possibility of TILES values from data not occuring in the randoms, although it seems unlikely
-    del tlur, tlur_in_tlud, tlud, comp_tlud # no longer needed, free memory
+    del tlur, tlur_is_in_tlud, tlud, comp_tlud # no longer needed, free memory
     ranf['COMP_TILE'] = comp_tlur[itlur] # assign the COMP_TILE values for all the randoms from the table for unique TILES
     common.printlog(str(np.count_nonzero(ranf['COMP_TILE'] == 0))+' randoms with 0 frac', logger)
     return ranf
