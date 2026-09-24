@@ -458,7 +458,7 @@ if args.nz == 'y':
         fcd = fb+'_clustering.dat.fits'
         fout = fb+'_nz.txt'
         #make n(z)
-        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd,wtmd=wtmd,logger=logger)
+        common.mknz(fcd,fcr,fout,bs=dz,zmin=zmin,zmax=zmax,compmd=nzcompmd,wtmd=wtmd)
         #do steps 2-5 above
         extra_dir = 'nonKP'
         if args.compmd == 'altmtl':
