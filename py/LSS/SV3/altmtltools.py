@@ -11,6 +11,7 @@
 #sys.modules[spec.name] = module
 #spec.loader.exec_module(module)
 #
+from datetime import datetime
 
 import collections.abc
 from time import time 
@@ -1350,6 +1351,7 @@ def quickRestartFxn(ndirs = 1, altmtlbasedir = None, survey = 'sv3', obscon = 'd
 def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark', 
     verbose = False, debug = False, getosubp = False, redoFA = False, mock = False, reproducing = False):
     #FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
+    START_BEGIN = datetime.now()
     if len(FATiles):
         try:
             log.info('FATiles[0] = {0}'.format(FATiles[0]))
@@ -1462,6 +1464,7 @@ def do_fiberassignment(altmtldir, FATiles, survey = 'sv3', obscon = 'dark',
         TSs.append(ts)
         fadates.append(fadate)
         
+    log.info(f"Duration TOTAL(h:m:s): {datetime.now() - START_BEGIN}")
     return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
 
 def make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, survey = 'sv3', obscon = 'dark', changeFiberOpt = None, verbose = False, debug = False, getosubp = False, redoFA = False):
