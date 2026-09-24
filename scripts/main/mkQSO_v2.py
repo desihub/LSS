@@ -414,9 +414,9 @@ def main():
     fiberstatus = np.asarray(zcat['COADD_FIBERSTATUS'])
     # GOOD_Z_* allows bit 3 (restricted fiber reach) and bit 20 (variable object or calibration)
     # check whether to exclude bit 20
-    bad_qso = np.ones_like(fiberstatus, dtype=bool)
+    bad_qso = np.zeros(fiberstatus.shape, dtype=bool)
     if not(args.keep_variable):
-        bad_qso = (fiberstatus == 2**20)
+        bad_qso = (fiberstatus & 2**20) != 0
 
     good_z_qso[bad_qso] = False
     good_z_lya[bad_qso] = False
