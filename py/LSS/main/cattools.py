@@ -4458,8 +4458,10 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     return ranf
 
 
-def add_comptile_ran(ranf, fulld_fname):
+def add_comptile_ran(ranf, fulld_fname, logger=None):
     "load the full data file to retrieve the COMP_TILE data for randoms by matching on TILES"
+    import LSS.common_tools as common
+    common.printlog('adding COMP_TILE',logger)
     fd = fitsio.read(fulld_fname, columns=['TILES', 'COMP_TILE'])
     tlud, ntlud, itlud = np.unique(fd['TILES'], return_counts=True, return_inverse=True)
     comp_tlud = np.bincount(itlud, weights=fd['COMP_TILE']) / ntlud # this is the (average) COMP_TILE for each unique TILES value; the averaged values should actually be the same
@@ -4467,9 +4469,12 @@ def add_comptile_ran(ranf, fulld_fname):
     # find the unique (and sorted) TILES values in randoms
     tlur, itlur = np.unique(ranf['TILES'], return_inverse=True) # won't need counts but will need the inverse mapping (indices)
     comp_tlur = np.ones_like(tlur, dtype=float) # initialize COMP_TILE array for unique TILES with 1, which will be the default value for TILES not found in the data
-    comp_tlur[np.isin(tlur, tlud, assume_unique=True)] = comp_tlud[np.isin(tlud, tlur, assume_unique=True)] # for random TILEIDs that occur in data, use the corresponding COMP_TILE values from the data. both arrays are sorted by tlu, so with the restriction to the common tlu values they should simply match. to be safe, also account for the possibility of TILES values from data not occuring in the randoms, although it seems unlikely
-    del tlur, tlud, comp_tlud # no longer needed, free memory
+    tlur_is_in_tlud = np.isin(tlur, tlud, assume_unique=True)
+    common.printlog('number of tiles not found in the data '+str(np.count_nonzero(~tlur_is_in_tlud)), logger)
+    comp_tlur[tlur_is_in_tlud] = comp_tlud[np.isin(tlud, tlur, assume_unique=True)] # for random TILEIDs that occur in data, use the corresponding COMP_TILE values from the data. both arrays are sorted by tlu, so with the restriction to the common tlu values they should simply match. to be safe, also account for the possibility of TILES values from data not occuring in the randoms, although it seems unlikely
+    del tlur, tlur_in_tlud, tlud, comp_tlud # no longer needed, free memory
     ranf['COMP_TILE'] = comp_tlur[itlur] # assign the COMP_TILE values for all the randoms from the table for unique TILES
+    common.printlog(str(np.count_nonzero(ranf['COMP_TILE'] == 0))+' randoms with 0 frac', logger)
     return ranf
 
     
@@ -4520,7 +4525,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         ffc.keep_columns(ran_cols)
 
     if compmd == 'comptile':
-        ffc = add_comptile_ran(ffc, flin+'full'+use_map_veto+'.dat.fits')
+        ffc = add_comptile_ran(ffc, flin+'full'+use_map_veto+'.dat.fits', logger=logger)
     
     if return_cat == 'y' and nosplit=='y':
         tempcols = ['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
