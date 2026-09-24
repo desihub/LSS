@@ -44,13 +44,13 @@ def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=F
     print("Creating list of tiles to be processed by AltMTL mock production")
     path = os.path.join(initledger_path, "main", obscon.lower())
     ff = glob.glob(
-        #os.path.join(path, "mtl-{obscon}-hp-*.ecsv".format(obscon=obscon.lower()))
-        os.path.join(path, "mtl-{obscon}-hp-*.fits".format(obscon=obscon.lower()))
+        os.path.join(path, "mtl-{obscon}-hp-*.ecsv".format(obscon=obscon.lower()))
+        #os.path.join(path, "mtl-{obscon}-hp-*.fits".format(obscon=obscon.lower()))
     )
     dd = []
     for f in ff:
-        #dd.append(int(f.split("hp-")[-1].split(".ecsv")[0]))
-        dd.append(int(f.split("hp-")[-1].split(".fits")[0]))
+        dd.append(int(f.split("hp-")[-1].split(".ecsv")[0]))
+        #dd.append(int(f.split("hp-")[-1].split(".fits")[0]))
     tosave = ",".join(map(str, sorted(dd)))
     savepath = os.path.join(
         initledger_path, "hpxlist_{obscon}.txt".format(obscon=obscon.lower())
