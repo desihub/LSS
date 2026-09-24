@@ -4,12 +4,16 @@
 # adapt join_imaging_mask.py pour snakemake
 #
 
-print('join_imaging_mask_snake.py')
+import os
+import argparse
 
 from astropy.table import Table
+
 import LSS.common_tools as cm
 from LSS.globals import main
-import argparse
+
+
+print('join_imaging_mask_snake.py')
 
 mainp = main(tp="LRG", specver="loa-v1")
 
@@ -35,4 +39,7 @@ print(f"inputs: {args.inputs}")
 print(f"outputs: {args.outputs}")
 
 for i, o in zip(args.inputs, args.outputs):
-    process_one_file(i, o)
+    if os.path.exists(o):
+        print(f"Output file {o} already exists, skipping")
+    else:   
+        process_one_file(i, o)
