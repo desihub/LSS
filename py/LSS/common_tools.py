@@ -792,7 +792,7 @@ def comp_tile(dz):
     print('getting completenes')
     dz.sort('TILES') # should not be necessary for the following computation anymore, but leave it for compatibility for now
     
-    tlslu, ntlslu, itlslu = np.unique(dz['TILES'], return_counts=True, return_inverse=True)
+    tlslu, itlslu, ntlslu = np.unique(dz['TILES'], return_inverse=True, return_counts=True) # NB: inverse is always returned before counts
     print('TILELOCID_ASSIGNED', np.unique(dz['TILELOCID_ASSIGNED'], return_counts=True), len(dz))
     nai = np.bincount(itlslu, weights=dz['LOCATION_ASSIGNED'])
     # nti = np.bincount(itlslu, weights=dz['TILELOCID_ASSIGNED'])
@@ -1745,7 +1745,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff['Z'].name = 'Z_not4clus'
         printlog('updating completeness', logger)
         ff.sort('TILES') # should not be necessary for the following computation anymore, but leave for compatibility for now
-        tlslu, ntlslu, itlslu = np.unique(ff['TILES'], return_counts=True, return_inverse=True)
+        tlslu, itlslu, ntlslu = np.unique(ff['TILES'], return_inverse=True, return_counts=True) # NB: inverse is always returned before counts
         # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
         nai = np.bincount(itlslu, weights=ff['LOCATION_ASSIGNED'])
         nti = np.bincount(itlslu, weights=ff['TILELOCID_ASSIGNED'])
@@ -1885,7 +1885,7 @@ def get_tlcomp(fin):
     ff = Table(fitsio.read(fin))  # +'full_noveto.'+dr+'.fits')
     print('getting completeness')
     
-    tlslu, ntlslu, itlslu = np.unique(ff['TILES'], return_counts=True, return_inverse=True)
+    tlslu, itlslu, ntlslu = np.unique(ff['TILES'], return_inverse=True, return_counts=True) # NB: inverse is always returned before counts
     print('TILELOCID_ASSIGNED', np.unique(ff['TILELOCID_ASSIGNED'], return_counts=True), len(ff))
     # nai = np.bincount(itlslu, weights=ff['LOCATION_ASSIGNED'])
     nti = np.bincount(itlslu, weights=ff['TILELOCID_ASSIGNED'])

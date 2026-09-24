@@ -3080,7 +3080,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     dz['TILES'] = dz['TILES'].filled('0') # should not be necessary for the following computation anymore, but leave for compatibility for now
     dz.sort('TILES') # should not be necessary for the following computation anymore, but leave for compatibility for now
     
-    tlslu, tlslu_counts, tlslu_indices = np.unique(dz['TILES'], return_counts=True, return_inverse=True)
+    tlslu, tlslu_indices, tlslu_counts = np.unique(dz['TILES'], return_inverse=True, return_counts=True) # NB: inverse is always returned before counts
 
     tlslu_counts_assigned = np.bincount(tlslu_indices, weights=dz['LOCATION_ASSIGNED'])
     tlslu_fcomp = tlslu_counts_assigned/tlslu_counts
@@ -3089,7 +3089,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     wc0 = dz['COMP_TILE'] == 0
     common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
 
-    locl, nlocl, ilocl = np.unique(dz['TILELOCID'], return_counts=True, return_inverse=True)
+    locl, ilocl, nlocl = np.unique(dz['TILELOCID'], return_inverse=True, return_counts=True) # NB: inverse is always returned before counts
     wz = dz['LOCATION_ASSIGNED'] == 1
     dzz = dz[wz]
 
