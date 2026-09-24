@@ -80,4 +80,91 @@ Step 1 takes into account the `max_gal` parameter—set in the parameter file—
 
 ## Tests
 
-todo
+### step 7
+
+```console
+salloc -N 1 -C cpu --ntasks=10 --cpus-per-task=1 -t 4:00:00 --qos interactive --account desi
+
+
+cd /global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline
+LSS_DIR=/global/cfs/cdirs/desi/users/colley/LSS
+DS_DIR=/pscratch/sd/j/jcolley/test_hp
+IDS=200
+out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+echo $out6
+ll $out6
+source /global/common/software/desi/desi_environment.sh main
+#module load desitarget/3.0.0
+# use local package LSS, refresh after source env
+export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
+# desitarget ecsv to fits
+target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+export PYTHONPATH=$target_dir/py:$PYTHONPATH
+export PATH=$target_dir/bin:$PATH
+altmtlxxxx=$(printf "altmtl%04d" "$IDS")
+out7=$DS_DIR/$altmtlxxxx
+echo $out7
+
+
+cd /global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline
+source init_env_holi.sh 
+6786  LSS_DIR=$(get_pars.py $HOLI_PARS LSS_dir)
+ 6787  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
+ 6788  echo LSS_DIR
+ 6789  echo $LSS_DIR
+ 6790  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+ 6791  echo $target_dir
+ 6792  IDS=200
+ 6793  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+ 6794  echo $out6
+ 6795  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
+ 6796  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+ 6797  echo $out6
+ 6798  ll /pscratch/sd/j/jcolley/holi/test_hp/forFA0200.fits
+ 6799  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
+ 6800  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+ 6801  ll $out6
+ 6802  source /global/common/software/desi/desi_environment.sh main
+ 6803  #module load desitarget/3.0.0
+ 6804  # use local package LSS, refresh after source env
+ 6805  export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+ 6806  export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
+ 6807  # desitarget ecsv to fits
+ 6808  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+ 6809  export PYTHONPATH=$target_dir/py:$PYTHONPATH
+ 6810  export PATH=$target_dir/bin:$PATH
+ 6811  altmtlxxxx=$(printf "altmtl%04d" "$IDS")
+ 6812  out7=$DS_DIR/$altmtlxxxx
+ 6813  echo $out7
+ 6814  t6786  LSS_DIR=$(get_pars.py $HOLI_PARS LSS_dir)
+ 6787  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
+ 6788  echo LSS_DIR
+ 6789  echo $LSS_DIR
+ 6790  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+ 6791  echo $target_dir
+ 6792  IDS=200
+ 6793  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+ 6794  echo $out6
+ 6795  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
+ 6796  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+ 6797  echo $out6
+ 6798  ll /pscratch/sd/j/jcolley/holi/test_hp/forFA0200.fits
+ 6799  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
+ 6800  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
+ 6801  ll $out6
+ 6802  source /global/common/software/desi/desi_environment.sh main
+ 6803  #module load desitarget/3.0.0
+ 6804  # use local package LSS, refresh after source env
+ 6805  export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+ 6806  export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
+ 6807  # desitarget ecsv to fits
+ 6808  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+ 6809  export PYTHONPATH=$target_dir/py:$PYTHONPATH
+ 6810  export PATH=$target_dir/bin:$PATH
+ 6811  altmtlxxxx=$(printf "altmtl%04d" "$IDS")
+ 6812  out7=$DS_DIR/$altmtlxxxx
+ 6813  echo $out7
+ 6814  time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK
+ime ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK
+```
