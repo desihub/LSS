@@ -480,7 +480,6 @@ def main():
                 f'({len(idx_qso)} QSO targets)')
 
     # ----- assemble the output table ----------------------------------------- #
-    # AB note: if GOOD_Z_LYA set, Z in zcatalog == Z_QSO
     out = Table()
     out['TARGETID'] = zcat['TARGETID'][idx]
     out['Z'] = zextra['Z_QSO'][idx]
