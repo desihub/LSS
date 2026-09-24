@@ -86,7 +86,7 @@ time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_ELG $in6_LRG $in6_QSO
 echo "================= step 7"
 date
 ## Env
-source /global/common/software/desi/desi_environment.sh main
+source /global/common/software/desi/desi_environment.sh 26.3
 module load desitarget/3.0.0
 # use local package LSS, refresh after source env
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH

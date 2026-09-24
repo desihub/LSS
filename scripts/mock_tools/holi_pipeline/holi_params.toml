@@ -11,16 +11,17 @@ LSS_dir = "/global/cfs/cdirs/desi/users/colley/LSS"
 
 # output directory of holi pipeline
 # will content seed0000 and altmtl0000 directories
-mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
+#mock_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80"
+mock_dir = "/pscratch/sd/j/jcolley/test_hp"
 
 # log directory
-logs_dir = "/pscratch/sd/j/jcolley/holi/webjax_v4.80/slurm"
+logs_dir = "/global/homes/j/jcolley/test/runs"
 
 # reference simulation directory
 input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
 
 # First id seed processing by pipeline
-first_id = 301
+first_id = 220
 
 # for debug, reduce number of galaxy for fast processing,
 # minimal value is 5000 else error can appears
@@ -52,4 +53,4 @@ conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipe
 #verbose='--verbose'
 
 # select desi/desi_environment.sh version 
-desi_env_vers = 'main'
+desi_env_vers = '26.3'
