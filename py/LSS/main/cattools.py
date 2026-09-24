@@ -4534,8 +4534,6 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ran_cols.append('TILES')
         else:
             ran_cols.append('FRAC_TLOBS_TILES')
-        if compmd == 'comptile':
-            ran_cols.append('COMP_TILE')
         #ffc = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
         ffc = Table(fitsio.read(in_fname,columns=ran_cols))
         common.printlog('loaded '+in_fname,logger)
@@ -4552,7 +4550,6 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         ffc = flin
         del flin
         ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','FRAC_TLOBS_TILES']
-        if compmd == 'comptile': ran_cols.append('COMP_TILE')
         ffc.keep_columns(ran_cols)
         
     
@@ -4582,7 +4579,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         if compmd == 'ran':
             ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES']
         elif compmd == 'comptile':
-            ffr['WEIGHT'] *= ffr['COMP_TILE']
+            ffr['WEIGHT'] *= ffr['COMP_TILE'] # as long as it exists already
         rdl = []
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
