@@ -158,7 +158,10 @@ def get_catdir(release):
     """Return the directory holding the input zcatalog files for a given release."""
     if release == 'loa':
         return '/global/cfs/cdirs/desicollab/users/rongpu/data/redux/loa/zcatalog/v2/main/'
-    # matterhorn / nevis
+    elif release == 'matterhorn':
+        # TODO : update once official version is available
+        return '/pscratch/sd/r/rongpu/tmp/matterhorn/zcatalog/v2_20260805/main/'
+    # nevis
     return f'/global/cfs/cdirs/desi/spectro/redux/{release}/zcatalog/v2/main/'
 
 
@@ -437,12 +440,17 @@ def main():
     # ----- redshift assembly ------------------------------------------------- #
     # Z_QSO is set by redrock, unless Z_QN != Z_RR for a QN99 QSO/WISE target or QN6 ELG target 
     # then Z_QSO is taken from the redrock rerun with QN prior
-    # AB note: if GOOD_Z_LYA set, Z in zcatalog == Z_QSO
+    # we need to use the correct spectype/zerr/zwarn values for these
     spectype_out = zextra['SPECTYPE'].copy()
+    zerr_out = zextra['ZERR'].copy()
+    zwarn_out = zextra['ZWARN'].copy()
     # here we distinguish between a new redshift existing vs overwriting the original RR redshift
     is_qn_new_rr = is_qn_new_rr_exists & (is_QSO | from_VAR) & QN99
     is_qn_new_rr |= is_qn_new_rr_exists & from_ELG & QN6
     spectype_out[is_qn_new_rr] = zextra['SPECTYPE_NEW'][is_qn_new_rr]
+    zerr_out[is_qn_new_rr] = zextra['ZERR_NEW'][is_qn_new_rr]
+    zwarn_out[is_qn_new_rr] = zextra['ZWARN_NEW'][is_qn_new_rr]
+
 
     # ----- QSO_MASKBITS (canonical bit definition) --------------------------- #
     qso_maskbits = np.zeros(n, dtype=np.int32)
@@ -476,8 +484,8 @@ def main():
     out = Table()
     out['TARGETID'] = zcat['TARGETID'][idx]
     out['Z'] = zextra['Z_QSO'][idx]
-    out['ZERR'] = zextra['ZERR'][idx]
-    out['ZWARN'] = zextra['ZWARN'][idx]
+    out['ZERR'] = zerr_out[idx]
+    out['ZWARN'] = zwarn_out[idx]
     out['SPECTYPE'] = spectype_out[idx]
     out['COADD_FIBERSTATUS'] = zcat['COADD_FIBERSTATUS'][idx]
     out['TARGET_RA'] = zcat['TARGET_RA'][idx]
