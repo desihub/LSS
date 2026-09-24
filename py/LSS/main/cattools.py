@@ -4463,9 +4463,9 @@ def add_comptile_ran(ranf, fulld_fname, logger=None):
     import LSS.common_tools as common
     common.printlog('adding COMP_TILE',logger)
     fd = fitsio.read(fulld_fname, columns=['TILES', 'COMP_TILE'])
-    tlud, itlud, ntlud = np.unique(fd['TILES'], return_inverse=True, return_counts=True) # NB: inverse is returned before counts
-    comp_tlud = np.bincount(itlud, weights=fd['COMP_TILE']) / ntlud # this is the (average) COMP_TILE for each unique TILES value; the averaged values should actually be the same
-    del fd, ntlud, itlud # no longer needed, free memory
+    tlud, itlud = np.unique(fd['TILES'], return_index=True) # NB: return order is values, index, inverse, counts (any of the 3 latter is dropped when not requested, but the relative order remains)
+    comp_tlud = fd['COMP_TILE'][itlud] # take a representative COMP_TILE value for each unique TILES value; any others should be the same because COMP_TILE is a function of TILES
+    del fd, itlud # no longer needed, free memory
     # find the unique (and sorted) TILES values in randoms
     tlur, itlur = np.unique(ranf['TILES'], return_inverse=True) # won't need counts but will need the inverse mapping (indices)
     comp_tlur = np.ones_like(tlur, dtype=float) # initialize COMP_TILE array for unique TILES with 1, which will be the default value for TILES not found in the data
