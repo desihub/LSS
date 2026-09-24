@@ -91,7 +91,6 @@ EXTRA_COLS = ['TARGETID',
               'ZERR_NEW',
               'ZWARN_NEW',
               'SPECTYPE_NEW',
-              'GOOD_Z_QSO',
               'GOOD_Z_LYA',
               'Z_QSO',
               'IS_QSO_MGII',
@@ -408,8 +407,10 @@ def main():
     # AB note: IS_QSO_QN_NEW_RR is set for any detection with max(C)>0.5 with Z_RR != Z_QN
     # BUT using the new redshift requires QN99 for QSO/VAR and QN6 for ELG
     # making this column a superset of the actual new redshifts
-    good_z_qso = np.asarray(zextra['GOOD_Z_QSO']).astype(bool)
     good_z_lya = np.asarray(zextra['GOOD_Z_LYA']).astype(bool) # inclusive of above with non-QSO tgts
+
+    # we need to create our own "GOOD_Z_QSO" because it excludes z>5
+    good_z_qso = good_z_lya & is_QSO
 
     # ----- optional quality cut beyond GOOD_Z_* cuts -------------------------- #
     fiberstatus = np.asarray(zcat['COADD_FIBERSTATUS'])
