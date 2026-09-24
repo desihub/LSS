@@ -4456,7 +4456,24 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     common.printlog(str(len(tlarray[sel]))+' number with 0 frac',logger)
     ranf['FRAC_TLOBS_TILES'] = tlarray
     return ranf
-  
+
+
+def add_comptile_ran(ranf, fulld_fname):
+    "load the full data file to retrieve the COMP_TILE data for randoms by matching on TILES"
+    fd = fitsio.read(fulld_fname, columns=['TILES', 'COMP_TILE'])
+    tlu, ntlu, itlu = np.unique(fd['TILES'], return_counts=True, return_inverse=True)
+    comp_tlu = np.bincount(itlu, weights=fd['COMP_TILE']) / ntlu # this is the (average) COMP_TILE for each unique TILES value. the averaged values should actually be the same
+    del fd, ntlu, itlu # no longer needed, free memory
+    # retrieve the COMP_TILE values for the randoms based on the table for the unique TILES values
+    ran_itlu = np.searchsorted(tlu, ranf['TILES']) # indices should be right for random TILES values present in the data, but would not be right for those not in the data
+    ran_itlu = np.clip(ran_itlu, 0, len(tlu)-1) # ensure indices are within bounds to avoid errors. clipping should only happen for TILES values not in the data, which will be overwritten later
+    ranf['COMP_TILE'] = comp_tlu[ran_itlu]
+    del comp_tlu, ran_itlu # no longer needed, free memory
+    # overwrite the default value for TILES values present in randoms but not in data
+    ran_atlu = np.isin(ranf['TILES'], tlu, invert=True)
+    ranf['COMP_TILE'][ran_atlu] = 1 # reset COMP_TILE to 1 for TILES values not found in the data
+    return ranf
+
     
 def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',outext='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
     import LSS.common_tools as common
@@ -4481,9 +4498,9 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         #        add_tlobs = 'y'
         #        ran_cols.append('TILES')    
         #else:
-        if add_tlobs == 'y':
+        if add_tlobs == 'y' or compmd == 'comptile':
             ran_cols.append('TILES')
-        else:
+        if add_tlobs != 'y':
             ran_cols.append('FRAC_TLOBS_TILES')
         #ffc = Table(fitsio.read(in_fname.replace('global','dvs_ro'),columns=ran_cols))
         ffc = Table(fitsio.read(in_fname,columns=ran_cols))
@@ -4501,8 +4518,11 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         ffc = flin
         del flin
         ran_cols = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','FRAC_TLOBS_TILES']
+        if compmd == 'comptile': ran_cols.append('TILES')
         ffc.keep_columns(ran_cols)
-        
+
+    if compmd == 'comptile':
+        ffc = add_comptile_ran(ffc, flin+'full'+use_map_veto+'.dat.fits')
     
     if return_cat == 'y' and nosplit=='y':
         tempcols = ['RA','DEC','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
@@ -4530,7 +4550,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
         if compmd == 'ran':
             ffr['WEIGHT'] *= ffr['FRAC_TLOBS_TILES']
         elif compmd == 'comptile':
-            ffr['WEIGHT'] *= ffr['COMP_TILE'] # as long as it exists already
+            ffr['WEIGHT'] *= ffr['COMP_TILE']
         rdl = []
         for dsel,rsel in zip(dat_sel,rand_sel):
             rd = np.sum(ffr[rsel]['WEIGHT'])/np.sum(fcdn[dsel]['WEIGHT'])
