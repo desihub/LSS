@@ -74,6 +74,7 @@ FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 #
 date; echo "Step 1: create catalog ELG,LRG, QSO"
 time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
+--export=HOLI_PARS \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
@@ -103,27 +104,28 @@ done
 #
 # STEP 3: run BRICKMASK on the merged input/output files for this rank
 #
-date; echo "Step 3: BRICKMASK"
-## environment setup
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
-module load cpu cray-fftw
-export CFITSIO_DIR=$(get_pars.py $HOLI_PARS brickmask.cfitsio)
-export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
-EXE_PATH=$(get_pars.py $HOLI_PARS brickmask.exe_dir)
-CONF_PATH=$(get_pars.py $HOLI_PARS brickmask.conf_dir)
-# use local package LSS, refresh after source env
-export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
-export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
+(
+    date; echo "Step 3: BRICKMASK"
+    ## environment setup
+    source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
+    module load cpu cray-fftw
+    export CFITSIO_DIR=$(get_pars.py $HOLI_PARS brickmask.cfitsio)
+    export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
+    EXE_PATH=$(get_pars.py $HOLI_PARS brickmask.exe_dir)
+    CONF_PATH=$(get_pars.py $HOLI_PARS brickmask.conf_dir)
+    # use local package LSS, refresh after source env
+    export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+    export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
 
 
-## NOTE: BRICKMASK command-line options take precedence over the values
-## set in the configuration file (brickmask.conf).
-ALL_CPU=$((NTASKS*NCPU_PT))
-time srun --exclusive -n $ALL_CPU -c 1 --cpu-bind=cores \
---output="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
---error="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
-$EXE_PATH/BRICKMASK -i $input3 -o $output3 -c $CONF_PATH/brickmask.conf
-
+    ## NOTE: BRICKMASK command-line options take precedence over the values
+    ## set in the configuration file (brickmask.conf).
+    ALL_CPU=$((NTASKS*NCPU_PT))
+    time srun --exclusive -n $ALL_CPU -c 1 --cpu-bind=cores \
+    --output="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
+    --error="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
+    $EXE_PATH/BRICKMASK -i $input3 -o $output3 -c $CONF_PATH/brickmask.conf
+)
 # clean files
 rm $input3 $output3
 
@@ -133,6 +135,7 @@ rm $input3 $output3
 #
 date; echo "Step 4-7: imaging mask join, contaminants, tracer concatenation and AMTL initialization"
 time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
+--export=HOLI_PARS \
 --open-mode=append \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \

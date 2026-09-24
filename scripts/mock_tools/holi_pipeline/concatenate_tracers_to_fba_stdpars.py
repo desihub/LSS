@@ -63,4 +63,8 @@ for f_in in args.inputs:
         print('Error: input file name must contain QSO, ELG, or LRG')
         sys.exit(1)
 
-concatenate_tracers(qso_path, elg_path, lrg_path, args.outputs[0])
+out_file=args.outputs[0]
+if os.path.exists(out_file):
+    print(f"Output file {out_file} already exists, skipping")
+else:
+    concatenate_tracers(qso_path, elg_path, lrg_path, out_file)

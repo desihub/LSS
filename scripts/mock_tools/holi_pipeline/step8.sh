@@ -19,15 +19,22 @@ PROCID=${SLURM_PROCID:-0}
 IDS=$((FIRST_ID+PROCID))
 
 #
-# environment
+# Environment
 #
-desi_env_vers=$(get_pars.py $HOLI_PARS amtl.desi_env_vers)
-source /global/common/software/desi/desi_environment.sh $desi_env_vers
+HOLI_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
+export PATH=$HOLI_DIR:$PATH
+#desi_env_vers=$(get_pars.py $HOLI_PARS amtl.desi_env_vers)
+#source /global/common/software/desi/desi_environment.sh $desi_env_vers
+source /global/common/software/desi/desi_environment.sh 26.3
 # module load LSS/main
 # use local package LSS, refresh after source env
-HOLI_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
-export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
+export PATH=$LSS_DIR/bin:$PATH
+# desitarget ecsv to fits
+target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+export PYTHONPATH=$target_dir/py:$PYTHONPATH
+export PATH=$target_dir/bin:$PATH
+
 
 export OMP_NUM_THREADS=1
 

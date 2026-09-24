@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 import astropy.io.fits as fits
 from astropy.table import Table,vstack
 import numpy as np
@@ -98,4 +99,7 @@ print(f"inputs: {args.inputs}")
 print(f"outputs: {args.outputs}")
 
 for i, o in zip(args.inputs, args.outputs):
-    process_one_file(i, o)
+    if os.path.exists(o):
+        print(f"Output file {o} already exists, skipping")
+    else:   
+        process_one_file(i, o)

@@ -29,6 +29,8 @@ IDS=$((FIRST_ID_RANK + PROCID))
 #
 # Internal variables
 #
+HOLI_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
+export PATH=$HOLI_DIR:$PATH
 seed=$(printf "seed%04d" "$IDS")
 # dataflow name input
 in_4=imforFA0_Y3_noimagingmask_applied.fits
@@ -41,7 +43,7 @@ in_7=forFA0_concat.fits
 #
 echo "================= step 1"
 ## Env
-source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh 2026_02
 export PYTHONPATH=$LSS_DIR/py:$LSS_DIR/scripts/mock_tools:$PYTHONPATH
 export PATH=$LSS_DIR/bin:$PATH
 PROC_DIR=$LSS_DIR/scripts/mock_tools/holi_pipeline
