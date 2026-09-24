@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-from desitarget import mtl
+from desitarget import mtl, __version__
+
+# check version desitarget
+print("desitarget version: ", __version__)
 
 import glob
 import os
@@ -41,11 +44,13 @@ def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=F
     print("Creating list of tiles to be processed by AltMTL mock production")
     path = os.path.join(initledger_path, "main", obscon.lower())
     ff = glob.glob(
-        os.path.join(path, "mtl-{obscon}-hp-*.ecsv".format(obscon=obscon.lower()))
+        #os.path.join(path, "mtl-{obscon}-hp-*.ecsv".format(obscon=obscon.lower()))
+        os.path.join(path, "mtl-{obscon}-hp-*.fits".format(obscon=obscon.lower()))
     )
     dd = []
     for f in ff:
-        dd.append(int(f.split("hp-")[-1].split(".ecsv")[0]))
+        #dd.append(int(f.split("hp-")[-1].split(".ecsv")[0]))
+        dd.append(int(f.split("hp-")[-1].split(".fits")[0]))
     tosave = ",".join(map(str, sorted(dd)))
     savepath = os.path.join(
         initledger_path, "hpxlist_{obscon}.txt".format(obscon=obscon.lower())
@@ -91,14 +96,6 @@ def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=F
         )
 
 
-#
-# Main
-#
-# initialize_amtl_mocks_da2.py
-#    /pscratch/sd/d/desica/DA2/mocks/holi_v3/forFA$i.fits
-#    /pscratch/sd/d/desica/DA2/mocks/holi_v3/altmtl$i/
-#    DARK
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # file concatenated forFA0.fits
@@ -117,4 +114,4 @@ if __name__ == "__main__":
     out_dir = args.outputs[0]  # Output path
     obscon = args.obscon  # DARK or BRIGHT
 
-    init_amtl(concate_tracers, out_dir, obscon)
+    init_amtl(concate_tracers, out_dir, obscon, paral=False)
