@@ -156,12 +156,10 @@ def dvs_ro(path):
 
 def get_catdir(release):
     """Return the directory holding the input zcatalog files for a given release."""
-    #if release == 'loa':
-    #    return '/global/cfs/cdirs/desicollab/users/rongpu/data/redux/loa/zcatalog/v2/main/'
-    ## matterhorn / nevis
-    #return f'/global/cfs/cdirs/desi/spectro/redux/{release}/zcatalog/v2/main/'
-    # debug
-    return f'/pscratch/sd/r/rongpu/tmp/matterhorn/zcatalog/v2_20260805/main/'
+    if release == 'loa':
+        return '/global/cfs/cdirs/desicollab/users/rongpu/data/redux/loa/zcatalog/v2/main/'
+    # matterhorn / nevis
+    return f'/global/cfs/cdirs/desi/spectro/redux/{release}/zcatalog/v2/main/'
 
 
 def as_str(arr):
