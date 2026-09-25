@@ -3287,13 +3287,19 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
             logger.info('length before masking collisions '+str(len(dz)))
         else:
             print('length before masking collisions '+str(len(dz)))
-        #dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
+        #dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID']) #this method is slow
         # Create a composite key for matching
-        dz_key = np.column_stack([dz['TARGETID'], dz['LOCATION'], dz['TILEID']])
-        coll_key = np.column_stack([coll['TARGETID'], coll['LOCATION'], coll['TILEID']])
+        #dz_key = np.column_stack([dz['TARGETID'], dz['LOCATION'], dz['TILEID']])
+        #coll_key = np.column_stack([coll['TARGETID'], coll['LOCATION'], coll['TILEID']])
 
         # Find rows in dz that are NOT in coll
-        mask = ~np.all(dz_key[:, None] == coll_key[None, :], axis=2).any(axis=1)
+        #mask = ~np.all(dz_key[:, None] == coll_key[None, :], axis=2).any(axis=1) #this method gives a memory error nable to allocate 425. TiB for an array with shape (22641417, 6887129, 3) and data type bool
+        # Create tuples of the key columns for collision list
+        coll_keys = set(zip(coll['TARGETID'], coll['LOCATION'], coll['TILEID']))
+
+        # Keep only rows NOT in collision set
+        mask = ~np.array([(tid, loc, til) in coll_keys 
+                   for tid, loc, til in zip(dz['TARGETID'], dz['LOCATION'], dz['TILEID'])])
         dz = dz[mask]
         if logger is not None:
             logger.info('length after masking collisions '+str(len(dz)))
