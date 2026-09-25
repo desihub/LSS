@@ -3325,32 +3325,32 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         if good_specf is not None:
             won = read_hdf5_blosc(good_specf)
         else:
-			specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
-			specf1b = specdir+'datcomb_'+prog1b+'_spec_zdone.fits'
-			if logger is not None:
-				logger.info('reading from spec file '+specf)
-			else:
-				print(specf)
-			fs = fitsio.read(specf.replace('global','dvs_ro'))
-			if mode1b == 2:
-				logger.info('adding 1b spec info')
-				fs1b = fitsio.read(specf1b.replace('global','dvs_ro'))
-				fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
-				fs = np.concatenate([fs,fs1b])
-				del fs1b
-			#common.printlog('badfib type is '+str(type(badfib).__name__),logger)
-			#common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
-			if specver == 'daily':
-				fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
-			else:
-				fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-    			won = Table({'TILELOCID': (10000 * fs['TILEID'].value
+            specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+            specf1b = specdir+'datcomb_'+prog1b+'_spec_zdone.fits'
+            if logger is not None:
+                logger.info('reading from spec file '+specf)
+            else:
+                print(specf)
+            fs = fitsio.read(specf.replace('global','dvs_ro'))
+            if mode1b == 2:
+                logger.info('adding 1b spec info')
+                fs1b = fitsio.read(specf1b.replace('global','dvs_ro'))
+                fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
+                fs = np.concatenate([fs,fs1b])
+                del fs1b
+            #common.printlog('badfib type is '+str(type(badfib).__name__),logger)
+            #common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
+            if specver == 'daily':
+                fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+            else:
+                fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+                won = Table({'TILELOCID': (10000 * fs['TILEID'].value
                                + fs['LOCATION'].value).astype('i8', copy=False),
                  'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
                 copy=False) 
 
-			#fs = Table(fs)
-			#fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+            #fs = Table(fs)
+            #fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
         gtl = np.unique(won['TILELOCID'])
         del fs
     
