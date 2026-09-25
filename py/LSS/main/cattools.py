@@ -3537,7 +3537,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         
         #dz = join(dz,ftar,keys=['TARGETID'])
         ftar = claudet.as_table(ftar)
-        dz = claudet.join_left(dz, targets, 'TARGETID')
+        dz = claudet.join_left(dz, ftar, 'TARGETID')
         if ndatpretar != len(dz):
             common.printlog('lost '+str(ndatpretar-len(dz))+' targets after join, should be from dr9->dr11',logger)
         else:
