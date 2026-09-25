@@ -3183,7 +3183,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=None,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
     import LSS.claude_tools as claudet
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
@@ -3328,10 +3328,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
             logger.info('reading from spec file '+specf)
         else:
             print(specf)
-        fs = fitsio.read(specf)
+        fs = fitsio.read(specf.replace('global','dvs_ro'))
         if mode1b == 2:
             logger.info('adding 1b spec info')
-            fs1b = fitsio.read(specf1b)
+            fs1b = fitsio.read(specf1b.replace('global','dvs_ro'))
             fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
             fs = np.concatenate([fs,fs1b])
             del fs1b
@@ -3354,7 +3354,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
                                + fs['LOCATION'].value).astype('i8', copy=False),
                  'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
                 copy=False) 
-    won = won[last_of_each(won['TILELOCID'])]
+    won = won[claudet.last_of_each(won['TILELOCID'])]
     dz = claudet.as_table(dz)
     dz = claudet.join_left(dz,won,'TILELOCID', fill={'PRIORITY_ASSIGNED': claudet.NULL})
     if logger is not None:
