@@ -3369,7 +3369,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     #dz['GOODPRI'][selp] = 1
 
     claudet.set_column(dz, 'GOODPRI', (dz['PRIORITY_ASSIGNED'] <= maxp)
-               | (toret['PRIORITY_ASSIGNED'] == claudet.NULL), dtype='?')
+               | (dz['PRIORITY_ASSIGNED'] == claudet.NULL), dtype='?')
     
     
     if mockz:
