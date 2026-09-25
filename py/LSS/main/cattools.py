@@ -3356,7 +3356,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
                 copy=False) 
     won = won[last_of_each(won['TILELOCID'])]
     dz = claudet.as_table(dz)
-    dz = claudet.join_left(dz,won,'TILELOCID', fill={'PRIORITY_ASSIGNED': claudet.NULL}))
+    dz = claudet.join_left(dz,won,'TILELOCID', fill={'PRIORITY_ASSIGNED': claudet.NULL})
     if logger is not None:
         logger.info('columns after join to spec info '+str(dz.dtype.names))
     else:
