@@ -393,8 +393,8 @@ else:
 
 gtl_fn = dirout+prog+'_goodspecdata.h5'
 if args.mkgtl:
-    specf = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    prog1b = prog+'1b'
+    specf = ldirspec+'datcomb_'+prog.lower()+'_spec_zdone.fits'
+    prog1b = prog.lower()+'1b'
     specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
     if logger is not None:
         logger.info('reading from spec file '+specf)
