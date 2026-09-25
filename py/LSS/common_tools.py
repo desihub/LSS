@@ -1192,12 +1192,13 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
     # ft['NZ'] = nl
     # fd['NZ'] = nl
     fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
-    # AJR is unsure why multiply these three here rather than use the original 'WEIGHT'...
-    fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS'] * \
-        fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
-    cols = list(fd.dtype.names)
-    if 'WEIGHT_BLIND' in cols:
-        fd['WEIGHT'] *= fd['WEIGHT_BLIND']
+    if compmd != 'comptile': # skip the weight refactoring for comptile
+        # AJR is unsure why multiply these three here rather than use the original 'WEIGHT'...
+        fd['WEIGHT'] = fd['WEIGHT_COMP']*fd['WEIGHT_SYS'] * \
+            fd['WEIGHT_ZFAIL']/weight_ntl[fd['NTILE']-1]
+        cols = list(fd.dtype.names)
+        if 'WEIGHT_BLIND' in cols:
+            fd['WEIGHT'] *= fd['WEIGHT_BLIND']
     # ff['LSS'].insert_column('NZ',nl)
     printlog(f'min/max NZ: {np.min(nl)}/{np.max(nl)}', logger=logger)
 
@@ -1242,20 +1243,21 @@ def addnbar(fb, nran=18, bs=0.01, zmin=0.01, zmax=1.6, P0=10000, add_data=True, 
                 'added NTILE = 1 column because column did not exist', logger=logger)
 
         fd['NX'] = nl*comp_ntl[fd['NTILE']-1]
-        # the following lines should keep the relative weighting and the region normalization in place
-        wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
-        if compmd == 'ran':
-            wt *= fd['FRAC_TLOBS_TILES']
-        cols = list(fd.dtype.names)
-        if 'WEIGHT_BLIND' in cols:
-            wt *= fd['WEIGHT_BLIND']
+        if compmd != 'comptile': # skip the weight refactoring for comptile
+            # the following lines should keep the relative weighting and the region normalization in place
+            wt = fd['WEIGHT_COMP']*fd['WEIGHT_SYS']*fd['WEIGHT_ZFAIL']
+            if compmd == 'ran':
+                wt *= fd['FRAC_TLOBS_TILES']
+            cols = list(fd.dtype.names)
+            if 'WEIGHT_BLIND' in cols:
+                wt *= fd['WEIGHT_BLIND']
 
-        wtfac = np.ones(len(fd))
-        sel = wt > 0
-        wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
-        printlog(f"Mean wtfac {np.mean(wtfac)}", logger=logger)
-        # this should keep, e.g., N/S normalization in place
-        fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
+            wtfac = np.ones(len(fd))
+            sel = wt > 0
+            wtfac[sel] = fd['WEIGHT'][sel]/wt[sel]
+            printlog(f"Mean wtfac {np.mean(wtfac)}", logger=logger)
+            # this should keep, e.g., N/S normalization in place
+            fd['WEIGHT'] = wtfac*wt/weight_ntl[fd['NTILE']-1]
         # fkpl = 1./(1+nl*P0*mean_comp)
         # fkpl = comp_ntl[fd['NTILE']-1]/(1+nl*P0*comp_ntl[fd['NTILE']-1])
         fkpl = 1/(1+fd['NX']*P0)

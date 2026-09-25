@@ -451,6 +451,9 @@ if args.nz == 'y':
     wtmd = 'clus'
     if args.compmd == 'comptile':
         wtmd = 'comptile'
+    rancompmd = 'ran'
+    if args.compmd in ('altmtl', 'comptile'):
+        rancompmd = args.compmd
     for reg in regions:#allreg:
         #file names
         fb = dirout+'/'+tracer_out+'_'+reg
@@ -468,8 +471,7 @@ if args.nz == 'y':
             comp_ntl, weight_ntl = get_ntile_info(clus_orig)
         else: # if the clustering catalog does not exist, use the full catalog to get the NTILE info (particularly for DR3 BGS)
             comp_ntl, weight_ntl = get_ntile_info_from_full(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits', tp=args.input_tracer, reg=reg)
-        common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
-        # for args.compmd = 'comptile', the mean completeness weight should end up being 1, which is fine. later, we might want to disable pieces of computation that are trivial in this case
+        common.addnbar(fb, bs=dz, zmin=zmin, zmax=zmax, P0=P0, nran=nran, par=args.par, compmd=rancompmd, comp_ntl=comp_ntl, weight_ntl=weight_ntl, logger=logger)
 
 # determine linear weights for imaging systematics
 # this is new for doing after the fact based on clustering catalogs
