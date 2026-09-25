@@ -418,6 +418,7 @@ if args.mkgtl:
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
     else:
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    fs = Table(fs)
     won = Table({'TILELOCID': (10000 * fs['TILEID'].value
                                + fs['LOCATION'].value).astype('i8', copy=False),
                  'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
