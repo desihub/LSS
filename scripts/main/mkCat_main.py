@@ -409,7 +409,7 @@ if args.mkgtl:
         del fs1b
     min_tsnr2=tsnrcut
     badfib=mainp.badfib_td
-    badfib_status=mainp.badfib_statu
+    badfib_status=mainp.badfib_status
     if args.verspec == 'daily':
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
     else:
