@@ -3577,9 +3577,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         if azf is not None and 'OII_FLUX' not in list(dz.dtype.names):
+            logger.info('doing join to get OII info')
             arz = Table(fitsio.read(azf.replace('global','dvs_ro'),columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
             arz['TILEID'] = arz['TILEID'].astype(int)
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+            
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
         w |= dz['OII_FLUX'] < 0
@@ -3614,11 +3616,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
                 emcat['TILEID'] = emcat['TILEID'].astype(int)
                 dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
-    if tp[:3] == 'ELG' and azf != '' and azf is not None:
-        if logger is not None:
-            logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
-        else:
-            print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+    #if tp[:3] == 'ELG' and azf != '' and azf is not None:
+    #    if logger is not None:
+    #        logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+    #    else:
+    #        print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
         message = 'adding healpix based QSO info'
         common.printlog(message,logger)
