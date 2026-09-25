@@ -3348,11 +3348,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
                                + fs['LOCATION'].value).astype('i8', copy=False),
                  'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
                 copy=False) 
+            del fs
 
             #fs = Table(fs)
             #fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
         gtl = np.unique(won['TILELOCID'])
-        del fs
+        
     
     #print(len(gtl))
     #fs.keep_columns(['TILELOCID','PRIORITY'])
