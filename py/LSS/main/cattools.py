@@ -3323,7 +3323,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         if good_specf is not None:
-            won = read_hdf5_blosc(good_specf)
+            won = common.read_hdf5_blosc(good_specf)
         else:
             specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
             specf1b = specdir+'datcomb_'+prog1b+'_spec_zdone.fits'
@@ -3459,35 +3459,45 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     else:
         dtl = Table.read(ftiles)
     
-    #if tp[:3] != 'QSO':
-    if tp[:3] == 'QSO':
-        selnp = dz['LOCATION_ASSIGNED'] == 0
-        pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
-        pv[selnp] = 0
-        #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#
+    usable = dz['GOODHARDLOC'] & dz['GOODPRI']
+    if tp.startswith('QSO'):
+        value = np.where(dz['LOCATION_ASSIGNED'], dz['PRIORITY'], 0)
     else:
+        value = 1
+    sort = (dz['LOCATION_ASSIGNED'] * usable * value + dz['TILELOCID_ASSIGNED'] * usable
+            + dz['GOODHARDLOC'] + dz['GOODPRI'])
+    dz = dz[claudet.last_of_each(dz['TARGETID'], sort=sort, tie=dz['TILELOCID'])]
+    logger.info('cut to {:d} unique targets, {:d} of them assigned'
+                .format(len(dz), int(dz['LOCATION_ASSIGNED'].sum())))
+    #if tp[:3] != 'QSO':
+    #if tp[:3] == 'QSO':
+    #    selnp = dz['LOCATION_ASSIGNED'] == 0
+    #    pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
+    #    pv[selnp] = 0
+        #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#
+    #else:
         #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
+    #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
     #else:
     #    selnp = dz['LOCATION_ASSIGNED'] == 0
     #    pv = dz['PRIORITY']
     #    pv[selnp] = 0
     #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
-    if logger is not None:
-        logger.info('about to sort')
-    else:
-        print('about to sort')
+    #if logger is not None:
+    #    logger.info('about to sort')
+    #else:
+    #    print('about to sort')
 
-    dz.sort('sort')
-    if logger is not None:
-        logger.info('sorted')
-    else:
-        print('sorted')
+    #dz.sort('sort')
+    #if logger is not None:
+    #    logger.info('sorted')
+    #else:
+    #    print('sorted')
     
-    dz = unique(dz,keys=['TARGETID'],keep='last')
-    common.printlog('cut to unique targetid',logger)
-    dz.remove_column('sort')
+    #dz = unique(dz,keys=['TARGETID'],keep='last')
+    #common.printlog('cut to unique targetid',logger)
+    #dz.remove_column('sort')
     
     if logger is not None:
         logger.info('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
@@ -3500,27 +3510,33 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
 
 
-    if logger is not None:
-        logger.info('length after cutting to unique targets '+str(len(dz)))
-    else:
-        print('length after cutting to unique targets '+str(len(dz)))
+    #if logger is not None:
+    #    logger.info('length after cutting to unique targets '+str(len(dz)))
+    #else:
+    #    print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
 
     common.printlog('joining to ntile info',logger=logger)
-    dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
-    dz = join(dz,dtl,keys='TARGETID',join_type='left')
-    tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
-    dz['NTILE'][~tin] = 0
+    dz = join_left(dz, tiles, 'TARGETID', fill={'NTILE': 0, 'TILES': 0, 'TILELOCIDS': 0})
+    #dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
+    #dz = join(dz,dtl,keys='TARGETID',join_type='left')
+    #tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
+    #dz['NTILE'][~tin] = 0
     #print(np.unique(dz['NTILE']))
     if ftar is not None:
         common.printlog('joining to full imaging',logger)
+        
+        
         remcol = ['RA','DEC','DESI_TARGET','BGS_TARGET']
     
         for col in remcol:
             if col in cols:
                 dz.remove_columns([col]) #these come back in with merge to full target file
         ndatpretar = len(dz)
-        dz = join(dz,ftar,keys=['TARGETID'])
+        
+        #dz = join(dz,ftar,keys=['TARGETID'])
+        ftar = claudet.as_table(ftar)
+        dz = join_left(dz, targets, 'TARGETID')
         if ndatpretar != len(dz):
             common.printlog('lost '+str(ndatpretar-len(dz))+' targets after join, should be from dr9->dr11',logger)
         else:
@@ -3668,13 +3684,25 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     #tlsl.sort()
     nts = len(tlsl)
     
-
+    
     if calc_ctile == 'y':
-        tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
-        n_of_tiles = len(tlslu)
-        laa = dz['LOCATION_ASSIGNED']
-        acnts = np.bincount(indices,laa)
-        compa = acnts/cnts
+        claudet.set_column(dz, 'COMP_TILE', claudet.group_fraction(dz['TILES'], dz['LOCATION_ASSIGNED']),
+                   dtype='f8')
+        logger.info('{:d} targets sit where nothing was observed'
+                    .format(int((dz['COMP_TILE'] == 0).sum())))
+    else:
+        claudet.set_column(dz, 'COMP_TILE', 1., dtype='f8')
+    # Of the targets of this tracer sharing a fiber location, the fraction that got observed;
+    # one over it upweights a target for the ones it kept from being reached.
+    claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.group_fraction(dz['TILELOCID'],
+                                                        dz['LOCATION_ASSIGNED']), dtype='f8')
+
+#     if calc_ctile == 'y':
+#         tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
+#         n_of_tiles = len(tlslu)
+#         laa = dz['LOCATION_ASSIGNED']
+#         acnts = np.bincount(indices,laa)
+#         compa = acnts/cnts
         #i = 0
         #while i < len(dz):
         #    tls  = []
@@ -3702,47 +3730,47 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
 #            compa.append(cp)
 #            tll.append(tlslu[ti])
 #            ti += 1
-        comp_dicta = dict(zip(tlslu, compa))
-        fcompa = []
-        for tl in dz['TILES']:
-            fcompa.append(comp_dicta[tl])
-        dz['COMP_TILE'] = np.array(fcompa)
-        wc0 = dz['COMP_TILE'] == 0
-        common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
-    else:
-        dz['COMP_TILE'] = 1
-
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-    wz = dz['LOCATION_ASSIGNED'] == 1
-    dzz = dz[wz]
-
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-    #print(np.max(nloclz),np.min(loclz))
-    
-    #print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
-    natloc = ~np.isin(dz['TILELOCID'],loclz)
-    common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
-
-    common.printlog('getting fraction assigned for each tilelocid',logger)
-    nm = 0
-    nmt =0
-    pd = []
-    nloclt = len(locl)
-    lzs = np.isin(locl,loclz)
-    for i in range(0,len(locl)):
-        if i%100000 == 0:
-            common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
-        nt = nlocl[i]
-        nz = lzs[i]
-        loc = locl[i]
-        pd.append((loc,nz/nt))
-    pd = dict(pd)
-    for i in range(0,len(dz)):
-        probl[i] = pd[dz['TILELOCID'][i]]
-    common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
-    #print(nm,nmt)
-
-    dz['FRACZ_TILELOCID'] = probl
+#         comp_dicta = dict(zip(tlslu, compa))
+#         fcompa = []
+#         for tl in dz['TILES']:
+#             fcompa.append(comp_dicta[tl])
+#         dz['COMP_TILE'] = np.array(fcompa)
+#         wc0 = dz['COMP_TILE'] == 0
+#         common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
+#     else:
+#         dz['COMP_TILE'] = 1
+# 
+#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+#     wz = dz['LOCATION_ASSIGNED'] == 1
+#     dzz = dz[wz]
+# 
+#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+#     #print(np.max(nloclz),np.min(loclz))
+#     
+#     #print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+#     natloc = ~np.isin(dz['TILELOCID'],loclz)
+#     common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
+# 
+#     common.printlog('getting fraction assigned for each tilelocid',logger)
+#     nm = 0
+#     nmt =0
+#     pd = []
+#     nloclt = len(locl)
+#     lzs = np.isin(locl,loclz)
+#     for i in range(0,len(locl)):
+#         if i%100000 == 0:
+#             common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
+#         nt = nlocl[i]
+#         nz = lzs[i]
+#         loc = locl[i]
+#         pd.append((loc,nz/nt))
+#     pd = dict(pd)
+#     for i in range(0,len(dz)):
+#         probl[i] = pd[dz['TILELOCID'][i]]
+#     common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
+#     #print(nm,nmt)
+# 
+#     dz['FRACZ_TILELOCID'] = probl
     common.printlog('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match',logger)
     common.printlog(str(np.sum(1./dz[wz]['FRACZ_TILELOCID']))+','+str(np.sum(1./dz[wz]['COMP_TILE']))+','+str(len(dz)),logger)
 
