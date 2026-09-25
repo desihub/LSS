@@ -4607,6 +4607,7 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             fcdn = Table(np.copy(clus_arrays[ind]))
         fcdn.rename_column('TARGETID', 'TARGETID_DATA')
         kc = ['RA','DEC','Z','WEIGHT','TARGETID','NTILE','FRAC_TLOBS_TILES','PHOTSYS']
+        if compmd == 'comptile': kc.append('COMP_TILE')
         if 'WEIGHT_NT_MISSPW' in ffc.columns:
             kc.append('WEIGHT_NT_MISSPW')
 
