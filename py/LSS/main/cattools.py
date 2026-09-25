@@ -3287,7 +3287,14 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
             logger.info('length before masking collisions '+str(len(dz)))
         else:
             print('length before masking collisions '+str(len(dz)))
-        dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
+        #dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
+        # Create a composite key for matching
+        dz_key = np.column_stack([dz['TARGETID'], dz['LOCATION'], dz['TILEID']])
+        coll_key = np.column_stack([coll['TARGETID'], coll['LOCATION'], coll['TILEID']])
+
+        # Find rows in dz that are NOT in coll
+        mask = ~np.all(dz_key[:, None] == coll_key[None, :], axis=2).any(axis=1)
+        dz = dz[mask]
         if logger is not None:
             logger.info('length after masking collisions '+str(len(dz)))
         else:        
