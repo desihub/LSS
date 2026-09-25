@@ -3518,7 +3518,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     #dtl = Table.read(ftiles)
 
     common.printlog('joining to ntile info',logger=logger)
-    dz = join_left(dz, tiles, 'TARGETID', fill={'NTILE': 0, 'TILES': 0, 'TILELOCIDS': 0})
+    dz = claudet.join_left(dz, tiles, 'TARGETID', fill={'NTILE': 0, 'TILES': 0, 'TILELOCIDS': 0})
     #dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
     #dz = join(dz,dtl,keys='TARGETID',join_type='left')
     #tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
@@ -3537,7 +3537,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         
         #dz = join(dz,ftar,keys=['TARGETID'])
         ftar = claudet.as_table(ftar)
-        dz = join_left(dz, targets, 'TARGETID')
+        dz = claudet.join_left(dz, targets, 'TARGETID')
         if ndatpretar != len(dz):
             common.printlog('lost '+str(ndatpretar-len(dz))+' targets after join, should be from dr9->dr11',logger)
         else:
