@@ -393,23 +393,23 @@ else:
 
 gtl_fn = dirout+prog+'_goodspecdata.h5'
 if mkgtl:
-	specf = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-	specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
-	if logger is not None:
-		logger.info('reading from spec file '+specf)
-	else:
-		print(specf)
-	fs = fitsio.read(specf.replace('global','dvs_ro'))
-	if mode1b == 2:
-		logger.info('adding 1b spec info')
-		fs1b = fitsio.read(specf1b.replace('global','dvs_ro'))
-		fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
-		fs = np.concatenate([fs,fs1b])
-		del fs1b
-	if verspec == 'daily':
-		fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
-	else:
-		fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    specf = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
+    specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
+    if logger is not None:
+        logger.info('reading from spec file '+specf)
+    else:
+        print(specf)
+    fs = fitsio.read(specf.replace('global','dvs_ro'))
+    if mode1b == 2:
+        logger.info('adding 1b spec info')
+        fs1b = fitsio.read(specf1b.replace('global','dvs_ro'))
+        fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
+        fs = np.concatenate([fs,fs1b])
+        del fs1b
+    if verspec == 'daily':
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+    else:
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     won = Table({'TILELOCID': (10000 * fs['TILEID'].value
                                + fs['LOCATION'].value).astype('i8', copy=False),
                  'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
