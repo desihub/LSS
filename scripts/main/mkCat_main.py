@@ -392,7 +392,7 @@ else:
     mode1b = int(args.mode1b)
 
 gtl_fn = dirout+prog+'_goodspecdata.h5'
-if mkgtl:
+if args.mkgtl:
     specf = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
     specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
     if logger is not None:
