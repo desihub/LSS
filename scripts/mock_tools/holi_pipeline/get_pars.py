@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+#!/global/common/software/desi/perlmutter/desiconda/20260227-2.3.1/conda/bin/python
+###!/usr/bin/env python3
+# use desi python version >= 3.11 for tomllib
+
 
 import sys
 import tomllib
