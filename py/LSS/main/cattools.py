@@ -3185,6 +3185,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
 
 def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
+    import LSS.claude_tools as claudet
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
     zf : :class:`str` path to the file containing merged potential targets and redshift 
@@ -3345,22 +3346,35 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
         gtl = np.unique(fs['TILELOCID'])
     
     #print(len(gtl))
-    fs.keep_columns(['TILELOCID','PRIORITY'])
+    #fs.keep_columns(['TILELOCID','PRIORITY'])
     #''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
-    dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
+    #dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
+
+    won = Table({'TILELOCID': (10000 * fs['TILEID'].value
+                               + fs['LOCATION'].value).astype('i8', copy=False),
+                 'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
+                copy=False) 
+    won = won[last_of_each(won['TILELOCID'])]
+    dz = claudet.as_table(dz)
+    dz = claudet.join_left(dz,won,'TILELOCID', fill={'PRIORITY_ASSIGNED': claudet.NULL}))
     if logger is not None:
         logger.info('columns after join to spec info '+str(dz.dtype.names))
     else:
         print(dz.dtype.names)
     del fs
-    dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
-    dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
-    selp = dz['PRIORITY_ASSIGNED'] <= maxp
-    selp |=  dz['PRIORITY_ASSIGNED'] == 999999
-    dz['GOODPRI'][selp] = 1
+    #dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
+    #dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
+    #selp = dz['PRIORITY_ASSIGNED'] <= maxp
+    #selp |=  dz['PRIORITY_ASSIGNED'] == 999999
+    #dz['GOODPRI'][selp] = 1
+
+    claudet.set_column(dz, 'GOODPRI', (dz['PRIORITY_ASSIGNED'] <= maxp)
+               | (toret['PRIORITY_ASSIGNED'] == claudet.NULL), dtype='?')
+    
     
     if mockz:
-        wg = np.ones(len(dz),dtype=bool)
+        #wg = np.ones(len(dz),dtype=bool)
+        dz['GOODHARDLOC'] = 1
         logger.info('good hardware all set to true because mock should already have been masked')
     else:
         #specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
@@ -3379,19 +3393,22 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
         #print(len(dz[wg]))
         if gtl_all is not None:
             wg &= np.isin(dz['TILELOCID'],gtl_all)
+        claudet.set_column(dz, 'GOODHARDLOC',  np.isin(dz['TILELOCID'], gtl), dtype='?')
         if logger is not None:
-            logger.info('number at good hardware '+str(len(dz[wg])))
+            logger.info('number at good hardware '+str(np.sum(dz['GOODHARDLOC'])))
         else:
-            print(len(dz[wg]))
+            print(np.sum(dz['GOODHARDLOC']))
     #print(len(dz[wg]))
-    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['GOODHARDLOC'][wg] = 1
+    #dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    #dz['GOODHARDLOC'][wg] = 1
     #print('length after selecting type '+str(len(dz)))
 
-    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-    wz &= dz['ZWARN']*0 == 0 #just in case of nans
-    dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
-    dz['LOCATION_ASSIGNED'][wz] = 1
+    #wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    #wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    #dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    #dz['LOCATION_ASSIGNED'][wz] = 1
+    claudet.set_column(dz, 'LOCATION_ASSIGNED', (dz['ZWARN'] != claudet.NULL) & (dz['ZWARN'] * 0 == 0),
+               dtype='?')
     if logger is not None:
         logger.info('number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
         logger.info('number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.)))
@@ -3401,15 +3418,18 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
         print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
         print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
         print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
-    tlids = np.unique(dz['TILELOCID'][wz])
-    wtl = np.isin(dz['TILELOCID'],tlids)
-    dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
-    dz['TILELOCID_ASSIGNED'][wtl] = 1
+    #tlids = np.unique(dz['TILELOCID'][wz])
+    #wtl = np.isin(dz['TILELOCID'],tlids)
+    #dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    #dz['TILELOCID_ASSIGNED'][wtl] = 1
+    claudet.set_column(dz, 'TILELOCID_ASSIGNED', np.isin(
+        dz['TILELOCID'], np.unique(dz['TILELOCID'][dz['LOCATION_ASSIGNED']])), dtype='?')
+    nuat = len(np.unique(dz['TILELOCID'][dz['LOCATION_ASSIGNED']]))
     if logger is not None:
-        logger.info('number of unique targets at assigned tilelocid: '+str(len(np.unique(dz[wtl]['TARGETID']))) )
+        logger.info('number of unique targets at assigned tilelocid: '+str(nuat) )
     else:
         print('number of unique targets at assigned tilelocid:')
-        print(len(np.unique(dz[wtl]['TARGETID'])))
+        print(nuat)
 
     cols = list(dz.dtype.names)
     #if tscol not in cols:
@@ -3428,7 +3448,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,azf='',azfm='
     
     common.printlog('getting tile counts',logger)
     if ftiles is None:
-        dtl = count_tiles_input(dz[wg],logger=logger)
+        #dtl = count_tiles_input(dz[wg],logger=logger)
+        dtl = claudet.count_tiles_claude(dz[dz['GOODHARDLOC']])
         #dtl = count_tiles_input_alt(dz[wg],logger=logger) #alt was faster when run in notebook but is much slower on test on node...
     else:
         dtl = Table.read(ftiles)
@@ -5120,9 +5141,9 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         common.printlog('no tiles to process for '+str(ii),logger)
         return True
     common.printlog('making random target files '+str(ii)+' for '+str(len(tiles))+' tiles',logger)
-    rtall = read_targets_in_tiles(dirrt+'randoms-'+str(ranind)+'-'+str(ii),tiles)
+    rtall = read_targets_in_tiles(dirrt+'randoms-'+str(ranind)+'-'+str(ii),tiles,use_concatenate=True)
     common.printlog('read dr9 targets on all tiles',logger)
-    rt11 = read_targets_in_tiles(randir11+'randoms-'+str(ranind)+'-'+str(ii),tiles)
+    rt11 = read_targets_in_tiles(randir11+'randoms-'+str(ranind)+'-'+str(ii),tiles,use_concatenate=True)
     common.printlog('read dr11 targets on all tiles',logger)
     if len(rt11) > 0:
         sbricks = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
