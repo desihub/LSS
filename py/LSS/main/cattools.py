@@ -3742,7 +3742,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
 #         dz['COMP_TILE'] = 1
 # 
 #     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
-#     wz = dz['LOCATION_ASSIGNED'] == 1
+     wz = dz['LOCATION_ASSIGNED'] == 1
 #     dzz = dz[wz]
 # 
 #     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
