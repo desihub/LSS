@@ -394,7 +394,7 @@ else:
 gtl_fn = dirout+prog+'_goodspecdata.h5'
 if args.mkgtl:
     tscol = 'TSNR2_ELG'
-    if 'BRIGHT' = prog:
+    if 'BRIGHT' in prog:
         tscol = 'TSNR2_BGS'
     logger.info('TSNR2 info for cut is '+tscol)
     specf = ldirspec+'datcomb_'+prog.lower()+'_spec_zdone.fits'
