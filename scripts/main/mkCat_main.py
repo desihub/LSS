@@ -407,7 +407,7 @@ if args.mkgtl:
         fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
         fs = np.concatenate([fs,fs1b])
         del fs1b
-    if verspec == 'daily':
+    if args.verspec == 'daily':
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
     else:
         fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
