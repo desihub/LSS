@@ -497,11 +497,25 @@ if args.add_veto == 'y':
     if args.survey == 'main':
         dr11 = True
     common.add_veto_col(fin,type,ran=False,tracer_mask=mask_type,dr11=dr11,redo=True,tarver=tarver)#,rann=0
-    for rn in range(rm,rx):
-        fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
+    def _add_veto(rand):
+        fin = dirout+progl+'_'+str(rand)+'_full_noveto.ran.fits'
         if mode1b == 2:
-            fin = dirout+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver,dr11=dr11)
+            fin = dirout+progl+'p1b_'+str(rand)+'_full_noveto.ran.fits'
+        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rand,tarver=tarver,dr11=dr11)
+    if args.par == 'y':
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_add_veto, inds)
+
+    else:
+        for rn in range(rm,rx):
+            _add_veto(rn)
+        #fin = dirout+progl+'_'+str(rn)+'_full_noveto.ran.fits'
+        #if mode1b == 2:
+        #    fin = dirout+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
+        #common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rn,tarver=tarver,dr11=dr11)
         
 if args.join_etar == 'y':
     logf.write('added extra target columns to data catalogs for '+tp+' '+str(datetime.now()))
