@@ -630,9 +630,9 @@ if specrel != 'daily' and args.dospec:
 #             #notqsos = ['', '']
     
     if args.dotarspec:
-        #for tp, notqso in zip(tps, notqsos):
+        for tp, notqso in zip(tps, notqsos):
         #tps should have been defined above
-        for tp in tps:
+        #for tp in tps:
             # first test to see if we need to update any
             logger.info('now doing '+tp+notqso)
             # logger.info(str(len(tiles4comb['TILEID'])))
