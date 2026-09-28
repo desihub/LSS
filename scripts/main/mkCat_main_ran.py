@@ -262,7 +262,7 @@ specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
 logger.info('loaded specf file '+specfo)
 #specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
-gtl_fn = dirout+prog+'_goodspecdata.h5'
+gtl_fn = dirout+pdir+'_goodspecdata.h5'
 if os.path.isfile(gtl_fn):
     specfc = common.read_hdf5_blosc(gtl_fn)
 elif specrel == 'daily':
