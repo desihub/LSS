@@ -3531,12 +3531,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     #dtl = Table.read(ftiles)
 
     common.printlog('joining to ntile info',logger=logger)
-    dz = claudet.join_left(dz, dtl, 'TARGETID', fill={'NTILE': 0, 'TILES': 0, 'TILELOCIDS': 0})
-    #dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
-    #dz = join(dz,dtl,keys='TARGETID',join_type='left')
-    #tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
-    #dz['NTILE'][~tin] = 0
-    #print(np.unique(dz['NTILE']))
+    #dz = claudet.join_left(dz, dtl, 'TARGETID', fill={'NTILE': 0, 'TILES': 0, 'TILELOCIDS': 0})
+    dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
+    dz = join(dz,dtl,keys='TARGETID',join_type='left')
+    tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
+    dz['NTILE'][~tin] = 0
+    print(np.unique(dz['NTILE']))
     if ftar is not None:
         common.printlog('joining to full imaging',logger)
         
