@@ -673,7 +673,20 @@ if specrel != 'daily' and args.dospec:
             cols_fromspec = list(specf.dtype.names)
             for col in cols_fromspec:
                 if np.ma.is_masked(tj[col]):
-                    tj[col] = tj[col].filled(999999)
+                    dtype = tj[col].dtype
+                    if np.issubdtype(dtype, np.floating):
+                        fillval = 999999.0
+                    elif np.issubdtype(dtype, np.integer):
+                        info = np.iinfo(dtype)
+                        # use 999999 where it fits, otherwise the type's max value
+                        fillval = 999999 if info.max >= 999999 else info.max
+                    elif np.issubdtype(dtype, np.bool_):
+                        fillval = True
+                    else:
+                        # strings/bytes and anything else: fall back to a string sentinel
+                        fillval = '999999'
+                    tj[col] = tj[col].filled(fillval)
+                    #tj[col] = tj[col].filled(999999)
                     # logger.info(str(np.unique(tj[col],return_counts=True)))
             # del specf
             logger.info('joined tar and spec, now writing')
