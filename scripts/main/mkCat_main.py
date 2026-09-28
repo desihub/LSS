@@ -529,11 +529,26 @@ allmapcols = new_cols+fid_cols
 if args.fillran == 'y':
     logf.write('filled randoms with imaging properties for '+tp+' '+str(datetime.now()))
     print('filling randoms with imaging properties')
-    for ii in range(rm,rx):
-        fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+    def _fillran(rand):
+        fn = dirout+type+notqso+'_'+str(rand)+'_full_noveto.ran.fits'
         #ct.addcol_ran(fn,ii)
-        common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols)
-        print('done with '+str(ii))
+        common.add_map_cols(fn,rand,new_cols=new_cols,fid_cols=fid_cols)
+    if args.par == 'y':
+        inds = np.arange(rm,rx)
+        from multiprocessing import Pool
+        nproc = 9 #try this so doesn't run out of memory
+        with Pool(processes=nproc) as pool:
+            res = pool.map(_fillran, inds)
+
+    else:
+        for rn in range(rm,rx):
+            _fillran(rn)
+        
+    #for ii in range(rm,rx):
+    #    fn = dirout+type+notqso+'_'+str(ii)+'_full_noveto.ran.fits'
+    #    #ct.addcol_ran(fn,ii)
+    #    common.add_map_cols(fn,ii,new_cols=new_cols,fid_cols=fid_cols)
+    #    print('done with '+str(ii))
 
 
 if args.apply_veto == 'y':
