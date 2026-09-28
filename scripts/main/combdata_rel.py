@@ -555,13 +555,14 @@ if args.dotarspec and specrel == 'daily':
 if specrel != 'daily' and args.dospec:
     
     outfs = ldirspec+'datcomb_'+prog+'_spec_zdone.fits'
-    kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'XFOCAL', 'YFOCAL', 'Z_QN', 'Z_QN_CONF', 'IS_QSO_QN', 'C_LYA', 'C_BI', 'Z_KNOWN', 'ZWARN_MTL', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z',
+    kc = ['TARGETID', 'CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'FIBER', 'COADD_FIBERSTATUS', 'TILEID', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B',
+                            'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z',
                             'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'PRIORITY', 'DESI_TARGET', 'BGS_TARGET', 'TARGET_RA', 'TARGET_DEC', 'LASTNIGHT']
 
     logger.info('length of specf is '+str(len(specf)))
     if args.dozmtl:
         if specrell[1] == 'v2':
-            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_FIBER_RA', 'MEAN_FIBER_DEC']#, 'MEAN_DELTA_RA', 'MEAN_DELTA_DEC', 'RMS_DELTA_RA', 'RMS_DELTA_DEC', 'DELTA_RA', 'DELTA_DEC']
+            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']#, 'MEAN_DELTA_RA', 'MEAN_DELTA_DEC', 'RMS_DELTA_RA', 'RMS_DELTA_DEC', 'DELTA_RA', 'DELTA_DEC']
             logger.info('reading extra file')
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
                            specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative-extra.fits',columns=['TARGETID','TILEID','LOCATION']+ml)
@@ -578,7 +579,7 @@ if specrel != 'daily' and args.dospec:
         specf.write(outfs, format='fits', overwrite=True)
     elif args.redo_zmtljoin:
         if specrell[1] == 'v2':
-            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'DELTA_X', 'DELTA_Y', 'MEAN_FIBER_RA', 'MEAN_FIBER_DEC', 'MEAN_DELTA_RA', 'MEAN_DELTA_DEC', 'RMS_DELTA_RA', 'RMS_DELTA_DEC', 'DELTA_RA', 'DELTA_DEC']
+            ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'MEAN_PSF_TO_FIBER_SPECFLUX', 'TSNR2_ELG_B', 'TSNR2_LYA_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B', 'TSNR2_ELG_R', 'TSNR2_LYA_R', 'TSNR2_BGS_R', 'TSNR2_QSO_R', 'TSNR2_LRG_R', 'TSNR2_ELG_Z', 'TSNR2_LYA_Z', 'TSNR2_BGS_Z', 'TSNR2_QSO_Z', 'TSNR2_LRG_Z', 'TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']
             logger.info('reading extra file')
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
                            specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative-extra.fits',columns=['TARGETID','TILEID']+ml)
