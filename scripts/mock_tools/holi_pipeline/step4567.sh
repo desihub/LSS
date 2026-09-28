@@ -87,7 +87,7 @@ echo "================= step 7"
 date
 ## Env
 source /global/common/software/desi/desi_environment.sh 26.3
-module load desitarget/3.0.0
+module swap desitarget/3.0.0
 # use local package LSS, refresh after source env
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
 export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
