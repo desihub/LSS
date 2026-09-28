@@ -581,7 +581,7 @@ if specrel != 'daily' and args.dospec:
             ml = ['OII_FLUX', 'OII_FLUX_IVAR','CHI2', 'COEFF', 'Z', 'ZERR', 'ZWARN', 'NPIXELS', 'SPECTYPE', 'SUBTYPE', 'NCOEFF', 'DELTACHI2', 'LOCATION', 'MEAN_DELTA_X', 'MEAN_DELTA_Y', 'RMS_DELTA_X', 'RMS_DELTA_Y', 'DELTA_X', 'DELTA_Y', 'MEAN_FIBER_RA', 'MEAN_FIBER_DEC', 'MEAN_DELTA_RA', 'MEAN_DELTA_DEC', 'RMS_DELTA_RA', 'RMS_DELTA_DEC', 'DELTA_RA', 'DELTA_DEC']
             logger.info('reading extra file')
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                           specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog+'-cumulative-extra.fits',columns=['TARGETID','TILEID']+ml)
+                           specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative-extra.fits',columns=['TARGETID','TILEID']+ml)
             logger.info('joining base spec file')
             if np.array_equal(specf['TARGETID'],specfe['TARGETID']):
                 for col in ml:
