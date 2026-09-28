@@ -566,7 +566,7 @@ if specrel != 'daily' and args.dospec:
             specfe = fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
                            specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative-extra.fits',columns=['TARGETID','TILEID','LOCATION']+ml)
             logger.info('joining base spec file')
-            specf = join(specf,specfe,keys=['TARGETID','TILEID','LOCATION'])
+            specf = join(specf,specfe,keys=['TARGETID','TILEID'])
             kc += ['OII_FLUX', 'OII_FLUX_IVAR']
             del specfe
         specf.keep_columns(kc)
