@@ -501,7 +501,7 @@ if args.add_veto == 'y':
         fin = dirout+progl+'_'+str(rand)+'_full_noveto.ran.fits'
         if mode1b == 2:
             fin = dirout+progl+'p1b_'+str(rand)+'_full_noveto.ran.fits'
-        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rand,tarver=tarver,dr11=dr11)
+        common.add_veto_col(fin,type,ran=True,tracer_mask=mask_type,rann=rand,tarver=tarver,dr11=dr11,logger=logger)
     if args.par == 'y':
         inds = np.arange(rm,rx)
         from multiprocessing import Pool
