@@ -57,7 +57,7 @@ The diagram below describes the pipeline in full mode and its three CPU-manageme
 git clone https://github.com/desihub/LSS.git
 cd LSS
 LSS_DIR=$PWD
-git checkout fa4acm
+git checkout opti_holi1
 ```
 
 note: this path is what you will set as `LSS_dir` in the parameter file
