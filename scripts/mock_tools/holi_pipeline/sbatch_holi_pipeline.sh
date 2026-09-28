@@ -74,7 +74,6 @@ FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 #
 date; echo "Step 1: create catalog ELG,LRG, QSO"
 time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
---export=HOLI_PARS \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
@@ -135,7 +134,6 @@ rm $input3 $output3
 #
 date; echo "Step 4-7: imaging mask join, contaminants, tracer concatenation and AMTL initialization"
 time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
---export=HOLI_PARS \
 --open-mode=append \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \

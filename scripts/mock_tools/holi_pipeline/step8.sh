@@ -26,6 +26,7 @@ export PATH=$HOLI_DIR:$PATH
 #desi_env_vers=$(get_pars.py $HOLI_PARS amtl.desi_env_vers)
 #source /global/common/software/desi/desi_environment.sh $desi_env_vers
 source /global/common/software/desi/desi_environment.sh 26.3
+module swap desitarget/3.0.0
 # module load LSS/main
 # use local package LSS, refresh after source env
 export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
