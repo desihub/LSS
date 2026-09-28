@@ -3467,8 +3467,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     
     common.printlog('getting tile counts',logger)
     if ftiles is None:
-        #dtl = count_tiles_input(dz[wg],logger=logger)
-        dtl = claudet.count_tiles_claude(dz[dz['GOODHARDLOC']])
+        dtl = count_tiles_input(dz[wg],logger=logger)
+        #dtl = claudet.count_tiles_claude(dz[dz['GOODHARDLOC']])
         #dtl = count_tiles_input_alt(dz[wg],logger=logger) #alt was faster when run in notebook but is much slower on test on node...
     else:
         dtl = Table.read(ftiles)
