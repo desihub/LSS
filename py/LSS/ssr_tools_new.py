@@ -308,7 +308,7 @@ class model_ssr:
         self.vis_5hist = False
         self.outdir = outdir
         self.band = band
-        self.tracer = tracer
+        self.tracer = traceru
         self.outfn_root = outfn_root
         rw = ''
         if self.reg is not None:
