@@ -244,9 +244,11 @@ class model_ssr:
     '''
     def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False,overwrite_pars_ssrmaxflux=True,emlincat_fn=''):
         self.cat = input_data
-
-        mask = self.cat['TSNR2_'+tracer]>tsnr_min
-        mask &= self.cat['TSNR2_'+tracer]<tsnr_max
+        traceru = tracer
+        if tracer == 'LGE':
+            traceru = 'LRG'
+        mask = self.cat['TSNR2_'+traceru]>tsnr_min
+        mask &= self.cat['TSNR2_'+traceru]<tsnr_max
         self.tsnr_max = tsnr_max
         self.reg = reg
         if reg is not None:
