@@ -726,7 +726,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
             keep &= d["TIMESTAMP"] < thisfhtOrig['NOWTIME']
             
             # AR taking the latest timestamp
-            thisfadate = np.unique(d[keep]["TIMESTAMP"])[-1]
+            # LGN New change, if the MTLTIME is greater than the done tiles timestamp
+            # LGN we keep it. This addresses some issues with adding new ledgers
+            thisfadate = max(thisfhtOrig['MTLTIME'],np.unique(d[keep]["TIMESTAMP"])[-1])
+        
         # If a standard DARK/BRIGHT tile there's no timing issue, revert to original behavior
         else:
             thisfadate = thisfhtOrig['MTLTIME']
