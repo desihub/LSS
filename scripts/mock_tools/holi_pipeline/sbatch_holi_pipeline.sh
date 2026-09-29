@@ -23,18 +23,18 @@
 #     CPUs would sit idle during Fiber Assignment and the allocation
 #     time would be wasted.
 
-#SBATCH --array=0-1
+#SBATCH --array=0-0
 # NOTE: the first seed ID to process is set by the "first_id" parameter
 # (see get_pars.py $HOLI_PARS first_id below), not by this --array directive.
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
-#SBATCH --ntasks=10        # number of seeds processed per array rank
+#SBATCH --ntasks=20        # number of seeds processed per array rank
 #SBATCH --cpus-per-task=1  # keep at 1 for "full" mode; override on the sbatch command line for "split" mode
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -J Holi_cfs
-#SBATCH -t 48:00:00
+#SBATCH -J HoliFIT3
+#SBATCH -t 40:00:00
 #SBATCH --output=holi_%j.log
 #SBATCH --error=holi_%j.log
 #SBATCH --mail-type=begin,end,fail
@@ -74,7 +74,6 @@ FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 #
 date; echo "Step 1: create catalog ELG,LRG, QSO"
 time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
---export=HOLI_PARS \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
@@ -135,7 +134,6 @@ rm $input3 $output3
 #
 date; echo "Step 4-7: imaging mask join, contaminants, tracer concatenation and AMTL initialization"
 time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
---export=HOLI_PARS \
 --open-mode=append \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \

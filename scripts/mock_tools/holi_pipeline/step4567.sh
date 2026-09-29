@@ -97,7 +97,11 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     date
     ## Env
     source /global/common/software/desi/desi_environment.sh 26.3
-    module load desitarget/3.0.0
+    #module swap desitarget/3.0.0
+    # desitarget ecsv to fits
+    target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
+    export PYTHONPATH=$target_dir/py:$PYTHONPATH
+    export PATH=$target_dir/bin:$PATH
     # use local package LSS, refresh after source env
     export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
     export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
