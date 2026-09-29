@@ -3439,12 +3439,6 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey="main", zcatdi
 
     # if getosubp:
     #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
-<<<<<<< HEAD
-    # else:
-    FAMapName = fbadirbase + "/famap-" + ts + ".pickle"
-    with open(FAMapName, "rb") as fl:
-        (A2RMap, R2AMap) = pickle.load(fl, fix_imports=True)
-=======
     #else:
     FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
     if not os.path.isfile(FAMapName):
@@ -3456,7 +3450,6 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey="main", zcatdi
 
     with open(FAMapName,'rb') as fl:
         (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
->>>>>>> origin/main
 
     # zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
     zcatdir = get_zcat_dir(zcatdir)
