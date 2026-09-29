@@ -2224,9 +2224,15 @@ def update_alt_ledger(
         else:
             FAMapName = fbadirbase + "/famap-" + ts + ".pickle"
 
-        log.info("FAMapName = {0}".format(FAMapName))
-        with open(FAMapName, "rb") as fl:
-            (A2RMap, R2AMap) = pickle.load(fl, fix_imports=True)
+        if not os.path.isfile(FAMapName):
+
+            log.info('FAMapName = {0} dont exist, running fba again'.format(FAMapName))
+            OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [t], survey = survey, obscon = obscon ,verbose = verbose, debug = debug, getosubp = getosubp, redoFA = False, mock = mock, reproducing = False)
+            assert(len(OrigFAs))
+            A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = None, verbose = verbose, debug = debug, survey = survey , obscon = obscon, getosubp = getosubp, redoFA = False )
+
+        with open(FAMapName,'rb') as fl:
+            (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
 
         # ADM create the catalog of updated redshifts.
         log.info("making zcats")
@@ -3433,10 +3439,24 @@ def reprocess_alt_ledger(altmtldir, action, obscon="dark", survey="main", zcatdi
 
     # if getosubp:
     #    FAMapName = fbadirbase + '/orig/famap-' + ts + '.pickle'
+<<<<<<< HEAD
     # else:
     FAMapName = fbadirbase + "/famap-" + ts + ".pickle"
     with open(FAMapName, "rb") as fl:
         (A2RMap, R2AMap) = pickle.load(fl, fix_imports=True)
+=======
+    #else:
+    FAMapName = fbadirbase + '/famap-' + ts + '.pickle'
+    if not os.path.isfile(FAMapName):
+
+        log.info('FAMapName = {0} dont exist, running fba again'.format(FAMapName))
+        OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(altmtldir, [action], survey = survey, obscon = obscon)
+        assert(len(OrigFAs))
+        A2RMap, R2AMap = make_fibermaps(altmtldir, OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles, changeFiberOpt = None, survey = survey , obscon = obscon, redoFA = False)
+
+    with open(FAMapName,'rb') as fl:
+        (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
+>>>>>>> origin/main
 
     # zcat = make_zcat(zcatdir, dateTiles, obscon, survey)
     zcatdir = get_zcat_dir(zcatdir)

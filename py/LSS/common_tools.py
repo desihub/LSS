@@ -629,6 +629,25 @@ def splitGC(input_array):
     return sel_ngc
 
 
+def select_DR11(input_array, ra_col='RA', dec_col='DEC'):
+    '''
+    input_array with RA, DEC given by ra_col,dec_col
+    return boolean array for whether in DR11 area or not as defined by desitarget  
+    '''
+    
+    #first, get brickids for DR11
+    sbricks = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
+    sel11 = sbricks['DRVERSION'] == 11
+    dr11_bricks = sbricks['BRICKID'][sel11]
+    if 'BRICKID' in list(input_array.dtype.names):
+        dr11in = np.isin(input_array['BRICKID'],dr11_bricks) 
+    else:
+        from desiutil import brick
+        tmp = brick.Bricks(bricksize=0.25)
+        brickids = tmp.brickid(input_array[ra_col], input_array[dec_col])
+        dr11in = np.isin(brickids,dr11_bricks) 
+    return dr11in
+
 def select_regressis_DES(input_array, ra_col='RA', dec_col='DEC'):
     '''
     input_array with RA, DEC given by ra_col,dec_col
@@ -1552,13 +1571,21 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
     return
 
 
-def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targetsDR9v1.1.1', redo=False, logger=None, return_array=False):
+def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targetsDR9v1.1.1',tarver11='targetsDR11v5.2.0', dr11=False,redo=False, logger=None, return_array=False):
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/' + \
         tracer+tarver+'_'+tracer_mask+'imask.fits'
+    mask_fn11 = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/' + \
+        tracer+tarver11+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
             str(rann)+tracer_mask+'imask.fits'
+        mask_fn11 = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
+            str(rann)+'_dr11_'+tracer_mask+'imask.fits'
+
     maskf = fitsio.read(mask_fn)
+    if dr11:
+        maskf11 = fitsio.read(mask_fn11)
+        maskf = np.concatenate([maskf,maskf11])
     df = fitsio.read(fn.replace('global', 'dvs_ro'))
     if np.isin(tracer_mask+'_mask', list(df.dtype.names)):
         printlog('mask column already in '+fn, logger)
@@ -1745,7 +1772,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff.sort('TILES')
         nts = len(np.unique(ff['TILES']))
         tlsl = ff['TILES']
-        tlslu = np.unique(tlsl)
+        tlslu = np.unique(tlsl).astype(str)
         laa = ff['LOCATION_ASSIGNED']
         lta = ff['TILELOCID_ASSIGNED']
         # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))

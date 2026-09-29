@@ -66,6 +66,7 @@ parser.add_argument("--usepota", help="use the already calculated potential assi
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_oldfoot", help="whether to cut randoms based on old tile list for full survey",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data; needed on only for 1st steps",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
@@ -185,7 +186,7 @@ else:
 mockz = 'RSDZ'
 
 if args.targDir == None:
-    args.targDir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/'
+    args.targDir = args.base_altmtl_dir.replace('global','dvs_ro')+'/'+args.survey+'/mocks/'+args.simName+'/'
 
 
 tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+surveycat+'/LSS/tiles-'+pr+'.fits'
@@ -312,6 +313,7 @@ test_dir(clusdir)
 
 
 test_dir(outdir)
+test_dir(outdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/'))
 
 if args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
@@ -390,6 +392,8 @@ if args.combd == 'y':
     #outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
     #ommon.write_LSS_scratchcp(asn,outf,logger=logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    if args.outmd == 'scratch':
+        outf = outf.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
     common.write_LSShdf5_scratchcp(asn,outf,logger=logger)
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
@@ -438,7 +442,7 @@ if args.combd == 'y':
             #pota_cols.append('REST_GMR_0P1')
             
         #BGS_TARGET
-        pa = fitsio.read(pota_fn,columns=pota_cols)
+        pa = fitsio.read(pota_fn.replace('global','dvs_ro'),columns=pota_cols)
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
         sel_coll = pa['COLLISION'] == 0
         pa = pa[sel_coll]
@@ -531,14 +535,18 @@ if args.fulld == 'y':
     ftar = None
     #dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.h5')
+    mockassigndir = os.path.join(maindir.replace(args.survey,surveycat), 'fba%d' % mocknum)
     if args.outmd == 'scratch':
         dz = dz.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+        mockassigndir = mockassigndir.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
         #dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
-    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.h5'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(maindir.replace(args.survey,surveycat), 'fba%d' % mocknum))
+    
+    
+    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.h5'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = mockassigndir)
     common.printlog('*** END WITH FULLD ***',logger=logger)
     
     gc.collect()
@@ -552,6 +560,10 @@ dz_step = 0.02
 
 zsplit = None
 subfrac = 1
+
+if args.survey == 'DA3':
+    common.printlog('***NO SUBSAMPLING DEFINED FOR DA3, final n(z) could be off***')
+
 if tracer == 'QSO':
     zmin = 0.8
     zmax = 2.1
@@ -1054,7 +1066,10 @@ if args.mkclusran == 'y':
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
     #mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
-    mockobs = common.read_hdf5_blosc(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5'),columns=['TILEID','LOCATION','PRIORITY'])
+    mockobs_fn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    if args.outmd == 'scratch':        
+        mockobs_fn = mockobs_fn.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+    mockobs = common.read_hdf5_blosc(mockobs_fn,columns=['TILEID','LOCATION','PRIORITY'])
     mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
     badpri = mockobs['PRIORITY'] > maxp
     bad_tlid = mockobs_tlid[badpri]
@@ -1072,6 +1087,8 @@ if args.mkclusran == 'y':
     common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
+    if args.apply_oldfoot == 'y':
+        from desimodel.footprint import is_point_in_desi
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
@@ -1083,6 +1100,14 @@ if args.mkclusran == 'y':
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
+        common.printlog(str(rann)+' length after read '+str(len(datain)),logger=logger)
+        if args.apply_oldfoot == 'y':
+            tiles = Table.read('/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/code/desimodel/main/data/footprint/desi-tiles.ecsv')
+            mask_y5 = mask_y5 = (tiles['PROGRAM'] == 'BRIGHT')&(tiles['IN_DESI']==1) #needing the explicit ==1 here is the new important aspect
+            tiles = tiles[mask_y5]
+            selY5 = is_point_in_desi(tiles, datain['RA'], datain['DEC']) #fr being the array of randoms
+            datain = datain[selY5] #randoms should now be cut to matching footprint
+            common.printlog(str(rann)+' length after cut to old footprint '+str(len(datain)),logger=logger)
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
