@@ -288,9 +288,9 @@ class model_ssr:
         print(len(self.cat))
         self.cat['FIBERFLUX_'+band+'_EC'] = self.cat['FIBERFLUX_'+band]*10**(0.4*extdict[band]*self.cat['EBV'])
         self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
-        ha,bine = np.histogram(self.cat['TSNR2_'+tracer])
-        medt = np.median(self.cat['TSNR2_'+tracer])
-        hf,_ = np.histogram(self.cat['TSNR2_'+tracer][~self.selgz],bins=bine)
+        ha,bine = np.histogram(self.cat['TSNR2_'+traceru])
+        medt = np.median(self.cat['TSNR2_'+traceru])
+        hf,_ = np.histogram(self.cat['TSNR2_'+traceru][~self.selgz],bins=bine)
         self.nzf = hf/ha
         tot_failrate = np.sum(hf)/np.sum(ha)
         high_failrate = np.sum(hf[5:])/np.sum(ha[5:])
@@ -301,7 +301,7 @@ class model_ssr:
         bs = bine[1]-bine[0]
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
-            median_bins.append(np.median(self.cat['TSNR2_'+tracer][(self.cat['TSNR2_'+tracer] >= bine[i]) & (self.cat['TSNR2_'+tracer] < bine[i+1])]))
+            median_bins.append(np.median(self.cat['TSNR2_'+traceru][(self.cat['TSNR2_'+traceru] >= bine[i]) & (self.cat['TSNR2_'+traceru] < bine[i+1])]))
         self.bc = np.array(bc)
         self.median_bins = np.array(median_bins)
         self.bine = bine
@@ -355,9 +355,9 @@ class model_ssr:
         #plt.show()
         plt.clf()
         #fit to fiberflux trend
-        print('self.cat[TSNR2_tracer]',self.cat['TSNR2_'+tracer])
+        print('self.cat[TSNR2_tracer]',self.cat['TSNR2_'+traceru])
         print('self.cat',self.cat)
-        assr = 1. -self.failure_rate_eff(self.cat['TSNR2_'+tracer],*pars)   
+        assr = 1. -self.failure_rate_eff(self.cat['TSNR2_'+traceru],*pars)   
         print('assr',assr)
         relssr = assr/np.max(assr) 
         self.wts_fid = 1/relssr
@@ -372,9 +372,9 @@ class model_ssr:
             sel &= self.cat['FIBERFLUX_'+self.band+'_EC'] < np.percentile(self.cat['FIBERFLUX_'+self.band+'_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_'+self.band+'_EC'][sel])
             fper.append(mf)
-            ha,_ = np.histogram(self.cat['TSNR2_'+tracer][sel],bins=self.bine)
-            hf,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],bins=self.bine)
-            hfw,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
+            ha,_ = np.histogram(self.cat['TSNR2_'+traceru][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['TSNR2_'+traceru][sel&self.selgz],bins=self.bine)
+            hfw,_ = np.histogram(self.cat['TSNR2_'+traceru][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             sel = ha == hf
             hf[sel] -= 1 #so that the errors aren't 0
