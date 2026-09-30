@@ -1699,6 +1699,82 @@ def maskcircandrec(indata, maskfn, logger=None):
 
     return mask
 
+def mktlobs(fin, logger=None):
+    '''
+    fl is a string with the path to the file name to load
+    fout is a string with the path to the outpur file
+    ebits are the new imaging mask bits to apply
+    zmask is whether or not to apply any zmask
+    maxp is the maximum priority to keep in the data files
+    '''
+    if isinstance(fin, str):
+        # +'full_noveto.'+dr+'.fits')
+        ff = Table(fitsio.read(fin.replace('global', 'dvs_ro')))
+    else:
+        ff = fin
+        del fin
+    printlog('length of input '+str(len(ff)), logger)
+	compa = []
+	fractl = []
+	tll = []
+	ti = 0
+	ff.sort('TILES')
+	nts = len(np.unique(ff['TILES']))
+	tlsl = ff['TILES']
+	tlslu = np.unique(tlsl).astype(str)
+	laa = ff['LOCATION_ASSIGNED']
+	lta = ff['TILELOCID_ASSIGNED']
+	# print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
+
+	# for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+	i = 0
+	tot = 0
+	atot = 0
+	tltot = 0
+	while i < len(ff):
+		tls = []
+		tlis = []
+		nli = 0  # initialize total available per tile group
+		nai = 0  # initialize total assigned
+		nti = 0  # initialize total at location where something of the same type was assigned
+
+		while tlsl[i] == tlslu[ti]:
+			nli += 1
+			nai += laa[i]  # laa is true/false assigned
+			# lta is true/false something of the same type was assigned
+			nti += lta[i]
+			i += 1
+			if i == len(ff):
+				break
+
+		if ti % 10000 == 0:
+			printlog('at tiles ' + str(ti) + ' of ' + str(nts), logger)
+
+		tot += nli
+		atot += nai
+		tltot += nti
+		cp = nai / nli
+		fract = nti/nli
+		# print(tls,cp,no,nt)
+		compa.append(cp)
+		fractl.append(fract)
+		tll.append(tlslu[ti])
+		ti += 1
+	# print(tot,atot,tltot)
+	comp_dicta = dict(zip(tll, compa))
+	fract_dicta = dict(zip(tll, fractl))
+	if '.fits' in fin:
+		tlobs_fn = fin.replace(
+			'full'+mapveto+'.dat.fits', 'frac_tlobs.fits')
+	if '.h5' in fin:
+		tlobs_fn = fin.replace(
+			'full'+mapveto+'.dat.h5', 'frac_tlobs.fits')
+	printlog('tlobs file will get written to '+tlobs_fn)
+	tlobs = Table()
+	tlobs['TILES'] = tll
+	tlobs['FRAC_TLOBS_TILES'] = fractl
+	write_LSS_scratchcp(tlobs, tlobs_fn, logger=logger)
+
 
 def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='', logger=None):
     '''
