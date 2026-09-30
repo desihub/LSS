@@ -738,7 +738,7 @@ def columns_for_weight_scheme(
     match tracer:
         case "ELG":
             data_colnames_full = {"o2c"}
-        case "LRG" | "BGS":
+        case "LRG" | "BGS" | "LGE":
             data_colnames_full = {"ZWARN", "DELTACHI2"}
         case "QSO":
             data_colnames_full = set()
