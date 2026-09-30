@@ -1711,7 +1711,7 @@ def mktlobs(fin, logger=None):
         # +'full_noveto.'+dr+'.fits')
         ff = Table(fitsio.read(fin.replace('global', 'dvs_ro')))
     elif '.h5' in fin:
-        fin = read_hdf5_blosc(fin.replace('global', 'dvs_ro'),columns=['TILES','LOCATION_ASSIGNED','TILELOCID_ASSIGNED'])
+        ff = read_hdf5_blosc(fin.replace('global', 'dvs_ro'),columns=['TILES','LOCATION_ASSIGNED','TILELOCID_ASSIGNED'])
     printlog('length of input '+str(len(ff)), logger)
     compa = []
     fractl = []
