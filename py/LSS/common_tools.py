@@ -1773,7 +1773,7 @@ def mktlobs(fin, logger=None):
 	tlobs = Table()
 	tlobs['TILES'] = tll
 	tlobs['FRAC_TLOBS_TILES'] = fractl
-	write_LSS_scratchcp(tlobs, tlobs_fn, logger=logger)
+	write_LSS_scratchcp(tlobs, tlobs_fn.replace('dvs_ro','global'), logger=logger)
 
 
 def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='', logger=None):
