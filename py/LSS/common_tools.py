@@ -1707,12 +1707,11 @@ def mktlobs(fin, logger=None):
     zmask is whether or not to apply any zmask
     maxp is the maximum priority to keep in the data files
     '''
-    if isinstance(fin, str):
+    if '.fits' in fin:
         # +'full_noveto.'+dr+'.fits')
         ff = Table(fitsio.read(fin.replace('global', 'dvs_ro')))
-    else:
-        ff = fin
-        del fin
+    elif '.h5' in fin:
+        fin = read_hdf5_blosc(fin.replace('global', 'dvs_ro'),columns=['TILES','LOCATION_ASSIGNED','TILELOCID_ASSIGNED'])
     printlog('length of input '+str(len(ff)), logger)
     compa = []
     fractl = []
