@@ -179,7 +179,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
             zrl = [(0.8, 3.5)]
         zsysmin = 0.8
         zsysmax = 3.5
-    if tracer_clus[:3] == "LRG":
+    if tracer_clus[:3] == "LRG" or tracer_clus[:3] == "LGE":
         if args.imsys_zbin == "split":
             zrl = [(0.4, 0.6), (0.6, 0.8), (0.8, 1.1)]
         elif args.imsys_zbin == 'one':
