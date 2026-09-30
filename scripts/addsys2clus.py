@@ -70,7 +70,6 @@ parser.add_argument("--ext",help="h5 or fits",default='fits')
 parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--zcmb", help="whether or not to correct redshifts based on cmb dipole",default='n')
-parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
@@ -78,10 +77,10 @@ parser.add_argument("--maxr", help="maximum for random files, 18 are available (
 parser.add_argument("--prep4sysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--compwtmd",help="weight mode to prepare data to get sysnet weights for imaging systematics?",default='fracz')
 parser.add_argument("--addsysnet",help="add sysnet weights for imaging systematics to clustering files?",default='n')
-parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
+parser.add_argument("--imsys_zbin",help="if y, do imaging systematic regressions in z bins; choose fine for dz = 0.1",default='y')
 
 parser.add_argument("--doimlin",help="add weights for imaging systematics using eboss method?",default='n')
-parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
+#parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
