@@ -1699,7 +1699,7 @@ def maskcircandrec(indata, maskfn, logger=None):
 
     return mask
 
-def mktlobs(fin, logger=None):
+def mktlobs(fin, mapveto='_HPmapcut',logger=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
