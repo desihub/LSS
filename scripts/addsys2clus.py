@@ -169,6 +169,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
             zrl = [(0.8, 1.6)]
         zsysmin = 0.8
         zsysmax = 1.6
+        tpmap = 'ELG_LOPnotqso'
     
     
     if tracer_clus[:3] == "QSO":
