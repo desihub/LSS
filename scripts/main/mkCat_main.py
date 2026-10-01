@@ -90,6 +90,7 @@ parser.add_argument("--extra_clus_dir", help="an optional extra layer of directo
 parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
 parser.add_argument("--zcmb", help="whether or not to correct redshifts based on cmb dipole",default='n')
 parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
+parser.add_argument("--des_resamp", help="resample in DES, SnDES, and N regions (always done for QSO, even if not set)",action="store_true")
 parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
@@ -1477,7 +1478,7 @@ if mkclusran:
     
     clus_arrays = [fitsio.read(out_name+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
+        ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,des_resamp=args.des_resamp,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
