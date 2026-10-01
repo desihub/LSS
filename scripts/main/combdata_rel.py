@@ -634,10 +634,15 @@ if specrel != 'daily' and args.dospec:
         #tps should have been defined above
         #for tp in tps:
             # first test to see if we need to update any
+            fnb = ''
+            if '1b' in prog:
+                fnb = '_1b'
+            outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup'+fnb+'_zdone.fits'
+
             logger.info('now doing '+tp+notqso)
             # logger.info(str(len(tiles4comb['TILEID'])))
             # tarfo = dailydir+'datcomb_'+tp+notqso+'_tarwdup_zdone.fits'
-            outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
+            #outfs = ldirspec+'datcomb_'+tp+notqso+'_tarspecwdup_zdone.fits'
             # outtc =  ldirspec+tp+notqso+'_tilelocs.dat.fits'
 
             # tarf = Table.read(tarfo)
