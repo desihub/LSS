@@ -3962,6 +3962,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
 
 def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmapcut',logger=None):
     import LSS.common_tools as common
+    import LSS.claude_tools as claudet
     from LSS import ssr_tools_new
     '''
     fl is the root of the input/output file
@@ -4104,7 +4105,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
             ffc.remove_columns(['WEIGHT_ZFAIL'])
         if 'mod_success_rate' in cols:
             ffc.remove_columns(['mod_success_rate'])
-        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        #ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        ffc = claudet.as_table(ffc)
+        ff = claudet.as_table(ff)
+        ffc = claudet.join_left(ffc,ff,'TARGETID')
+
         common.write_LSS_scratchcp(ffc,indir+tp+'_full.dat.fits',logger=logger)#,comments='added ZFAIL weight')
         fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
         if os.path.isfile(fname_mapveto):
@@ -4115,7 +4120,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
                 ffc.remove_columns(['WEIGHT_ZFAIL'])
             if 'mod_success_rate' in cols:
                 ffc.remove_columns(['mod_success_rate'])
-            ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+            ffc = claudet.as_table(ffc)
+            ff = claudet.as_table(ff)
+            ffc = claudet.join_left(ffc,ff,'TARGETID')
+            
+            #ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
             common.write_LSS_scratchcp(ffc,fname_mapveto,logger=logger)#,comments='added ZFAIL weight')
     
     
