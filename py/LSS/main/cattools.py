@@ -3290,8 +3290,9 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         # ensure key column dtypes match between dz and coll for setdiff
         for key in ['TARGETID','LOCATION','TILEID']:
             if coll[key].dtype != dz[key].dtype:
+                common.printlog('changing dtype of collision data for '+key,logger)
                 coll[key] = coll[key].astype(dz[key].dtype)
-        #dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID']) #this method is slow
+        dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID']) #this method is slow
         # Create a composite key for matching
         #dz_key = np.column_stack([dz['TARGETID'], dz['LOCATION'], dz['TILEID']])
         #coll_key = np.column_stack([coll['TARGETID'], coll['LOCATION'], coll['TILEID']])
@@ -3299,12 +3300,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         # Find rows in dz that are NOT in coll
         #mask = ~np.all(dz_key[:, None] == coll_key[None, :], axis=2).any(axis=1) #this method gives a memory error nable to allocate 425. TiB for an array with shape (22641417, 6887129, 3) and data type bool
         # Create tuples of the key columns for collision list
-        coll_keys = set(zip(coll['TARGETID'], coll['LOCATION'], coll['TILEID']))
+        #coll_keys = set(zip(coll['TARGETID'], coll['LOCATION'], coll['TILEID']))
 
         # Keep only rows NOT in collision set
-        mask = ~np.array([(tid, loc, til) in coll_keys 
-                   for tid, loc, til in zip(dz['TARGETID'], dz['LOCATION'], dz['TILEID'])])
-        dz = dz[mask]
+        #mask = ~np.array([(tid, loc, til) in coll_keys 
+        #           for tid, loc, til in zip(dz['TARGETID'], dz['LOCATION'], dz['TILEID'])])
+        #dz = dz[mask]
         if logger is not None:
             logger.info('length after masking collisions '+str(len(dz)))
         else:        
@@ -3340,7 +3341,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
         if good_specf is not None:
-            fs = common.read_hdf5_blosc(good_specf)
+            won = common.read_hdf5_blosc(good_specf)
         else:
             specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
             specf1b = specdir+'datcomb_'+prog1b+'_spec_zdone.fits'
@@ -3361,15 +3362,15 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
                 fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
             else:
                 fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-        won = Table({'TILELOCID': (10000 * fs['TILEID'].value
+            won = Table({'TILELOCID': (10000 * fs['TILEID'].value
                                + fs['LOCATION'].value).astype('i8', copy=False),
                  'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
                 copy=False) 
-        del fs
+            del fs
 
             #fs = Table(fs)
             #fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
-        gtl = np.unique(won['TILELOCID'])
+        gtl = np.unique(won['TILELOCID'].astype('i8'))
         
     
     #print(len(gtl))
