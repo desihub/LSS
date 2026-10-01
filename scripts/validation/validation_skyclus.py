@@ -181,6 +181,8 @@ for tp in tps:
         tpr = 'BGS_BRIGHT'
     if 'BGS' in tp:    
         prog = 'bright'
+    if 'LGE' in tp:
+        prog = 'dark1b'
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
         rffh = fitsio.read_header(indir+prog+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
@@ -301,7 +303,7 @@ for tp in tps:
                 wg &= dtf[zcol] < 1.6
                 titl = tp +titlb+ '0.8<z<1.6'
 
-            if tp == 'LRG':
+            if tp == 'LRG' or tp == 'LGE':
                 wg = dtf[zcol] > 0.4
                 wg &= dtf[zcol] < 1.1
                 titl = tp +titlb+ '0.4<z<1.1'
