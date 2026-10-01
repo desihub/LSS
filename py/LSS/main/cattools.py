@@ -3245,11 +3245,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         zf1b = zf.strip('.fits')+'_1b_zdone.fits'
 
         if mode1b == 0 or mode1b == 2:
-            dz = Table(fitsio.read(zfno1b))
+            dz = Table(fitsio.read(zfno1b.replace('global','dvs_ro')))
         if mode1b == 1:
-            dz = Table(fitsio.read(zf1b))
+            dz = Table(fitsio.read(zf1b.replace('global','dvs_ro')))
         if mode1b == 2:
-            dz1b = Table(fitsio.read(zf1b))
+            dz1b = Table(fitsio.read(zf1b.replace('global','dvs_ro')))
             logger.info('read 1b and non 1b')
             dz = vstack([dz,dz1b])        
             del dz1b
