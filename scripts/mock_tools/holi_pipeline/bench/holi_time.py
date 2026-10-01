@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/global/common/software/desi/perlmutter/desiconda/20260227-2.3.1/conda/bin/python
 
 import subprocess
 import re
@@ -36,6 +36,7 @@ def get_time_real():
 def process_logs_directory():
     os.chdir("logs")
     t_logs = get_time_real()
+    print("Directory logs:", t_logs)
     t_tasks = np.array(t_logs).reshape(-1, 10)
     # print(np.mean(t_tasks, axis=0))
     ts1 = np.sum(t_tasks[:, :3], axis=1)
@@ -56,7 +57,8 @@ def process_logs_directory():
 
 def process_logs_roots():
     t_logs = get_time_real()
-    t_tasks = np.array(t_logs).reshape(-1, 3)
+    print("Root logs:", t_logs)
+    t_tasks = np.array(t_logs).reshape(-1, 4)
     # print(np.mean(t_tasks, axis=0))
     return t_tasks
 
@@ -93,10 +95,31 @@ def create_plot(a_tasks, a_stage, nb_cpu):
     ax.set_ylabel("Time (minutes)")
     ax.grid()
 
+def create_plot_full(a_tasks, a_stage, nb_cpu):
+    fig, ax = plt.subplots(layout="constrained")
+    print(a_tasks.shape)
+    # plt.boxplot(a_tasks, tick_labels=["1", "4", "5", "6", "7", ])
+    ax.set_title("Time for step 1-8 of Holi pipeline\n1 CPU per step")
+    vs = a_tasks.T
+    plt.boxplot(
+        (vs[0], a_stage[:, 1]/nb_cpu, vs[1], vs[2], vs[3], vs[4],a_stage[:,3]),
+        #(vs[0], a_stage[:, 1]/nb_cpu, vs[1], vs[2], vs[3], vs[4],vs[5]),
+        #tick_labels=["1: simu cat", "3: BRICKMASK", "4: apply mask", "5: contaminant", "6: join cat", "7: init AltMTL"],
+        tick_labels=["1", "3", "4", "5", "6", "7", "8"],
+        
+    )
+    # for label in ax.get_xticklabels():
+    #     label.set_rotation(45)
+    #     label.set_rotation_mode("anchor")
+    ax.set_xlabel("Step number")
+    ax.set_ylabel("Time (minutes)")
+    ax.grid()
+
 
 a_stage, a_tasks = process_logs_roots(), process_logs_directory()
 print_stat(a_tasks, a_stage)
-create_plot(a_tasks, a_stage, nb_cpu=10)
+print(a_tasks)
+create_plot_full(a_tasks, a_stage, nb_cpu=10)
 plt.show()
 
 # print(process_logs_roots())

@@ -175,6 +175,25 @@ source init_env_holi.sh
 run_holi_pipeline.sh holi_params.toml 
 ```
 
+# Bench
+
+## All steps
+
+Overall, the pipeline is dominated by the last step Fiber assignment . Timing by step for `opti_holi1` version
+
+![holi timing](timing_holi.png)
+
+
+## Step 7, 8
+For 303 nights of observation between May 14, 2021, and March 23, 2024, totaling 6,671 fiber assignment files.
+
+| | Ref | fba lib instead script  |ledger in FITS |
+| --- | --- | --- | --- |
+| git branch | fa4acm | opti_holi1 | opti_holi2| 
+| Step 7 Ledger creation |2h50| 2h50|2h10|
+| Step 8  Fiber assignment |42h| 30h|19h|
+
+
 # Results
 
 ## Traceability
@@ -188,9 +207,42 @@ The `logs` directory contains the Slurm output for each job-array rank and a log
 
 ## Tools to explore results
 
-TODO
+### Global status of job 
 
-For now, you can search the log files for the word `error` using `grep`. If an error occurs, the Slurm log file, `holi_<JOBID>.log`, will contain an error message that identifies the affected task number.
+In `check` directory find `check_holi_jobs.py` to obtain status of array jobs and the number of fba_xxxx.fits` file:
+
+```console
+$ check_holi_jobs.py /global/homes/j/jcolley/test/runs/holi_260925_04h04
+JOB ID      STATUS        ELAPSED     EXIT CODE START               END                 DETAILS                       
+----------------------------------------------------------------------------------------------------------------------
+58862020    COMPLETED     1-13:11:23  0:0       2026-09-25T04:34 2026-09-26T17:45 completed successfully        
+58862023    COMPLETED     1-12:35:11  0:0       2026-09-25T04:33 2026-09-26T17:08 completed successfully        
+Found 6671 fba*.fits files in altmtl0050
+Found 6671 fba*.fits files in altmtl0051
+Found 6671 fba*.fits files in altmtl0052
+Found 6671 fba*.fits files in altmtl0053
+Found 6671 fba*.fits files in altmtl0054
+Found 6671 fba*.fits files in altmtl0055
+Found 6671 fba*.fits files in altmtl0056
+Found 6671 fba*.fits files in altmtl0057
+Found 6671 fba*.fits files in altmtl0058
+Found 6671 fba*.fits files in altmtl0059
+Found 6671 fba*.fits files in altmtl0060
+Found 6671 fba*.fits files in altmtl0061
+Found 6671 fba*.fits files in altmtl0062
+Found 6671 fba*.fits files in altmtl0063
+Found 6671 fba*.fits files in altmtl0064
+Found 6671 fba*.fits files in altmtl0065
+Found 6671 fba*.fits files in altmtl0066
+Found 6671 fba*.fits files in altmtl0067
+Found 6671 fba*.fits files in altmtl0068
+Found 6671 fba*.fits files in altmtl0069
+```
+ 
+### Check error
+
+For now, you can search the log files for the word `error`, `kill` using `grep`. If an error occurs, the Slurm log file, `holi_<JOBID>.log`, will contain an error message that identifies the affected task number.
+
 
 # Holi pipeline for developers
 

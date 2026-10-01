@@ -270,10 +270,10 @@ def report(log_path):
                 )
         print("".join(str(v).ljust(w) for v, w in zip(row, widths)))
 
-    if all_completed and os.path.isdir(log_path):
-        png_path = plot_fba_histogram(log_path)
-        if png_path is not None:
-            print(f"\nAll array tasks completed, cancelled or timed out, histogram saved to {png_path}")
+    #if all_completed and os.path.isdir(log_path):
+    png_path = plot_fba_histogram(log_path)
+    if png_path is not None:
+        print(f"\nAll array tasks completed, cancelled or timed out, histogram saved to {png_path}")
 
     return 0
 
@@ -287,7 +287,7 @@ def main():
     parser.add_argument(
         "log_path",
         help="path to the Holi pipeline run log directory "
-        "(e.g. .../runs/holi_260925_23h33), or to a single holi_<jobid>.log file",
+        "(e.g. .../runs/holi_260925_23h33), or to a sinreportgle holi_<jobid>.log file",
     )
     args = parser.parse_args()
 
