@@ -1926,7 +1926,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         comp = len(ff[wz])/len(ff)
         printlog('assignment completeness is '+str(comp), logger)
         printlog('sum of NEW_WEIGHTFRACZ, 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match', logger)
-        printlog(str(np.sum(ff[wz]['NEW_WEIGHTFRACZ'])+','+str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']))
+        printlog(str(np.sum(ff[wz]['NEW_WEIGHTFRACZ']))+','+str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']))
                      )+',' + str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str(len(ff)), logger)
         seln0 = ff['COMP_TILE'] != 0
         printlog('any mismatch could be due to number of targets in areas with COMP_TILE=0: '+str(np.sum(~seln0)),logger)
