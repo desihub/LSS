@@ -3,25 +3,25 @@
 set -e
 
 source /global/common/software/desi/desi_environment.sh main
-#module load LSS/main
-module swap desitarget/3.0.0
+module load LSS/main
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export LSSCODE=$HOME ; do this before script, e.g., export LSSCODE=$HOME/LSScode for desica
 #PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 verspec=matterhorn-v2
 survey=DA3
-LSSCODE=$HOME/LSScode
-PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
+#LSSCODE=$HOME/LSScode
+#PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
 #full_noveto
 #21 minutes
-#srun -N 1 -C cpu -t 04:00:00 -q interactive  python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec $verspec --survey $survey --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive  python $LSSCODE/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec $verspec --survey $survey --version $1 --mkgtl
 #19 minutes
 #srun -N 1 -C cpu -t 04:00:00 -q interactive  python $LSSCODE/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec $verspec --survey $survey --version $1
 #58 minutes
 #srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec $verspec --survey $survey --version $1
 #1hr 8 minutes
-#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec $verspec --survey $survey --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSSCODE/LSS/scripts/main/mkCat_main.py --type ELG_VLO --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld y --verspec $verspec --survey $survey --version $1
 
 #randoms with spec info
 #only should be done for each spec release 
