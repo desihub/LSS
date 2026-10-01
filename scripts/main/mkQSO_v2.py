@@ -13,16 +13,13 @@ Two catalogs are produced:
                           QSO targets with QSO_MASKBITS > 0, after the bad_qso cut).
         --> QSO_cat_{release}_main_dark_healpix_only_qso_targets_{version}.fits
     * "all QSOs"        : every object identified as a QSO, defined as the union of
-                          four mutually-exclusive subsamples (QSO / ELG / WISE-VAR /
-                          BGS targets that pass the relevant QSO identification).
+                          three mutually-exclusive subsamples (QSO / ELG / WISE-VAR 
+                          that pass the relevant QSO identification).
         --> QSO_cat_{release}_main_dark_healpix_{version}.fits
 
-Redshift convention (matching QSOcat_dev.ipynb):
-    * QSO-target subsample : Z = Z_QSO (from the extra catalog), used where GOOD_Z_QSO.
-                          Note that Z_QSO is the QuasarNET corrected redshift
-    * ELG / WISE-VAR / BGS : Z = "zelg", i.e. the redrock Z with Z_NEW substituted in
-                             wherever IS_QSO_QN_NEW_RR is set; ZERR, ZWARN, and SPECTYPE
-                             are likewise substituted with their _NEW counterparts.
+Redshift convention (updated to fix WISE_VAR bug 20260923 - https://github.com/desihub/desispec/issues/2800):
+    * QSO / ELG / WISE_VAR : Z = Z_QSO (from the extra catalog), used where GOOD_Z_LYA.
+                          Note that Z_QSO is defined following Fig. 9 in https://arxiv.org/pdf/2208.08511
 
 Coadd MJDs (``COADD_FIRSTMJD``, ``COADD_LASTMJD``, ``COADD_MEANMJD``) are taken from
 ``MIN_MJD``, ``MAX_MJD``, and ``MEAN_MJD`` in the main zpix catalog. Coadd nights
@@ -74,6 +71,7 @@ ZCAT_COLS = ['TARGETID',
              'MEAN_MJD']
 
 # columns to read from zpix-main-dark-extra.fits
+# GOOD_Z_LYA is inclusive of GOOD_Z_QSO, adds WISE/ELG targets
 EXTRA_COLS = ['TARGETID',
               'Z',
               'ZERR',
@@ -93,7 +91,7 @@ EXTRA_COLS = ['TARGETID',
               'ZERR_NEW',
               'ZWARN_NEW',
               'SPECTYPE_NEW',
-              'GOOD_Z_QSO',
+              'GOOD_Z_LYA',
               'Z_QSO',
               'IS_QSO_MGII',
               'IS_QSO_QN_NEW_RR']
@@ -116,6 +114,7 @@ IMAGE_COLS = ['TARGETID',
 IMAGE_OUT_COLS = [col for col in IMAGE_COLS if col != 'TARGETID']
 
 # afterburner confidence columns used to build the QN selections
+# used for creating QSO_MASKBITS
 C_COLS = ['C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha']
 
 # final output column order (intersection of the requested schema with what the two
@@ -159,7 +158,10 @@ def get_catdir(release):
     """Return the directory holding the input zcatalog files for a given release."""
     if release == 'loa':
         return '/global/cfs/cdirs/desicollab/users/rongpu/data/redux/loa/zcatalog/v2/main/'
-    # matterhorn / nevis
+    elif release == 'matterhorn':
+        # TODO : update once official version is available
+        return '/pscratch/sd/r/rongpu/tmp/matterhorn/zcatalog/v2_20260805/main/'
+    # nevis
     return f'/global/cfs/cdirs/desi/spectro/redux/{release}/zcatalog/v2/main/'
 
 
@@ -311,6 +313,8 @@ def main():
                         help='directory to write the output QSO catalogs (default: current directory)')
     parser.add_argument('--version', default=None,
                         help="catalog version string (e.g. 'v0'); default auto-increments from 'v0'")
+    parser.add_argument('--keep_variable', action='store_true',
+                        help="should objects with FIBERSTATUS bit 20 set be included? Default removes them")
     args = parser.parse_args()
 
     outdir = os.path.abspath(args.outdir)
@@ -400,68 +404,77 @@ def main():
     # ----- spectroscopic QSO identifications --------------------------------- #
     spectype_qso = as_str(zextra['SPECTYPE']) == 'QSO'
     is_mgii = np.asarray(zextra['IS_QSO_MGII']).astype(bool)
-    is_qn_new_rr = np.asarray(zextra['IS_QSO_QN_NEW_RR']).astype(bool)
-    good_z_qso = np.asarray(zextra['GOOD_Z_QSO']).astype(bool)
+    is_qn_new_rr_exists = np.asarray(zextra['IS_QSO_QN_NEW_RR']).astype(bool)
+    # AB note: IS_QSO_QN_NEW_RR is set for any detection with max(C)>0.5 with Z_RR != Z_QN
+    # BUT using the new redshift requires QN99 for QSO/VAR and QN6 for ELG
+    # making this column a superset of the actual new redshifts
+    good_z_lya = np.asarray(zextra['GOOD_Z_LYA']).astype(bool) # inclusive of above with non-QSO tgts
 
-    is_OK_for_ELG = spectype_qso & QN6
-    is_OK_for_BGS = spectype_qso & (QN6 | is_mgii)
-    is_OK_for_VAR = spectype_qso | is_mgii | QN99
+    # we need to create our own "GOOD_Z_QSO" because it excludes z>5
+    good_z_qso = good_z_lya & is_QSO
 
-    # ----- quality cut ------------------------------------------------------- #
-    # OBJTYPE != TGT removes e.g. sky fibers (excess around z~3.7 and at low z).
-    bad_qso = as_str(zcat['OBJTYPE']) != 'TGT'
+    # ----- optional quality cut beyond GOOD_Z_* cuts -------------------------- #
     fiberstatus = np.asarray(zcat['COADD_FIBERSTATUS'])
-    # keep COADD_FIBERSTATUS == 0 or == 2**3 (see desispec maskbits)
-    bad_qso |= ~((fiberstatus == 0) | (fiberstatus == 2**3))
+    # GOOD_Z_* allows bit 3 (restricted fiber reach) and bit 20 (variable object or calibration)
+    # check whether to exclude bit 20
+    bad_qso = np.zeros(fiberstatus.shape, dtype=bool)
+    if not(args.keep_variable):
+        bad_qso = (fiberstatus & 2**20) != 0
 
-    # ----- "all QSOs": union of four mutually-exclusive subsamples ----------- #
-    # 1) QSO targets
-    selqso = is_QSO
-    member_qso = selqso & good_z_qso & ~bad_qso
+    good_z_qso[bad_qso] = False
+    good_z_lya[bad_qso] = False
 
-    # 2) ELG targets (not QSO) identified as QSO via SPECTYPE & QN>0.6
-    selelg = is_ELG & ~is_QSO
-    member_elg = selelg & is_OK_for_ELG & ~bad_qso
+    # how was the spectrum identified, see desispec validredshifts.py
+    # good_z_qso == from_qso
+    from_ELG = good_z_lya & ~good_z_qso & is_ELG
+    from_VAR = good_z_lya & is_VAR & ~good_z_qso & ~from_ELG
 
-    # 3) WISE variability secondary targets (not QSO, not ELG, not BGS)
-    selvar = is_VAR & ~is_QSO & ~is_ELG & ~is_BGS
-    member_var = selvar & is_OK_for_VAR & ~bad_qso
+    tot = np.sum(good_z_lya)
+    assert tot == (from_ELG.sum() + from_VAR.sum() + good_z_qso.sum())
 
-    # 4) BGS targets (not QSO, not ELG, not WISE-VAR)
-    selbgs = is_BGS & ~is_QSO & ~is_ELG & ~is_VAR
-    member_bgs = selbgs & is_OK_for_BGS & ~bad_qso
-
-    member_all = member_qso | member_elg | member_var | member_bgs
-    logger.info(f'identified QSOs: {int(member_qso.sum())} QSO, {int(member_elg.sum())} ELG, '
-                f'{int(member_var.sum())} VAR, {int(member_bgs.sum())} BGS '
-                f'-> {int(member_all.sum())} total')
-    logger.info(f'QSO targets (all): {int(selqso.sum())}')
+    logger.info(f'identified QSOs: {int(good_z_qso.sum())} QSO, {int(from_ELG.sum())} ELG, '
+                f'{int(from_VAR.sum())} VAR '
+                f'-> {int(good_z_lya.sum())} total')
+    logger.info(f'QSO targets (all): {int(is_QSO.sum())}')
 
     # ----- redshift assembly ------------------------------------------------- #
-    # Substitute QN-afterburner rerun values where IS_QSO_QN_NEW_RR is set.
-    z_out = np.where(is_qn_new_rr, zextra['Z_NEW'], zextra['Z']).astype(zextra['Z'].dtype)
-    zerr_out = np.where(is_qn_new_rr, zextra['ZERR_NEW'], zextra['ZERR'])
-    zwarn_out = np.where(is_qn_new_rr, zextra['ZWARN_NEW'], zextra['ZWARN'])
+    # Z_QSO is set by redrock, unless Z_QN != Z_RR for a QN99 QSO/WISE target or QN6 ELG target 
+    # then Z_QSO is taken from the redrock rerun with QN prior
+    # we need to use the correct spectype/zerr/zwarn values for these
     spectype_out = zextra['SPECTYPE'].copy()
+    zerr_out = zextra['ZERR'].copy()
+    zwarn_out = zextra['ZWARN'].copy()
+    # here we distinguish between a new redshift existing vs overwriting the original RR redshift
+    is_qn_new_rr = is_qn_new_rr_exists & (is_QSO | from_VAR) & QN99
+    is_qn_new_rr |= is_qn_new_rr_exists & from_ELG & QN6
     spectype_out[is_qn_new_rr] = zextra['SPECTYPE_NEW'][is_qn_new_rr]
-    # QSO-target subsample uses the dedicated QSO redshift where it is good
-    z_out[member_qso] = zextra['Z_QSO'][member_qso]
+    zerr_out[is_qn_new_rr] = zextra['ZERR_NEW'][is_qn_new_rr]
+    zwarn_out[is_qn_new_rr] = zextra['ZWARN_NEW'][is_qn_new_rr]
+
 
     # ----- QSO_MASKBITS (canonical bit definition) --------------------------- #
-    # decision order: BGS < ELG < QSO ; WISE_VAR_QSO treated like QSO.
     qso_maskbits = np.zeros(n, dtype=np.int32)
+    # bit 1 = QSO identified by RR from QSO target
     qso_maskbits[is_QSO & spectype_qso] += 2**1
+    # bit 2 = QSO identified by MgII from QSO target
     qso_maskbits[is_QSO & is_mgii] += 2**2
+    # bit 3 = QSO identified by QN from QSO target
     qso_maskbits[is_QSO & QN99] += 2**3
+    # bit 4 - QSO identified by QN from QSO target, new redshift from redrock re-run
     qso_maskbits[is_QSO & is_qn_new_rr & QN99] += 2**4
-    qso_maskbits[is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS] += 2**5
-    qso_maskbits[is_ELG & (~is_QSO) & is_OK_for_ELG] += 2**6
-    qso_maskbits[is_VAR & is_OK_for_VAR] += 2**7
+    # bit 5 - QSO identified from BGS target, no longer used starting in DR3
+    # hold bit for history
+    #qso_maskbits[is_BGS & (~is_ELG) & (~is_QSO) & is_OK_for_BGS] += 2**5
+    # bit 6 - QSO identified from ELG sample
+    qso_maskbits[from_ELG] += 2**6
+    # bit 7 - QSO identified from WISE sample
+    qso_maskbits[from_VAR] += 2**7
+    # not QSO
     qso_maskbits[bad_qso] = 0
 
     # ----- subset to identified QSOs before building the output table ---------- #
-    idx = np.where(member_all)[0]
-    idx_qso = np.where(member_qso)[0]
+    idx = np.where(good_z_lya)[0]
+    idx_qso = np.where(good_z_qso)[0]
     n_out = len(idx)
     logger.info(f'building output table for {n_out} identified QSOs '
                 f'({len(idx_qso)} QSO targets)')
@@ -469,7 +482,7 @@ def main():
     # ----- assemble the output table ----------------------------------------- #
     out = Table()
     out['TARGETID'] = zcat['TARGETID'][idx]
-    out['Z'] = z_out[idx]
+    out['Z'] = zextra['Z_QSO'][idx]
     out['ZERR'] = zerr_out[idx]
     out['ZWARN'] = zwarn_out[idx]
     out['SPECTYPE'] = spectype_out[idx]
