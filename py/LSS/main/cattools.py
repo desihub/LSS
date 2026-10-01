@@ -4580,7 +4580,7 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',outext='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],des_resamp=False,zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',outext='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -4718,8 +4718,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc
         outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran'+outext#).replace(tp,extradir+tp)  
         
-        des_resamp = False
-        if 'QSO' in tp:
+        #des_resamp = False
+        if 'QSO' in tp:#QSO should always resample in DES
             if 'S' in reg or reg == '':
                 des_resamp = True
         if reg == '' and des_resamp == False: #N/S resampling
