@@ -1887,14 +1887,14 @@ def do_fiberassignment(
     START_BEGIN = datetime.now()
     if len(FATiles):
         try:
-            log.info("FATiles[0] = {0}".format(FATiles[0]))
+            #log.info("FATiles[0] = {0}".format(FATiles[0]))
             if isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray)):
                 pass
             else:
                 FATiles = [FATiles]
         except:
             log.info("cannot access element 0 of FATiles")
-    log.info("FATiles = {0}".format(FATiles))
+    #log.info("FATiles = {0}".format(FATiles))
 
     OrigFAs = []
     AltFAs = []
@@ -1907,12 +1907,15 @@ def do_fiberassignment(
     #    pass
     # else:
     #    return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
-    log.info(type(FATiles))
     for t in FATiles:
         log.info("========================================= do_fiberassignment")
-        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
-        log.info(type(t))
-        log.info(t)
+        #log.info(type(t))
+        # astropy.table.row.Row
+        #log.info(t)
+        # TILEID ACTIONTYPE         ACTIONTIME        DONEFLAG ARCHIVEDATE
+        #------ ---------- ------------------------- -------- -----------
+        # 1000         fa 2021-05-14T23:48:15+00:00    False    20210514
+        #
         # JL This loop takes each of the original fiberassignments for each of the tiles on $date
         # JL and opens them to obtain information for the alternative fiber assignments.
         # JL Then it runs the alternative fiber assignments, stores the results in an array (AltFAs)
@@ -1928,7 +1931,6 @@ def do_fiberassignment(
             + ".fits.gz"
         )
         fhtOrig = fitsio.read_header(FAOrigName)
-        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
         fadate = fhtOrig["RUNDATE"]
         # e.g. DESIROOT/target/catalogs/dr9/1.0.0/targets/main/resolve/dark
         targver = fhtOrig["TARG"].split("/targets")[0].split("/")[-1]
@@ -1963,7 +1965,7 @@ def do_fiberassignment(
         if verbose or debug:
             log.info("FAOrigName = {0}".format(FAOrigName))
             log.info("FAAltName = {0}".format(FAAltName))
-        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
+        #log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
 
         # JL Sometimes fiberassign leaves around temp files if a run is aborted.
         # JL This command removes those temp files to prevent endless crashes.
@@ -1992,8 +1994,7 @@ def do_fiberassignment(
                 )
                 log.info(glob.glob(fbadir + "/*"))
             # get_fba_fromnewmtl(ts,mtldir=altmtldir + survey.lower() + '/',outdir=fbadirbase, getosubp = getosubp, overwriteFA = redoFA, verbose = verbose, mock = mock, targver = targver)#, targets = targets)
-            log.info("========== get_fba_fromnewmtl")
-            log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
+            #log.info("========== get_fba_fromnewmtl")
             fba_args = get_fba_fromnewmtl(
                 ts,
                 mtldir=altmtldir + survey.lower() + "/",
@@ -2006,10 +2007,11 @@ def do_fiberassignment(
                 reproducing=reproducing,
             )  # , targets = targets)
             # JMC
-            log.info("========== fba_run")
-            log.info(f"fba_args = {fba_args}")
+            #log.info("========== fba_run")
+            #log.info(f"fba_args = {fba_args}")
+            START_FBA_RUN = datetime.now()
             call_fba_run(fba_args)
-            log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
+            log.warning(f"Duration fba_run {ts} : {datetime.now() - START_FBA_RUN}")
             # command_run = ["bash", fbadir + "fa-" + ts + ".sh"]
             # if verbose:
             #     log.info(f"fa command_run: {command_run}")
@@ -2023,9 +2025,8 @@ def do_fiberassignment(
         AltFAs2.append(pf.open(FAAltName)[2].data)
         TSs.append(ts)
         fadates.append(fadate)
-        log.info(f"Duration (h:m:s): {datetime.now() - START_BEGIN}")
 
-    log.info(f"Duration TOTAL(h:m:s): {datetime.now() - START_BEGIN}")
+    log.warning(f"Duration TOTAL(h:m:s): {datetime.now() - START_BEGIN}")
     return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
 
 
@@ -2215,9 +2216,9 @@ def update_alt_ledger(
         fadate = fhtOrig["RUNDATE"]
         fadate = "".join(fadate.split("T")[0].split("-"))
         fbadirbase = altmtldir + "/fa/" + survey.upper() + "/" + fadate + "/"
-        log.info("t = {0}".format(t))
-        log.info("fbadirbase = {0}".format(fbadirbase))
-        log.info("ts = {0}".format(ts))
+        # log.info("t = {0}".format(t))
+        # log.info("fbadirbase = {0}".format(fbadirbase))
+        # log.info("ts = {0}".format(ts))
 
         if getosubp:
             FAMapName = fbadirbase + "/orig/famap-" + ts + ".pickle"
@@ -2237,7 +2238,7 @@ def update_alt_ledger(
         # ADM create the catalog of updated redshifts.
         log.info("making zcats")
         log.info("zcatdir = {0}".format(zcatdir))
-        log.info("t = {0}".format(t))
+        #log.info("t = {0}".format(t))
         zcat = make_zcat(zcatdir, [t], obscon, survey)
 
         # LGN Bug fix - converting zcat from little to big endianness
@@ -2569,7 +2570,7 @@ def loop_alt_ledger(
             actionList = actionList[:1]
 
         for action in actionList:
-            log.info(f"============== actionList : {action}")
+            #log.info(f"============== actionList : {action}")
 
             if action["ACTIONTYPE"] == "fa":
                 OrigFAs, AltFAs, AltFAs2, TSs, fadates, tiles = do_fiberassignment(

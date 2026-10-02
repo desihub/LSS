@@ -432,7 +432,7 @@ def get_fba_fromnewmtl(
         + ts
         + ".fits.gz"
     )
-    log.info(f'Read header from {fa_fn}')
+    #log.info(f'Read header from {fa_fn}')
     fht = fitsio.read_header(fa_fn)
     indir = fht["OUTDIR"]
     if (fht["DESIROOT"] == "/data/datasystems") and not (
@@ -444,7 +444,7 @@ def get_fba_fromnewmtl(
             + "/"
         )
         try:
-            log.info(f'Read {indir + ts + "-targ.fits"}')
+            #log.info(f'Read {indir + ts + "-targ.fits"}')
             f = fitsio.read(indir + ts + "-targ.fits")
         except:
             date = int(fht["PMTIME"][:10].translate({ord("-"): None})) - 1
@@ -452,11 +452,11 @@ def get_fba_fromnewmtl(
 
     elif ("holding" in indir.lower()) or ("main" in indir.lower()):
         indir = "/global/cfs/cdirs/desi/survey/fiberassign/main/" + ts[0:3] + "/"
-    log.info("In directory: {}".format(indir))
+    #log.info("In directory: {}".format(indir))
 
     tilef = indir + ts + "-tiles.fits"
     try:
-        log.info(f'Read {tilef}')
+        #log.info(f'Read {tilef}')
         fitsio.read(tilef)
     except:
         """
@@ -484,14 +484,14 @@ def get_fba_fromnewmtl(
         return "Error! tile file does not appear to exist for tile " + ts + " " + tilef
     skyf = indir + ts + "-sky.fits"
     try:
-        log.info(f'Read {skyf}')
+        #log.info(f'Read {skyf}')
         fitsio.read(skyf)
     except:
         log.critical("Error! sky file does not appear to exist")
     scndf = indir + ts + "-scnd.fits"
     scnd = True
     try:
-        log.info(f'Read {scndf}')
+        #log.info(f'Read {scndf}')
         fitsio.read(scndf)
     except:
         log.info(" secondary file does not appear to exist")
@@ -617,7 +617,6 @@ def get_fba_fromnewmtl(
             ntar = join(ntar, otar, keys=["TARGETID"])
             ntar.write(tarfn, format="fits", overwrite=True)
 
-    log.info('open fo')
     fo = open(outdir + "fa-" + ts + ".sh", "w")
     fo.write("#!/bin/bash\n\n")
     fo.write("source /global/common/software/desi/desi_environment.sh main\n")
@@ -670,7 +669,6 @@ def get_fba_fromnewmtl(
         str_args += " --fafns_for_stucksky " + fa_fn
     fo.write(str_args)
     fo.close()
-    log.info('close fo')
     return str_args
 
 
@@ -823,8 +821,8 @@ def altcreate_mtl(
             log.info("end read")
 
     try:
-        log.info("shape of read_targets_in_tiles output")
-        log.info(d.shape)
+        #log.info("shape of read_targets_in_tiles output")
+        #log.info(d.shape)
         ntargs = d.shape
     except:
         log.info("len of read_targets_in_tiles output post failure of shape")

@@ -64,6 +64,8 @@ argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=
 
 echo $argstring
 
+# reduce log of fba_run
+export DESI_LOGLEVEL=WARNING
 
 time runAltMTL.py $argstring
 
