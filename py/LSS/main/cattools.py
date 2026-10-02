@@ -2064,6 +2064,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
 
 def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf='', alt_out = None, mock_priority_mask = 'n', mock_tr = 'LRG',logger=None):
     from LSS.common_tools import write_LSS,write_LSS_scratchcp,printlog
+    import LSS.claude_tools as claudet
     fgu = Table(fitsio.read(infile.replace('global','dvs_ro')))
     if mask_coll:
         printlog('length before masking collisions '+str(len(fgu)),logger)
@@ -2077,7 +2078,8 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     printlog('joining to spec data',logger)
-    fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+    #fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+    fgu = claudet.join_left(fgu,specf,keys=['LOCATION','TILEID','FIBER'],fill=claudet.NULL)
     #fgu.sort('TARGETID')
     if alt_out != None:
         #outf = alt_out + '/comb' + tp + '_' + mock_tr + '_'+ 'wdupspec_zdone.fits'
@@ -4520,6 +4522,7 @@ def mkclusdat(fl,redo_fracz=False,NN=False,weighttileloc=True,zmask=False,correc
 
 def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
     import LSS.common_tools as common
+    #import LSS.claude_tools as claudet
     rf_name = fl+str(rann)+'_full'+hpmapcut+'.ran.fits'
     ranf = Table(fitsio.read(rf_name.replace('global','dvs_ro')))
     tlf = fitsio.read(fl+'frac_tlobs.fits')
