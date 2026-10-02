@@ -80,13 +80,12 @@ def create_plot(a_tasks, a_stage, nb_cpu):
     fig, ax = plt.subplots(layout="constrained")
     print(a_tasks.shape)
     # plt.boxplot(a_tasks, tick_labels=["1", "4", "5", "6", "7"])
-    ax.set_title("Time for step 1-7 of Holi pipeline\nFor 18 seeds on /cfs file system with 1 CPU per step")
+    ax.set_title("Duration of steps 1 to 8\nWall time")
     vs = a_tasks.T
     plt.boxplot(
-        (vs[0], a_stage[:, 1]/nb_cpu, vs[1], vs[2], vs[3], vs[4]),
-        #tick_labels=["1: simu cat", "3: BRICKMASK", "4: apply mask", "5: contaminant", "6: join cat", "7: init AltMTL"],
+        (vs[0], a_stage[:, 1], vs[1], vs[2], vs[3], vs[4]),
+        # tick_labels=["1: simu cat", "3: BRICKMASK", "4: apply mask", "5: contaminant", "6: join cat", "7: init AltMTL"],
         tick_labels=["1", "3", "4", "5", "6", "7"],
-        
     )
     # for label in ax.get_xticklabels():
     #     label.set_rotation(45)
@@ -95,18 +94,19 @@ def create_plot(a_tasks, a_stage, nb_cpu):
     ax.set_ylabel("Time (minutes)")
     ax.grid()
 
+
 def create_plot_full(a_tasks, a_stage, nb_cpu):
     fig, ax = plt.subplots(layout="constrained")
     print(a_tasks.shape)
     # plt.boxplot(a_tasks, tick_labels=["1", "4", "5", "6", "7", ])
-    ax.set_title("Time for step 1-8 of Holi pipeline\n1 CPU per step")
+    nproc = int(a_tasks.shape[0] / a_stage.shape[0])
+    ax.set_title(f"Duration of steps 1 to 8\nWall time, {nproc} CPUs for {nproc} seeds")
     vs = a_tasks.T
     plt.boxplot(
-        (vs[0], a_stage[:, 1]/nb_cpu, vs[1], vs[2], vs[3], vs[4],a_stage[:,3]),
-        #(vs[0], a_stage[:, 1]/nb_cpu, vs[1], vs[2], vs[3], vs[4],vs[5]),
-        #tick_labels=["1: simu cat", "3: BRICKMASK", "4: apply mask", "5: contaminant", "6: join cat", "7: init AltMTL"],
+        (vs[0], a_stage[:, 1], vs[1], vs[2], vs[3], vs[4], a_stage[:, 3]),
+        # (vs[0], a_stage[:, 1], vs[1], vs[2], vs[3], vs[4],vs[5]),
+        # tick_labels=["1: simu cat", "3: BRICKMASK", "4: apply mask", "5: contaminant", "6: join cat", "7: init AltMTL"],
         tick_labels=["1", "3", "4", "5", "6", "7", "8"],
-        
     )
     # for label in ax.get_xticklabels():
     #     label.set_rotation(45)

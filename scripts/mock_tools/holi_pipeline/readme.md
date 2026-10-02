@@ -47,7 +47,7 @@ See [Holi pipeline description](../runHoli.md) for a step-by-step description. H
 ## Pipeline with CPU management
 The diagram below describes the pipeline in full mode and its three CPU-management stages.
 
-![holi pipeline](holi_pipeline_schema.jpg)
+![holi pipeline](doc/holi_pipeline_schema.jpg)
 
 # Define Holi pipeline
  
@@ -181,7 +181,7 @@ run_holi_pipeline.sh holi_params.toml
 
 Overall, the pipeline is dominated by the last step Fiber assignment . Timing by step for `opti_holi1` version
 
-![holi timing](timing_holi.png)
+![holi timing](doc/wall_time_holi.png)
 
 
 ## Step 7, 8
@@ -219,24 +219,7 @@ JOB ID      STATUS        ELAPSED     EXIT CODE START               END         
 58862023    COMPLETED     1-12:35:11  0:0       2026-09-25T04:33 2026-09-26T17:08 completed successfully        
 Found 6671 fba*.fits files in altmtl0050
 Found 6671 fba*.fits files in altmtl0051
-Found 6671 fba*.fits files in altmtl0052
-Found 6671 fba*.fits files in altmtl0053
-Found 6671 fba*.fits files in altmtl0054
-Found 6671 fba*.fits files in altmtl0055
-Found 6671 fba*.fits files in altmtl0056
-Found 6671 fba*.fits files in altmtl0057
-Found 6671 fba*.fits files in altmtl0058
-Found 6671 fba*.fits files in altmtl0059
-Found 6671 fba*.fits files in altmtl0060
-Found 6671 fba*.fits files in altmtl0061
-Found 6671 fba*.fits files in altmtl0062
-Found 6671 fba*.fits files in altmtl0063
-Found 6671 fba*.fits files in altmtl0064
-Found 6671 fba*.fits files in altmtl0065
-Found 6671 fba*.fits files in altmtl0066
-Found 6671 fba*.fits files in altmtl0067
-Found 6671 fba*.fits files in altmtl0068
-Found 6671 fba*.fits files in altmtl0069
+...
 ```
  
 ### Check error
@@ -246,4 +229,4 @@ For now, you can search the log files for the word `error`, `kill` using `grep`.
 
 # Holi pipeline for developers
 
-see [doc_holi_dev](doc_holi_dev.md)
+see [doc_holi_dev](doc/doc_holi_dev.md)

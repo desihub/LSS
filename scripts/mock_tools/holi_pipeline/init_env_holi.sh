@@ -8,4 +8,4 @@
 #source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main 
 
 # add get_pars.py to PATH
-export PATH=$PWD:$PATH
+export PATH=$PWD:$PWD/check:$PWD/bench:$PATH

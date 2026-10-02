@@ -64,8 +64,12 @@ argstring="--altMTLBaseDir=$outputMTLFinalDestination --obscon=$obscon --survey=
 
 echo $argstring
 
-#python $path2LSS/runAltMTLRealizations.py $argstring
-runAltMTL.py $argstring
+
+time runAltMTL.py $argstring
+
+#
+# memo profiling
+#
 
 # python "$path2LSS/runAltMTLRealizations.py" $argstring &
 # parent_pid=$!
