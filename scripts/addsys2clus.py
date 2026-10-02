@@ -82,6 +82,7 @@ parser.add_argument("--imsys_zbin",help="if y, do imaging systematic regressions
 parser.add_argument("--doimlin",help="add weights for imaging systematics using eboss method?",default='n')
 #parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
+parser.add_argument("--splitDES", help="whether to split into SnotDES, DES, N instead of just N/S", action='store_true')
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
@@ -291,6 +292,7 @@ if args.doimlin == 'y':
         tail=0.5,  # is the default
         logger=logger,
         loglevel="INFO",
+        splitDES=args.splitDES,
     )
     
     # Data catalogs are already loaded, just recast them to astropy Tables
