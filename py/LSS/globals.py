@@ -206,7 +206,7 @@ class main:
 
         #print('specver is '+specver)
         if specver == 'matterhorn-v2':
-            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt').readlines()
+            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
             self.badfib_status  = [13,14]
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA3/QSO/matterhorn/QSO_cat_matterhorn_cumulative_v1.fits'
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/emlin_catalog.fits'
