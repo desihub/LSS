@@ -245,30 +245,37 @@ ta['DEC'] =tiles[selt]['DEC']
 
 
 #if mkfullr or combr:
-specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-logger.info('loading specf file '+specfo)
-specf = fitsio.read(specfo.replace('global','dvs_ro'))
-if args.mode1b == 2:
-    logger.info('adding 1b spec info')
-    specf1b = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
-    fs1b = fitsio.read(specf1b)
-    fs1b = fs1b[[b for b in list(specf.dtype.names)]] #need same columns in same order before concatenating
-    specf = np.concatenate([specf,fs1b])
-    logger.info('added 1b spec info')
-specf = Table(specf)
-sel = np.isin(specf['TILEID'],mtld['TILEID'])
-specf = specf[sel]
-specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
-    
-logger.info('loaded specf file '+specfo)
 #specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
 gtl_fn = dirout+pdir.upper()+'_goodspecdata.h5'
-if os.path.isfile(gtl_fn):
+
+if os.path.isfile(gtl_fn) and args.mode1b != 2:
     specfc = common.read_hdf5_blosc(gtl_fn)
-elif specrel == 'daily':
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
-else:
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+
+if os.path.isfile(gtl_fn) == False or args.combwspec == 'y':
+    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+    logger.info('loading specf file '+specfo)
+    specf = fitsio.read(specfo.replace('global','dvs_ro'))
+    if args.mode1b == 2:
+        logger.info('adding 1b spec info')
+        specf1b = ldirspec+'datcomb_'+pdir+'1b_spec_zdone.fits'
+        fs1b = fitsio.read(specf1b)
+        fs1b = fs1b[[b for b in list(specf.dtype.names)]] #need same columns in same order before concatenating
+        specf = np.concatenate([specf,fs1b])
+        logger.info('added 1b spec info')
+    specf = Table(specf)
+    sel = np.isin(specf['TILEID'],mtld['TILEID'])
+    specf = specf[sel]
+    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        
+    logger.info('loaded specf file '+specfo)
+    
+    if specrel == 'daily':
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+    else:
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+    kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
+    specf.keep_columns(kc)
+
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
 
@@ -292,8 +299,6 @@ if mkfullr and args.fullr_mode != 'prog':
         desitarg='DESI_TARGET'
 
 
-kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
-specf.keep_columns(kc)
 
 
 logger.info(len(ta))

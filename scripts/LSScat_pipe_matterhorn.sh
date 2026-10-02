@@ -11,7 +11,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 verspec=matterhorn-v2
 survey=DA3
 LSS=$HOME/LSScode
-PYTHONPATH=$PYTHONPATH:$LSS/LSS/py
+PYTHONPATH=$LSS/LSS/py:$PYTHONPATH
 
 #full_noveto; add --mkgtl for first dark/bright/dark1b instance, total 1hr 16 minutes (two tracers could be run at once?)
 #11 minutes
@@ -41,10 +41,10 @@ PYTHONPATH=$PYTHONPATH:$LSS/LSS/py
 
 
 #run this for new version of LSS catalogs
-#x minutes
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec $verspec --type dark --combwspec n --fullr y --survey $survey --maxr 18 --version $1 --nproc 9
+#59 minutes
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec $verspec --type dark --combwspec n --fullr y --survey $survey --maxr 18 --version $1 --nproc 9
 
-#x minutes
+#15 minutes
 srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main_ran.py --basedir /global/cfs/cdirs/desi/survey/catalogs/ --verspec $verspec --type dark1b --combwspec n --fullr y --survey $survey --maxr 18 --version $1 --nproc 9
 
 
