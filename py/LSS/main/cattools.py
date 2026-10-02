@@ -2378,6 +2378,7 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
 def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=None,ftiles=None,dr11=False):
     import LSS.common_tools as common
+    import LSS.claude_tools as claudet
     #import logging
     logger = logging.getLogger('LSSran')
         
@@ -2399,17 +2400,19 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=
     
     dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
 
-    wg = np.isin(dz['TILELOCID'],gtl)
-    if badfib is not None:
-        bad = np.isin(dz['FIBER'],badfib)
-        logger.info('number at bad fibers '+str(sum(bad)))
-        wg &= ~bad
+    #wg = np.isin(dz['TILELOCID'],gtl)
+    #if badfib is not None: #this should have been done outside of this
+    #    bad = np.isin(dz['FIBER'],badfib)
+    #    logger.info('number at bad fibers '+str(sum(bad)))
+    #    wg &= ~bad
 
-    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['GOODHARDLOC'][wg] = 1
+    dz = claudet.as_table(dz)
+    claudet.set_column(dz,'GOODHARDLOC',  np.isin(dz['TILELOCID'], gtl), dtype='?')
+    #dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    #dz['GOODHARDLOC'][wg] = 1
     if ftiles is None:
         logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
-        dzpd = count_tiles_input(dz[wg],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+        dzpd = count_tiles_input(dz[dz['GOODHARDLOC'].astype('bool')],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
     else:
         dzpd = Table.read(ftiles)
 
@@ -2422,16 +2425,20 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=
     sel = p4sort <= 0
     p4sort[sel] = 1
     logger.info(str(np.sum(sel))+' had priority <= 0 set to 1 for sort')
-    dz['sort'] =  dz['GOODHARDLOC'] + 1/p4sort
+    #dz['sort'] =  dz['GOODHARDLOC'] + 1/p4sort
+    sort = dz['GOODHARDLOC'] + 1/p4sort
+    
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
     logger.info(dz.dtype.names)
     logger.info(str(rann)+' about to do sort')
-
-    dz.sort('sort') #should allow to later cut on tsnr for match to data
-    dz = unique(dz,keys=['TARGETID'],keep='last')
-    dz.remove_column('sort')
+    dz = dz[claudet.last_of_each(dz['TARGETID'], sort=sort, tie=dz['TILELOCID'])]
+    del sort
+    #dz.sort('sort') #should allow to later cut on tsnr for match to data
+    #dz = unique(dz,keys=['TARGETID'],keep='last')
+    #dz.remove_column('sort')
     logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
-    dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    #dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    dz = claudet.join_left(dz,dzpd,keys=['TARGETID'])
     
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
@@ -2461,7 +2468,8 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=
             del tarf11
         else:
             tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
-        dz = join(dz,tarf,keys=['TARGETID'])
+        #dz = join(dz,tarf,keys=['TARGETID'])
+        dz = claudet.join_left(dz,tarf,keys=['TARGETID'])
         logger.info(str(rann)+' completed join with original randoms to get mask properties')
         del tarf
         dz = common.cutphotmask(dz,imbits,logger=logger)
