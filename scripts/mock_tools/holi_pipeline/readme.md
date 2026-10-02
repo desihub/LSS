@@ -185,7 +185,7 @@ Overall, the pipeline is dominated by the last step Fiber assignment . Timing by
 
 
 ## Step 7, 8
-For 303 nights of observation between May 14, 2021, and March 23, 2024, totaling 6,671 fiber assignment files.
+For 303 nights of observation between May 14, 2021, and March 23, 2024, totaling 6,671 fiber assignment files. Step 7 and 8 use 1 CPU in Holi pipeline.
 
 | | Ref | fba lib instead script  |ledger in FITS |
 | --- | --- | --- | --- |
