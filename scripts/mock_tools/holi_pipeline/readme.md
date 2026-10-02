@@ -41,7 +41,7 @@ See [Holi pipeline description](../runHoli.md) for a step-by-step description. H
 | 5 | `add_contaminants_to_mock_stdpars.py` | Adds contaminants to the ELG and QSO samples. |
 | 6 | `concatenate_tracers_to_fba_stdpars.py` | Combines tracers into a `forFA` catalog and creates the QSO file required by AltMTL. |
 | 7 |  `initialize_amtl_mocks_da2_stdpars.py` | Initializes AltMTL directories for each realization. |
-| 8 | `LSS/bin/runAltMTLRealizations.py` | Runs the AltMTL realization campaign. |
+| 8 | `runAltMTL.py` | Runs the AltMTL realization campaign. |
 
 
 ## Pipeline with CPU management
@@ -57,7 +57,7 @@ The diagram below describes the pipeline in full mode and its three CPU-manageme
 git clone https://github.com/desihub/LSS.git
 cd LSS
 LSS_DIR=$PWD
-git checkout fa4acm
+git checkout <this branch>
 ```
 
 note: this path is what you will set as `LSS_dir` in the parameter file
@@ -193,7 +193,7 @@ For 303 nights of observation between May 14, 2021, and March 23, 2024, totaling
 | Step 7 Ledger creation |2h50| 2h50|2h10|
 | Step 8  Fiber assignment |42h| 30h|19h|
 
-
+>NOTE: opti_holi2 includes opti_holi1
 # Results
 
 ## Traceability
