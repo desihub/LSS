@@ -1502,6 +1502,7 @@ def join_etar(fn, tracer, tarver='1.1.1'):
 
 
 def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'], fid_cols=['EBV', 'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R', 'GALDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2', 'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z'], redo=True):
+    import LSS.claude_tools as claudet
     fid_fn = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-' + \
         str(rann)+'.fits'
     new_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-' + \
@@ -1543,7 +1544,8 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
 
     rannew = fitsio.read(new_fn, columns=cols2read_new)
     printlog('read '+new_fn, logger)
-    df = join(df, rannew, keys=['TARGETID'])
+    #df = join(df, rannew, keys=['TARGETID'])
+    df = claudet.join_left(df, rannew, keys=['TARGETID'])
     printlog('joined '+new_fn, logger)
     del rannew
     cols2read_fid = ['TARGETID']
@@ -1561,7 +1563,8 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
 
     ranfid = fitsio.read(fid_fn, columns=cols2read_fid)
     printlog('read '+fid_fn, logger)
-    df = join(df, ranfid, keys=['TARGETID'])
+    #df = join(df, ranfid, keys=['TARGETID'])
+    df = claudet.join_left(df, ranfid, keys=['TARGETID'])
 
     # print(len(df))
     # comments = ['Adding map columns']
