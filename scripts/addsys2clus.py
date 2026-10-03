@@ -431,7 +431,7 @@ if args.prep4sysnet == 'y':
                 selr = randoms_catalogs['PHOTSYS'] == reg
                
             #if args.use_allsky_rands == 'y':
-            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{mapreg}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
             allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
             #    selr_all = allsky_rands['PHOTSYS'] == reg
