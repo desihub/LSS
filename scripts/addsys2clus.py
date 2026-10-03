@@ -400,7 +400,7 @@ if args.prep4sysnet == 'y':
             mapreg = reg
             if 'DES' in reg:
                 mapreg = 'S'
-            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+mapreg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
