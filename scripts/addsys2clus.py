@@ -397,6 +397,9 @@ if args.prep4sysnet == 'y':
                         fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
+            mapreg = reg
+            if 'DES' in reg:
+                mapreg = 'S'
             pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
