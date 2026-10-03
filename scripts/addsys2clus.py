@@ -377,7 +377,8 @@ if args.prep4sysnet == 'y':
     from LSS.imaging import sysnet_tools
     
     regl = ['N','S']
-    
+    if args.splitDES:
+        regl = ['N','SnotDES','DES']
     for zl in zrl:
         zw = ''
         zmin,zmax=zl[0],zl[1]
@@ -410,8 +411,22 @@ if args.prep4sysnet == 'y':
                 sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
-            seld = data_catalogs['PHOTSYS'] == reg
-            selr = randoms_catalogs['PHOTSYS'] == reg
+            if 'DES' in reg:
+                desd = select_regressis_DES(data_catalogs)
+                desr = select_regressis_DES(randoms_catalogs)
+                if reg == 'SnotDES':
+                    seld = data_catalogs['PHOTSYS'] == 'S'
+                    seld &= ~desd
+                    selr = randoms_catalogs['PHOTSYS'] == 'S'
+                    selr &= ~desr
+                elif reg == 'DES':
+                    seld = desd
+                    selr = desr
+                   
+            else:
+                seld = data_catalogs['PHOTSYS'] == reg
+                selr = randoms_catalogs['PHOTSYS'] == reg
+               
             #if args.use_allsky_rands == 'y':
             allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
@@ -443,6 +458,8 @@ if args.addsysnet == 'y':
     dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
+    if args.splitDES:
+        regl_sysnet = ['N','SnotDES','DES']   
     for reg in regl_sysnet:
         for zl in zrl:
             #zw = ''
