@@ -52,12 +52,12 @@ if [ ! -f $sysnet_dir/prep_${tracer}1.1_1.6_N.fits ]; then
 fi
 
 if [ ! -f $sysnet_dir/prep_${tracer}0.8_1.1_SnotDES.fits ]; then
-    echo "Error: $sysnet_dir/prep_${tracer}0.8_1.1_DES.fits does not exist."
+    echo "Error: $sysnet_dir/prep_${tracer}0.8_1.1_SnotDES.fits does not exist."
     exit 1
 fi
 
 if [ ! -f $sysnet_dir/prep_${tracer}1.1_1.6_SnotDES.fits ]; then
-    echo "Error: $sysnet_dir/prep_${tracer}1.1_1.6_DES.fits does not exist."
+    echo "Error: $sysnet_dir/prep_${tracer}1.1_1.6_SnotDES.fits does not exist."
     exit 1
 fi
 
@@ -89,7 +89,7 @@ srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -
 srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $north_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_N.fits -o $sysnet_dir/${tracer}1.1_1.6_N
     # for SnotDES
 srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_SnotDES.fits -o $sysnet_dir/${tracer}0.8_1.1_SnotDES
-srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_SnoDES.fits -o $sysnet_dir/${tracer}1.1_1.6_SnotDES
+srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_SnotDES.fits -o $sysnet_dir/${tracer}1.1_1.6_SnotDES
     # for DES
 srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}0.8_1.1_DES.fits -o $sysnet_dir/${tracer}0.8_1.1_DES
 srun -N 1 -n 25 -t 10 $srun_flags python $sysnet_app $train_flags $south_flags -i $sysnet_dir/prep_${tracer}1.1_1.6_DES.fits -o $sysnet_dir/${tracer}1.1_1.6_DES
