@@ -415,8 +415,8 @@ if args.prep4sysnet == 'y':
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
             if 'DES' in reg:
-                desd = select_regressis_DES(data_catalogs)
-                desr = select_regressis_DES(randoms_catalogs)
+                desd = common.select_regressis_DES(data_catalogs)
+                desr = common.select_regressis_DES(randoms_catalogs)
                 if reg == 'SnotDES':
                     seld = data_catalogs['PHOTSYS'] == 'S'
                     seld &= ~desd
