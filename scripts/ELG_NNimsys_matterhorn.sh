@@ -18,18 +18,18 @@ scriptdir=$LSSCODE/scripts
 bdir=/global/cfs/cdirs/desi/survey/catalogs/
 #PYTHONPATH=$PYTHONPATH:$LSSCODE/LSS/py
 
-#python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir  $bdir   --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --compwtmd fraczNN
+python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir  $bdir   --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --compwtmd fraczNN --splitDES
 
-#python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir  $bdir   --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --compwtmd fraczNN
-
-
-#$scriptdir/sysnetELG_LOPnotqso_zbins.sh '' ELG_LOPnotqso $bdir/$survey/LSS/$verspec/LSScats/$version/$edir/
-
-#$scriptdir/sysnetELG_VLOnotqso_zbins.sh '' ELG_VLOnotqso $bdir/$survey/LSS/$verspec/LSScats/$version/$edir/
+python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir  $bdir   --prep4sysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --compwtmd fraczNN --splitDES
 
 
-#python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir $bdir    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --replace_syscol
+$scriptdir/sysnet_splitDES_zbins.sh '' ELG_LOPnotqso $bdir/$survey/LSS/$verspec/LSScats/$version/$edir/
 
-python $scriptdir/addsys2clus.py --type ELG_VLOnotqso   --basedir $bdir    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --replace_syscol
+$scriptdir/sysnet_splitDES_zbins.sh '' ELG_VLOnotqso $bdir/$survey/LSS/$verspec/LSScats/$version/$edir/
+
+
+python $scriptdir/addsys2clus.py --type ELG_LOPnotqso   --basedir $bdir    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --replace_syscol --splitDES
+
+python $scriptdir/addsys2clus.py --type ELG_VLOnotqso   --basedir $bdir    --addsysnet y --survey $survey --verspec $verspec --imsys_zbin split  --version $version --extra_clus_dir $edir --replace_syscol --splitDES
 
 
