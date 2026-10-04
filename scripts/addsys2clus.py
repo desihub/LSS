@@ -481,6 +481,14 @@ if args.addsysnet == 'y':
                 hpmap[pix] = wt
         
             sel = data_catalogs['PHOTSYS'] == reg
+            if 'DES' in reg:
+                desd = common.select_regressis_DES(data_catalogs)
+                if reg == 'SnotDES':
+                    sel = data_catalogs['PHOTSYS'] == 'S'
+                    sel &= ~desd
+                elif reg == 'DES':
+                    sel = desd
+
             selz = data_catalogs['Z'] > zl[0]
             selz &= data_catalogs['Z'] <= zl[1]
 
