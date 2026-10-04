@@ -15,4 +15,10 @@ survey=DA3
 #LSS=$HOME/LSScode
 #PYTHONPATH=$LSS/LSS/py:$PYTHONPATH
 scriptdir=$HOME/LSScode/LSS/scripts
-srun -N 1 -C cpu -t 02:0:00 --qos interactive --account desi python $scriptdir/validation/validation_sky.py --tracers all --version $1 --weight_col WEIGHT_SYS --survey $survey --verspec $verspec
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python $scriptdir/validation/validation_skyclus.py --tracers all --version $1 --weight_col WEIGHT_SYS --survey $survey --verspec $verspec
+
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python scripts/validation/validation_focal.py --survey $survey --verspec $verspec --version $1 
+
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python scripts/validation/validation_improp_clus.py --survey $survey --verspec $verspec --version $1 
+
+srun -N 1 -C cpu -t 02:00:00 --qos interactive --account desi python scripts/validation/validation_tsnr_zbin.py --survey $survey --verspec $verspec --version $1 
