@@ -14,5 +14,5 @@ verspec=matterhorn-v2
 survey=DA3
 #LSS=$HOME/LSScode
 #PYTHONPATH=$LSS/LSS/py:$PYTHONPATH
-scriptdir = $HOME/LSScode/LSS/scripts
+scriptdir=$HOME/LSScode/LSS/scripts
 srun -N 1 -C cpu -t 02:0:00 --qos interactive --account desi python $scriptdir/validation/validation_sky.py --tracers all --version $1 --weight_col WEIGHT_SYS --survey $survey --verspec $verspec
