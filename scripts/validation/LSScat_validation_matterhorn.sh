@@ -10,6 +10,7 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export LSSCODE=$HOME ; do this before script, e.g., export LSSCODE=$HOME/LSScode for desica
 #PYTHONPATH=$PYTHONPATH:$LSS/LSS/py
 
+
 verspec=matterhorn-v2
 survey=DA3
 #LSS=$HOME/LSScode
