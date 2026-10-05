@@ -13,7 +13,7 @@ mocknum=0
 scriptdir=$HOME/LSScode/LSS/scripts
 #scriptdir=$LSSCODE/scripts
 #/global/homes/d/desica/LSScode/LSS/scripts
-sim=Uchuu-SHAM
+sim=Uchuu-SHAM_v2_DARK
 bdir=/global/cfs/cdirs/desi/mocks/cai/LSS/
 edir=NN
 export LSSCODE=/global/homes/d/desica/LSScode/LSS
