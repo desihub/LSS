@@ -32,6 +32,16 @@ mkdir -p "$LOG_DIR/logs"
 cp $HOLI_PARS $LOG_DIR
 cp $LSS_DIR/scripts/mock_tools/holi_pipeline/sbatch_holi_pipeline.sh  $LOG_DIR
 
+
+# git info 
+cd $LSS_DIR
+git status > $LOG_DIR/git_info.txt
+echo "============================================= git diff:" >>  $LOG_DIR/git_info.txt
+git diff  >>  $LOG_DIR/git_info.txt
+echo "============================================= SHAS" >>  $LOG_DIR/git_info.txt
+git rev-parse --short  HEAD >> $LOG_DIR/git_info.txt
+cd -
+
 # test if mock_dir exist else create it
 mock_dir=$(get_pars.py $HOLI_PARS mock_dir)
 if [[ ! -d "$mock_dir" ]]; then
