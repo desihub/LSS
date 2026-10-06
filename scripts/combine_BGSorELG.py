@@ -173,7 +173,7 @@ if args.data == 'y':
     for reg in regions:
         logger.info(f"Combining {samples} data for region {reg}")
         this_data_comb = vstack([data[sample][reg] for sample in samples])
-        path = os.path.join(output_dir, f'BGS_{sample_comb}_{reg}_clustering.dat.fits')
+        path = os.path.join(output_dir, f'{args.tracer}_{sample_comb}_{reg}_clustering.dat.fits')
         logger.info(f"Writing {sample_comb} data for region {reg} to {path}")
         write_LSS_scratchcp(this_data_comb, path, logger=logger)
     del this_data_comb # free memory
