@@ -1,7 +1,7 @@
 import numpy as np
 from astropy.table import Table, vstack
 import fitsio
-from LSS.common_tools import write_LSS_scratchcp, splitGC
+from LSS.common_tools import write_LSS_scratchcp, splitGC, goodz_infull
 from LSS.globals import main
 from pycorr import setup_logging
 import logging
@@ -98,7 +98,10 @@ for (sample, sample_base) in zip(samples, samples_base):
             base_data = fitsio.read(base_clustering_data_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
             comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
         else: # use the full catalog to get the NTILE info (particularly for DR3), need extra steps for compatibility with the clustering catalog
-            base_data = fitsio.read(input_dir_main_full + f'BGS_{sample_base}_full_HPmapcut.dat.fits', columns=['RA', 'DEC', 'NTILE', 'ZWARN', 'DELTACHI2', 'FRACZ_TILELOCID', 'FRAC_TLOBS_TILES'])
+            cols = ['RA', 'DEC', 'NTILE', 'ZWARN', 'DELTACHI2', 'FRACZ_TILELOCID', 'FRAC_TLOBS_TILES']
+            if args.tracer == 'ELG':
+                cols.append('o2c')
+            base_data = fitsio.read(input_dir_main_full + f'{args.tracer}_{sample_base}_full_HPmapcut.dat.fits', columns=cols)
             # select region (NGC/SGC)
             sel = splitGC(base_data)
             if reg == 'SGC': sel = ~sel
@@ -108,9 +111,13 @@ for (sample, sample_base) in zip(samples, samples_base):
             wz = base_data['ZWARN'] == 0
             wz &= base_data['ZWARN']*0 == 0
             wz &= base_data['ZWARN'] != 999999
-            dchi2 = main('BGS_' + sample_base, args.verspec, survey=args.survey).dchi2
-            if dchi2 is not None:
-                wz &= base_data['DELTACHI2'] > dchi2
+            wz &= goodz_infull(args.tracer,base_data)
+            #if args.tracer == 'BGS':
+            #    dchi2 = main('BGS_' + sample_base, args.verspec, survey=args.survey).dchi2
+            #    if dchi2 is not None:
+            #        wz &= base_data['DELTACHI2'] > dchi2
+            #elif args.tracer == 'ELG':
+            #    wz &= base_data['o2c'] > 0.9
             base_data = base_data[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
             del wz
             # now should match the clustering catalog
