@@ -62,7 +62,7 @@ def lookup_dirs(basename: str) -> str:
 
 def read_catalog(sample: str, reg: str, iran: int | None = None) -> Table:
     """Read the clustering catalog for a given sample and region."""
-    basename = f'BGS_{sample}_{reg}' + f'_{iran}' * (iran is not None) + '_clustering.' + ('dat' if iran is None else 'ran') + '.fits'
+    basename = f'{args.tracer}_{sample}_{reg}' + f'_{iran}' * (iran is not None) + '_clustering.' + ('dat' if iran is None else 'ran') + '.fits'
     path = lookup_dirs(basename)
     logger.info(f"Reading clustering catalog from {path}")
     return Table(fitsio.read(path))
@@ -93,7 +93,7 @@ for (sample, sample_base) in zip(samples, samples_base):
         logger.info(f"Reading nz data for sample {sample} and region {reg} from {nz_name}")
         nz_data[sample][reg] = np.loadtxt(nz_name).T
         logger.info(f"Obtaining NTILE data for sample {sample_base} and region {reg}")
-        base_clustering_data_fname = input_dir_main + f'BGS_{sample_base}_{reg}_clustering.dat.fits' # the base sample catalog should be in the main input dir
+        base_clustering_data_fname = input_dir_main + f'{args.tracer}_{sample_base}_{reg}_clustering.dat.fits' # the base sample catalog should be in the main input dir
         if os.path.isfile(base_clustering_data_fname): # use it
             base_data = fitsio.read(base_clustering_data_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
             comp_ntl = np.bincount(base_data['NTILE']-1) / np.bincount(base_data['NTILE']-1, weights=base_data['WEIGHT_COMP']) # inverse of the mean completeness weight in data for each NTILE value (note that it is shifted down by 1)
@@ -243,7 +243,7 @@ def process_random(iran: int):
     for reg in regions:
         logger.info(f"Selecting {sample_comb} randoms for region {reg} and random number {iran}")
         this_random_comb = select_reg(random_comb, reg)
-        path = os.path.join(output_dir, f'BGS_{sample_comb}_{reg}_{iran}_clustering.ran.fits')
+        path = os.path.join(output_dir, f'{args.tracer}_{sample_comb}_{reg}_{iran}_clustering.ran.fits')
         logger.info(f"Writing {sample_comb} randoms for region {reg} and random number {iran} to {path}")
         this_random_comb.remove_column('REGION') # remove the REGION column before writing, to be consistent with the original files
         write_LSS_scratchcp(this_random_comb, path, logger=logger)
