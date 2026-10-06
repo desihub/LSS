@@ -47,7 +47,7 @@ nran = args.nran
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['ELG_LOPnotqso','LRG','QSO','BGS_BRIGHT-21.35']
+    tps = ['BGS_BRIGHT','BGS_FAINT','ELG_VLOnotqso','LGE','ELG_LOPnotqso','LRG','QSO']
 
 zdw = ''#'zdone'
 
@@ -181,6 +181,8 @@ for tp in tps:
         tpr = 'BGS_BRIGHT'
     if 'BGS' in tp:    
         prog = 'bright'
+    if 'LGE' in tp:
+        prog = 'dark1b'
     dtfh = fitsio.read_header(indir+tpr+zdw+'_full_noveto.dat.fits',ext=1)
     for nr in range(0,nran):
         rffh = fitsio.read_header(indir+prog+'_'+str(nr)+'_full_noveto.ran.fits',ext=1)   
@@ -301,7 +303,7 @@ for tp in tps:
                 wg &= dtf[zcol] < 1.6
                 titl = tp +titlb+ '0.8<z<1.6'
 
-            if tp == 'LRG':
+            if tp == 'LRG' or tp == 'LGE':
                 wg = dtf[zcol] > 0.4
                 wg &= dtf[zcol] < 1.1
                 titl = tp +titlb+ '0.4<z<1.1'
@@ -388,10 +390,10 @@ for tp in tps:
         od_ochp[odl_ochp[1]>0]= odl_ochp[1][odl_ochp[1]>0]/np.mean(odl_ochp[1][odl_ochp[1]>0])
 
         outf = outdir+tp+f'_weighted_all_healpix{nside}.png'
-        plot_map_healpix(nside,odhp,   vmin=vm,vmax=vx,title=titl+' for Year-1, including all corrections',   save_path=outf,nest=nest,cmap='viridis')
+        plot_map_healpix(nside,odhp,   vmin=vm,vmax=vx,title=titl+' for '+args.survey+', including all corrections',   save_path=outf,nest=nest,cmap='viridis')
         
         outf = outdir+tp+f'_weighted_noimaging_healpix{nside}.png'
-        plot_map_healpix(nside,od_ochp,vmin=vm,vmax=vx,title=titl+' for Year-1, without imaging corrections',save_path=outf,nest=nest,cmap='viridis')
+        plot_map_healpix(nside,od_ochp,vmin=vm,vmax=vx,title=titl+' for '+args.survey+',, without imaging corrections',save_path=outf,nest=nest,cmap='viridis')
 
         
         

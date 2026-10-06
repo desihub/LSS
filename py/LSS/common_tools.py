@@ -1502,6 +1502,7 @@ def join_etar(fn, tracer, tarver='1.1.1'):
 
 
 def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'], fid_cols=['EBV', 'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R', 'GALDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2', 'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z'], redo=True):
+    import LSS.claude_tools as claudet
     fid_fn = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-' + \
         str(rann)+'.fits'
     new_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-' + \
@@ -1543,7 +1544,8 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
 
     rannew = fitsio.read(new_fn, columns=cols2read_new)
     printlog('read '+new_fn, logger)
-    df = join(df, rannew, keys=['TARGETID'])
+    #df = join(df, rannew, keys=['TARGETID'])
+    df = claudet.join_left(df, rannew, keys=['TARGETID'])
     printlog('joined '+new_fn, logger)
     del rannew
     cols2read_fid = ['TARGETID']
@@ -1561,7 +1563,8 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
 
     ranfid = fitsio.read(fid_fn, columns=cols2read_fid)
     printlog('read '+fid_fn, logger)
-    df = join(df, ranfid, keys=['TARGETID'])
+    #df = join(df, ranfid, keys=['TARGETID'])
+    df = claudet.join_left(df, ranfid, keys=['TARGETID'])
 
     # print(len(df))
     # comments = ['Adding map columns']
@@ -1699,6 +1702,81 @@ def maskcircandrec(indata, maskfn, logger=None):
 
     return mask
 
+def mktlobs(fin, mapveto='_HPmapcut',logger=None):
+    '''
+    fl is a string with the path to the file name to load
+    fout is a string with the path to the outpur file
+    ebits are the new imaging mask bits to apply
+    zmask is whether or not to apply any zmask
+    maxp is the maximum priority to keep in the data files
+    '''
+    if '.fits' in fin:
+        # +'full_noveto.'+dr+'.fits')
+        ff = Table(fitsio.read(fin.replace('global', 'dvs_ro')))
+    elif '.h5' in fin:
+        ff = read_hdf5_blosc(fin.replace('global', 'dvs_ro'),columns=['TILES','LOCATION_ASSIGNED','TILELOCID_ASSIGNED'])
+    printlog('length of input '+str(len(ff)), logger)
+    compa = []
+    fractl = []
+    tll = []
+    ti = 0
+    ff.sort('TILES')
+    nts = len(np.unique(ff['TILES']))
+    tlsl = ff['TILES']
+    tlslu = np.unique(tlsl).astype(str)
+    laa = ff['LOCATION_ASSIGNED']
+    lta = ff['TILELOCID_ASSIGNED']
+    # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
+
+    # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+    i = 0
+    tot = 0
+    atot = 0
+    tltot = 0
+    while i < len(ff):
+        tls = []
+        tlis = []
+        nli = 0  # initialize total available per tile group
+        nai = 0  # initialize total assigned
+        nti = 0  # initialize total at location where something of the same type was assigned
+
+        while tlsl[i] == tlslu[ti]:
+            nli += 1
+            nai += laa[i]  # laa is true/false assigned
+            # lta is true/false something of the same type was assigned
+            nti += lta[i]
+            i += 1
+            if i == len(ff):
+                break
+
+        if ti % 10000 == 0:
+            printlog('at tiles ' + str(ti) + ' of ' + str(nts), logger)
+
+        tot += nli
+        atot += nai
+        tltot += nti
+        cp = nai / nli
+        fract = nti/nli
+        # print(tls,cp,no,nt)
+        compa.append(cp)
+        fractl.append(fract)
+        tll.append(tlslu[ti])
+        ti += 1
+    # print(tot,atot,tltot)
+    comp_dicta = dict(zip(tll, compa))
+    fract_dicta = dict(zip(tll, fractl))
+    if '.fits' in fin:
+        tlobs_fn = fin.replace(
+            'full'+mapveto+'.dat.fits', 'frac_tlobs.fits')
+    if '.h5' in fin:
+        tlobs_fn = fin.replace(
+            'full'+mapveto+'.dat.h5', 'frac_tlobs.fits')
+    printlog('tlobs file will get written to '+tlobs_fn)
+    tlobs = Table()
+    tlobs['TILES'] = tll
+    tlobs['FRAC_TLOBS_TILES'] = fractl
+    write_LSS_scratchcp(tlobs, tlobs_fn.replace('dvs_ro','global'), logger=logger)
+
 
 def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='', logger=None):
     '''
@@ -1772,7 +1850,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff.sort('TILES')
         nts = len(np.unique(ff['TILES']))
         tlsl = ff['TILES']
-        tlslu = np.unique(tlsl)
+        tlslu = np.unique(tlsl).astype(str)
         laa = ff['LOCATION_ASSIGNED']
         lta = ff['TILELOCID_ASSIGNED']
         # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
@@ -1833,6 +1911,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        ff['NEW_WEIGHTFRACZ'] = get_fracz_pNNweight(ff, get_nnweight=True,logger=logger)
         printlog('data quantities measured, moving to write-out phase', logger)
         # print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         # if comp_only:
@@ -1849,9 +1928,11 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         wz &= ff['ZWARN'] != 1.e20
         comp = len(ff[wz])/len(ff)
         printlog('assignment completeness is '+str(comp), logger)
-        printlog('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match', logger)
-        printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']))
+        printlog('sum of NEW_WEIGHTFRACZ, 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match', logger)
+        printlog(str(np.sum(ff[wz]['NEW_WEIGHTFRACZ']))+','+str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']))
                      )+',' + str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str(len(ff)), logger)
+        seln0 = ff['COMP_TILE'] != 0
+        printlog('any mismatch could be due to number of targets in areas with COMP_TILE=0: '+str(np.sum(~seln0)),logger)
     if fout is None or wo == 'n':
         return ff
     del ff

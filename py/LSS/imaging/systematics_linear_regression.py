@@ -738,7 +738,7 @@ def columns_for_weight_scheme(
     match tracer:
         case "ELG":
             data_colnames_full = {"o2c"}
-        case "LRG" | "BGS":
+        case "LRG" | "BGS" | "LGE":
             data_colnames_full = {"ZWARN", "DELTACHI2"}
         case "QSO":
             data_colnames_full = set()
@@ -862,6 +862,7 @@ def produce_imweights(
     loglevel: str = "INFO",
     templates_maps_nside: int = 256,
     templates_maps_nested: bool = True,
+    splitDES: bool = False,
 ):
     """
     Perform linear regression to compute imaging systematics weights for a given tracer type, data catalog, random catalogs, set of maps.
@@ -948,7 +949,9 @@ def produce_imweights(
 
     # define photometric regions
     photometric_regions = ["S", "N"]
-    if tracer_type == "QSO":
+    if splitDES:
+        photometric_regions = ["DES", "SnotDES", "N"]
+    if tracer_type == "QSO": #QSO always get split
         photometric_regions = ["DES", "SnotDES", "N"]
 
     # Check if fit_maps is a list of strings or a dictionary

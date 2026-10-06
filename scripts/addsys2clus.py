@@ -70,7 +70,6 @@ parser.add_argument("--ext",help="h5 or fits",default='fits')
 parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 parser.add_argument("--zcmb", help="whether or not to correct redshifts based on cmb dipole",default='n')
-parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
 parser.add_argument("--relax_zbounds", help="whether or not to use less restricted redshift bounds",default='y')
 parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
 parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
@@ -78,11 +77,12 @@ parser.add_argument("--maxr", help="maximum for random files, 18 are available (
 parser.add_argument("--prep4sysnet",help="prepare data to get sysnet weights for imaging systematics?",default='n')
 parser.add_argument("--compwtmd",help="weight mode to prepare data to get sysnet weights for imaging systematics?",default='fracz')
 parser.add_argument("--addsysnet",help="add sysnet weights for imaging systematics to clustering files?",default='n')
-parser.add_argument("--imsys_zbin",help="if yes, do imaging systematic regressions in z bins",default='y')
+parser.add_argument("--imsys_zbin",help="if y, do imaging systematic regressions in z bins; choose fine for dz = 0.1",default='y')
 
 parser.add_argument("--doimlin",help="add weights for imaging systematics using eboss method?",default='n')
-parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
+#parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
+parser.add_argument("--splitDES", help="whether to split into SnotDES, DES, N instead of just N/S", action='store_true')
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
@@ -170,6 +170,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
             zrl = [(0.8, 1.6)]
         zsysmin = 0.8
         zsysmax = 1.6
+        tpmap = 'ELG_LOPnotqso'
     
     
     if tracer_clus[:3] == "QSO":
@@ -179,7 +180,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
             zrl = [(0.8, 3.5)]
         zsysmin = 0.8
         zsysmax = 3.5
-    if tracer_clus[:3] == "LRG":
+    if tracer_clus[:3] == "LRG" or tracer_clus[:3] == "LGE":
         if args.imsys_zbin == "split":
             zrl = [(0.4, 0.6), (0.6, 0.8), (0.8, 1.1)]
         elif args.imsys_zbin == 'one':
@@ -291,6 +292,7 @@ if args.doimlin == 'y':
         tail=0.5,  # is the default
         logger=logger,
         loglevel="INFO",
+        splitDES=args.splitDES,
     )
     
     # Data catalogs are already loaded, just recast them to astropy Tables
@@ -375,7 +377,8 @@ if args.prep4sysnet == 'y':
     from LSS.imaging import sysnet_tools
     
     regl = ['N','S']
-    
+    if args.splitDES:
+        regl = ['N','SnotDES','DES']
     for zl in zrl:
         zw = ''
         zmin,zmax=zl[0],zl[1]
@@ -394,7 +397,10 @@ if args.prep4sysnet == 'y':
                         fitmapsbin = mainp.fit_maps81s
             else:
                 fitmapsbin = fit_maps
-            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            mapreg = reg
+            if 'DES' in reg:
+                mapreg = 'S'
+            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+mapreg+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -408,10 +414,24 @@ if args.prep4sysnet == 'y':
                 sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
-            seld = data_catalogs['PHOTSYS'] == reg
-            selr = randoms_catalogs['PHOTSYS'] == reg
+            if 'DES' in reg:
+                desd = common.select_regressis_DES(data_catalogs)
+                desr = common.select_regressis_DES(randoms_catalogs)
+                if reg == 'SnotDES':
+                    seld = data_catalogs['PHOTSYS'] == 'S'
+                    seld &= ~desd
+                    selr = randoms_catalogs['PHOTSYS'] == 'S'
+                    selr &= ~desr
+                elif reg == 'DES':
+                    seld = desd
+                    selr = desr
+                   
+            else:
+                seld = data_catalogs['PHOTSYS'] == reg
+                selr = randoms_catalogs['PHOTSYS'] == reg
+               
             #if args.use_allsky_rands == 'y':
-            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{mapreg}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
             allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
             #    selr_all = allsky_rands['PHOTSYS'] == reg
@@ -441,6 +461,8 @@ if args.addsysnet == 'y':
     dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
+    if args.splitDES:
+        regl_sysnet = ['N','SnotDES','DES']   
     for reg in regl_sysnet:
         for zl in zrl:
             #zw = ''
@@ -459,6 +481,14 @@ if args.addsysnet == 'y':
                 hpmap[pix] = wt
         
             sel = data_catalogs['PHOTSYS'] == reg
+            if 'DES' in reg:
+                desd = common.select_regressis_DES(data_catalogs)
+                if reg == 'SnotDES':
+                    sel = data_catalogs['PHOTSYS'] == 'S'
+                    sel &= ~desd
+                elif reg == 'DES':
+                    sel = desd
+
             selz = data_catalogs['Z'] > zl[0]
             selz &= data_catalogs['Z'] <= zl[1]
 
