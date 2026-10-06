@@ -89,6 +89,9 @@ from fiberassign.scripts.assign import parse_assign, run_assign_full, run_assign
 
 pr = cProfile.Profile()
 
+TIME_do_fiber= datetime.now()
+CPT_FBA = 0
+
 # os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 # os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
 
@@ -1883,6 +1886,7 @@ def do_fiberassignment(
     mock=False,
     reproducing=False,
 ):
+    global TIME_do_fiber, CPT_FBA
     # FATiles = tiles_to_be_processed_alt(altmtldir, obscon = obscon, survey = survey, today = today, mode = 'fa')
     START_BEGIN = datetime.now()
     if len(FATiles):
@@ -2011,7 +2015,8 @@ def do_fiberassignment(
             #log.info(f"fba_args = {fba_args}")
             START_FBA_RUN = datetime.now()
             call_fba_run(fba_args)
-            log.warning(f"Duration fba_run {ts} : {datetime.now() - START_FBA_RUN}")
+            CPT_FBA += 1
+            log.warning(f"Duration fba_run {ts}, file {CPT_FBA}: {datetime.now() - START_FBA_RUN}")
             # command_run = ["bash", fbadir + "fa-" + ts + ".sh"]
             # if verbose:
             #     log.info(f"fa command_run: {command_run}")
@@ -2026,7 +2031,8 @@ def do_fiberassignment(
         TSs.append(ts)
         fadates.append(fadate)
 
-    log.warning(f"Duration TOTAL(h:m:s): {datetime.now() - START_BEGIN}")
+    log.warning(f"Duration runAltMTL(h:m:s): {datetime.now() - TIME_do_fiber}")
+    TIME_do_fiber = datetime.now()
     return OrigFAs, AltFAs, AltFAs2, TSs, fadates, FATiles
 
 
