@@ -69,7 +69,7 @@ input_data_group.add_argument("--use_map_veto", help="string to include in full 
 #input_data_group.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
 completeness_group = parser.add_argument_group('completeness mode', description='the method for completeness weight computations')
-completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'n'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
+completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'NN'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
 
 catalog_steps_group = parser.add_argument_group('catalog creation steps', description='options for which steps to run (set all to y to get NGC/SGC clustering catalogs output). for finer selections, keep in mind that next steps often depend on previous steps')
 catalog_steps_group.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
@@ -290,9 +290,20 @@ if args.mkfulldat == 'y':
 weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
+redo_fracz=False
+if args.compmd == 'NN':
+    redo_fracz=True
+    NN = True
+    nzcompmd = 'dat'
+    common.printlog('Using nearest neighbor for completeness weight instead of FRAC_TLOBS_TILES on randoms',logger)
+    #common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
+nzcompmd = 'dat'
+    
+    
+    
 if mkclusdat:
     common.printlog('about to start mkclusdat',logger)
-    ct.mkclusdat(args.outdir+'/'+tracer_out,weighttileloc=weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto,logger=logger)
+    ct.mkclusdat(args.outdir+'/'+tracer_out,redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto,logger=logger)
 
 #make clustering catalogs for randoms
 nzcompmd = 'ran'
@@ -377,7 +388,7 @@ def get_ntile_info(clus_orig_fname):
     fd = fitsio.read(clus_orig_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
     weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
     comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
-    if args.compmd != 'altmtl':
+    if args.compmd != 'altmtl' and args.compmd != 'NN':
         fttl = np.bincount(fd['NTILE']-1, weights=fd['FRAC_TLOBS_TILES']) / np.bincount(fd['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
         comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
     return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
@@ -434,7 +445,12 @@ def get_ntile_info_from_full(full_orig_fname, tp, reg, ismock=False):
             wz &= ff['DELTACHI2'] > dchi2
     ff = ff[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
     del wz
-    weights_comp = 1./ff['FRACZ_TILELOCID'] if weightileloc else 129/(1+128*ff['PROB_OBS']) # compute WEIGHT_COMP in accordance with the mkclusdat function
+    if args.compmd == 'NN':
+        weights_comp = ff['NEW_WEIGHTFRACZ']
+    elif  weighttileloc:
+        weights_comp = 1./ff['FRACZ_TILELOCID'] 
+    else:
+        weights_comp = 129/(1+128*ff['PROB_OBS']) # compute WEIGHT_COMP in accordance with the mkclusdat function
     weight_ntl = np.bincount(ff['NTILE']-1, weights=weights_comp) / np.bincount(ff['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
     comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
     if args.compmd != 'altmtl':
