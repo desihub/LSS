@@ -43,7 +43,7 @@ try_dirs = [input_dir, output_dir, input_dir_main] # order to look for input fil
 
 if args.tracer == 'BGS':
     samples_base = ['BRIGHT', 'FAINT']
-elif args.tracer == 'ELG'
+elif args.tracer == 'ELG':
     samples_base = ['LOP', 'VLO']
 samples = [sample + args.ccut for sample in samples_base]
 logger.info(f"Combining samples {samples} obtained by applying cut {args.ccut} to base samples {samples_base}")
