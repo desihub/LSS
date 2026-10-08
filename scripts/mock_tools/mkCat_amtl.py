@@ -916,7 +916,12 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             if os.path.isfile(fn):
                 fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
             else:
-                common.printlog(fn+' not found!')            
+                common.printlog(fn+' not found!')     
+                fn = dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits'
+                if os.path.isfile(fn):
+                    fin = fitsio.read(fn)  
+                else:
+                    common.printlog(fn+' also not found!')      
         common.printlog("cut method "+args.absmagmd, logger)
         dcols = list(fin.dtype.names)
         cutagainst = 'rmag'
