@@ -15,7 +15,7 @@ surveycat=DA2 #this will make it process the DR2 footprint
 
 #python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $SCRATCH --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --targDir $SCRATCH/$survey/mocks/$sim --tracer BGS_BRIGHT --fulld y --apply_veto y --par y 
 
-python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir /global/cfs/projectdirs/desi/mocks/cai/LSS/ --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --tracer BGS_BRIGHT-21.35  --mkclusdat n --mkclusran y --splitGC y --nz y --par y --outmd cfs
+python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir /global/cfs/projectdirs/desi/mocks/cai/LSS/ --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --tracer BGS_BRIGHT-21.35  --mkclusdat y --mkclusran y --splitGC y --nz y --par y --outmd cfs
 
 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir /global/cfs/projectdirs/desi/mocks/cai/LSS/ --simName $sim --mocknum $mocknum --survey $survey --surveycat $surveycat --specdata loa-v1 --tracer BGS_BRIGHT-21.35 --doimlin y --replace_syscol --par y --imsys_zbin split --outmd cfs
 
