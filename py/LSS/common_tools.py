@@ -1822,7 +1822,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
     if tids2mask is not None:
         tidsin = np.isin(ff['TARGETID'],tids2mask)
         ff = ff[~tidsin]
-        printlog('length after masking input TARGETID list '+str(len(ff)))
+        printlog('length after masking input TARGETID list '+str(len(ff)),logger)
     seld = ff['GOODHARDLOC'] == 1
     printlog('length after cutting to good locations ' +
              str(len(ff[seld])), logger)
