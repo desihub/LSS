@@ -558,14 +558,14 @@ if args.apply_veto == 'y':
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
     tids2mask = None
     if args.mask_petalnight_tids:
-        specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ pd + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
-        tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=pd)
+        specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ progl + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
+        tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=progl)
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
         if args.mask_petalnight_tids:
             tspec = fitsio.read(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILELOCID'])
-            totin = np.isin(tspec['TILELOCID'],tloc_darkbp)
+            totin = np.isin(tspec['TILELOCID'],tloc_bp)
             tids2mask = np.unique(tspec['TARGETID'][totin])
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=tids2mask)
         del tids2mask
@@ -578,7 +578,7 @@ if args.apply_veto == 'y':
             fin = dirout.replace('global','dvs_ro')+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         if args.mask_petalnight_tids:
-            ranf = fitsio.read(ldirspec+'rancomb_0'+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
+            ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
             trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
             rtids2mask = np.unique(ranf['TARGETID'][trtotin])
 
