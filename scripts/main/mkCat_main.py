@@ -588,9 +588,15 @@ if args.apply_veto == 'y':
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         if args.mask_petalnight_tids:
             common.printlog(str(rn)+' finding bad petal targetids to mask',logger)
-            ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
-            trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
-            rtids2mask = np.unique(ranf['TARGETID'][trtotin])
+            filer = ldirspec+'/ran_'+str(rn)+'_'+progl+'_badpetalnight_TARGETID.txt'
+            if os.path.isfile(filer):
+                rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
+            else:    
+                common.printlog(filer ' does not exist, need to find petal targetids to mask',logger)
+                ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
+                trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
+                rtids2mask = np.unique(ranf['TARGETID'][trtotin])
+                np.savetxt(filer, ran_tids2mask.astype(np.int64).T, fmt='%d')
             common.printlog(str(rn)+' found bad petal targetids to mask',logger)
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=rtids2mask)
         print('random veto '+str(rn)+' done')
