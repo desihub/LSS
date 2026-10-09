@@ -558,8 +558,16 @@ if args.apply_veto == 'y':
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
     tids2mask = None
     if args.mask_petalnight_tids:
-        specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ progl + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
-        tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=progl)
+        common.printlog('getting badpetalnight tilelocid mask',logger)
+        file_tloc_bp = ldirspec+'/'+progl+'_badpetalnight_TILELOCID.txt'
+        if os.path.isfile(file_tloc_bp):
+            tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+            common.printlog('loaded badpetalnight tilelocid mask file',logger)
+        else:
+            common.printlog('did not find '+file_tloc_bp,logger)
+            specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ progl + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
+            tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=progl)
+            np.savetxt(file_tloc_bp, tloc_bp.astype(np.int64).T, fmt='%d')
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
