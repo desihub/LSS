@@ -587,10 +587,11 @@ if args.apply_veto == 'y':
             fin = dirout.replace('global','dvs_ro')+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
         if args.mask_petalnight_tids:
+            common.printlog(str(rn)+' finding bad petal targetids to mask',logger)
             ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
             trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
             rtids2mask = np.unique(ranf['TARGETID'][trtotin])
-
+            common.printlog(str(rn)+' found bad petal targetids to mask',logger)
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=rtids2mask)
         print('random veto '+str(rn)+' done')
     if args.par == 'n':

@@ -1928,7 +1928,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         if '.h5' in fout:
             tlobs_fn = fout.replace(
                 'full'+mapveto+'.dat.h5', 'frac_tlobs.fits')
-        printlog('tlobs file will get written to '+tlobs_fn)
+        printlog('tlobs file will get written to '+tlobs_fn,logger)
         tlobs = Table()
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
