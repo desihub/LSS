@@ -340,6 +340,32 @@ def mask_bad_petal_nights(dz, prog='dark', logger=None):
 
     return dz[dz_inds == 1]
 
+def get_bad_petal_nights_tloc(dz, prog='dark', indir='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/',logger=None):
+    #return a list of all TILELOCIDs in the bad petal night mask
+    if prog == 'dark':
+        bad_petal_night_file = open(
+            indir+'lrg_bad_per_petal-night.txt', 'r')
+    elif prog == 'bright':
+        bad_petal_night_file = open(
+            indir+'bgs_bright_bad_per_petal-night.txt', 'r')
+
+    inds_to_remove = np.array([])
+    for line in bad_petal_night_file:
+        night = int(line.split()[0])
+        for petal in line.split()[1:]:
+            inds_to_remove = np.concatenate(
+                (inds_to_remove, np.where(
+                    (dz['LASTNIGHT'] == night)
+                    & (dz['FIBER'] >= 500 * int(petal))
+                    & (dz['FIBER'] < 500 * (int(petal)+1)))[-1]))
+
+    dz_inds = np.ones(len(dz)).astype('int')
+    dz_inds[inds_to_remove.astype('int')] = 0
+    nremove = len(dz_inds)-np.sum(dz_inds)
+    #tids = np.unique(dz[dz_inds == 0]['TARGETID'])
+    tloc = 10000*dz[dz_inds == 0]['TILEID'] +dz[dz_inds == 0]['LOCATION']
+    return tloc
+
 
 def goodz_infull(tp, dz, zcol='Z_not4clus'):
     if (tp == 'LRG') or (tp == 'LGE'):
@@ -1778,7 +1804,7 @@ def mktlobs(fin, mapveto='_HPmapcut',logger=None):
     write_LSS_scratchcp(tlobs, tlobs_fn.replace('dvs_ro','global'), logger=logger)
 
 
-def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='', logger=None):
+def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='',tids2mask=None logger=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -1793,6 +1819,10 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff = fin
         del fin
     printlog('length of input '+str(len(ff)), logger)
+    if tids2mask is not None:
+        tidsin = np.isin(ff['TARGETID'],tids2mask)
+        ff = ff[~tidsin]
+        printlog('length after masking input TARGETID list '+str(len(ff)))
     seld = ff['GOODHARDLOC'] == 1
     printlog('length after cutting to good locations ' +
              str(len(ff[seld])), logger)

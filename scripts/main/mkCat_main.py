@@ -74,6 +74,7 @@ parser.add_argument("--mode1b", help="integer to encode what to do with 1b data,
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
+parser.add_argument("--mask_petalnight_tids", help="apply a mask to all TARGETID associated TILELOCID in the bad petalnight mask",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
@@ -555,19 +556,33 @@ if args.fillran == 'y':
 if args.apply_veto == 'y':
     common.printlog('applying vetos',logger)
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
-
+    tids2mask = None
+    if args.mask_petalnight_tids:
+        specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ pd + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
+        tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=pd)
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
+        if args.mask_petalnight_tids:
+            tspec = fitsio.read(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILELOCID'])
+            totin = np.isin(tspec['TILELOCID'],tloc_darkbp)
+            tids2mask = np.unique(tspec['TARGETID'][totin])
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=tids2mask)
+        del tids2mask
     common.printlog('data veto done, now doing randoms',logger)
     def _parfun(rn):
         #fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+        rtids2mask = None
         fin = dirout.replace('global','dvs_ro')+progl+'_'+str(rn)+'_full_noveto.ran.fits'
         if mode1b == 2:
             fin = dirout.replace('global','dvs_ro')+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
+        if args.mask_petalnight_tids:
+            ranf = fitsio.read(ldirspec+'rancomb_0'+pd+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
+            trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
+            rtids2mask = np.unique(ranf['TARGETID'][trtotin])
+
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=rtids2mask)
         print('random veto '+str(rn)+' done')
     if args.par == 'n':
         for rn in range(rm,rx):
