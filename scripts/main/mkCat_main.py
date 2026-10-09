@@ -74,7 +74,7 @@ parser.add_argument("--mode1b", help="integer to encode what to do with 1b data,
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
-parser.add_argument("--mask_petalnight_tids", help="apply a mask to all TARGETID associated TILELOCID in the bad petalnight mask",default='n')
+parser.add_argument("--mask_petalnight_tids", help="apply a mask to all TARGETID associated TILELOCID in the bad petalnight mask",action="store_true")
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
