@@ -596,6 +596,7 @@ if args.apply_veto == 'y':
                 ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
                 trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
                 rtids2mask = np.unique(ranf['TARGETID'][trtotin])
+                del ranf
                 np.savetxt(filer, ran_tids2mask.astype(np.int64).T, fmt='%d')
             common.printlog(str(rn)+' found bad petal targetids to mask',logger)
         common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=rtids2mask)
