@@ -1508,9 +1508,9 @@ if mkclusran:
     if 'BGS_BRIGHT' in args.type:
         ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
     
-    clus_arrays = [fitsio.read(out_name+'_clustering.dat.fits')]
+    clus_arrays = [fitsio.read(out_name.replace('global','dvs_ro')+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,des_resamp=args.des_resamp,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
+        ct.mkclusran(ranin.replace('global','dvs_ro'),out_name+'_',ii,rcols=rcols,des_resamp=args.des_resamp,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
