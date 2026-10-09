@@ -1804,7 +1804,7 @@ def mktlobs(fin, mapveto='_HPmapcut',logger=None):
     write_LSS_scratchcp(tlobs, tlobs_fn.replace('dvs_ro','global'), logger=logger)
 
 
-def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='',tids2mask=None logger=None):
+def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='',tids2mask=None,logger=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
