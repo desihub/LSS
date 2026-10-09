@@ -357,7 +357,7 @@ if args.doimlin == 'y':
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
             #ran = join(ran, dat, keys=["TARGETID_DATA"])
-            ran = claudet.join_left(ran,dec,keys=['TARGETID_DATA'])
+            ran = claudet.join_left(ran,dat,keys=['TARGETID_DATA'])
             if args.replace_syscol:
                 ran["WEIGHT"] /= ran["WEIGHT_SYS"]
                 ran["WEIGHT_SYS"] = ran[syscolr]
