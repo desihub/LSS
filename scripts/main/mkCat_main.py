@@ -1591,7 +1591,7 @@ if args.nz == 'y':
         zmu = (zmin//dz)*dz #make sure some integer multiple of dz
         common.printlog('minimum z used in n(z) calc is '+str(zmu),logger)
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmu,zmax=zmax,compmd=nzcompmd)
-        common.addnbar(fb,bs=dz,zmin=zmu,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
+        common.addnbar(fb,bs=dz,zmin=zmu,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
 
 if args.addNtileweight2full == 'y':
     froot = dirout+tracer_clus
