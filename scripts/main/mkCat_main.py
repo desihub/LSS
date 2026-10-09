@@ -592,7 +592,7 @@ if args.apply_veto == 'y':
             if os.path.isfile(filer):
                 rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
             else:    
-                common.printlog(filer ' does not exist, need to find petal targetids to mask',logger)
+                common.printlog(filer +' does not exist, need to find petal targetids to mask',logger)
                 ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
                 trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
                 rtids2mask = np.unique(ranf['TARGETID'][trtotin])
