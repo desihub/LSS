@@ -568,6 +568,7 @@ if args.apply_veto == 'y':
             specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ progl + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
             tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=progl)
             np.savetxt(file_tloc_bp, tloc_bp.astype(np.int64).T, fmt='%d')
+            del specf
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
