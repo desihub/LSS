@@ -18,6 +18,9 @@ argstring=${@:6}
 echo 'argstring'
 echo "$argstring"
 
+echo '$DESIMODEL in dateLoopBugFix'
+echo $DESIMODEL
+
 
 #for i in $(seq 0 1 $NObsDates)
 #do

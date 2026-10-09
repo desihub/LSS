@@ -233,7 +233,7 @@ def redo_fba_fromorig(tileid,outdir=None,faver=None, verbose = False,survey='mai
             fo.write('export SKYBRICKS_DIR=${DESI_ROOT}/target/skybricks/v2\n')
 
         if faver < 2.4:
-                fo.write('module load desimodules/fuji\n')
+            fo.write('module load desimodules/fuji\n')
             if int(indir[-7:-1]) > 210413:
                 fo.write("module swap fiberassign/2.3.0\n")
             else:

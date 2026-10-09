@@ -62,15 +62,18 @@ import io as ProfileIO
 from pstats import SortKey
 from datetime import datetime, timedelta
 import glob
+log = get_logger()
 
-
+#---DEBUG
+import desimodel
+log.info(f'desimodel path = {desimodel.__path__}')
+#---DEBUG
 pr = cProfile.Profile()
 
-log = get_logger()
 
 #os.environ['DESIMODEL'] = '/global/common/software/desi/cori/desiconda/current/code/desimodel/master'
 #os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
-
+os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
 mtlformatdict = {"PARALLAX": '%16.8f', 'PMRA': '%16.8f', 'PMDEC': '%16.8f'}
 
 
@@ -300,6 +303,20 @@ def findTwin(altFiber, origFiberList, survey = 'sv3', obscon = 'dark'):
     altFS = altFiber['FIBERSTATUS']
     origFS = origFiberList['FIBERSTATUS']
 
+
+    # Sequence of seeking matches
+    # 1. FIBERSTATUS - if a fiber is good, we must use a good fiber
+    # before any other considerations. Similarly for bad fibers
+    # 2. TARGETID (should this be mandatory or optional?) - In cases 
+    # where we are twinning all fibers, not just target class mismatch, 
+    # select spectrum from same object even if on a different fiber
+    # 3. {OBSCON}_TARGET - assuming we don't have a spectrum for the same
+    # Target, we want to match as many target bits as possible to have as
+    # similar of a target as possible. If no observed targets match the full 
+    # target string, truncate to the first 3 (or 4 in some cases?) primary class bits.
+    # 4. PETAL - petals map to spectrographs, so prefer targets on same petals 
+    # to those on other petals to maintain spectrograph properties.
+    # 5. 
 
     '''
     BGSBits = initialentries['SV3_BGS_TARGET']
@@ -1334,6 +1351,10 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
     #else:
     #    return althpdirname, altmtltilefn, ztilefn, None
     #isinstance(FATiles[0], (collections.abc.Sequence, np.ndarray))
+
+    #log.info(f'altmtltilefn = {altmtltilefn}')
+    log.info('FIX ME BEFORE PUSHING')
+    testAMTLTileFile = Table.read('/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/mtl-done-tiles.ecsv')
     if not isinstance(actions['TILEID'], (collections.abc.Sequence, np.ndarray)):
         actions = [actions]
     log.info('actions = {0}'.format(actions))
@@ -1362,11 +1383,18 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         with open(FAMapName,'rb') as fl:
             (A2RMap, R2AMap) = pickle.load(fl,fix_imports = True)
 
+        tile = testAMTLTileFile[testAMTLTileFile['TILEID'] == t['TILEID']]
+
+
         # ADM create the catalog of updated redshifts.
         log.info('making zcats')
         log.info('zcatdir = {0}'.format(zcatdir))
-        log.info('t = {0}'.format(t))
-        zcat = make_zcat(zcatdir, [t], obscon, survey)
+        log.info('tile = {0}'.format(tile))
+        log.info('tile[0] = {0}'.format(tile[0]))
+        log.info('tile[0][TILEID] = {0}'.format(tile[0]['TILEID']))
+
+        #zcat = make_zcat(zcatdir, [t], obscon, survey)
+        zcat = make_zcat(zcatdir, tile, obscon, survey)
 
         altZCat = makeAlternateZCat(zcat, R2AMap, A2RMap, debug = debug, verbose = verbose)
         # ADM insist that for an MTL loop with real observations, the zcat
@@ -1411,17 +1439,17 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
                 raise ValueError('If processing mocks, you MUST specify a target file')
             log.info('update loc a')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv')#, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', survey = survey)#, targets = targets)
             didUpdateHappen = True
         elif targets is None:
             log.info('update loc b')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger)
+                      numobs_from_ledger=numobs_from_ledger, survey = survey)
             didUpdateHappen = True
         else:
             log.info('update loc c')
             update_ledger(althpdirname, altZCat, obscon=obscon.upper(),
-                      numobs_from_ledger=numobs_from_ledger, targets = targets)
+                      numobs_from_ledger=numobs_from_ledger, targets = targets, survey = survey)
             didUpdateHappen = True
         assert(didUpdateHappen)
         if verbose or debug:
@@ -1443,6 +1471,7 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, survey = '
         log.info('today = {0}'.format(today))
         #retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey, mode = 'update')
         retval = write_amtl_tile_tracker(altmtldir, [t], obscon = obscon, survey = survey)
+        #retval = write_amtl_tile_tracker(altmtldir, t, obscon = obscon, survey = survey)
         log.info('write_amtl_tile_tracker retval = {0}'.format(retval))
         if verbose or debug:
             log.info('has written to amtl_tile_tracker')

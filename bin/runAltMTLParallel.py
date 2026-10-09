@@ -1,3 +1,8 @@
+import os
+
+#---DEBUG
+os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
+#---DEBUG
 from desiutil.iers import freeze_iers
 freeze_iers()
 
@@ -9,7 +14,6 @@ from astropy.table import Table, vstack, join
 from desiutil.log import get_logger
 #import dill
 from sys import argv
-import os
 import numpy as np
 import multiprocessing as mp
 import logging
@@ -58,7 +62,11 @@ if args.profile:
 
 
 log = get_logger()
-
+#---DEBUG
+os.environ['DESIMODEL'] = '/global/common/software/desi/perlmutter/desiconda/current/code/desimodel/main'
+import desimodel
+log.info(f'desimodel path = {desimodel.__path__}')
+#---DEBUG
 if args.mock:
     assert(not (args.targfile is None))
     print('args.getosubp')
