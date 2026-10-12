@@ -401,7 +401,7 @@ if args.mkgtl:
         tscol = 'TSNR2_BGS'
         fn_badpetalnight = mainp.bad_petal_night_bright
     logger.info('TSNR2 info for cut is '+tscol)
-    logger.info('bad petal night file is is '+tscol)
+    logger.info('bad petal night file is is '+fn_badpetalnight)
     specf = ldirspec+'datcomb_'+prog.lower()+'_spec_zdone.fits'
     prog1b = prog.lower()+'1b'
     specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
