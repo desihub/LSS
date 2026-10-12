@@ -260,7 +260,7 @@ def mask_bad_fibers_time_dependent(dz, badfibers_td, logger=None):
 
 # functions that shouldn't have any dependence on survey go here
 
-def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, fibstatusbits=None, remove_badfiber_spike_nz=False, mask_petal_nights=False):
+def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, fibstatusbits=None, fn_spike_nz1=None, fn_spike_nz2=None,fn_badpetalnight=None):#remove_badfiber_spike_nz=False, mask_petal_nights=False):
     from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0  # just in case of nans
@@ -300,28 +300,44 @@ def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, 
             cat_out = fs[wfqa & ~bad]
     else:
         cat_out = fs[wfqa]
-    if remove_badfiber_spike_nz:
-        badfib1 = np.loadtxt(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt')
-        badfib2 = np.loadtxt(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt')
-        bad = np.isin(cat_out['FIBER'], np.concatenate((badfib1, badfib2)))
-        printlog('number removed from spike mask is '+str(np.sum(bad)), logger)
+    badfiber_spike_nz = []
+    if fn_spike_nz1 is not None:
+        badfiber_spike_nz.append(np.loadtxt(fn_spike_nz1))
+    if fn_spike_nz2 is not None:
+        badfiber_spike_nz.append(np.loadtxt(fn_spike_nz1))
+    if len(badfiber_spike_nz) > 0:
+        if len(badfiber_spike_nz) > 1:
+            badfiber_spike_nz = np.concatenate(badfiber_spike_nz)
+        else:
+            badfiber_spike_nz[0]
+        bad = np.isin(cat_out['FIBER'],badfiber_spike_nz)
         cat_out = cat_out[~bad]
+    #if remove_badfiber_spike_nz:
+    #    badfib1 = np.loadtxt(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt')
+    #    badfib2 = np.loadtxt(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt')
+    #    bad = np.isin(cat_out['FIBER'], np.concatenate((badfib1, badfib2)))
+    #    printlog('number removed from spike mask is '+str(np.sum(bad)), logger)
+    #    cat_out = cat_out[~bad]
 
-    if mask_petal_nights:
-        cat_out = mask_bad_petal_nights(cat_out, logger=logger)
+    if fn_badpetalnight is not None:
+        cat_out = mask_bad_petal_nights(cat_out, bad_petal_night_fn, logger=logger)
+    #if mask_petal_nights:
+    #    cat_out = mask_bad_petal_nights(cat_out, logger=logger)
 
     return cat_out
 
 
-def mask_bad_petal_nights(dz, prog='dark', logger=None):
-    if prog == 'dark':
-        bad_petal_night_file = open(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt', 'r')
-    elif prog == 'bright':
-        bad_petal_night_file = open(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt', 'r')
+def mask_bad_petal_nights(dz, bad_petal_night_fn, logger=None):
+    bad_petal_night_file = open(bad_petal_night_fn, 'r')
+
+    #if prog == 'dark':
+    #    bad_petal_night_file = open(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt', 'r')
+    #elif prog == 'bright':
+    #    bad_petal_night_file = open(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt', 'r')
 
     inds_to_remove = np.array([])
     for line in bad_petal_night_file:
