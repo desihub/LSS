@@ -162,6 +162,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     if "LRG" in tracer_clus:
         tpstr = "LRG"
     tpmap = tpstr
+    tpmap = tpmap.replace('_zcmb','')
     inds = np.arange(rm, rx)
     print(tracer_clus[:3])
     if tracer_clus[:3] == "ELG":
