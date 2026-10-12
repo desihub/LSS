@@ -322,7 +322,7 @@ def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, 
     #    cat_out = cat_out[~bad]
 
     if fn_badpetalnight is not None:
-        cat_out = mask_bad_petal_nights(cat_out, bad_petal_night_fn, logger=logger)
+        cat_out = mask_bad_petal_nights(cat_out, fn_badpetalnight, logger=logger)
     #if mask_petal_nights:
     #    cat_out = mask_bad_petal_nights(cat_out, logger=logger)
 
