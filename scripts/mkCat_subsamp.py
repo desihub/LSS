@@ -291,13 +291,15 @@ weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
 redo_fracz=False
+NN = False
+nzcompmd = 'ran'
 if args.compmd == 'NN':
     redo_fracz=True
     NN = True
     nzcompmd = 'dat'
     common.printlog('Using nearest neighbor for completeness weight instead of FRAC_TLOBS_TILES on randoms',logger)
     #common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
-nzcompmd = 'dat'
+
     
     
     
@@ -306,9 +308,9 @@ if mkclusdat:
     ct.mkclusdat(args.outdir+'/'+tracer_out,redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto,logger=logger)
 
 #make clustering catalogs for randoms
-nzcompmd = 'ran'
-if args.compmd == 'altmtl':
-    nzcompmd = args.compmd
+#nzcompmd = 'ran'
+#if args.compmd == 'altmtl':
+#    nzcompmd = args.compmd
 rcols=['Z','WEIGHT','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL','TARGETID_DATA'] #columns to make sure are in the randoms
 inds = np.arange(rm,rx)
 if mkclusran:
