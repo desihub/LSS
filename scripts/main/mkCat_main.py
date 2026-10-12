@@ -396,9 +396,12 @@ else:
 gtl_fn = dirout+prog+'_goodspecdata.h5'
 if args.mkgtl:
     tscol = 'TSNR2_ELG'
+    fn_badpetalnight = mainp.bad_petal_night_dark
     if 'BRIGHT' in prog:
         tscol = 'TSNR2_BGS'
+        fn_badpetalnight = mainp.bad_petal_night_bright
     logger.info('TSNR2 info for cut is '+tscol)
+    logger.info('bad petal night file is is '+tscol)
     specf = ldirspec+'datcomb_'+prog.lower()+'_spec_zdone.fits'
     prog1b = prog.lower()+'1b'
     specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
@@ -417,9 +420,9 @@ if args.mkgtl:
     badfib=mainp.badfib_td
     badfib_status=mainp.badfib_status
     if args.verspec == 'daily':
-        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,logger=logger)
     else:
-        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,fn_spike_nz1=mainp.badnzfib1,fn_spike_nz2=mainp.badnzfib2,fn_badpetalnight=fn_badpetalnight ,logger=logger)
     fs = Table(fs)
     won = Table({'TILELOCID': (10000 * fs['TILEID'].value
                                + fs['LOCATION'].value).astype('i8', copy=False),
