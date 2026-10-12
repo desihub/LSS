@@ -70,3 +70,6 @@ bin/*.out
 LOCAL*.sh
 LOCAL*.py
 *DEBUG*
+
+# VS Code workspace settings - let different people have their own and help them avoid commiting them inadverently
+.vscode

@@ -41,7 +41,7 @@ echo "$argstring"
 if [ $QVal = 'interactive' ]; 
 then
 
-    srun --nodes=1 -n 1 -C $CVal --qos=interactive -A desi -t 04:00:00 --dependency=afterany:46220452  python $path2LSS/runAltMTLRealizations.py $argstring
+    srun --nodes=1 -n 1 -C $CVal --qos=interactive -A desi -t 04:00:00   python $path2LSS/runAltMTLRealizations.py $argstring
     #srun --nodes=$NNodes -C $CVal --qos=$QVal -A desi -t 03:00:00 --dependency=afterany:17881308 $path2LSS/runAltMTLParallel.py $argstring
 fi
 if [ $QVal = 'regular' ]; 

@@ -35,7 +35,7 @@ nran = 18
 
 tps = [args.tracers]
 if args.tracers == 'all':
-    tps = ['QSO','LRG','BGS_BRIGHT','ELG_LOPnotqso']
+    tps = ['QSO','LRG','LGE','BGS_BRIGHT','BGS_FAINT','ELG_LOPnotqso','ELG_VLOnotqso']
 
 zdw = ''#'zdone'
 
@@ -73,7 +73,7 @@ for tp in tps:
         zmin = 0.6
         zmax = 1.6
         dz = 0.1
-    if tp[:3] == 'LRG':
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
         zmin = 0.4
         zmax = 1.1
         dz = 0.1

@@ -203,10 +203,14 @@ class main:
         if specver == 'loa-v1':
             #self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/loa/QSO_cat_loa_cumulative_v0.fits' #used for v1
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA2/QSO/loa/QSO_cat_loa_cumulative_v2.fits' #used for v1.1 onward
+            self.badnzfib1 = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt'
+            self.badnzfib2 = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt'
+            self.bad_petal_night_dark = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt'
+            self.bad_petal_night_bright = '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt'
 
         #print('specver is '+specver)
         if specver == 'matterhorn-v2':
-            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/unique_badfibers_time-dependent.txt').readlines()
+            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
             self.badfib_status  = [13,14]
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA3/QSO/matterhorn/QSO_cat_matterhorn_cumulative_v1.fits'
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/emlin_catalog.fits'

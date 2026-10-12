@@ -260,7 +260,7 @@ def mask_bad_fibers_time_dependent(dz, badfibers_td, logger=None):
 
 # functions that shouldn't have any dependence on survey go here
 
-def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, fibstatusbits=None, remove_badfiber_spike_nz=False, mask_petal_nights=False):
+def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, fibstatusbits=None, fn_spike_nz1=None, fn_spike_nz2=None,fn_badpetalnight=None):#remove_badfiber_spike_nz=False, mask_petal_nights=False):
     from desitarget.targetmask import zwarn_mask
     selz = dz['ZWARN'] != 999999
     selz &= dz['ZWARN']*0 == 0  # just in case of nans
@@ -300,28 +300,44 @@ def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, 
             cat_out = fs[wfqa & ~bad]
     else:
         cat_out = fs[wfqa]
-    if remove_badfiber_spike_nz:
-        badfib1 = np.loadtxt(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt')
-        badfib2 = np.loadtxt(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt')
-        bad = np.isin(cat_out['FIBER'], np.concatenate((badfib1, badfib2)))
-        printlog('number removed from spike mask is '+str(np.sum(bad)), logger)
+    badfiber_spike_nz = []
+    if fn_spike_nz1 is not None:
+        badfiber_spike_nz.append(np.loadtxt(fn_spike_nz1))
+    if fn_spike_nz2 is not None:
+        badfiber_spike_nz.append(np.loadtxt(fn_spike_nz1))
+    if len(badfiber_spike_nz) > 0:
+        if len(badfiber_spike_nz) > 1:
+            badfiber_spike_nz = np.concatenate(badfiber_spike_nz)
+        else:
+            badfiber_spike_nz[0]
+        bad = np.isin(cat_out['FIBER'],badfiber_spike_nz)
         cat_out = cat_out[~bad]
+    #if remove_badfiber_spike_nz:
+    #    badfib1 = np.loadtxt(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bad_nz_fibers_ks_test.txt')
+    #    badfib2 = np.loadtxt(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/elg_bad_nz_spike_fibers_1.498_1.499.txt')
+    #    bad = np.isin(cat_out['FIBER'], np.concatenate((badfib1, badfib2)))
+    #    printlog('number removed from spike mask is '+str(np.sum(bad)), logger)
+    #    cat_out = cat_out[~bad]
 
-    if mask_petal_nights:
-        cat_out = mask_bad_petal_nights(cat_out, logger=logger)
+    if fn_badpetalnight is not None:
+        cat_out = mask_bad_petal_nights(cat_out, fn_badpetalnight, logger=logger)
+    #if mask_petal_nights:
+    #    cat_out = mask_bad_petal_nights(cat_out, logger=logger)
 
     return cat_out
 
 
-def mask_bad_petal_nights(dz, prog='dark', logger=None):
-    if prog == 'dark':
-        bad_petal_night_file = open(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt', 'r')
-    elif prog == 'bright':
-        bad_petal_night_file = open(
-            '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt', 'r')
+def mask_bad_petal_nights(dz, bad_petal_night_fn, logger=None):
+    bad_petal_night_file = open(bad_petal_night_fn, 'r')
+
+    #if prog == 'dark':
+    #    bad_petal_night_file = open(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/lrg_bad_per_petal-night.txt', 'r')
+    #elif prog == 'bright':
+    #    bad_petal_night_file = open(
+    #        '/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/bgs_bright_bad_per_petal-night.txt', 'r')
 
     inds_to_remove = np.array([])
     for line in bad_petal_night_file:
@@ -339,6 +355,32 @@ def mask_bad_petal_nights(dz, prog='dark', logger=None):
     printlog('number removed from petal night mask is '+str(nremove), logger)
 
     return dz[dz_inds == 1]
+
+def get_bad_petal_nights_tloc(dz, prog='dark', indir='/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/',logger=None):
+    #return a list of all TILELOCIDs in the bad petal night mask
+    if prog == 'dark':
+        bad_petal_night_file = open(
+            indir+'lrg_bad_per_petal-night.txt', 'r')
+    elif prog == 'bright':
+        bad_petal_night_file = open(
+            indir+'bgs_bright_bad_per_petal-night.txt', 'r')
+
+    inds_to_remove = np.array([])
+    for line in bad_petal_night_file:
+        night = int(line.split()[0])
+        for petal in line.split()[1:]:
+            inds_to_remove = np.concatenate(
+                (inds_to_remove, np.where(
+                    (dz['LASTNIGHT'] == night)
+                    & (dz['FIBER'] >= 500 * int(petal))
+                    & (dz['FIBER'] < 500 * (int(petal)+1)))[-1]))
+
+    dz_inds = np.ones(len(dz)).astype('int')
+    dz_inds[inds_to_remove.astype('int')] = 0
+    nremove = len(dz_inds)-np.sum(dz_inds)
+    #tids = np.unique(dz[dz_inds == 0]['TARGETID'])
+    tloc = 10000*dz[dz_inds == 0]['TILEID'] +dz[dz_inds == 0]['LOCATION']
+    return tloc
 
 
 def goodz_infull(tp, dz, zcol='Z_not4clus'):
@@ -628,6 +670,25 @@ def splitGC(input_array):
     sel_ngc = gc.b > 0
     return sel_ngc
 
+
+def select_DR11(input_array, ra_col='RA', dec_col='DEC'):
+    '''
+    input_array with RA, DEC given by ra_col,dec_col
+    return boolean array for whether in DR11 area or not as defined by desitarget  
+    '''
+    
+    #first, get brickids for DR11
+    sbricks = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
+    sel11 = sbricks['DRVERSION'] == 11
+    dr11_bricks = sbricks['BRICKID'][sel11]
+    if 'BRICKID' in list(input_array.dtype.names):
+        dr11in = np.isin(input_array['BRICKID'],dr11_bricks) 
+    else:
+        from desiutil import brick
+        tmp = brick.Bricks(bricksize=0.25)
+        brickids = tmp.brickid(input_array[ra_col], input_array[dec_col])
+        dr11in = np.isin(brickids,dr11_bricks) 
+    return dr11in
 
 def select_regressis_DES(input_array, ra_col='RA', dec_col='DEC'):
     '''
@@ -1483,6 +1544,7 @@ def join_etar(fn, tracer, tarver='1.1.1'):
 
 
 def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CALIB_G', 'CALIB_R', 'CALIB_Z', 'EBV_MPF_Mean_FW15', 'EBV_MPF_Mean_ZptCorr_FW15', 'EBV_MPF_Var_FW15', 'EBV_MPF_VarCorr_FW15', 'EBV_MPF_Mean_FW6P1', 'EBV_MPF_Mean_ZptCorr_FW6P1', 'EBV_MPF_Var_FW6P1', 'EBV_MPF_VarCorr_FW6P1', 'EBV_SGF14', 'BETA_ML', 'BETA_MEAN', 'BETA_RMS', 'HI', 'KAPPA_PLANCK'], fid_cols=['EBV', 'PSFDEPTH_G', 'PSFDEPTH_R', 'PSFDEPTH_Z', 'GALDEPTH_G', 'GALDEPTH_R', 'GALDEPTH_Z', 'PSFDEPTH_W1', 'PSFDEPTH_W2', 'PSFSIZE_G', 'PSFSIZE_R', 'PSFSIZE_Z'], redo=True):
+    import LSS.claude_tools as claudet
     fid_fn = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-' + \
         str(rann)+'.fits'
     new_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/external_input_maps/mapvalues/randoms-1-' + \
@@ -1524,7 +1586,8 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
 
     rannew = fitsio.read(new_fn, columns=cols2read_new)
     printlog('read '+new_fn, logger)
-    df = join(df, rannew, keys=['TARGETID'])
+    #df = join(df, rannew, keys=['TARGETID'])
+    df = claudet.join_left(df, rannew, keys=['TARGETID'])
     printlog('joined '+new_fn, logger)
     del rannew
     cols2read_fid = ['TARGETID']
@@ -1542,7 +1605,8 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
 
     ranfid = fitsio.read(fid_fn, columns=cols2read_fid)
     printlog('read '+fid_fn, logger)
-    df = join(df, ranfid, keys=['TARGETID'])
+    #df = join(df, ranfid, keys=['TARGETID'])
+    df = claudet.join_left(df, ranfid, keys=['TARGETID'])
 
     # print(len(df))
     # comments = ['Adding map columns']
@@ -1552,13 +1616,21 @@ def add_map_cols(fn, rann, logger=None, new_cols=['HALPHA', 'HALPHA_ERROR', 'CAL
     return
 
 
-def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targetsDR9v1.1.1', redo=False, logger=None, return_array=False):
+def add_veto_col(fn, tracer, ran=False, tracer_mask='lrg', rann=0, tarver='targetsDR9v1.1.1',tarver11='targetsDR11v5.2.0', dr11=False,redo=False, logger=None, return_array=False):
     mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/' + \
         tracer+tarver+'_'+tracer_mask+'imask.fits'
+    mask_fn11 = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/' + \
+        tracer+tarver11+'_'+tracer_mask+'imask.fits'
     if ran:
         mask_fn = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
             str(rann)+tracer_mask+'imask.fits'
+        mask_fn11 = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/randoms-1-' + \
+            str(rann)+'_dr11_'+tracer_mask+'imask.fits'
+
     maskf = fitsio.read(mask_fn)
+    if dr11:
+        maskf11 = fitsio.read(mask_fn11)
+        maskf = np.concatenate([maskf,maskf11])
     df = fitsio.read(fn.replace('global', 'dvs_ro'))
     if np.isin(tracer_mask+'_mask', list(df.dtype.names)):
         printlog('mask column already in '+fn, logger)
@@ -1672,8 +1744,83 @@ def maskcircandrec(indata, maskfn, logger=None):
 
     return mask
 
+def mktlobs(fin, mapveto='_HPmapcut',logger=None):
+    '''
+    fl is a string with the path to the file name to load
+    fout is a string with the path to the outpur file
+    ebits are the new imaging mask bits to apply
+    zmask is whether or not to apply any zmask
+    maxp is the maximum priority to keep in the data files
+    '''
+    if '.fits' in fin:
+        # +'full_noveto.'+dr+'.fits')
+        ff = Table(fitsio.read(fin.replace('global', 'dvs_ro')))
+    elif '.h5' in fin:
+        ff = read_hdf5_blosc(fin.replace('global', 'dvs_ro'),columns=['TILES','LOCATION_ASSIGNED','TILELOCID_ASSIGNED'])
+    printlog('length of input '+str(len(ff)), logger)
+    compa = []
+    fractl = []
+    tll = []
+    ti = 0
+    ff.sort('TILES')
+    nts = len(np.unique(ff['TILES']))
+    tlsl = ff['TILES']
+    tlslu = np.unique(tlsl).astype(str)
+    laa = ff['LOCATION_ASSIGNED']
+    lta = ff['TILELOCID_ASSIGNED']
+    # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
 
-def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='', logger=None):
+    # for tls in np.unique(dz['TILES']): #this is really slow now, need to figure out a better way
+    i = 0
+    tot = 0
+    atot = 0
+    tltot = 0
+    while i < len(ff):
+        tls = []
+        tlis = []
+        nli = 0  # initialize total available per tile group
+        nai = 0  # initialize total assigned
+        nti = 0  # initialize total at location where something of the same type was assigned
+
+        while tlsl[i] == tlslu[ti]:
+            nli += 1
+            nai += laa[i]  # laa is true/false assigned
+            # lta is true/false something of the same type was assigned
+            nti += lta[i]
+            i += 1
+            if i == len(ff):
+                break
+
+        if ti % 10000 == 0:
+            printlog('at tiles ' + str(ti) + ' of ' + str(nts), logger)
+
+        tot += nli
+        atot += nai
+        tltot += nti
+        cp = nai / nli
+        fract = nti/nli
+        # print(tls,cp,no,nt)
+        compa.append(cp)
+        fractl.append(fract)
+        tll.append(tlslu[ti])
+        ti += 1
+    # print(tot,atot,tltot)
+    comp_dicta = dict(zip(tll, compa))
+    fract_dicta = dict(zip(tll, fractl))
+    if '.fits' in fin:
+        tlobs_fn = fin.replace(
+            'full'+mapveto+'.dat.fits', 'frac_tlobs.fits')
+    if '.h5' in fin:
+        tlobs_fn = fin.replace(
+            'full'+mapveto+'.dat.h5', 'frac_tlobs.fits')
+    printlog('tlobs file will get written to '+tlobs_fn)
+    tlobs = Table()
+    tlobs['TILES'] = tll
+    tlobs['FRAC_TLOBS_TILES'] = fractl
+    write_LSS_scratchcp(tlobs, tlobs_fn.replace('dvs_ro','global'), logger=logger)
+
+
+def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=False, reccircmasks=None, wo='y', mapveto='',tids2mask=None,logger=None):
     '''
     fl is a string with the path to the file name to load
     fout is a string with the path to the outpur file
@@ -1688,6 +1835,10 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff = fin
         del fin
     printlog('length of input '+str(len(ff)), logger)
+    if tids2mask is not None:
+        tidsin = np.isin(ff['TARGETID'],tids2mask)
+        ff = ff[~tidsin]
+        printlog('length after masking input TARGETID list '+str(len(ff)),logger)
     seld = ff['GOODHARDLOC'] == 1
     printlog('length after cutting to good locations ' +
              str(len(ff[seld])), logger)
@@ -1745,7 +1896,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         ff.sort('TILES')
         nts = len(np.unique(ff['TILES']))
         tlsl = ff['TILES']
-        tlslu = np.unique(tlsl)
+        tlslu = np.unique(tlsl).astype(str)
         laa = ff['LOCATION_ASSIGNED']
         lta = ff['TILELOCID_ASSIGNED']
         # print('TILELOCID_ASSIGNED',np.unique(ff['TILELOCID_ASSIGNED'],return_counts=True),len(ff))
@@ -1793,7 +1944,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         if '.h5' in fout:
             tlobs_fn = fout.replace(
                 'full'+mapveto+'.dat.h5', 'frac_tlobs.fits')
-        printlog('tlobs file will get written to '+tlobs_fn)
+        printlog('tlobs file will get written to '+tlobs_fn,logger)
         tlobs = Table()
         tlobs['TILES'] = tll
         tlobs['FRAC_TLOBS_TILES'] = fractl
@@ -1806,6 +1957,7 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
             fracta.append(fract_dicta[tl])
         ff['COMP_TILE'] = np.array(fcompa)
         ff['FRAC_TLOBS_TILES'] = np.array(fracta)
+        ff['NEW_WEIGHTFRACZ'] = get_fracz_pNNweight(ff, get_nnweight=True,logger=logger)
         printlog('data quantities measured, moving to write-out phase', logger)
         # print(np.sum(ff['FRAC_TLOBS_TILES']),len(ff))
         # if comp_only:
@@ -1822,9 +1974,11 @@ def apply_veto(fin, fout=None, ebits=None, zmask=False, maxp=3400, comp_only=Fal
         wz &= ff['ZWARN'] != 1.e20
         comp = len(ff[wz])/len(ff)
         printlog('assignment completeness is '+str(comp), logger)
-        printlog('sum of 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match', logger)
-        printlog(str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']))
+        printlog('sum of NEW_WEIGHTFRACZ, 1/(FRACZ_TILELOCID*FRAC_TLOBS_TILES), 1/COMP_TILE, and length of input; should approximately match', logger)
+        printlog(str(np.sum(ff[wz]['NEW_WEIGHTFRACZ']))+','+str(np.sum(1. / (ff[wz]['FRACZ_TILELOCID']*ff[wz]['FRAC_TLOBS_TILES']))
                      )+',' + str(np.sum(1. / ff[wz]['COMP_TILE']))+','+str(len(ff)), logger)
+        seln0 = ff['COMP_TILE'] != 0
+        printlog('any mismatch could be due to number of targets in areas with COMP_TILE=0: '+str(np.sum(~seln0)),logger)
     if fout is None or wo == 'n':
         return ff
     del ff
