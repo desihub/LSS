@@ -790,22 +790,45 @@ if args.apply_veto == 'y':
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
     dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto,logger=logger) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
-    if args.mask_petalnight_tids:
-        common.printlog('getting badpetalnight tilelocid mask',logger)
-        file_tloc_bp = ldirspec+'/'+pdir+'_badpetalnight_TILELOCID.txt'
-        tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
-        tspec = fitsio.read(maindir+'/fba'+str(mocknum)+'/'+pdir+'datcomb_'+progl+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
-        totin = np.isin(tspec['TILELOCID'],tloc_bp)
-        tids2mask = np.unique(tspec['TARGETID'][totin])
-        dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
-        dataf = dataf[~dataf_inmask]
+    #if args.mask_petalnight_tids:
+    #    common.printlog('getting badpetalnight tilelocid mask',logger)
+    #    file_tloc_bp = ldirspec+'/'+pdir+'_badpetalnight_TILELOCID.txt'
+    #    tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+    #    tspec = fitsio.read(maindir+'/fba'+str(mocknum)+'/'+pdir+'datcomb_'+progl+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
+    #    totin = np.isin(tspec['TILELOCID'],tloc_bp)
+    #    tids2mask = np.unique(tspec['TARGETID'][totin])
+    #    dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
+    #    dataf = dataf[~dataf_inmask]
         
     
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
-    print('data veto done, now doing randoms')
+    common.printlog('data veto done, now doing randoms',logger)
 
     gc.collect()
+
+
+if args.mask_petalnight_tids:
+    fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
+    dataf = common.read_hdf5_blosc(fout.replace('global','dvs_ro'))
+
+    common.printlog('getting badpetalnight tilelocid mask',logger)
+    file_tloc_bp = ldirspec+'/'+pdir+'_badpetalnight_TILELOCID.txt'
+    tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+    tspec = fitsio.read(maindir+'/fba'+str(mocknum)+'/'+pdir+'datcomb_'+progl+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
+    totin = np.isin(tspec['TILELOCID'],tloc_bp)
+    tids2mask = np.unique(tspec['TARGETID'][totin])
+    dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
+    dataf = dataf[~dataf_inmask]
+        
+    
+    #common.write_LSS_scratchcp(dataf,fout,logger=logger)
+    common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
+    common.print('petalnight veto done for data',logger)
+
+    gc.collect()
+
+
 if args.apply_veto_ran == 'y':
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))       
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
@@ -1132,7 +1155,7 @@ if args.mkclusran == 'y':
         if args.mask_petalnight_tids:
             common.printlog(str(rann)+' finding bad petal targetids to mask',logger)
             specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
-            filer = specdata_dir+'/ran_'+str(rann)+'_'+progl+'_badpetalnight_TARGETID.txt'
+            filer = specdata_dir+'/ran_'+str(rann)+'_'+pdir+'_badpetalnight_TARGETID.txt'
             if os.path.isfile(filer):
                 rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
 
