@@ -820,15 +820,15 @@ if args.mask_petalnight_tids:
     tlocids = 10000*tspec['TILEID'] + tspec['LOCATION']
     totin = np.isin(tlocids,tloc_bp)
     tids2mask = np.unique(tspec['TARGETID'][totin])
-    common.printlog('will mask '+str(len(tids2mask))+' targetid out of '+str(len))
+    common.printlog('will mask '+str(len(tids2mask))+' targetid out of '+str(len),logger)
     dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
-    common.printlog('will mask '+str(np.sum(dataf_inmask))+' targetid out of '+str(len(dataf)))
+    common.printlog('will mask '+str(np.sum(dataf_inmask))+' targetid out of '+str(len(dataf)),logger)
     dataf = dataf[~dataf_inmask]
         
     
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
-    common.print('petalnight veto done for data',logger)
+    common.printlog('petalnight veto done for data',logger)
     del dataf
     gc.collect()
 
