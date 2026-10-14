@@ -819,14 +819,16 @@ if args.mask_petalnight_tids:
     tspec = common.read_hdf5_blosc(maindir+'/fba'+str(mocknum)+'/datcomb_'+pdir+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
     totin = np.isin(tspec['TILELOCID'],tloc_bp)
     tids2mask = np.unique(tspec['TARGETID'][totin])
+    common.printlog('will mask '+str(len(tids2mask))+' targetid out of '+str(len))
     dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
+    common.printlog('will mask '+str(np.sum(dataf_inmask))+' targetid out of '+str(len(dataf)))
     dataf = dataf[~dataf_inmask]
         
     
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
     common.print('petalnight veto done for data',logger)
-
+    del dataf
     gc.collect()
 
 
