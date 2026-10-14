@@ -20,6 +20,6 @@ export LSSCODE=/global/homes/d/desica/LSScode/LSS
 PYTHONPATH=/global/homes/d/desica/LSScode/LSS/py:$PYTHONPATH
 
 
-srun --exclusive -N 1 -n 1 --cpus-per-task=128 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer ELG_LOP --notqso y  --mkclusdat y --mkclusran y --splitGC y --nz y --par y   --extra_clusdir $edir --outmd cfs  --mask_petalnight_tids --doimlin y --replace_syscol --par y --imsys_zbin split --transfer_cfs
+srun --exclusive -N 1 -n 1 --cpus-per-task=128 python $scriptdir/mock_tools/mkCat_amtl.py --base_altmtl_dir $bdir --simName $sim --mocknum $mocknum --survey DA2 --specdata loa-v1 --tracer QSO  --mkclusdat y --mkclusran y --splitGC y --nz y --par y   --extra_clusdir $edir --outmd cfs  --mask_petalnight_tids --doimlin y --replace_syscol --par y --imsys_zbin split --transfer_cfs
 
 

@@ -1132,7 +1132,7 @@ if args.mkclusran == 'y':
         if args.mask_petalnight_tids:
             common.printlog(str(rann)+' finding bad petal targetids to mask',logger)
             specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
-            filer = specdata_dir+'/ran_'+str(rn)+'_'+progl+'_badpetalnight_TARGETID.txt'
+            filer = specdata_dir+'/ran_'+str(rann)+'_'+progl+'_badpetalnight_TARGETID.txt'
             if os.path.isfile(filer):
                 rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
 
