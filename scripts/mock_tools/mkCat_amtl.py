@@ -67,6 +67,8 @@ parser.add_argument("--joindspec", help="combine the target and spec info togeth
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--apply_oldfoot", help="whether to cut randoms based on old tile list for full survey",default='n')
+parser.add_argument("--mask_petalnight_tids", help="apply a mask to all TARGETID associated TILELOCID in the bad petalnight mask",action="store_true")
+
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data; needed on only for 1st steps",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
@@ -788,6 +790,17 @@ if args.apply_veto == 'y':
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
     dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto,logger=logger) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
+    if args.mask_petalnight_tids:
+        common.printlog('getting badpetalnight tilelocid mask',logger)
+        file_tloc_bp = ldirspec+'/'+pdir+'_badpetalnight_TILELOCID.txt'
+        tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+        tspec = fitsio.read(maindir+'/fba'+str(mocknum)+'/'+pdir+'datcomb_'+progl+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
+        totin = np.isin(tspec['TILELOCID'],tloc_bp)
+        tids2mask = np.unique(tspec['TARGETID'][totin])
+        dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
+        dataf = dataf[~dataf_inmask]
+        
+    
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
     print('data veto done, now doing randoms')
@@ -1116,6 +1129,13 @@ if args.mkclusran == 'y':
             selY5 = is_point_in_desi(tiles, datain['RA'], datain['DEC']) #fr being the array of randoms
             datain = datain[selY5] #randoms should now be cut to matching footprint
             common.printlog(str(rann)+' length after cut to old footprint '+str(len(datain)),logger=logger)
+        if args.mask_petalnight_tids:
+            common.printlog(str(rann)+' finding bad petal targetids to mask',logger)
+            specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
+            filer = specdata_dir+'/ran_'+str(rn)+'_'+progl+'_badpetalnight_TARGETID.txt'
+            if os.path.isfile(filer):
+                rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
+
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
