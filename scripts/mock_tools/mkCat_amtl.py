@@ -816,7 +816,7 @@ if args.mask_petalnight_tids:
     specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
     file_tloc_bp = specdata_dir+'/'+pdir+'_badpetalnight_TILELOCID.txt'
     tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
-    tspec = fitsio.read(maindir+'/fba'+str(mocknum)+'/datcomb_'+pdir+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
+    tspec = common.read_hdf5_blosc(maindir+'/fba'+str(mocknum)+'/datcomb_'+pdir+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
     totin = np.isin(tspec['TILELOCID'],tloc_bp)
     tids2mask = np.unique(tspec['TARGETID'][totin])
     dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
