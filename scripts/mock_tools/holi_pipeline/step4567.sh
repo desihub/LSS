@@ -17,7 +17,7 @@ PROCID=${SLURM_PROCID:-0}
 # ID seed mock to process in task rank
 IDS=$((FIRST_ID_RANK + PROCID ))
 
-# NCPU=${SLURM_CPUS_PER_TASK:-1}
+NCPU=${SLURM_CPUS_PER_TASK:-1}
 # NCPU_M2=$((NCPU-2))
 
 #
@@ -98,7 +98,7 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     ## Env
     source /global/common/software/desi/desi_environment.sh 26.3
     #module swap desitarget/3.0.0
-    # desitarget ecsv to fits
+    # local desitarget ecsv to fits
     target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
     export PYTHONPATH=$target_dir/py:$PYTHONPATH
     export PATH=$target_dir/bin:$PATH
@@ -110,7 +110,7 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     out7=$DS_DIR/$altmtlxxxx
     echo $out7
 
-    time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK
+    time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK --nproc $NCPU
 )
 
 date
