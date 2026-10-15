@@ -12,6 +12,91 @@ By default, if one of the srun tasks fails, the others are stopped; since the si
 
 See file [sbatch_holi_pipeline.sh](./sbatch_holi_pipeline.sh)
 
+## DESI environment
+
+### Versions
+
+To ensure reproducibility, avoid the "main" tag, as the versions of the installed packages are not yet fixed. Command to get the list of available tags:
+* for desi_environment.sh
+
+```console
+module use /global/common/software/desi/perlmutter/desiconda/startup/modulefiles; module avail desimodules
+```
+
+* for cosmodesi_environment.sh
+
+```console
+module use /global/common/software/desi/users/adematti/perlmutter/cosmodesiconda/startup/modulefiles; module avail cosmodesimodules
+```
+
+### Isolation of different environments
+
+Sequencing two processes that require different environments in this manner is not recommended.
+
+```console
+#!/usr/bin/env bash
+
+source env1.sh
+processing1.sh
+
+source env2.sh
+processing2.sh
+```
+
+Defining env1 beforehand can have side effects on env2.
+
+#### bash subshell solution with ( )
+
+Bash has a solution for this: "subshells" using parentheses.
+```console
+#!/usr/bin/env bash
+
+(
+    source env1.sh
+    processing1.sh
+)
+
+# no impact of "source env1.sh" here now
+source env2.sh
+processing2.sh
+```
+
+#### Subscripts solution
+
+You can also use a script that sets up the environment and then launches the processing.
+
+`do_processing1.sh`
+
+```console
+#!/usr/bin/env bash
+
+source env1.sh
+processing1.sh
+```
+
+then
+
+```console
+#!/usr/bin/env bash
+
+do_processing1.sh
+
+# no impact of "source env1.sh" here now
+source env2.sh
+processing2.sh
+```
+
+The downside is that it is possible to manage the local variables used by processing1.sh.
+
+#### With SLURM
+
+For high-level pipelines like Holi's, it is important to understand the rules for environment propagation with sbatch and srun. By default, SLURM generally passes on exported variables. Consequently, submitting a job using `sbatch` must be done in a neutral environment; in practice, this means avoiding having an environment sourced by default in your `.bashrc`.
+
+There is an `--export` option that allows limiting variable transmission by providing a list, which is practically difficult to manage, while transmitting nothing via `--export=NONE` is too drastic.
+
+If it is necessary to define an environment within the sbatch script, you must use Bash subshells (with parentheses) and include the environment initialization within the scripts launched by `srun`.
+
+
 ## Namming file and good practice
 
 It is best practice for a data processing script not to hardcode input and output filenames. Most steps in the Holi pipeline followed this principle prior to this update; to ensure consistency across all scripts, I rewrote the interfaces of the original scripts to use the same option names, aligning them with this parameter naming convention.
@@ -93,78 +178,5 @@ IDS=200
 out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
 echo $out6
 ll $out6
-source /global/common/software/desi/desi_environment.sh main
-#module load desitarget/3.0.0
-# use local package LSS, refresh after source env
-export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
-export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
-# desitarget ecsv to fits
-target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
-export PYTHONPATH=$target_dir/py:$PYTHONPATH
-export PATH=$target_dir/bin:$PATH
-altmtlxxxx=$(printf "altmtl%04d" "$IDS")
-out7=$DS_DIR/$altmtlxxxx
-echo $out7
 
-
-cd /global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline
-source init_env_holi.sh 
-6786  LSS_DIR=$(get_pars.py $HOLI_PARS LSS_dir)
- 6787  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
- 6788  echo LSS_DIR
- 6789  echo $LSS_DIR
- 6790  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
- 6791  echo $target_dir
- 6792  IDS=200
- 6793  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
- 6794  echo $out6
- 6795  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
- 6796  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
- 6797  echo $out6
- 6798  ll /pscratch/sd/j/jcolley/holi/test_hp/forFA0200.fits
- 6799  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
- 6800  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
- 6801  ll $out6
- 6802  source /global/common/software/desi/desi_environment.sh main
- 6803  #module load desitarget/3.0.0
- 6804  # use local package LSS, refresh after source env
- 6805  export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
- 6806  export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
- 6807  # desitarget ecsv to fits
- 6808  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
- 6809  export PYTHONPATH=$target_dir/py:$PYTHONPATH
- 6810  export PATH=$target_dir/bin:$PATH
- 6811  altmtlxxxx=$(printf "altmtl%04d" "$IDS")
- 6812  out7=$DS_DIR/$altmtlxxxx
- 6813  echo $out7
- 6814  t6786  LSS_DIR=$(get_pars.py $HOLI_PARS LSS_dir)
- 6787  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
- 6788  echo LSS_DIR
- 6789  echo $LSS_DIR
- 6790  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
- 6791  echo $target_dir
- 6792  IDS=200
- 6793  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
- 6794  echo $out6
- 6795  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
- 6796  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
- 6797  echo $out6
- 6798  ll /pscratch/sd/j/jcolley/holi/test_hp/forFA0200.fits
- 6799  DS_DIR=$(get_pars.py $HOLI_PARS mock_dir)
- 6800  out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
- 6801  ll $out6
- 6802  source /global/common/software/desi/desi_environment.sh main
- 6803  #module load desitarget/3.0.0
- 6804  # use local package LSS, refresh after source env
- 6805  export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
- 6806  export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
- 6807  # desitarget ecsv to fits
- 6808  target_dir=$(get_pars.py $HOLI_PARS TARGET_dir)
- 6809  export PYTHONPATH=$target_dir/py:$PYTHONPATH
- 6810  export PATH=$target_dir/bin:$PATH
- 6811  altmtlxxxx=$(printf "altmtl%04d" "$IDS")
- 6812  out7=$DS_DIR/$altmtlxxxx
- 6813  echo $out7
- 6814  time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK
-ime ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK
 ```
