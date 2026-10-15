@@ -1,0 +1,55 @@
+#!/global/common/software/desi/perlmutter/desiconda/20240425-2.2.0/conda/bin/python -u
+from desiutil.iers import freeze_iers
+freeze_iers()
+from LSS.SV3.altmtltools import writeBitweights
+from desiutil.log import get_logger
+from LSS.bitweights import pack_bitweights
+from sys import argv
+import numpy as np
+import argparse
+import os
+import multiprocessing as mp
+
+# LGN 20261015 - Fixing pool to work with python 3.14
+from multiprocessing import Pool, set_start_method
+set_start_method('fork', force=True)
+
+import logging
+import atexit
+log = get_logger()
+parser = argparse.ArgumentParser(
+                    prog = 'MakeBitweights',
+                    description = 'Convert a set of {ndir} realizations of alternate MTLs into bitweights and (optionally) probobs')
+parser.add_argument('-o', '--outdir', dest='outdir', required=True, type=str, help = 'base output directory.')
+parser.add_argument('-obscon', '--obscon', dest='obscon', default='DARK', help = 'observation conditions, either BRIGHT or DARK.', required = False, type = str)
+parser.add_argument('-s', '--survey', dest='survey', default='sv3', help = 'DESI survey to create Alt MTLs for. Either sv3 or main.', required = False, type = str)
+parser.add_argument('-n', '--ndir', dest='ndir', default=128, help = 'Random seed to ensure reproducability.', required = False, type = int)
+parser.add_argument('-ppn', '--ProcPerNode', dest='ProcPerNode', default=None, help = 'Number of processes to spawn per requested node. If not specified, determined automatically from NERSC_HOST.', required = False, type = int)
+parser.add_argument('-hpfn', '--HPListFile', dest='HPListFile', default=None, help = 'Name of a text file consisting only of one line of comma separated healpixel numbers for which the code will generate alt MTLs. If not specified, it will be automatically determined from the survey name.', required = False, type = str)
+parser.add_argument('-ow', '--overwrite', dest = 'overwrite', default=False, action='store_true', help = 'pass this flag to regenerate already existing bitweight files.')
+parser.add_argument('-v', '--verbose', dest = 'verbose', default=False, action='store_true', help = 'set flag to enter verbose mode')
+parser.add_argument('-d', '--debug', dest = 'debug', default=False, action='store_true', help = 'set flag to enter debug mode.')
+parser.add_argument('-prof', '--profile', dest = 'profile', default=False, action='store_true', help = 'set flag to profile code time usage.')
+
+
+args = parser.parse_args()
+
+mtlBaseDir = args.outdir + '/Univ{0:03d}/'
+
+HPList = np.array(open(args.HPListFile,'r').readlines()[0].split(',')).astype(int)
+print(HPList)
+
+def procFunc(hp):
+
+    writeBitweights(mtlBaseDir, ndirs = args.ndir, hplist = [hp], debug = args.debug, verbose = args.verbose, outdir = args.outdir, survey = args.survey, obscon = args.obscon.lower(), allFiles = False, overwrite = args.overwrite)
+
+
+p = Pool()
+atexit.register(p.close)
+
+log.info(HPList)
+
+result = p.map(procFunc,HPList)
+
+#run as 
+#/global/homes/l/lucasnap/git/LSS/bin//SingleNode-MakeBitweights.py --survey=main --obscon=DARK --ndir=128 --ProcPerNode=128 --HPListFile=/global/homes/l/lucasnap/git/LSS/bin//MainSurveyHPList.txt --outdir=/pscratch/sd/l/lucasnap/Y3Run2DARK/
