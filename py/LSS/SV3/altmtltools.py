@@ -773,13 +773,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
 
     for veto_en in MTLDV[veto_in_daterange]:
-        #LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
-        veto_ts_dt = datetime.fromisoformat(veto_en['TIMESTAMP'])
-        veto_ts_inc2s = (veto_ts_dt+timedelta(seconds=2)).isoformat()
         
         TileIDs.append(-1)
         TypeOfActions.append('veto')
-        TimesOfActions.append(veto_ts_inc2s)
+        TimesOfActions.append(veto_en['TIMESTAMP'])
         doneFlag.append(False)
         archiveDates.append(-1)
 
@@ -1950,40 +1947,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
 # 20260506 LGN - Adding new function to apply vetoes to alt mtl ledgers
 # 20260506 LGN - Modified from desitarget.mtl.process_vetoes https://github.com/desihub/desitarget/blob/main/py/desitarget/mtl.py#L1717
-def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
+def process_vetoes_altmtl(altmtldir, action, obscon, survey, vetocat_fn = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL/{}-Veto-Timings.fits', nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
     
-    # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
-    MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
-    MTLDV = Table.read(MTLDVFN)
-
-    # LGN 20260528 Subtracting 2 seconds from veto actiontime to align with mtl-done-vetoes
-    actiontime_dt = datetime.fromisoformat(action['ACTIONTIME'])
-    actiontime_ts_dec2s = (actiontime_dt-timedelta(seconds=2)).isoformat()
-    
-    # LGN Select appropriate set of vetoes based on timestamps of current and previous veto events
-    # LGN If this is the first veto action, set low timestamp
-    DV_idx = (actiontime_ts_dec2s == MTLDV['TIMESTAMP']).argmax()
-    
-    tslow = MTLDV[DV_idx-1]['TIMESTAMP']
-    tshigh = MTLDV[DV_idx]['TIMESTAMP']
-    
-    if DV_idx == 0:
-        tslow = "0000-00-00T00:00:00+00:00"
-
-    # ADM grab the list of files in the veto directory.
-    vetodir = os.path.join(mtldir,survey,'veto',obscon.lower())
-    fns = sorted(glob.glob(os.path.join(vetodir, "*", "*ecsv")))
-    
-    # ADM read and concatenate the veto files, keeping only the relevant
-    # ADM columns and entries later than the most recent final TIMESTAMP.
-    vetocat = []
-    for fn in fns:
-        vetodat = io.read_mtl_veto_file(fn)
-        ii = (vetodat["TIMESTAMP"] > tslow) & (vetodat["TIMESTAMP"] < tshigh)
-        vetocat.append(vetodat[ii])
-    
-    # ADM stack all the stacks of objects to be vetoed into one catalog.
-    vetocat = vstack(vetocat)
+    # LGN Start by reading the veto timings file for this observing condition
+    vetocat = fitsio.read(vetocat_fn.format(obscon.upper()))
     
     # ADM loop through and veto MTL entries in the pixel-based ledgers.
     pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
@@ -1996,14 +1963,25 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
         mtl = io.read_mtl_in_hp(altmtldir_srv, nside, hpx, unique=True, tabform=tabform)
         # ADM match ledger targets to those in the veto catalog.
         mii, vii = match(mtl["TARGETID"], vetocat["TARGETID"])
+
+        # LGN adding extra NUMOBS/TIMESTAMP/TARGET_STATE Checks
+        at_veto_numobs = mtl[mii]['NUMOBS'] == vetocat[vii]['NUMOBS']
+        at_veto_time   = action['ACTIONTIME'] > vetocat[vii]['TIMESTAMP']
+        not_vetoed_yet = mtl[mii]['TARGET_STATE'] != 'VETO|DONE'
+        veto_mask = at_veto_numobs & at_veto_time & not_vetoed_yet
+
+        # LGN early exit if no update is necessary
+        if np.sum(veto_mask) == 0:
+            continue
+        
         # ADM create a new set of entries that are updates to "turn off"
         # ADM the targets that match the veto catalog.
-        updates = mtl[mii]
+        updates = mtl[mii][veto_mask]
         updates["NUMOBS_MORE"] = 0
         updates["PRIORITY"] = 2
         updates["TARGET_STATE"] = "VETO|DONE"
         updates["TIMESTAMP"] = get_utc_date(survey=survey)
-        updates["VERSION"] = MTLDV[DV_idx]['VERSION']
+        updates["VERSION"] = mtl[mii][veto_mask]['VERSION']
 
         # ADM finally, append the new updates to the ledger.
         nups, fn = io.write_mtl(
