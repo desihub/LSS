@@ -22,7 +22,7 @@ def create_dirs(value):
                 raise
 
 
-def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=False):
+def init_amtl(concate_tracers, out_dir, obscon, numproc, recreate_tileTrack=False):
     """
     File access out parameters
     
@@ -37,10 +37,7 @@ def init_amtl(concate_tracers, out_dir, obscon, paral=True, recreate_tileTrack=F
     altmtl_path = os.path.join(out_dir, "Univ000")
     if not os.path.isdir(initledger_path):
         print("Running initial ledgers")
-        if paral:
-            mtl.make_ledger(concate_tracers, initledger_path, obscon=obscon.upper(), numproc=4)
-        else:
-            mtl.make_ledger(concate_tracers, initledger_path, obscon=obscon.upper())
+        mtl.make_ledger(concate_tracers, initledger_path, obscon=obscon.upper(), numproc=numproc)
     print("Creating list of tiles to be processed by AltMTL mock production")
     path = os.path.join(initledger_path, "main", obscon.lower())
     ff = glob.glob(
@@ -104,14 +101,18 @@ if __name__ == "__main__":
     parser.add_argument("--outputs", nargs="+", required=True)
     parser.add_argument('--noskip', action='store_true', help='Do not skip existing files')
     parser.add_argument("--obscon", choices=["DARK", "BRIGHT"], required=True)
+    parser.add_argument("--nproc",  default=1)
     args = parser.parse_args()
 
     print("\n\nInit amtl for mock catalogs")
     print(f"inputs : {args.inputs}")
     print(f"outputs: {args.outputs}")
+    print(f"obscon : {args.obscon}")
+    print(f"nproc  : {args.nproc}")
 
     concate_tracers = args.inputs[0]  # Input mock
     out_dir = args.outputs[0]  # Output path
     obscon = args.obscon  # DARK or BRIGHT
+    numproc = int(args.nproc)
 
-    init_amtl(concate_tracers, out_dir, obscon, paral=False)
+    init_amtl(concate_tracers, out_dir, obscon, numproc)
