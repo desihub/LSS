@@ -4,7 +4,8 @@ freeze_iers()
 
 #keeping all common imports
 import multiprocessing as mp
-from multiprocessing import Pool
+from multiprocessing import Pool, set_start_method
+set_start_method('fork', force=True)
 import atexit
 
 import desitarget

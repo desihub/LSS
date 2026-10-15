@@ -1,7 +1,8 @@
 from desiutil.iers import freeze_iers
 freeze_iers()
 
-from multiprocessing import Pool
+from multiprocessing import Pool, set_start_method
+set_start_method('fork', force=True)
 from LSS.SV3 import altmtltools as amt
 #from LSS.main import mockaltmtltools as mockamt
 from astropy.table import Table, vstack, join
