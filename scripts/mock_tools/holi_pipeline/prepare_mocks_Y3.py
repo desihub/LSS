@@ -3,7 +3,9 @@
 #
 
 import argparse
+import ctypes
 import errno
+import gc
 import os
 
 # make sure add the LSS repo to your python path
@@ -16,8 +18,20 @@ import LSS.common_tools as common
 from calibrate_nz_prep import calibrate_nz
 from numpy.random import Generator, PCG64
 
+from memory_profiler import profile
+
 
 rng = Generator(PCG64())
+
+
+def release_memory():
+    # del only drops the refcount; glibc keeps freed arenas for reuse instead of
+    # returning them to the OS, which is why RSS stays flat in memory_profiler.
+    gc.collect()
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
 
 
 def create_dir(value):
@@ -114,16 +128,9 @@ parser.add_argument(
 # parser.add_argument("--ran_seed", help="seed for randoms; make sure this is different if running many in parallel",default=10)
 # parser.add_argument("--EZnzmask", help="apply mask on galaxy number density n(z)",default='n')
 
-args = parser.parse_args()
 
 
-if args.tracer in ["LRG", "QSO", "ELG"]:
-    tile = "DARK"
-elif args.tracer == "BGS":
-    tile = "BRIGHT"
-
-
-def read_parent_mock(filename):
+def read_parent_mock(filename,args):
 
     if filename.endswith(".h5"):
         print("should read")
@@ -181,7 +188,7 @@ numobs = {
 norm = {"LRG": 1, "ELG": 1, "QSO": 1, "BGS": 2**60}  # AURE CONFIRM IS CORRECT
 
 
-def add_basic_columns(input_data, tracercol):
+def add_basic_columns(input_data, tracercol, args,tile):
     print("Adding basic columns")
     # Adding the WEIGHT column
     if "WEIGHT" not in input_data.colnames:
@@ -213,7 +220,8 @@ def add_basic_columns(input_data, tracercol):
     return input_data, n
 
 
-def select_footprint(input_data, todo):
+
+def select_footprint(input_data, todo, args, tile):
 
     if todo == "n":
         size = len(input_data)
@@ -234,281 +242,306 @@ def select_footprint(input_data, todo):
 
     return input_data, size
 
+#@profile
+def main():
+    args = parser.parse_args()
 
-tracer = args.tracer
+
+    if args.tracer in ["LRG", "QSO", "ELG"]:
+        tile = "DARK"
+    elif args.tracer == "BGS":
+        tile = "BRIGHT"
+
+    tracer = args.tracer
 
 
-print("STARTING PREPATION")
-print("tracer type", tracer)
-print("mock flavour is ", args.mockname)
-print("it will read the file", os.path.join(args.input_mockpath, args.input_mockfile))
+    print("STARTING PREPATION")
+    print("tracer type", tracer)
+    print("mock flavour is ", args.mockname)
+    print("it will read the file", os.path.join(args.input_mockpath, args.input_mockfile))
 
-data = read_parent_mock(os.path.join(args.input_mockpath, args.input_mockfile))
-data, initial_size = add_basic_columns(data, tracer)
+    data = read_parent_mock(os.path.join(args.input_mockpath, args.input_mockfile), args)
+    data, initial_size = add_basic_columns(data, tracer, args, tile)
 
-print("size of sample at start of the pipeline", initial_size)
+    print("size of sample at start of the pipeline", initial_size)
 
-data, after_footprint_size = select_footprint(data, args.need_footprint)
+    data, after_footprint_size = select_footprint(data, args.need_footprint,args, tile)
 
-print("size of sample after footprint pruning (if needed)", after_footprint_size)
+    print("size of sample after footprint pruning (if needed)", after_footprint_size)
 
-if args.need_nz_calib == "y":
-    print(
-        "Start nz calibration to match density and nz to the data adding STATUS columns"
-    )
-    if args.nzfilename == None:
-        args.save_mock_nz = "n"
-        namefile = None
-    elif "," in args.nzfilename:
-        namefile = args.nzfilename.split(",")
-    else:
-        namefile = args.nzfilename
+    if args.need_nz_calib == "y":
+        print(
+            "Start nz calibration to match density and nz to the data adding STATUS columns"
+        )
+        if args.nzfilename == None:
+            args.save_mock_nz = "n"
+            namefile = None
+        elif "," in args.nzfilename:
+            namefile = args.nzfilename.split(",")
+        else:
+            namefile = args.nzfilename
+        print(f"data type {type(data)}, size {len(data)}")
+        mem_data = sum(data[col].nbytes for col in data.colnames)
+        print(f"memory occupied by data: {mem_data / 1e6:.2f} MB")
+        
+        data = calibrate_nz(
+            data,
+            redshift_column="RSDZ",
+            tracer_type=tracer,
+            survey=args.survey,
+            namefile=namefile,
+            save_mock_nz=args.save_mock_nz,
+        )
+        print(f"data type {type(data)}, size {len(data)}")
+        mem_data = sum(data[col].nbytes for col in data.colnames)
+        print(f"memory occupied by data: {mem_data / 1e6:.2f} MB")
 
-    data = calibrate_nz(
-        data,
-        redshift_column="RSDZ",
-        tracer_type=tracer,
-        survey=args.survey,
-        namefile=namefile,
-        save_mock_nz=args.save_mock_nz,
-    )
+    if tracer == "LRG":
+        print("start specific LRG preparation")
+        if args.mockname == "abacushf":
+            sel = data["STATUS"] & 33 == 33
+        elif args.mockname == "EZmock":
+            sel = data["STATUS"] & 2 == 2
+        else:
+            if "STATUS" not in data.colnames:
+                data["STATUS"] = np.ones(len(data), dtype=np.int32)
+            sel = data["STATUS"] & 1 == 1
 
-if tracer == "LRG":
-    print("start specific LRG preparation")
-    if args.mockname == "abacushf":
-        sel = data["STATUS"] & 33 == 33
-    elif args.mockname == "EZmock":
-        sel = data["STATUS"] & 2 == 2
-    else:
-        if "STATUS" not in data.colnames:
-            data["STATUS"] = np.ones(len(data), dtype=np.int32)
-        sel = data["STATUS"] & 1 == 1
+        idx = np.arange(len(data))
 
-    idx = np.arange(len(data))
+        data = data[idx[sel]]
 
-    data = data[idx[sel]]
+        if args.need_nz_tuning == "y":
+            print("removing 23000 LRGs to match surface density")
+            remove = np.random.choice(len(data), size=23000, replace=False)
+            keep = np.setdiff1d(np.arange(len(data)), remove)
+            data = data[keep]
 
-    if args.need_nz_tuning == "y":
-        print("removing 23000 LRGs to match surface density")
-        remove = np.random.choice(len(data), size=23000, replace=False)
-        keep = np.setdiff1d(np.arange(len(data)), remove)
-        data = data[keep]
+        size_final = len(data)
+        print("After selecting LRG according to nz matching, size =", size_final)
+        del data["STATUS"]
 
-    size_final = len(data)
-    print("After selecting LRG according to nz matching, size =", size_final)
-    del data["STATUS"]
+    if tracer == "QSO":
+        print("start specific QSO preparation")
+        if args.mockname == "abacushf":
+            sel = data["STATUS"] & 33 == 33
 
-if tracer == "QSO":
-    print("start specific QSO preparation")
-    if args.mockname == "abacushf":
-        sel = data["STATUS"] & 33 == 33
-
-    elif args.mockname == "EZmock":
-        sel = data["STATUS"] & 2 == 2
-
-    else:
-        if "STATUS" not in data.colnames:
-            data["STATUS"] = np.ones(len(data), dtype=np.int32)
-
-        sel = data["STATUS"] & 1 == 1
-
-    idx = np.arange(len(data))
-
-    data = data[idx[sel]]
-    if args.need_nz_tuning == "y":
-        print("removing 13000 QSOs to match surface density from 0.5 to 2.1")
-        lowdat = data[(data["RSDZ"] < 0.6)]
-        middat = data[(data["RSDZ"] > 0.6) & (data["RSDZ"] < 2.1)]
-        highdat = data[(data["RSDZ"] > 2.1)]
-
-        remove = np.random.choice(len(middat), size=65935, replace=False)
-        keep = np.setdiff1d(np.arange(len(middat)), remove)
-
-        middat = middat[keep]
-        data = vstack([lowdat, middat, highdat])
-
-    size_final = len(data)
-
-    print("After selecting QSO according to nz matching, size =", size_final)
-    sel_highz = data["RSDZ"] > 2.1
-    data["NUMOBS_MORE"][sel_highz] = 4
-    data["NUMOBS_INIT"][sel_highz] = 4
-    del data["STATUS"]
-
-if tracer == "ELG":
-    print("start specific ELG preparation")
-    datat = []
-    idx = np.arange(len(data))
-    if args.mockname == "abacushf":
-        from calibrate_nz_prep import mask_abacusHF
-
-        status = data["STATUS"][()]
-        mask_main = mask_abacusHF(nz=1, foot=args.survey)
-        idx_main = idx[(status & (mask_main)) == mask_main]
-
-        mask_LOP = mask_abacusHF(nz=1, foot=args.survey, nz_lop=1)
-        idx_LOP = idx[(status & (mask_LOP)) == mask_LOP]
-
-        idx_VLO = np.setdiff1d(idx_main, idx_LOP)
-        data_lop = Table(data[idx_LOP])
-        data_vlo = Table(data[idx_VLO])
-
-    elif args.mockname == "EZmock":
-        import sample_elg_ezmock as se
-
-        lop, vlo = se.create_subsample(data)
-
-        data_lop = Table.from_pandas(lop)
-        data_vlo = Table.from_pandas(vlo)
-
-    else:
-        if "STATUS" not in data.colnames:
-            idx_LOP = idx[data[args.ELGtpcol] == 1]
-            idx_VLO = np.setdiff1d(idx, idx_LOP)
+        elif args.mockname == "EZmock":
+            sel = data["STATUS"] & 2 == 2
 
         else:
+            if "STATUS" not in data.colnames:
+                data["STATUS"] = np.ones(len(data), dtype=np.int32)
+
+            sel = data["STATUS"] & 1 == 1
+
+        idx = np.arange(len(data))
+
+        data = data[idx[sel]]
+        if args.need_nz_tuning == "y":
+            print("removing 13000 QSOs to match surface density from 0.5 to 2.1")
+            lowdat = data[(data["RSDZ"] < 0.6)]
+            middat = data[(data["RSDZ"] > 0.6) & (data["RSDZ"] < 2.1)]
+            highdat = data[(data["RSDZ"] > 2.1)]
+
+            remove = np.random.choice(len(middat), size=65935, replace=False)
+            keep = np.setdiff1d(np.arange(len(middat)), remove)
+
+            middat = middat[keep]
+            data = vstack([lowdat, middat, highdat])
+
+        size_final = len(data)
+
+        print("After selecting QSO according to nz matching, size =", size_final)
+        sel_highz = data["RSDZ"] > 2.1
+        data["NUMOBS_MORE"][sel_highz] = 4
+        data["NUMOBS_INIT"][sel_highz] = 4
+        del data["STATUS"]
+
+    if tracer == "ELG":
+        print("start specific ELG preparation")
+        idx = np.arange(len(data))
+        if args.mockname == "abacushf":
+            from calibrate_nz_prep import mask_abacusHF
+
             status = data["STATUS"][()]
-            idx_main = idx[(status & 1) == 1]
-            idx_LOP = idx[(status & 4) == 4]
+            mask_main = mask_abacusHF(nz=1, foot=args.survey)
+            idx_main = idx[(status & (mask_main)) == mask_main]
+
+            mask_LOP = mask_abacusHF(nz=1, foot=args.survey, nz_lop=1)
+            idx_LOP = idx[(status & (mask_LOP)) == mask_LOP]
+
             idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+            data_lop = Table(data[idx_LOP])
+            data_vlo = Table(data[idx_VLO])
+            del status, idx_main, idx_LOP, idx_VLO  # status[()] is a view sharing data's buffer
 
-        data_lop = Table(data[idx_LOP])
-        data_vlo = Table(data[idx_VLO])
+        elif args.mockname == "EZmock":
+            import sample_elg_ezmock as se
 
-    data_lop["DESI_TARGET"] += 2**5
-    if args.need_nz_tuning == "y":
-        print("before fine tuning elg_lop", len(data_lop))
-        remove = np.random.choice(len(data_lop), size=356927, replace=False)
-        # remove = np.random.choice(len(data_lop), size=142000, replace=False)
-        keep = np.setdiff1d(np.arange(len(data_lop)), remove)
-        data_lop = data_lop[keep]
-        print("after fine tuning elg_lop", len(data_lop))
+            lop, vlo = se.create_subsample(data)
 
-    data_vlo["PRIORITY_INIT"] = 3000
-    data_vlo["PRIORITY"] = 3000
-    data_vlo["DESI_TARGET"] += 2**7
+            data_lop = Table.from_pandas(lop)
+            data_vlo = Table.from_pandas(vlo)
+            del lop, vlo  # free both tables as soon as the merged copy exists
 
-    if args.need_nz_tuning == "y":
-        print("before fine tuning elg_vlo", len(data_vlo))
-        remove = np.random.choice(len(data_vlo), size=643103, replace=False)
-        # remove = np.random.choice(len(data_vlo), size=642000, replace=False)
-        keep = np.setdiff1d(np.arange(len(data_vlo)), remove)
-        data_vlo = data_vlo[keep]
-        print("after fine tuning elg_vlo", len(data_vlo))
+        else:
+            if "STATUS" not in data.colnames:
+                idx_LOP = idx[data[args.ELGtpcol] == 1]
+                idx_VLO = np.setdiff1d(idx, idx_LOP)
 
-    datat.append(data_lop)
-    datat.append(data_vlo)
-    data = vstack(datat)
-    size_lop = len(data_lop)
-    size_vlo = len(data_vlo)
+            else:
+                status = data["STATUS"][()]
+                idx_main = idx[(status & 1) == 1]
+                idx_LOP = idx[(status & 4) == 4]
+                idx_VLO = np.setdiff1d(idx_main, idx_LOP)
+                del status, idx_main  # status[()] is a view sharing data's buffer
 
-    rans = rng.random(len(data))
-    sel_HIP = rans < 0.1  # 10% of ELG get promoted to HIP
-    data["DESI_TARGET"][sel_HIP] += 2**6
-    data["PRIORITY_INIT"][sel_HIP] = 3200
-    data["PRIORITY"][sel_HIP] = 3200
+            data_lop = Table(data[idx_LOP])
+            del idx_LOP
+            mem_lop = sum(data_lop[col].nbytes for col in data_lop.colnames)
+            print(f"memory occupied by data_lop: {mem_lop / 1e6:.2f} MB")
+            collected = gc.collect()  # isolate cyclic-GC sweeps on their own profiler line
+            print(f"gc.collect() freed {collected} cyclic objects before building data_vlo")
+            data_vlo = Table(data[idx_VLO])
+            mem_vlo = sum(data_vlo[col].nbytes for col in data_vlo.colnames)
+            print(f"memory occupied by data_vlo: {mem_vlo / 1e6:.2f} MB")
+            mem_data = sum(data[col].nbytes for col in data.colnames)
+            print(f"memory occupied by data: {mem_data / 1e6:.2f} MB")
+            del data, idx_VLO
+            release_memory()
+ 
+        data_lop["DESI_TARGET"] += 2**5
+        if args.need_nz_tuning == "y":
+            print("before fine tuning elg_lop", len(data_lop))
+            remove = np.random.choice(len(data_lop), size=356927, replace=False)
+            # remove = np.random.choice(len(data_lop), size=142000, replace=False)
+            keep = np.setdiff1d(np.arange(len(data_lop)), remove)
+            data_lop = data_lop[keep]
+            print("after fine tuning elg_lop", len(data_lop))
 
-    size_final = len(data)
+        data_vlo["PRIORITY_INIT"] = 3000
+        data_vlo["PRIORITY"] = 3000
+        data_vlo["DESI_TARGET"] += 2**7
 
-    print("After selecting ELG according to nz matching, size =", size_final)
-    print("By subtypes, LOP =", size_lop, "VLO =", size_vlo)
-    del data_lop
-    del data_vlo
-    del data["STATUS"]
+        if args.need_nz_tuning == "y":
+            print("before fine tuning elg_vlo", len(data_vlo))
+            remove = np.random.choice(len(data_vlo), size=643103, replace=False)
+            # remove = np.random.choice(len(data_vlo), size=642000, replace=False)
+            keep = np.setdiff1d(np.arange(len(data_vlo)), remove)
+            data_vlo = data_vlo[keep]
+            print("after fine tuning elg_vlo", len(data_vlo))
 
-# BGS missing
-if tracer == "BGS":
-    if args.mockname.lower() == "uchuu":
-        mask_bright = data["BGS_TYPE"] == "BRIGHT"
-        mask_faint = data["BGS_TYPE"] == "FAINT"
-        dat_bright = data[mask_bright]
-        dat_faint = data[mask_faint]
-        print("size of BRIGHT", len(dat_bright))
-        print("size of FAINT", len(dat_faint))
+        size_lop = len(data_lop)
+        size_vlo = len(data_vlo)
+        data = vstack([data_lop, data_vlo])
+        del data_lop, data_vlo
 
-        dat_bright["BGS_TARGET"] = 2**1
+        rans = rng.random(len(data))
+        sel_HIP = rans < 0.1  # 10% of ELG get promoted to HIP
+        data["DESI_TARGET"][sel_HIP] += 2**6
+        data["PRIORITY_INIT"][sel_HIP] = 3200
+        data["PRIORITY"][sel_HIP] = 3200
 
-        dat_faint["BGS_TARGET"] = 2**0
+        size_final = len(data)
 
-        PromoteFracBGSFaint = 0.2
-        ran_hip = np.random.uniform(size=len(dat_faint))
-        faint_hip_mask = ran_hip <= PromoteFracBGSFaint
+        print("After selecting ELG according to nz matching, size =", size_final)
+        print("By subtypes, LOP =", size_lop, "VLO =", size_vlo)
+        del data["STATUS"]
 
-        dat_faint["BGS_TARGET"][faint_hip_mask] += 2**3  # for high-priority BGS faint
+    # BGS missing
+    if tracer == "BGS":
+        if args.mockname.lower() == "uchuu":
+            mask_bright = data["BGS_TYPE"] == "BRIGHT"
+            mask_faint = data["BGS_TYPE"] == "FAINT"
+            dat_bright = data[mask_bright]
+            dat_faint = data[mask_faint]
+            print("size of BRIGHT", len(dat_bright))
+            print("size of FAINT", len(dat_faint))
 
-        dat_faint["PRIORITY_INIT"][~faint_hip_mask] = 2000
-        dat_faint["PRIORITY"][~faint_hip_mask] = 2000
+            dat_bright["BGS_TARGET"] = 2**1
 
-        data = vstack([dat_faint, dat_bright])
-        print("Unique PRIORITY_INIT: ", np.unique(data["PRIORITY_INIT"]))
-        print("Unique PRIORITY: ", np.unique(data["PRIORITY"]))
-        print("Unique BGS_TARGET: ", np.unique(data["BGS_TARGET"]))
-        print(
-            "High_priority_BGS_faint/BGS_faint: ",
-            np.sum(dat_faint["BGS_TARGET"] == 9) / len(dat_faint),
-        )
+            dat_faint["BGS_TARGET"] = 2**0
 
-    if args.mockname == "EZmock" and args.EZnzmask == "y":
-        nz_mask = (targets["STATUS"] & 2) > 0  # match Y3 LRG/ELG/QSO n(z)
-        targets = targets[nz_mask]
+            PromoteFracBGSFaint = 0.2
+            ran_hip = np.random.uniform(size=len(dat_faint))
+            faint_hip_mask = ran_hip <= PromoteFracBGSFaint
 
-    if args.mockname.lower() == "abacus_phot":
-        mask_bright = targets["R_MAG_APP"] < 19.5  ### PUT MAGNITUDE VALUE
-        dat_bright = data[mask_bright]
-        dat_faint = data[~mask_faint]
+            dat_faint["BGS_TARGET"][faint_hip_mask] += 2**3  # for high-priority BGS faint
 
-        dat_bright["BGS_TARGET"] = 2**1
-        dat_faint["BGS_TARGET"] = 2**0
+            dat_faint["PRIORITY_INIT"][~faint_hip_mask] = 2000
+            dat_faint["PRIORITY"][~faint_hip_mask] = 2000
 
-        PromoteFracBGSFaint = 0.2
+            data = vstack([dat_faint, dat_bright])
+            print("Unique PRIORITY_INIT: ", np.unique(data["PRIORITY_INIT"]))
+            print("Unique PRIORITY: ", np.unique(data["PRIORITY"]))
+            print("Unique BGS_TARGET: ", np.unique(data["BGS_TARGET"]))
+            print(
+                "High_priority_BGS_faint/BGS_faint: ",
+                np.sum(dat_faint["BGS_TARGET"] == 9) / len(dat_faint),
+            )
 
-        ran_hip = np.random.uniform(size=len(dat_faint))
-        faint_hip_mask = ran_hip <= PromoteFracBGSFaint
+        if args.mockname == "EZmock" and args.EZnzmask == "y":
+            nz_mask = (targets["STATUS"] & 2) > 0  # match Y3 LRG/ELG/QSO n(z)
+            targets = targets[nz_mask]
 
-        dat_faint["BGS_TARGET"][faint_hip_mask] += 2**3  # for high-priority BGS faint
+        if args.mockname.lower() == "abacus_phot":
+            mask_bright = targets["R_MAG_APP"] < 19.5  ### PUT MAGNITUDE VALUE
+            dat_bright = data[mask_bright]
+            dat_faint = data[~mask_faint]
 
-        dat_faint["PRIORITY_INIT"][~faint_hip_mask] = 2000
-        dat_faint["PRIORITY"][~faint_hip_mask] = 2000
+            dat_bright["BGS_TARGET"] = 2**1
+            dat_faint["BGS_TARGET"] = 2**0
 
-        data = vstack([dat_faint, dat_bright])
+            PromoteFracBGSFaint = 0.2
 
+            ran_hip = np.random.uniform(size=len(dat_faint))
+            faint_hip_mask = ran_hip <= PromoteFracBGSFaint
 
-n = len(data)  ##A Ashley le falta estoo!
-data["TARGETID"] = (np.arange(1, n + 1) + 1e8 * desitar[tracer] / norm[tracer]).astype(
-    int
-)  # different tracer types need to have different targetids
-print("creating TARGETID", np.min(data["TARGETID"]), np.max(data["TARGETID"]))
-if (tracer == "BGS") and (args.mockname.lower() == "uchuu"):
-    targets.rename_column("ABSMAG_R", "R_MAG_ABS")
+            dat_faint["BGS_TARGET"][faint_hip_mask] += 2**3  # for high-priority BGS faint
 
-out_file_name = args.output_fullpathfn
-create_dir(os.path.dirname(out_file_name))
-# change the name of the output ...
+            dat_faint["PRIORITY_INIT"][~faint_hip_mask] = 2000
+            dat_faint["PRIORITY"][~faint_hip_mask] = 2000
+
+            data = vstack([dat_faint, dat_bright])
 
 
-# Change type of RA,DEC
-if data["RA"].dtype != np.float64:
-    print("Imposing float64 to RA")
-    data["RA"] = Column(data["RA"], dtype=np.float64)
+    n = len(data)  ##A Ashley le falta estoo!
+    data["TARGETID"] = (np.arange(1, n + 1) + 1e8 * desitar[tracer] / norm[tracer]).astype(
+        int
+    )  # different tracer types need to have different targetids
+    print("creating TARGETID", np.min(data["TARGETID"]), np.max(data["TARGETID"]))
+    if (tracer == "BGS") and (args.mockname.lower() == "uchuu"):
+        targets.rename_column("ABSMAG_R", "R_MAG_ABS")
 
-if data["DEC"].dtype != np.float64:
-    print("Imposing float64 to DEC")
-    data["DEC"] = Column(data["DEC"], dtype=np.float64)
+    out_file_name = args.output_fullpathfn
+    create_dir(os.path.dirname(out_file_name))
+    # change the name of the output ...
 
-if "TRACER_TYPE" in data.columns:
-    # Check if dtype is byte string ('S') and convert to unicode ('U')
-    if data["TRACER_TYPE"].dtype.kind == "S":
-        data["TRACER_TYPE"] = data["TRACER_TYPE"].astype("U")
-        print(data, data.dtype)
 
-# Check if RA is out of range (necessary for GLAM)
-out_of_bounds = np.logical_or(data["RA"] < 0.0, data["RA"] > 360.0)
-if np.any(out_of_bounds):
-    data["RA"] = np.mod(data["RA"], 360.0)
+    # Change type of RA,DEC
+    if data["RA"].dtype != np.float64:
+        print("Imposing float64 to RA")
+        data["RA"] = Column(data["RA"], dtype=np.float64)
 
-common.write_LSS_scratchcp(data, out_file_name, extname="TARGETS")
-# fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
-fits.setval(out_file_name, "OBSCON", value=tile, ext=1)
+    if data["DEC"].dtype != np.float64:
+        print("Imposing float64 to DEC")
+        data["DEC"] = Column(data["DEC"], dtype=np.float64)
 
-# if tracer == 'QSO':
-#    print('write')
+    if "TRACER_TYPE" in data.columns:
+        # Check if dtype is byte string ('S') and convert to unicode ('U')
+        if data["TRACER_TYPE"].dtype.kind == "S":
+            data["TRACER_TYPE"] = data["TRACER_TYPE"].astype("U")
+            print(data, data.dtype)
+
+    # Check if RA is out of range (necessary for GLAM)
+    out_of_bounds = np.logical_or(data["RA"] < 0.0, data["RA"] > 360.0)
+    if np.any(out_of_bounds):
+        data["RA"] = np.mod(data["RA"], 360.0)
+
+    common.write_LSS_scratchcp(data, out_file_name, extname="TARGETS")
+    # fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
+    fits.setval(out_file_name, "OBSCON", value=tile, ext=1)
+
+if __name__ == "__main__":
+    main()

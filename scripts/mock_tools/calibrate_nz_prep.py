@@ -1,7 +1,19 @@
+import ctypes
+import gc
 import numpy as np
 import os
 from numpy.random import Generator, PCG64
 rng = Generator(PCG64())
+
+
+def release_memory():
+    # del only drops the refcount; glibc keeps freed arenas for reuse instead of
+    # returning them to the OS, which inflates RSS after many large temp arrays.
+    gc.collect()
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
 
 # JMC
 path_to_nz = '/global/cfs/cdirs/desi/users/acarnero/nz_da2'
@@ -111,7 +123,9 @@ def downsample_aux_NS(z_cat, ran, n_mean, radec, tracer_type):
     nz_selected_s = (ran < nz_S / n_mean_interpS) & is_south
 #        n_N = nz_N / n_mean        
 #        n_S = nz_S / n_mean        
+    del is_north, is_south, n_mean_interpN, n_mean_interpS
     idx = np.where(nz_selected_n|nz_selected_s)
+    del nz_selected_n, nz_selected_s
 
     print("DOWNSAMPLE North and South: Selected {} out of {} galaxies.".format(len(idx[0]), len(z_cat)), flush=True)
 
@@ -119,6 +133,7 @@ def downsample_aux_NS(z_cat, ran, n_mean, radec, tracer_type):
 
     newbits = np.zeros(len(z_cat), dtype=np.int32)
     newbits[idx] = 1
+    del idx
     return newbits, nz_N, nz_S
 
 def get_lop(z_cat, ran):
@@ -127,11 +142,14 @@ def get_lop(z_cat, ran):
     z,nz = np.loadtxt(os.path.join(path_to_nz, lop_file), usecols=([0,1]), unpack=True)
     frac_lop = np.interp(z_cat, z, nz, left=0, right=0)
     nz_selected = ran < frac_lop
+    del frac_lop
 
     idx = np.where(nz_selected)
+    del nz_selected
     newbits = np.zeros(len(z_cat), dtype=np.int32)
     print("ELG_LOP selection: Selected {} out of {} galaxies.".format(len(idx[0]), len(z_cat)), flush=True)
     newbits[idx] = 4
+    del idx
     return newbits
 
 
@@ -184,12 +202,13 @@ def downsample(z_cat, n_mean, tracer_type, radec = None):
         ran = [ran_i]
 
     elif tracer_type == "ELG":
-        newbits, nz_N, nz_S = downsample_aux_NS(z_cat, ran_i, n_mean, radec, tracer_type)
+        newbits,_ , _ = downsample_aux_NS(z_cat, ran_i, n_mean, radec, tracer_type)
         ran_n               = rng.random(len(z_cat))
         ran_n[newbits == 0] = np.inf
         newbits_LOP      = get_lop(z_cat, ran_n)
 
         outbits = np.bitwise_or(newbits, newbits_LOP)
+        del newbits, newbits_LOP
         ran = [ran_i, ran_n]
 
     else:
@@ -212,11 +231,13 @@ def calibrate_nz_bgs(input_data, redshift_column = 'Z_RSD', tracer_type='BGS', n
     #n_mean = [ztarget, n_mean]
 
     print('entering downsample')
-    down_bit, ran_arr = downsample_bgs(z, n_mean, tracer_type, nzfile, radec=[ra, dec], factor=factor)
+    down_bit, _ = downsample_bgs(z, n_mean, tracer_type, nzfile, radec=[ra, dec], factor=factor)
 
 
     out_arr = down_bit.astype(np.int32)
+    del ra, dec, z, down_bit
     input_data['STATUS'] = out_arr
+    release_memory()
     return input_data
 
 
@@ -247,7 +268,7 @@ def calibrate_nz(input_data, redshift_column = 'Z_RSD', tracer_type='LRG', n_mea
             n_mean = [ztarget, n_mean]
 
 
-        down_bit, ran_arr = downsample(z, n_mean, tracer_type, radec=[ra, dec])
+        down_bit, _ = downsample(z, n_mean, tracer_type, radec=[ra, dec])
     else:
         print('IS ELG')
         if n_mean is None:
@@ -264,14 +285,16 @@ def calibrate_nz(input_data, redshift_column = 'Z_RSD', tracer_type='LRG', n_mea
 
             n_meanN = [ztargetN, n_meanN]
             n_meanS = [ztargetS, n_meanS]
-            down_bit, ran_arr = downsample(z, [n_meanN, n_meanS], tracer_type, radec=[ra, dec])
+            down_bit, _ = downsample(z, [n_meanN, n_meanS], tracer_type, radec=[ra, dec])
         else:
-            down_bit, ran_arr = downsample(z, n_mean, tracer_type, radec=[ra, dec])
+            down_bit, _ = downsample(z, n_mean, tracer_type, radec=[ra, dec])
 
 
-
+    del ra,dec,z
     out_arr = down_bit.astype(np.int32)
+    del down_bit
     input_data['STATUS'] = out_arr
+    release_memory()
     return input_data
 
 def mask_abacusHF(nz=0, foot=None, nz_lop=0):
