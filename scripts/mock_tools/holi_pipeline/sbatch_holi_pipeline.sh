@@ -11,30 +11,23 @@
 # A SLURM array job spreads the seeds across array ranks; within each
 # rank, "ntasks" SLURM tasks (srun) process "ntasks" seeds in parallel.
 
-# Description
-# ===========
-# Two run modes are supported, depending on --cpus-per-task:
-#   * "full" mode  (cpus-per-task = 1): steps 1 to 8 all run within this
-#     same job, since Fiber Assignment (step 8) only uses 1 CPU per
-#     simulation/seed.
-#   * "split" mode (cpus-per-task > 1): steps 1 to 7 can make use of the
-#     extra CPUs (e.g. Brickmask), but step 8 must be submitted as a
-#     separate job requesting fewer CPUs per task; otherwise the extra
-#     CPUs would sit idle during Fiber Assignment and the allocation
-#     time would be wasted.
 
 #SBATCH --array=0-0
 # NOTE: the first seed ID to process is set by the "first_id" parameter
 # (see get_pars.py $HOLI_PARS first_id below), not by this --array directive.
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
-#SBATCH --ntasks=20        # number of seeds processed per array rank
-#SBATCH --cpus-per-task=1  # keep at 1 for "full" mode; override on the sbatch command line for "split" mode
+# ntasks is defied by memory necessary by process, here step1 arround 20-30 GB.
+# actually 17 is the max
+#SBATCH --ntasks=17     # number of seeds processed per array rank
+#SBATCH --cpus-per-task=15 # 256/ntasks
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-#SBATCH -J HoliFIT3
-#SBATCH -t 40:00:00
+## SBATCH -q shared
+## SBATCH --mem-per-cpu=22G
+#SBATCH -J HoliSimu
+#SBATCH -t 35:00:00
 #SBATCH --output=holi_%j.log
 #SBATCH --error=holi_%j.log
 #SBATCH --mail-type=begin,end,fail
@@ -78,6 +71,8 @@ time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
 
+# debug step1.sh memory problem
+#exit $?
 
 #
 # STEP 2: merge the per-seed input/output file lists (from step 1)
@@ -142,19 +137,29 @@ time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
 #
 # STEP 8: Fiber Assignment
 #
-if (( NCPU_PT == 1 )); then
-    # "full" mode: only 1 CPU per task was requested, so step 8 can run
-    # here with srun without wasting any CPU
-    date; echo "Step 8: AltMTL"
-    time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
-    --open-mode=append \
-    --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
-    --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
-    ./step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
-else
-    # "split" mode: more than 1 CPU per task was requested, but Fiber
-    # Assignment only uses 1 CPU per seed, so submit step 8 as a separate
-    # job with fewer CPUs per task instead of wasting the extra CPUs
-    sbatch --ntasks=$NTASKS \
-    ./sbatch8_AltMTL.sh  $HOLI_PARS $FIRST_ID_RANK $LOG_DIR
-fi
+time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
+--open-mode=append \
+--output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
+--error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
+./step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
+
+#
+# Comment: in fact I need to have all node for pipeline for memory requirement
+#          so I have all CPU anyway 
+#
+# if (( NCPU_PT == 1 )); then
+#     # "full" mode: only 1 CPU per task was requested, so step 8 can run
+#     # here with srun without wasting any CPU
+#     date; echo "Step 8: AltMTL"
+#     time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
+#     --open-mode=append \
+#     --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
+#     --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
+#     ./step8.sh  $LSS_DIR $DS_DIR $FIRST_ID_RANK
+# else
+#     # "split" mode: more than 1 CPU per task was requested, but Fiber
+#     # Assignment only uses 1 CPU per seed, so submit step 8 as a separate
+#     # job with fewer CPUs per task instead of wasting the extra CPUs
+#     sbatch --ntasks=$NTASKS \
+#     ./sbatch8_AltMTL.sh  $HOLI_PARS $FIRST_ID_RANK $LOG_DIR
+# fi

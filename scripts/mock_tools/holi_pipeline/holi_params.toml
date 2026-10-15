@@ -12,6 +12,9 @@ TARGET_dir= "/global/cfs/cdirs/desi/users/colley/v3_target/desitarget"
 
 # output directory of holi pipeline
 # will content seed0000 and altmtl0000 directories
+# /global/cfs/cdirs/desi/mocks/fa4acm/holi/webjax_v4.80
+#mock_dir = "/pscratch/sd/j/jcolley/holi_fits"
+#mock_dir = "/global/cfs/cdirs/desi/mocks/opti_holi1"
 mock_dir = "/pscratch/sd/j/jcolley/test_fits3"
 
 # log directory
@@ -21,7 +24,7 @@ logs_dir = "/global/homes/j/jcolley/test/runs"
 input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
 
 # First id seed processing by pipeline
-first_id = 50
+first_id = 70
 
 # for debug, reduce number of galaxy for fast processing,
 # minimal value is 5000 else error can appears
