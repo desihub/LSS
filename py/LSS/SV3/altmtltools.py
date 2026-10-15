@@ -691,12 +691,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     archiveDates = []
     
     for tileid in TilesSel:
-        print('tileid = {0}'.format(tileid))
         
         ts = str(tileid).zfill(6)
         
         thisTileMTLDT = MTLDT[MTLDT['TILEID'] == tileid]
-        
         # 20260302 LGN Rewriting to remove ARCHIVEDATE check. 
         # 20260302 LGN We want fa actions before the endDate to be included.
         if len(thisTileMTLDT) == 0:
@@ -713,12 +711,34 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         thisFAFN = FABaseDir + f'/{ts[0:3]}/fiberassign-{ts}.fits'
 
         thisfhtOrig = fitsio.read_header(thisFAFN)
-        thisfadate = thisfhtOrig['MTLTIME']
+
+        # 20260909 LGN: In order to fix the MTLTIME ordering bug: github.com/desihub/fiberassign/issues/517
+        # We now need to get the fa action timestamp manually, this requires finding the final entry from
+        # the same program (1B inclusive) that occured before the tiles NOWTIME.
+        # Code adapted from: https://github.com/desihub/fiberassign/blob/48a0e6a7361c1230ae48d9fb55fe08fae6594ae6/py/fiberassign/fba_launch_io.py
+        if obscon.upper() in ["DARK1B","BRIGHT1B"]:
+            d = MTLDT.copy(copy_data=True)
+            if obscon.upper() == "DARK1B":
+                keep = np.isin(d["PROGRAM"], ["DARK", "DARK1B"])
+            elif obscon.upper() == "BRIGHT1B":
+                keep = np.isin(d["PROGRAM"], ["BRIGHT", "BRIGHT1B"])
+        
+            keep &= d["TIMESTAMP"] < thisfhtOrig['NOWTIME']
+            
+            # AR taking the latest timestamp
+            # LGN New change, if the MTLTIME is greater than the done tiles timestamp
+            # LGN we keep it. This addresses some issues with adding new ledgers
+            thisfadate = max(thisfhtOrig['MTLTIME'],np.unique(d[keep]["TIMESTAMP"])[-1])
+        
+        # If a standard DARK/BRIGHT tile there's no timing issue, revert to original behavior
+        else:
+            thisfadate = thisfhtOrig['MTLTIME']
+    
         thisfadate = desitarget.mtl.add_to_iso_date(thisfadate, 1)
         thisfanite = int(''.join(thisfadate.split('T')[0].split('-')))
         if thisfanite > endDate:
             continue
-        
+
         TileIDs.append(tileid)
         TypeOfActions.append('fa')
         TimesOfActions.append(thisfadate)
@@ -753,13 +773,10 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
 
     for veto_en in MTLDV[veto_in_daterange]:
-        #LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
-        veto_ts_dt = datetime.fromisoformat(veto_en['TIMESTAMP'])
-        veto_ts_inc2s = (veto_ts_dt+timedelta(seconds=2)).isoformat()
         
         TileIDs.append(-1)
         TypeOfActions.append('veto')
-        TimesOfActions.append(veto_ts_inc2s)
+        TimesOfActions.append(veto_en['TIMESTAMP'])
         doneFlag.append(False)
         archiveDates.append(-1)
 
@@ -775,7 +792,8 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
         TimesOfActions.append('2025-07-21T23:36:04+00:00')
         doneFlag.append(False)
         archiveDates.append(20250721)
-    else:
+    elif (obscon.lower() == 'dark') and (max(TimesOfActions) > '2025-07-21T23:36:04+00:00'):
+        log.info(f'Obscon = {obscon} but lya1b = {lya1b}')
         log.info('NOT adding QSO NUMOBS Increase Action')
         log.info('You will not mimic real survey decisions after 2025-07-21T23:36:04+00:00')
 
@@ -1935,40 +1953,10 @@ def loop_alt_ledger(obscon, survey='sv3', zcatdir=None, mtldir=None,
 
 # 20260506 LGN - Adding new function to apply vetoes to alt mtl ledgers
 # 20260506 LGN - Modified from desitarget.mtl.process_vetoes https://github.com/desihub/desitarget/blob/main/py/desitarget/mtl.py#L1717
-def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
+def process_vetoes_altmtl(altmtldir, action, obscon, survey, vetocat_fn = '/global/cfs/cdirs/desi/survey/fiberassign/AltMTL/{}-Veto-Timings.fits', nside=32, mtldir = '/global/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl', tabform='ascii.basic'):
     
-    # LGN We need to read veto actions in order to process vetoes for BRIGHT1B
-    MTLDVFN = os.path.join(mtldir,'mtl-done-vetoes.ecsv')
-    MTLDV = Table.read(MTLDVFN)
-
-    # LGN 20260528 Subtracting 2 seconds from veto actiontime to align with mtl-done-vetoes
-    actiontime_dt = datetime.fromisoformat(action['ACTIONTIME'])
-    actiontime_ts_dec2s = (actiontime_dt-timedelta(seconds=2)).isoformat()
-    
-    # LGN Select appropriate set of vetoes based on timestamps of current and previous veto events
-    # LGN If this is the first veto action, set low timestamp
-    DV_idx = (actiontime_ts_dec2s == MTLDV['TIMESTAMP']).argmax()
-    
-    tslow = MTLDV[DV_idx-1]['TIMESTAMP']
-    tshigh = MTLDV[DV_idx]['TIMESTAMP']
-    
-    if DV_idx == 0:
-        tslow = "0000-00-00T00:00:00+00:00"
-
-    # ADM grab the list of files in the veto directory.
-    vetodir = os.path.join(mtldir,survey,'veto',obscon.lower())
-    fns = sorted(glob.glob(os.path.join(vetodir, "*", "*ecsv")))
-    
-    # ADM read and concatenate the veto files, keeping only the relevant
-    # ADM columns and entries later than the most recent final TIMESTAMP.
-    vetocat = []
-    for fn in fns:
-        vetodat = io.read_mtl_veto_file(fn)
-        ii = (vetodat["TIMESTAMP"] > tslow) & (vetodat["TIMESTAMP"] < tshigh)
-        vetocat.append(vetodat[ii])
-    
-    # ADM stack all the stacks of objects to be vetoed into one catalog.
-    vetocat = vstack(vetocat)
+    # LGN Start by reading the veto timings file for this observing condition
+    vetocat = fitsio.read(vetocat_fn.format(obscon.upper()))
     
     # ADM loop through and veto MTL entries in the pixel-based ledgers.
     pixnum = np.unique(radec2pix(nside, vetocat['RA'], vetocat['DEC']))
@@ -1981,14 +1969,25 @@ def process_vetoes_altmtl(altmtldir, action, obscon, survey, nside=32, mtldir = 
         mtl = io.read_mtl_in_hp(altmtldir_srv, nside, hpx, unique=True, tabform=tabform)
         # ADM match ledger targets to those in the veto catalog.
         mii, vii = match(mtl["TARGETID"], vetocat["TARGETID"])
+
+        # LGN adding extra NUMOBS/TIMESTAMP/TARGET_STATE Checks
+        at_veto_numobs = mtl[mii]['NUMOBS'] == vetocat[vii]['NUMOBS']
+        at_veto_time   = action['ACTIONTIME'] > vetocat[vii]['TIMESTAMP']
+        not_vetoed_yet = mtl[mii]['TARGET_STATE'] != 'VETO|DONE'
+        veto_mask = at_veto_numobs & at_veto_time & not_vetoed_yet
+
+        # LGN early exit if no update is necessary
+        if np.sum(veto_mask) == 0:
+            continue
+        
         # ADM create a new set of entries that are updates to "turn off"
         # ADM the targets that match the veto catalog.
-        updates = mtl[mii]
+        updates = mtl[mii][veto_mask]
         updates["NUMOBS_MORE"] = 0
         updates["PRIORITY"] = 2
         updates["TARGET_STATE"] = "VETO|DONE"
         updates["TIMESTAMP"] = get_utc_date(survey=survey)
-        updates["VERSION"] = MTLDV[DV_idx]['VERSION']
+        updates["VERSION"] = mtl[mii][veto_mask]['VERSION']
 
         # ADM finally, append the new updates to the ledger.
         nups, fn = io.write_mtl(

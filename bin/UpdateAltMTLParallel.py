@@ -6,7 +6,8 @@ import os
 import numpy as np
 from astropy.table import Table
 import argparse
-from multiprocessing import Pool
+from multiprocessing import Pool, set_start_method
+set_start_method('fork', force=True)
 from LSS.SV3 import altmtltools as amt
 
 parser = argparse.ArgumentParser(prog = 'UpdateAltMTLParallel', description = 'Updates existing alt ledgers by generating a new tiletracker entry and running dateloop')
