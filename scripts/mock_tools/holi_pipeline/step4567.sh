@@ -49,6 +49,14 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     # use local package LSS, refresh after source env
     export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
     export PATH=$LSS_DIR/bin:$PATH
+    # # login nodes have no GPU; avoid jax/tensorflow CUDA plugin init (silences
+    # # duplicate cuDNN/cuFFT/cuBLAS factory registration warnings)
+    # export JAX_PLATFORMS=cpu
+    # export CUDA_VISIBLE_DEVICES=-1
+    # export TF_CPP_MIN_LOG_LEVEL=3
+    # # install
+    # #python -m pip install -U scalene
+
     ## in4=out3, out4
     out3_ELG=$DS_DIR/$seed/ELG/$in_4
     out3_LRG=$DS_DIR/$seed/LRG/$in_4
@@ -57,13 +65,17 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     out4_LRG=$DS_DIR/$seed/LRG/$in_5
     out4_QSO=$DS_DIR/$seed/QSO/$in_5
     ## join tracers
-    time ./join_imaging_mask_stdpars.py --inputs $out3_ELG --outputs $out4_ELG 
+    time ./join_imaging_mask_stdpars.py --inputs $out3_ELG --outputs $out4_ELG
+    
+    ## profile version
+    # rm $out4_ELG
+    # python -m scalene run -o profile1.json ./join_imaging_mask_stdpars.py --inputs $out3_ELG --outputs $out4_ELG
+    # python -m scalene view --standalone profile1.json
+    # exit 0
+
     time ./join_imaging_mask_stdpars.py --inputs $out3_LRG --outputs $out4_LRG 
     time ./join_imaging_mask_stdpars.py --inputs $out3_QSO --outputs $out4_QSO 
 
-    # remove &, to use same script for split and full pipeline version
-    # The computation time is actually dominated by the ELG tracing; 
-    # little is gained by parallelizing the tracers.
     # wait
 
     #
@@ -88,6 +100,7 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     
     time ./concatenate_tracers_to_fba_stdpars.py --inputs $in6_ELG $in6_LRG $in6_QSO --outputs $out6 --id_seed $IDS
 )
+
 
 #
 # step 7 initialize amtl mocks

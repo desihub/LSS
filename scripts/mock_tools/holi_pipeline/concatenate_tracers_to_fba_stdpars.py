@@ -27,9 +27,9 @@ def concatenate_tracers(qso_path, elg_path, lrg_path, output_path):
     # free 
     del elgs, lrgs, qsos
     # 
-    cm.write_LSS_scratchcp(targets, output_path, extname = 'TARGETS')
-    fits.setval(output_path, 'OBSCON', value='DARK', ext = 1)
+    cm.write_LSS(targets, output_path, extname = 'TARGETS')
     del targets
+    fits.setval(output_path, 'OBSCON', value='DARK', ext = 1)
     print('DONE: ', output_path)
 
 

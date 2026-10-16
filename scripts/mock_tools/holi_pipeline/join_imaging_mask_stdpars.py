@@ -7,20 +7,26 @@
 import os
 import argparse
 
-from astropy.table import Table
+from astropy.table import Table, setdiff
+from astropy.utils.diff import report_diff_values
+
 
 import LSS.common_tools as cm
 from LSS.globals import main
 
 
-print('join_imaging_mask_snake.py')
+print('join_imaging_mask_stdpars.py')
 
 mainp = main(tp="LRG", specver="loa-v1")
 
 
 def process_one_file(in_f, out_f):
     d = Table.read(in_f)
-    targets = cm.cutphotmask(d, bits=mainp.imbits)
+    #targets2 = cm.cutphotmask(d.copy(), bits=mainp.imbits)
+    targets = cm.cutphotmask_inplace(d, bits=mainp.imbits)
+    
+    #targets2["DEC"][0] = 0.0
+    #print(setdiff(targets, targets2))
     cm.write_LSS(targets, out_f, extname="TARGETS")
 
 
