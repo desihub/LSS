@@ -18,14 +18,12 @@
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
 # ntasks is defied by memory necessary by process, here step1 arround 20-30 GB.
-# actually 17 is the max
-#SBATCH --ntasks=17     # number of seeds processed per array rank
-#SBATCH --cpus-per-task=15 # 256/ntasks
+# actually 15 is the max
+#SBATCH --ntasks=10     # number of seeds processed per array rank
+#SBATCH --cpus-per-task=1
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-## SBATCH -q shared
-## SBATCH --mem-per-cpu=22G
 #SBATCH -J HoliSimu
 #SBATCH -t 35:00:00
 #SBATCH --output=holi_%j.log
@@ -70,9 +68,6 @@ time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
 --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
 ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
-
-# debug step1.sh memory problem
-#exit $?
 
 #
 # STEP 2: merge the per-seed input/output file lists (from step 1)
