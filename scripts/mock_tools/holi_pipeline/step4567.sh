@@ -110,7 +110,16 @@ out6=$DS_DIR/$(printf "forFA%04d.fits" "$IDS")
     out7=$DS_DIR/$altmtlxxxx
     echo $out7
 
-    time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK --nproc $NCPU
+    # NOTE: do NOT use $NCPU here. NTASKS seeds already run this step in
+    # parallel on the node, so reusing cpus-per-task as the internal
+    # make_ledger pool size oversubscribes memory (NTASKS*nproc workers
+    # at once) and triggers OOM kills. Use a small, dedicated value.
+    NPROC_LEDGER=$(get_pars.py $HOLI_PARS init_amtl.nproc)
+    if (( NPROC_LEDGER > NCPU )); then
+        NPROC_LEDGER=$NCPU
+    fi
+
+    time ./initialize_amtl_mocks_da2_stdpars.py --inputs $out6 --outputs $out7 --obscon DARK --nproc $NPROC_LEDGER
 )
 
 date
