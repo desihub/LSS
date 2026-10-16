@@ -562,6 +562,23 @@ def cutphotmask(aa, bits=None, logger=None):
     printlog(str(len(aa)) + ' after imaging veto', logger=logger)
     return aa
 
+def compact_table(ast, idx):
+    n = len(idx)
+    for name in ast.colnames:
+        col = ast[name]
+        col[:n] = col[idx]
+    return ast[:n]
+
+def cutphotmask_inplace(aa, bits=None, logger=None):
+    printlog(str(len(aa)) + ' before imaging veto', logger=logger)
+    keep = (aa['NOBS_G'] > 0) & (aa['NOBS_R'] > 0) & (aa['NOBS_Z'] > 0)
+    if bits is not None:
+        for biti in bits:
+            keep &= ((aa['MASKBITS'] & 2**biti) == 0)
+    idx=np.argwhere(keep, ).squeeze()
+    aa = compact_table(aa, idx)
+    printlog(str(len(aa)) + ' after imaging veto', logger=logger)
+    return aa
 
 def mk_zcmbmap(nside=256, nest=True):
     import healpy as hp
@@ -2058,6 +2075,17 @@ def write_hdf5_blosc(filename, table, extname='LSS', logger=None):
     os.rename(tempfilename, filename)
 
 
+
+def write_table(table, filename, extname):
+    columns = [table[name] for name in table.colnames]
+
+    with fitsio.FITS(filename, "rw", clobber=True) as fits:
+        fits.write(
+            columns,
+            names=table.colnames,
+            extname=extname,
+        )
+
 def write_LSS(ff, outf, comments=None, extname='LSS'):
     '''
     ff is the structured array/Table to be written out as an LSS catalog
@@ -2070,13 +2098,24 @@ def write_LSS(ff, outf, comments=None, extname='LSS'):
     tmpfn = outf+'.tmp'
     if os.path.isfile(tmpfn):
         os.system('rm ' + tmpfn)
-    fd = fitsio.FITS(tmpfn, "rw")
-    fd.write(np.array(ff), extname=extname)
-    if comments is not None:
-        for comment in comments:
-            fd[extname].write_comment(comment)
-    # fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    fd.close()
+    
+    if isinstance(ff, Table):
+        ff.meta["EXTNAME"] = extname
+        if comments is not None:
+           ff.meta['COMMENTS'] = comments
+        ff.write(tmpfn, overwrite=True, format='fits')
+        # other solution but worst, fitsio no free memory 
+        #write_table(ff, tmpfn, extname=extname)
+    elif isinstance(ff, np.ndarray):
+        fd = fitsio.FITS(tmpfn, "rw")
+        np_ff = np.array(ff)
+        fd.write(np_ff, extname=extname)
+        if comments is not None:
+            for comment in comments:
+                fd[extname].write_comment(comment)
+        # fd[extname].write_history("updated on " + datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+        fd.close()
+        del np_ff
     print('closed fits file')
     # shutil.move(tmpfn, outf)
     # os.rename(tmpfn, outf)
