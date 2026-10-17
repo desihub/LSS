@@ -9,11 +9,11 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 #export LSSCODE=$LSS
 #export PYTHONPATH=$PYTHONPATH:$LSSCODE/py
 #
-mocknum=0
+mocknum=$1
 scriptdir=$HOME/LSScode/LSS/scripts
 #scriptdir=$LSSCODE/scripts
 #/global/homes/d/desica/LSScode/LSS/scripts
-sim=Uchuu-SHAM_v2_DARK
+sim=GLAM-Uchuu_v2/
 bdir=/global/cfs/cdirs/desi/mocks/cai/LSS/
 edir=petalmask
 export LSSCODE=/global/homes/d/desica/LSScode/LSS

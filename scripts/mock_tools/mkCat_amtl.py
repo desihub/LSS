@@ -601,7 +601,7 @@ if args.tracer[:3] == 'ELG':
     zmax = 1.6
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
-    if args.survey == 'DA2':
+    if args.survey == 'DA2' or args.surveycat == 'DA2':
         subfrac = [0.96,0.76]
         if args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
             subfrac = [0.7,0.545]
@@ -809,8 +809,8 @@ if args.apply_veto == 'y':
 
 
 if args.mask_petalnight_tids:
-    fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
-    dataf = common.read_hdf5_blosc(fout.replace('global','dvs_ro'))
+    fin = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
+    dataf = common.read_hdf5_blosc(fin.replace('global','dvs_ro'))
 
     common.printlog('getting badpetalnight tilelocid mask',logger)
     specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
@@ -820,13 +820,14 @@ if args.mask_petalnight_tids:
     tlocids = 10000*tspec['TILEID'] + tspec['LOCATION']
     totin = np.isin(tlocids,tloc_bp)
     tids2mask = np.unique(tspec['TARGETID'][totin])
-    common.printlog('will mask '+str(len(tids2mask))+' targetid out of '+str(len),logger)
     dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
     common.printlog('will mask '+str(np.sum(dataf_inmask))+' targetid out of '+str(len(dataf)),logger)
     dataf = dataf[~dataf_inmask]
         
     
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
+    
+    fout = os.path.join(dirout+args.extra_clusdir+'/', args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
     common.printlog('petalnight veto done for data',logger)
     del dataf
@@ -1030,6 +1031,12 @@ if args.nearestneighbor == 'y':
 if args.compmd == 'altmtl':
     weightileloc = False
 
+edir=args.extra_clusdir+'/'
+if args.mask_petalnight_tids:
+    readdir += args.extra_clusdir+'/'
+    edir = ''
+
+
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
@@ -1062,8 +1069,7 @@ if args.mkclusdat == 'y':
         #readdir = dirout
 
        #readdir = dirout
-    
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5',extradir=args.extra_clusdir+'/') #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5',extradir=edir) #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
