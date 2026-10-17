@@ -827,7 +827,7 @@ if args.mask_petalnight_tids:
     
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
     
-    fout = os.path.join(dirout+args.extra_clusdir+'/', args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
+    fout = os.path.join(dirout+'/'+args.extra_clusdir+'/', args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
     common.printlog('petalnight veto done for data',logger)
     del dataf
