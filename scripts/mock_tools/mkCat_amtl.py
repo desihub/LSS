@@ -1137,7 +1137,7 @@ if args.mkclusran == 'y':
         ran_finaltracer = ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
         common.printlog('changed ran base to '+ran_finaltracer,logger)
     common.printlog('adding tlobs to randoms with '+ fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits',logger)
-    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
+    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer).replace(edir,'')+'frac_tlobs.fits')
     common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
