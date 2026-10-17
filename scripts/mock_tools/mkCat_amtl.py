@@ -1033,7 +1033,7 @@ if args.compmd == 'altmtl':
 
 edir=args.extra_clusdir+'/'
 if args.mask_petalnight_tids:
-    readdir += args.extra_clusdir+'/'
+    readdir += '/'+args.extra_clusdir+'/'
     edir = ''
 
 
