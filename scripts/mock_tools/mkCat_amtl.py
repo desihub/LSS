@@ -1178,6 +1178,10 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
         datain = unique(Table(datain),keys=['TARGETID'])
         common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
+        if args.mask_petalnight_tids:
+            badtids = np.isin(datain['TARGETID'],rtids2mask)
+            datin = datain[~badtids]
+            common.printlog(str(rann)+' length after cutting bad petal night targetid '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         #common.printlog(str(datain.dtype),logger)
         ct.mkclusran(datain, os.path.join(clusdir, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5',extradir=args.extra_clusdir+'/',tp=finaltracer[:3] )
