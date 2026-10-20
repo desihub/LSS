@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-import astropy.io.fits as fits
+
 from astropy.table import Table,vstack
 import numpy as np
 from numpy.random import Generator, PCG64
@@ -45,23 +45,18 @@ def process_one_file(filein, out_f):
 
         contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea{num}.fits'
         dat_ = Table.read(filein)
-
+        len_dat = len(dat_)
         lop = dat_['DESI_TARGET'] & 2**5 == 2**5
         elg_vlo = dat_[~lop]
         elg_lop = dat_[lop]
-        num = rng.integers(0, 15)
-
-        contaminants = f'/global/cfs/projectdirs/desi/mocks/cai/contaminants/DA2/loa-v1/v2/ELGnotqso/noveto/contaminants_rea{num}.fits'
-        dat_ = Table.read(filein)
-        lop = dat_['DESI_TARGET'] & 2**5 == 2**5
-        elg_vlo = dat_[~lop]
-        elg_lop = dat_[lop]
+        del lop
+        
         datC = Table.read(contaminants)
         size_cont = len(datC)
 
         newtargid = (np.arange(1,size_cont+1)+1e8*2**23).astype(int)
         print(newtargid)
-        print('size contaminats/size sample', size_cont/float(len(dat_)))
+        print('size contaminats/size sample', size_cont/float(len_dat))
         if len(elg_lop) > 0:
             print('size contaminats/size sample lop', size_cont/float(len(elg_lop)))
         else:
@@ -79,9 +74,8 @@ def process_one_file(filein, out_f):
             elg_lop['TARGETID'][replace_idx] = newtargid[cont_idx]
 
         thecat = vstack([elg_lop, elg_vlo])
-
+        del elg_lop, elg_vlo
         thecat.write(out_f, overwrite=True)
-        filein.replace('.fits', '_withcontaminants.fits')
     elif filein.find('LRG') > 0:
         os.system(f"touch {out_f}")
 

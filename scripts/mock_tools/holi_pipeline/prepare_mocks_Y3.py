@@ -539,7 +539,7 @@ def main():
     if np.any(out_of_bounds):
         data["RA"] = np.mod(data["RA"], 360.0)
 
-    common.write_LSS_scratchcp(data, out_file_name, extname="TARGETS")
+    common.write_LSS(data, out_file_name, extname="TARGETS")
     # fits.setval(out_file_name, 'EXTNAME', value='TARGETS', ext=1)
     fits.setval(out_file_name, "OBSCON", value=tile, ext=1)
 
