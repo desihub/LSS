@@ -195,7 +195,9 @@ Use of [py-psy](https://github.com/benfred/py-spy/blob/master/README.md), [memor
 * memory optimization for step 1,3,4,5,6
   * in-place selection
   * use `del` and garbage collector call
-  * use astropy Table.write instead fitsio library 
+  * use astropy Table.write instead fitsio library
+ 
+![big mem](doc/hotspot_mem.png)
 * step 1 needs of 30GB, => 17 tasks take all memory of a Perlumutter node (480GB)
   * Abandonment of the "1 CPU per step" strategy in the Holi-pipeline (except for BRICKMASK); now, all CPUs on a node (256, or x2 with hyperthreading) are used whenever possible.
   * 17 seeds by node
