@@ -1183,7 +1183,7 @@ if args.mkclusran == 'y':
             badtids = np.isin(datain['TARGETID'],rtids2mask)
             common.printlog(str(rann)+' length before cutting bad petal night targetid '+str(len(datain)),logger=logger)
             common.printlog(str(rann)+' length length of bad targetid '+str(sum(badtids)),logger=logger)
-            datin = datain[~badtids]
+            datain = datain[~badtids]
             common.printlog(str(rann)+' length after cutting bad petal night targetid '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         #common.printlog(str(datain.dtype),logger)
