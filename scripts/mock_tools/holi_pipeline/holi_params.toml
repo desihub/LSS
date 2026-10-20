@@ -24,7 +24,7 @@ logs_dir = "/global/homes/j/jcolley/test/runs"
 input_ref = "/global/cfs/cdirs/desi/mocks/cai/holi/webjax_v4.80"
 
 # First id seed processing by pipeline
-first_id = 70
+first_id = 90
 
 # for debug, reduce number of galaxy for fast processing,
 # minimal value is 5000 else error can appears
@@ -40,12 +40,10 @@ max_gal = -1
 # example of prepare_mocks parameters, can be completed if necessary
 survey = "DA2"
 
-
 [brickmask] # step 3
 cfitsio = "/global/common/software/desi/users/naimgk/cfitsio"
 exe_dir = "/global/cfs/cdirs/desi/users/colley/wd_brick/brickmask_mpi"
 conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipeline"
-
 
 [init_amtl] # step 7
 #amtl_dir = ""
@@ -57,8 +55,7 @@ conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipe
 # make_ledger docstring already warns numproc>12 can OOM for a *single*
 # instance), which causes "worker process N killed by signal 9".
 # Perlmutter CPU node: 512GB / NTASKS=17 ~= 29GB per task budget.
-nproc = 4
-
+nproc = 3
 
 [amtl] # step 8
 # verbose mode is '--verbose', by default ''
