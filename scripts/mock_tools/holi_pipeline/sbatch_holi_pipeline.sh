@@ -18,14 +18,12 @@
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
 # ntasks is defied by memory necessary by process, here step1 arround 20-30 GB.
-# actually 17 is the max
-#SBATCH --ntasks=17     # number of seeds processed per array rank
-#SBATCH --cpus-per-task=15 # 256/ntasks
+# actually 15 is the max
+#SBATCH --ntasks=10     # number of seeds processed per array rank
+#SBATCH --cpus-per-task=1
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular
-## SBATCH -q shared
-## SBATCH --mem-per-cpu=22G
 #SBATCH -J HoliSimu
 #SBATCH -t 35:00:00
 #SBATCH --output=holi_%j.log
@@ -62,66 +60,63 @@ NCPU_PT=${SLURM_CPUS_PER_TASK:-1}
 ARRAY_RANK=${SLURM_ARRAY_TASK_ID:-0}
 FIRST_ID_RANK=$((NTASKS*ARRAY_RANK + FIRST_ID))
 
-# #
-# # STEP 1: create the mock catalogue for each seed in this rank
-# #
-# date; echo "Step 1: create catalog ELG,LRG, QSO"
-# time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
-# --output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
-# --error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
-# ./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
+#
+# STEP 1: create the mock catalogue for each seed in this rank
+#
+date; echo "Step 1: create catalog ELG,LRG, QSO"
+time srun -n $NTASKS -c $NCPU_PT --kill-on-bad-exit=0 \
+--output="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
+--error="${LOG_DIR}/logs/seed_${FIRST_ID_RANK}_t%t.log" \
+./step1.sh $LSS_DIR $DS_DIR $FIRST_ID_RANK
 
-# # debug step1.sh memory problem
-# #exit $?
+#
+# STEP 2: merge the per-seed input/output file lists (from step 1)
+# into a single pair of files, so BRICKMASK can process the whole
+# rank (all its seeds) in one call
+#
+date; echo "Step 2: concatenate files for BRICKMASK"
+## initialize the chunk files with the first seed of this rank
+input3=$DS_DIR/input_chunk_$ARRAY_RANK.txt
+output3=$DS_DIR/output_chunk_$ARRAY_RANK.txt
+cat $DS_DIR/input$FIRST_ID_RANK.txt > $input3
+cat $DS_DIR/output$FIRST_ID_RANK.txt > $output3
 
-# #
-# # STEP 2: merge the per-seed input/output file lists (from step 1)
-# # into a single pair of files, so BRICKMASK can process the whole
-# # rank (all its seeds) in one call
-# #
-# date; echo "Step 2: concatenate files for BRICKMASK"
-# ## initialize the chunk files with the first seed of this rank
-# input3=$DS_DIR/input_chunk_$ARRAY_RANK.txt
-# output3=$DS_DIR/output_chunk_$ARRAY_RANK.txt
-# cat $DS_DIR/input$FIRST_ID_RANK.txt > $input3
-# cat $DS_DIR/output$FIRST_ID_RANK.txt > $output3
-
-# ## append the remaining seeds of this rank
-# for ((ids=1; ids<NTASKS; ids++)); do
-#     seed=$((ids + FIRST_ID_RANK))
-#     cat $DS_DIR/input$seed.txt >> $input3
-#     cat $DS_DIR/output$seed.txt >> $output3
-#     echo input$seed.txt
-# done
+## append the remaining seeds of this rank
+for ((ids=1; ids<NTASKS; ids++)); do
+    seed=$((ids + FIRST_ID_RANK))
+    cat $DS_DIR/input$seed.txt >> $input3
+    cat $DS_DIR/output$seed.txt >> $output3
+    echo input$seed.txt
+done
 
 
-# #
-# # STEP 3: run BRICKMASK on the merged input/output files for this rank
-# #
-# (
-#     date; echo "Step 3: BRICKMASK"
-#     ## environment setup
-#     source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
-#     module load cpu cray-fftw
-#     export CFITSIO_DIR=$(get_pars.py $HOLI_PARS brickmask.cfitsio)
-#     export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
-#     EXE_PATH=$(get_pars.py $HOLI_PARS brickmask.exe_dir)
-#     CONF_PATH=$(get_pars.py $HOLI_PARS brickmask.conf_dir)
-#     # use local package LSS, refresh after source env
-#     export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
-#     export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
+#
+# STEP 3: run BRICKMASK on the merged input/output files for this rank
+#
+(
+    date; echo "Step 3: BRICKMASK"
+    ## environment setup
+    source /global/common/software/desi/users/adematti/cosmodesi_environment.sh dr1
+    module load cpu cray-fftw
+    export CFITSIO_DIR=$(get_pars.py $HOLI_PARS brickmask.cfitsio)
+    export LD_LIBRARY_PATH=$CFITSIO_DIR/lib:$LD_LIBRARY_PATH
+    EXE_PATH=$(get_pars.py $HOLI_PARS brickmask.exe_dir)
+    CONF_PATH=$(get_pars.py $HOLI_PARS brickmask.conf_dir)
+    # use local package LSS, refresh after source env
+    export PYTHONPATH=$LSS_DIR/py:$PYTHONPATH
+    export PATH=$LSS_DIR/bin:$HOLI_DIR:$PATH
 
 
-#     ## NOTE: BRICKMASK command-line options take precedence over the values
-#     ## set in the configuration file (brickmask.conf).
-#     ALL_CPU=$((NTASKS*NCPU_PT))
-#     time srun --exclusive -n $ALL_CPU -c 1 --cpu-bind=cores \
-#     --output="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
-#     --error="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
-#     $EXE_PATH/BRICKMASK -i $input3 -o $output3 -c $CONF_PATH/brickmask.conf
-# )
-# # clean files
-# rm $input3 $output3
+    ## NOTE: BRICKMASK command-line options take precedence over the values
+    ## set in the configuration file (brickmask.conf).
+    ALL_CPU=$((NTASKS*NCPU_PT))
+    time srun --exclusive -n $ALL_CPU -c 1 --cpu-bind=cores \
+    --output="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
+    --error="${LOG_DIR}/logs/brickmask_${FIRST_ID_RANK}.log" \
+    $EXE_PATH/BRICKMASK -i $input3 -o $output3 -c $CONF_PATH/brickmask.conf
+)
+# clean files
+rm $input3 $output3
 
 #
 # STEPS 4-7: imaging mask join, contaminants, tracer concatenation and
