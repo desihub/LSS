@@ -47,15 +47,13 @@ conf_dir = "/global/cfs/cdirs/desi/users/colley/LSS/scripts/mock_tools/holi_pipe
 
 [init_amtl] # step 7
 #amtl_dir = ""
-# NOTE: keep this small and independent of SLURM cpus-per-task.
-# step 7 (mtl.make_ledger) already runs NTASKS seeds in parallel (one per
-# srun task); each one additionally spawns its own internal multiprocessing
-# pool of this size. Using cpus-per-task (e.g. 15) here means
-# NTASKS*nproc workers compete for node memory at once (desitarget's
-# make_ledger docstring already warns numproc>12 can OOM for a *single*
-# instance), which causes "worker process N killed by signal 9".
-# Perlmutter CPU node: 512GB / NTASKS=17 ~= 29GB per task budget.
-nproc = 3
+# NOTE: keep this small to avoid memory issue
+# actually the step 7 (mtl.make_ledger) multi-processus version 
+# reads the complete concatenated file ~11 GB for each sub-process
+# as we you use srun to execute NTASK mtl.make_ledger in paralell
+# becomes a memory bottleneck 
+# ntask=17*nproc=2*sizecat=11GB = 561 GB => NOK so
+nproc = 2
 
 [amtl] # step 8
 # verbose mode is '--verbose', by default ''

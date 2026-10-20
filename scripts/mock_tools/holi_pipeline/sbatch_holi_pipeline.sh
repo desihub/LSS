@@ -18,9 +18,8 @@
 # The array range below only needs to start at 0: SBATCH --array=0-x
 
 # ntasks is defied by memory necessary by process, here step1 arround 20-30 GB.
-# actually 15 is the max
-#SBATCH --ntasks=10     # number of seeds processed per array rank
-#SBATCH --cpus-per-task=1
+#SBATCH --ntasks=17     # number of seeds processed per array rank
+#SBATCH --cpus-per-task=15
 #SBATCH --account=desi
 #SBATCH --constraint=cpu
 #SBATCH -q regular

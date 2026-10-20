@@ -175,6 +175,36 @@ source init_env_holi.sh
 run_holi_pipeline.sh holi_params.toml 
 ```
 
+
+
+# Optimization
+
+Given that fiber assignment uses only a single CPU, this initial version of the pipeline employs one CPU per step with the exception of BRICKMASK, which uses as many CPUs as there are tasks on the node.
+
+Use of [py-psy](https://github.com/benfred/py-spy/blob/master/README.md), [memory-profiler](https://pypi.org/project/memory-profiler/) and [scalene](https://github.com/plasma-umass/scalene/blob/master/README.md) profiler to identify possible optimization
+
+## opti_holi1
+   * use fiber assignment library instead fba_run script in sub_process
+
+## opti_holi2
+   * change file format for ledger, use FITS instead ecsv
+   * use a local version of desitarget 3.0.0 with small modification
+
+
+## opti_holi3
+* memory optimization for step 1,3,4,5,6
+  * in-place selection
+  * use `del` and garbage collector call
+  * use astropy Table.write instead fitsio library 
+* step 1 needs of 30GB, => 17 tasks take all memory of a Perlumutter node (480GB)
+  * Abandonment of the "1 CPU per step" strategy in the Holi-pipeline (except for BRICKMASK); now, all CPUs on a node (256, or x2 with hyperthreading) are used whenever possible.
+  * 17 seeds by node
+  * BRICKMASK with 255 CPUs
+  * step 7 can use only 2 sub-process,
+     *  in the multi-process version of `mtl.make_ledger`, each sub-process reads the entire concatenated file (approximately 11 GB); consequently, when using `srun` to execute the `mtl.make_ledger` task in parallel, this creates a memory bottleneck.
+
+Ultimately, we can effectively leverage the additional CPUs for step 2 (BRICKMAKS), but not for step 7 (make_ledger) due to a memory issue. Therefore, currently the number of seeds that can be processed on a Perlmutter node is 17.
+
 # Bench
 
 ## All steps
