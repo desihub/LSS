@@ -1168,6 +1168,7 @@ if args.mkclusran == 'y':
             filer = specdata_dir+'/ran_'+str(rann)+'_'+pdir+'_badpetalnight_TARGETID.txt'
             if os.path.isfile(filer):
                 rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
+                common.printlog('loaded '+filer,logger)
 
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
@@ -1180,6 +1181,7 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
         if args.mask_petalnight_tids:
             badtids = np.isin(datain['TARGETID'],rtids2mask)
+            common.printlog(str(rann)+' length before cutting bad petal night targetid '+str(len(datain)),logger=logger)
             datin = datain[~badtids]
             common.printlog(str(rann)+' length after cutting bad petal night targetid '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
