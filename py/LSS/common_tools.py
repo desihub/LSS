@@ -304,7 +304,7 @@ def cut_specdat(dz, badfib=None, tsnr_min=0, tsnr_col='TSNR2_ELG', logger=None, 
     if fn_spike_nz1 is not None:
         badfiber_spike_nz.append(np.loadtxt(fn_spike_nz1))
     if fn_spike_nz2 is not None:
-        badfiber_spike_nz.append(np.loadtxt(fn_spike_nz1))
+        badfiber_spike_nz.append(np.loadtxt(fn_spike_nz2))
     if len(badfiber_spike_nz) > 0:
         if len(badfiber_spike_nz) > 1:
             badfiber_spike_nz = np.concatenate(badfiber_spike_nz)
