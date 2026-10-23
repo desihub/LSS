@@ -40,7 +40,7 @@ log = Logger.get()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'],default='DARK')
-parser.add_argument("--mock", default='ab2ndgen')
+parser.add_argument("--mock", default='generic')
 parser.add_argument("--mock_version",default='')
 parser.add_argument("--realization")
 parser.add_argument("--getcoll",default='y')

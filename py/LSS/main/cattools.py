@@ -7,7 +7,10 @@ import os
 from random import random
 
 import astropy.io.fits as fits
-from astropy.table import Table,join,unique,vstack,setdiff
+from astropy.table import Table,join,unique,vstack,hstack,setdiff
+import warnings
+from astropy.units.core import UnitsWarning
+warnings.simplefilter('ignore', category=UnitsWarning)
 
 import fitsio
 
@@ -18,6 +21,7 @@ import healpy as hp
 
 #from LSS.Cosmo import distance
 from LSS.imaging import densvar
+
 
 #from LSS.common_tools import find_znotposs
 
@@ -32,6 +36,7 @@ logger.setLevel(level=logging.INFO)
 
 
 def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
+    import LSS.common_tools as common
     s = 0
     n = 0
     nfail = 0
@@ -50,6 +55,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
 
         s = 1
         tdone = np.unique(specd['TILEID'])
+        common.printlog(str(np.max(tdone)),logger)
         tmask = ~np.isin(tiles['TILEID'],tdone)
     else:
         infl = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/QSO_catalog_'+release+'.fits'
@@ -61,6 +67,7 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
         tmask = ~np.isin(tiles['TILEID'],tdone)
     print('will add QSO info for '+str(len(tiles[tmask]))+' tiles')
     #kl = list(specd.dtype.names)
+    qso_tls = []
     for tile,zdate,tdate in zip(tiles[tmask]['TILEID'],tiles[tmask]['ZDATE'],tiles[tmask]['THRUDATE']):
         tdate = str(tdate)
         tspec = combQSOdata(tile,zdate,tdate,cols=kl)
@@ -83,20 +90,28 @@ def combtile_qso(tiles,outf='',restart=False,release='guadalupe'):
                     new[colname][...] = tspec[colname][...]
 
                 #specd = np.hstack((specd,tspec))
-                specd = np.hstack((specd,new))
+                #specd = np.hstack((specd,new))
+                qso_tls.append(new)
+                print(tile,n,len(tiles[tmask]),len(new))
             #specd.sort('TARGETID')
-            kp = (specd['TARGETID'] > 0)
-            specd = specd[kp]
+            
+            
 
             n += 1
-            print(tile,n,len(tiles[tmask]),len(specd))
+            
         else:
             print(str(tile)+' failed')
             nfail += 1
     print('total number of failures was '+str(nfail))
+    if len(qso_tls) > 0:
+        qso_tls = np.hstack(qso_tls)
+        specd = np.hstack([specd,qso_tls])
+    kp = (specd['TARGETID'] > 0)
+    specd = specd[kp]
     if n > 0:
         #specd.write(outf,format='fits', overwrite=True)
-        fitsio.write(outf,specd,clobber=True)
+        #fitsio.write(outf,specd,clobber=True)
+        common.write_LSS_scratchcp(specd,outf,logger=logger)
         return True
     else:
         return False
@@ -802,8 +817,12 @@ def combQSOdata_alt(tile,zdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/dai
     return qso_cat
 
 
-def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None ):
-    from LSS.qso_cat_utils import qso_catalog_maker
+def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/daily/tiles/archive/',cols=None,qso_maker='desispec' ):
+    #import LSS.common_tools as common
+    if qso_maker == 'orig':
+        from LSS.qso_cat_utils import qso_catalog_maker
+    if qso_maker == 'desispec':
+        from LSS.common_tools import desispec_validate as qso_catalog_maker
     #put data from different spectrographs together, one table for fibermap, other for z
     zdate = str(zdate)
     specs = []
@@ -855,7 +874,40 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         qn = coaddir+str(tile)+'/'+zdate+'/'+'qso_qn'+'-'+str(specs[i])+'-'+str(tile)+'-thru'+tdate+'.fits'
         old_extname_redrock = True if zhdu == 'ZBEST' else False
         old_extname_for_qn = False #if int(tdate) >= 20220118 else True
-        qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
+        if qso_maker == 'orig':
+            qso_cati = Table.from_pandas(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn, update_qn_zwarn = False))
+        if qso_maker == 'desispec':
+            rrd = Table(fitsio.read(rr,ext=zhdu))
+            rrfm = Table(fitsio.read(rr,ext='FIBERMAP'))
+            rrfm.remove_columns(['TARGETID','DESI_TARGET'])
+            rrtsnr = Table(fitsio.read(rr,ext='TSNR2'))
+            rrtsnr.remove_columns(['TARGETID'])
+            #print(rrd.dtype.names)
+            #print(rr)
+            #print(rrfm.dtype.names)
+            mgiid = Table(fitsio.read(mgii))
+            mgiid.remove_columns(['TARGETID','SPECTYPE','ZERR'])
+            mgiid.rename_column('DELTA_CHI2','DELTA_CHI2_MGII')
+            mgiid.rename_column('VAR_A','VAR_A_MGII')
+            mgiid.rename_column('VAR_B','VAR_B_MGII')
+            mgiid.rename_column('A','A_MGII')
+            mgiid.rename_column('B','B_MGII')
+
+            mgiid.rename_column('SIGMA','SIGMA_MGII')
+            mgiid.rename_column('VAR_SIGMA','VAR_SIGMA_MGII')
+            #print(mgiid.dtype.names)
+            qnd = Table(fitsio.read(qn))
+            qnd.keep_columns(['SPECTYPE_RR', 'IS_QSO_QN_NEW_RR', 'Z_QN', 'C_LYA', 'C_CIV', 'C_CIII', 'C_MgII', 'C_Hbeta', 'C_Halpha', 'Z_LYA', 'Z_CIV', 'Z_CIII', 'Z_MgII', 'Z_Hbeta', 'Z_Halpha', 'Z_NEW', 'ZERR_NEW', 'ZWARN_NEW', 'SPECTYPE_NEW', 'SUBTYPE_NEW', 'CHI2_NEW', 'DELTACHI2_NEW', 'COEFF_NEW'])
+            #print(qnd.dtype.names)
+            cat = hstack([rrd,rrfm,rrtsnr,mgiid,qnd])
+            #print(cat.dtype.names)
+            cat_val = qso_catalog_maker(cat,ignore_emline=True)
+            cat['Z_QSO'] = cat_val['Z_QSO']
+            cat['QSO_MASKBITS'] = cat_val['QSO_MASKBITS']
+            selqso = cat_val['GOOD_Z_LYA']
+            qso_cati = cat[selqso]
+            qso_cati['Z'] = qso_cati['Z_QSO']
+            
         #qso_cati = Table(qso_catalog_maker(rr, mgii, qn, old_extname_redrock, old_extname_for_qn))
         qsocats.append(qso_cati)
         #if i == 0:
@@ -864,7 +916,7 @@ def combQSOdata(tile,zdate,tdate,coaddir='/global/cfs/cdirs/desi/spectro/redux/d
         #    qso_cat = vstack([qso_cat,qso_cati],metadata_conflicts='silent')
 
     qso_cat = vstack(qsocats,metadata_conflicts='silent')
-    qso_cat['TILEID'] = tile
+    qso_cat['TILEID'] = int(tile)
     #print(qso_cat.dtype.names)
     if cols is not None:
         qso_cat = Table(qso_cat)
@@ -1103,17 +1155,26 @@ def get_tiletab(tile_row,tarcol=['RA','DEC','TARGETID','DESI_TARGET','BGS_TARGET
     
     tile = tile_row['TILEID'][0]
     ts = str(tile).zfill(6)
+    #print(ts)
     faf = '/global/cfs/cdirs/desi/target/fiberassign/tiles/trunk/'+ts[:3]+'/fiberassign-'+ts+'.fits.gz'
     fht = fitsio.read_header(faf)
-    mdir = '/global/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
+    mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL'][8:]+'/'
     if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/dark/':
         mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/dark/'
     if mdir == '/global/cfs/cdirs/desi/survey/ops/staging/mtl/main/bright/':
         mdir = '/global/cfs/cdirs/desi/target/catalogs/mtl/1.0.0/mtl/main/bright/'
     #wt = tiles['TILEID'] == tile
+    #print('reading targets for tile '+ts+' from '+mdir)
     tars = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+    tars = tars[[b for b in tarcol]] # do this here before combining with mtl2
+    if 'MTL2' in fht.keys():
+        mdir = '/dvs_ro/cfs/cdirs/desi'+fht['MTL2'][8:]+'/'
+        #print('reading targets for tile '+ts+' from '+mdir)
+        tars2 = read_targets_in_tiles(mdir,tile_row,mtl=True,isodate=fht['MTLTIME'])
+        tars2 = tars2[[b for b in tarcol]] #do this here to match ordering before concatenating
+        tars = np.concatenate([tars,tars2])
     #tars.keep_columns(tarcols)
-    tars = tars[[b for b in tarcol]]
+    
 
     tt = Table.read(faf,hdu='POTENTIAL_ASSIGNMENTS')
     tars = join(tars,tt,keys=['TARGETID'])
@@ -1831,6 +1892,7 @@ def combtiles(tiles,catdir,tp,tmask,tc='SV3_DESI_TARGET',ttp='ALL',imask=False):
         print('number of zposs with tilelocid not showing up in tilelocid_assigned:')
         print(np.sum(natloc))
     fgu.sort('sort')
+    fgu.remove_column('sort') # remove sort column - pretty sure it is no longer accessed
     #fgu.sort('ZPOSS')
     fu = unique(fgu,keys='TARGETID')#,keep='last')
 
@@ -2002,6 +2064,7 @@ def combran_wdup(tiles,rann,randir,outf,keepcols=[],redo=True):
 
 def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,collf='', alt_out = None, mock_priority_mask = 'n', mock_tr = 'LRG',logger=None):
     from LSS.common_tools import write_LSS,write_LSS_scratchcp,printlog
+    import LSS.claude_tools as claudet
     fgu = Table(fitsio.read(infile.replace('global','dvs_ro')))
     if mask_coll:
         printlog('length before masking collisions '+str(len(fgu)),logger)
@@ -2015,7 +2078,8 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     specf.keep_columns(keepcols)
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     printlog('joining to spec data',logger)
-    fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+    #fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
+    fgu = claudet.join_left(fgu,specf,keys=['LOCATION','TILEID','FIBER'],fill=claudet.NULL)
     #fgu.sort('TARGETID')
     if alt_out != None:
         #outf = alt_out + '/comb' + tp + '_' + mock_tr + '_'+ 'wdupspec_zdone.fits'
@@ -2312,35 +2376,43 @@ def combran(tiles,rann,randir,ddir,tp,tmask,tc='SV3_DESI_TARGET',imask=False):
 
     fu.write(randir+str(rann)+'/rancomb_'+tp+'_Alltiles.fits',format='fits', overwrite=True)
 
-def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftiles=None):
+def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,mode1b=0,tlid_full=None,badfib=None,ftiles=None,dr11=False):
     import LSS.common_tools as common
+    import LSS.claude_tools as claudet
     #import logging
     logger = logging.getLogger('LSSran')
-
-
-
+        
     zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'wdupspec_zdone.fits'
     logger.info('about to load '+zf)
     in_cols = ['LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'PRIORITY']#, 'TILELOCID']
     dz = Table(fitsio.read(zf,columns=in_cols))
+    if mode1b == 2:
+        zf = indir.replace('global','dvs_ro')+'/rancomb_'+str(rann)+pd+'1bwdupspec_zdone.fits'
+        logger.info('about to load '+zf)
+        in_cols = ['LOCATION', 'FIBER', 'TARGETID', 'RA', 'DEC', 'TILEID', 'PRIORITY']#, 'TILELOCID']
+        dz = vstack([dz,Table(fitsio.read(zf,columns=in_cols))])
+        
     logger.info(dz.dtype.names)
 
     cols = list(dz.dtype.names)
  
 
+    
     dz['TILELOCID'] = 10000*dz['TILEID'] +dz['LOCATION'] #reset it here in case was set by specdat and some matches were missing
 
-    wg = np.isin(dz['TILELOCID'],gtl)
-    if badfib is not None:
-        bad = np.isin(dz['FIBER'],badfib)
-        logger.info('number at bad fibers '+str(sum(bad)))
-        wg &= ~bad
+    #wg = np.isin(dz['TILELOCID'],gtl)
+    #if badfib is not None: #this should have been done outside of this
+    #    bad = np.isin(dz['FIBER'],badfib)
+    #    logger.info('number at bad fibers '+str(sum(bad)))
+    #    wg &= ~bad
 
-    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['GOODHARDLOC'][wg] = 1
+    dz = claudet.as_table(dz)
+    claudet.set_column(dz,'GOODHARDLOC',  np.isin(dz['TILELOCID'], gtl), dtype='?')
+    #dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    #dz['GOODHARDLOC'][wg] = 1
     if ftiles is None:
         logger.info('counting tiles from dz with columns '+str(dz.dtype.names))
-        dzpd = count_tiles_input(dz[wg],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
+        dzpd = count_tiles_input(dz[dz['GOODHARDLOC'].astype('bool')],logger=logger)#.keep_columns(['TARGETID','TILEID','TILELOCID']))
     else:
         dzpd = Table.read(ftiles)
 
@@ -2353,15 +2425,20 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     sel = p4sort <= 0
     p4sort[sel] = 1
     logger.info(str(np.sum(sel))+' had priority <= 0 set to 1 for sort')
-    dz['sort'] =  dz['GOODHARDLOC'] + 1/p4sort
+    #dz['sort'] =  dz['GOODHARDLOC'] + 1/p4sort
+    sort = dz['GOODHARDLOC'] + 1/p4sort
+    
     #dz['sort'] =  dz['GOODPRI']*dz['GOODHARDLOC']*dz['ZPOSSLOC']#*(1+dz[tsnr])
     logger.info(dz.dtype.names)
     logger.info(str(rann)+' about to do sort')
-
-    dz.sort('sort') #should allow to later cut on tsnr for match to data
-    dz = unique(dz,keys=['TARGETID'],keep='last')
+    dz = dz[claudet.last_of_each(dz['TARGETID'], sort=sort, tie=dz['TILELOCID'])]
+    del sort
+    #dz.sort('sort') #should allow to later cut on tsnr for match to data
+    #dz = unique(dz,keys=['TARGETID'],keep='last')
+    #dz.remove_column('sort')
     logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
-    dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    #dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
+    dz = claudet.join_left(dz,dzpd,keys=['TARGETID'])
     
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
     dz['NTILE'][~tin] = 0
@@ -2372,11 +2449,27 @@ def mkfullran_prog(gtl,indir,rann,imbits,outf,pd,tlid_full=None,badfib=None,ftil
     if len(imbits) > 0:
         logger.info(str(rann)+' joining with original randoms to get mask properties')
         dirrt='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/'
+        dir11='/dvs_ro/cfs/cdirs/desi/target/catalogs/dr11/5.1.0/randoms/resolve/'
         tcol = ['TARGETID','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z'] #only including what are necessary for mask cuts for now
         #tcol = ['TARGETID','EBV','WISEMASK_W1','WISEMASK_W2','BRICKID','PSFDEPTH_G','PSFDEPTH_R','PSFDEPTH_Z','GALDEPTH_G',\
         #'GALDEPTH_R','GALDEPTH_Z','PSFDEPTH_W1','PSFDEPTH_W2','PSFSIZE_G','PSFSIZE_R','PSFSIZE_Z','MASKBITS','PHOTSYS','NOBS_G','NOBS_R','NOBS_Z']
-        tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
-        dz = join(dz,tarf,keys=['TARGETID'])
+        
+        if dr11:
+            tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol+['RA','DEC'])
+            logger.info('adding in DR11 target info and cutting to dr9/dr11')
+            sel11 = common.select_DR11(tarf)
+            tarf = tarf[~sel11]
+            tarf11 = fitsio.read(dir11+'/randoms-1-'+str(rann)+'.fits',columns=tcol+['RA','DEC'])
+            sel11 = common.select_DR11(tarf11)
+            tarf11 = tarf11[sel11]
+            tarf = np.concatenate([tarf,tarf11])
+            tarf = Table(tarf)
+            tarf.remove_columns(['RA','DEC'])
+            del tarf11
+        else:
+            tarf = fitsio.read(dirrt+'/randoms-1-'+str(rann)+'.fits',columns=tcol)
+        #dz = join(dz,tarf,keys=['TARGETID'])
+        dz = claudet.join_left(dz,tarf,keys=['TARGETID'])
         logger.info(str(rann)+' completed join with original randoms to get mask properties')
         del tarf
         dz = common.cutphotmask(dz,imbits,logger=logger)
@@ -2574,6 +2667,7 @@ def mkfullran(gtl,lznp,indir,rann,imbits,outf,tp,pd,notqso='',maxp=3400,min_tsnr
 
     dz.sort('sort') #should allow to later cut on tsnr for match to data
     dz = unique(dz,keys=['TARGETID'],keep='last')
+    dz.remove_column('sort') # remove sort column - pretty sure it is no longer accessed
     logger.info(str(rann)+' length after cutting to unique TARGETID '+str(len(dz)))
     dz = join(dz,dzpd,keys=['TARGETID'],join_type='left')
     tin = np.isin(dz['TARGETID'],dzpd['TARGETID'])
@@ -2693,7 +2787,7 @@ def mkfullran_px(indir,rann,imbits,outf,tp,pd,gtl,lznp,px,dirrt,maxp=3400,min_ts
 
                 dz.sort('sort') #should allow to later cut on tsnr for match to data
                 dz = unique(dz,keys=['TARGETID'],keep='last')
-                dz.remove_columns(['sort'])
+                dz.remove_column('sort')
                 #print('length after cutting to unique TARGETID '+str(len(dz)))
                 #print(np.unique(dz['NTILE']))
                 dz.write(outf,format='fits', overwrite=True)
@@ -3099,8 +3193,9 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=None,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
+    import LSS.claude_tools as claudet
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
     ----------
     zf : :class:`str` path to the file containing merged potential targets and redshift 
@@ -3114,6 +3209,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         argument.
     outf : :class:`str`, path to write output to
     ftiles : :class:`str`, path to file containing information on how and where each target
+    mode1b : :`int`, 0 (no 1b), 1 (1b only), or 2 (combine 1b with no 1b)
     azf : :class:`str`, path to where to find extra redshift info for ELG/QSO catalogs
     azfm : :class:`str`, whether to use per tile ('cumul') or healpix redshifts ('hp')
     desitarg : :class:`str`, column to use when selecting on targeting bit
@@ -3128,26 +3224,55 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     Notes
     -----
     """
-
+    logger.info('using updated function')
+    if emlin_fn is None:
+        logger.info('will not be adding emline info, because emlin_fn is None')
+    else:
+        logger.info('will be adding emline info from '+emlin_fn)
 
     if tp[:3] == 'BGS' or tp[:3] == 'MWS':
         pd = 'bright'
         tscol = 'TSNR2_BGS'
         #CHANGE TO HANDLE MOCK PATHS PROPERLY
-        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
+        collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT.fits'
+        collf1b = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-BRIGHT1B.fits'
+    elif tp[:3] == 'LGE':
+        pd = 'dark1b'
+        tscol = 'TSNR2_ELG'
+        collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK1B.fits'
     else:
         pd = 'dark'
         tscol = 'TSNR2_ELG'
-        collf = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
-
+        collf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK.fits'
+        collf1b = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/collisions-DARK1B.fits'
     
     if mockz and mask_coll:
         collf = mask_coll
 
+    logger.info('getting input repeat targets data in mode1b '+str(mode1b))
     if '.fits' in zf:
-        dz = Table(fitsio.read(zf))
+        zfno1b = zf.strip('.fits')+'_zdone.fits'#+f1b+'_zdone.fits'
+        zf1b = zf.strip('.fits')+'_1b_zdone.fits'
+
+        if mode1b == 0 or mode1b == 2:
+            dz = Table(fitsio.read(zfno1b.replace('global','dvs_ro')))
+        if mode1b == 1:
+            dz = Table(fitsio.read(zf1b.replace('global','dvs_ro')))
+        if mode1b == 2:
+            dz1b = Table(fitsio.read(zf1b.replace('global','dvs_ro')))
+            logger.info('read 1b and non 1b')
+            dz = vstack([dz,dz1b])        
+            del dz1b
     if '.h5' in zf:
-        dz = common.read_hdf5_blosc(zf)
+        zfno1b = zf
+        if mode1b == 0 or mode1b == 2:
+            dz = common.read_hdf5_blosc(zfno1b)
+        if mode1b == 1:
+            dz = common.read_hdf5_blosc(zf1b)  
+        if mode1b == 2:
+            dz = vstack([dz,common.read_hdf5_blosc(zf1b)])        
+
+    logger.info('length of input repeat targets data is '+str(len(dz)))
     wtype = ((dz[desitarg] & bit) > 0)
     if notqso == 'notqso':
         if logger is not None:
@@ -3157,18 +3282,40 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         wtype &= ((dz[desitarg] & qsobit) == 0)
 
     if logger is not None:
-        logger.info('length before cut is '+str(len(dz))+', length of input cut after to type is '+str(len(dz[wtype])))
+        logger.info('length of input cut after to type is '+str(len(dz[wtype])))
     else:
         print(len(dz[wtype]))
     dz = dz[wtype]
 
     if mask_coll:
         coll = Table(fitsio.read(collf))
+        if mode1b == 2:
+            coll1b = Table(fitsio.read(collf1b))
+            coll = vstack([coll,coll1b])
+            del coll1b
         if logger is not None:
             logger.info('length before masking collisions '+str(len(dz)))
         else:
             print('length before masking collisions '+str(len(dz)))
-        dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID'])
+        # ensure key column dtypes match between dz and coll for setdiff
+        for key in ['TARGETID','LOCATION','TILEID']:
+            if coll[key].dtype != dz[key].dtype:
+                common.printlog('changing dtype of collision data for '+key,logger)
+                coll[key] = coll[key].astype(dz[key].dtype)
+        #dz = setdiff(dz,coll,keys=['TARGETID','LOCATION','TILEID']) #this method is slow
+        # Create a composite key for matching
+        #dz_key = np.column_stack([dz['TARGETID'], dz['LOCATION'], dz['TILEID']])
+        #coll_key = np.column_stack([coll['TARGETID'], coll['LOCATION'], coll['TILEID']])
+
+        # Find rows in dz that are NOT in coll
+        #mask = ~np.all(dz_key[:, None] == coll_key[None, :], axis=2).any(axis=1) #this method gives a memory error nable to allocate 425. TiB for an array with shape (22641417, 6887129, 3) and data type bool
+        # Create tuples of the key columns for collision list
+        coll_keys = set(zip(coll['TARGETID'], coll['LOCATION'], coll['TILEID']))
+
+        # Keep only rows NOT in collision set
+        mask = ~np.array([(tid, loc, til) in coll_keys 
+                   for tid, loc, til in zip(dz['TARGETID'], dz['LOCATION'], dz['TILEID'])])
+        dz = dz[mask]
         if logger is not None:
             logger.info('length after masking collisions '+str(len(dz)))
         else:        
@@ -3181,8 +3328,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     #changing behavior back, load file that is spec info including zmtl
     specdir = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/'+specver+'/'
     prog = 'dark'
+    prog1b = 'dark1b'
     if tp[:3] == 'BGS':
         prog = 'bright'
+        prog1b = 'bright1b'
     if 'LGE' in tp:
         prog = 'dark1b'
 
@@ -3197,41 +3346,69 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
             common.printlog('reading '+assignf+'.fits',logger)
             fs = fitsio.read(assignf.replace('global', 'dvs_ro'))
             fs = Table(fs)
+        else:
+            common.printlog(fs +' not found!',logger)
         fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
     else:
-        specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
-        if logger is not None:
-            logger.info('reading from spec file '+specf)
+        if good_specf is not None:
+            won = common.read_hdf5_blosc(good_specf)
         else:
-            print(specf)
-        fs = fitsio.read(specf)
-        #common.printlog('badfib type is '+str(type(badfib).__name__),logger)
-        #common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
-        if specver == 'daily':
-            fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
-        else:
-            fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-        fs = Table(fs)
-        fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
-        gtl = np.unique(fs['TILELOCID'])
+            specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
+            specf1b = specdir+'datcomb_'+prog1b+'_spec_zdone.fits'
+            if logger is not None:
+                logger.info('reading from spec file '+specf)
+            else:
+                print(specf)
+            fs = fitsio.read(specf.replace('global','dvs_ro'))
+            if mode1b == 2:
+                logger.info('adding 1b spec info')
+                fs1b = fitsio.read(specf1b.replace('global','dvs_ro'))
+                fs1b = fs1b[[b for b in list(fs.dtype.names)]] #need same columns in same order before concatenating
+                fs = np.concatenate([fs,fs1b])
+                del fs1b
+            #common.printlog('badfib type is '+str(type(badfib).__name__),logger)
+            #common.printlog('badfib type row 0 '+str(type(badfib[0]).__name__),logger)
+            if specver == 'daily':
+                fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+            else:
+                fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+            won = Table({'TILELOCID': (10000 * fs['TILEID'].value
+                               + fs['LOCATION'].value).astype('i8', copy=False),
+                 'PRIORITY_ASSIGNED': fs['PRIORITY'].value.astype('i8', copy=False)},
+                copy=False) 
+            del fs
+
+            #fs = Table(fs)
+            #fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
+        gtl = np.unique(won['TILELOCID'].astype('i8'))
+        
     
     #print(len(gtl))
-    fs.keep_columns(['TILELOCID','PRIORITY'])
+    #fs.keep_columns(['TILELOCID','PRIORITY'])
     #''' FOR MOCKS with fiberassign, PUT IN SOMETHING TO READ FROM MOCK FIBERASSIGN INFO'''
-    dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
+    #dz = join(dz,fs,keys=['TILELOCID'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_ASSIGNED'])
+
+    won = won[claudet.last_of_each(won['TILELOCID'])]
+    dz = claudet.as_table(dz)
+    dz = claudet.join_left(dz,won,'TILELOCID', fill={'PRIORITY_ASSIGNED': claudet.NULL})
     if logger is not None:
         logger.info('columns after join to spec info '+str(dz.dtype.names))
     else:
         print(dz.dtype.names)
-    del fs
-    dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
-    dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
-    selp = dz['PRIORITY_ASSIGNED'] <= maxp
-    selp |=  dz['PRIORITY_ASSIGNED'] == 999999
-    dz['GOODPRI'][selp] = 1
+    #del fs
+    #dz['PRIORITY_ASSIGNED'] = dz['PRIORITY_ASSIGNED'].filled(999999)
+    #dz['GOODPRI'] = np.zeros(len(dz)).astype('bool')
+    #selp = dz['PRIORITY_ASSIGNED'] <= maxp
+    #selp |=  dz['PRIORITY_ASSIGNED'] == 999999
+    #dz['GOODPRI'][selp] = 1
+
+    claudet.set_column(dz, 'GOODPRI', (dz['PRIORITY_ASSIGNED'] <= maxp)
+               | (dz['PRIORITY_ASSIGNED'] == claudet.NULL), dtype='?')
+    
     
     if mockz:
-        wg = np.ones(len(dz),dtype=bool)
+        #wg = np.ones(len(dz),dtype=bool)
+        dz['GOODHARDLOC'] = 1
         logger.info('good hardware all set to true because mock should already have been masked')
     else:
         #specf = specdir+'datcomb_'+prog+'_spec_zdone.fits'
@@ -3246,23 +3423,26 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         #fs['TILELOCID'] = 10000*fs['TILEID'] +fs['LOCATION']
         #gtl = np.unique(fs['TILELOCID'])
     
-        wg = np.isin(dz['TILELOCID'],gtl)
+        wg = np.isin(dz['TILELOCID'].astype('i8'),gtl)
         #print(len(dz[wg]))
         if gtl_all is not None:
             wg &= np.isin(dz['TILELOCID'],gtl_all)
+        claudet.set_column(dz, 'GOODHARDLOC',  np.isin(dz['TILELOCID'], gtl), dtype='?')
         if logger is not None:
-            logger.info('number at good hardware '+str(len(dz[wg])))
+            logger.info('number at good hardware '+str(np.sum(dz['GOODHARDLOC'])))
         else:
-            print(len(dz[wg]))
+            print(np.sum(dz['GOODHARDLOC']))
     #print(len(dz[wg]))
-    dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
-    dz['GOODHARDLOC'][wg] = 1
+    #dz['GOODHARDLOC'] = np.zeros(len(dz)).astype('bool')
+    #dz['GOODHARDLOC'][wg] = 1
     #print('length after selecting type '+str(len(dz)))
 
-    wz = dz['ZWARN'] != 999999 #this is what the null column becomes
-    wz &= dz['ZWARN']*0 == 0 #just in case of nans
-    dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
-    dz['LOCATION_ASSIGNED'][wz] = 1
+    #wz = dz['ZWARN'] != 999999 #this is what the null column becomes
+    #wz &= dz['ZWARN']*0 == 0 #just in case of nans
+    #dz['LOCATION_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    #dz['LOCATION_ASSIGNED'][wz] = 1
+    claudet.set_column(dz, 'LOCATION_ASSIGNED', (dz['ZWARN'] != claudet.NULL) & (dz['ZWARN'] * 0 == 0),
+               dtype='?')
     if logger is not None:
         logger.info('number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
         logger.info('number assigned at good priority '+str(np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.)))
@@ -3272,15 +3452,18 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         print('number assigned',np.sum(dz['LOCATION_ASSIGNED']))
         print('number assigned at good priority',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*1.))
         print('number assigned at good priority and good hardware',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']*1.))
-    tlids = np.unique(dz['TILELOCID'][wz])
-    wtl = np.isin(dz['TILELOCID'],tlids)
-    dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
-    dz['TILELOCID_ASSIGNED'][wtl] = 1
+    #tlids = np.unique(dz['TILELOCID'][wz])
+    #wtl = np.isin(dz['TILELOCID'],tlids)
+    #dz['TILELOCID_ASSIGNED'] = np.zeros(len(dz)).astype('bool')
+    #dz['TILELOCID_ASSIGNED'][wtl] = 1
+    claudet.set_column(dz, 'TILELOCID_ASSIGNED', np.isin(
+        dz['TILELOCID'], np.unique(dz['TILELOCID'][dz['LOCATION_ASSIGNED']])), dtype='?')
+    nuat = len(np.unique(dz['TILELOCID'][dz['LOCATION_ASSIGNED']]))
     if logger is not None:
-        logger.info('number of unique targets at assigned tilelocid: '+str(len(np.unique(dz[wtl]['TARGETID']))) )
+        logger.info('number of unique targets at assigned tilelocid: '+str(nuat) )
     else:
         print('number of unique targets at assigned tilelocid:')
-        print(len(np.unique(dz[wtl]['TARGETID'])))
+        print(nuat)
 
     cols = list(dz.dtype.names)
     #if tscol not in cols:
@@ -3300,39 +3483,50 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     common.printlog('getting tile counts',logger)
     if ftiles is None:
         dtl = count_tiles_input(dz[wg],logger=logger)
+        #dtl = claudet.count_tiles_claude(dz[dz['GOODHARDLOC']])
         #dtl = count_tiles_input_alt(dz[wg],logger=logger) #alt was faster when run in notebook but is much slower on test on node...
     else:
         dtl = Table.read(ftiles)
     
-    #if tp[:3] != 'QSO':
-    if tp[:3] == 'QSO':
-        selnp = dz['LOCATION_ASSIGNED'] == 0
-        pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
-        pv[selnp] = 0
-        #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#
+    usable = dz['GOODHARDLOC'] & dz['GOODPRI']
+    if tp.startswith('QSO'):
+        value = np.where(dz['LOCATION_ASSIGNED'], dz['PRIORITY'], 0)
     else:
+        value = 1
+    sort = (dz['LOCATION_ASSIGNED'] * usable * value + dz['TILELOCID_ASSIGNED'] * usable
+            + dz['GOODHARDLOC'] + dz['GOODPRI'])
+    dz = dz[claudet.last_of_each(dz['TARGETID'], sort=sort, tie=dz['TILELOCID'])]
+    logger.info('cut to {:d} unique targets, {:d} of them assigned'
+                .format(len(dz), int(dz['LOCATION_ASSIGNED'].sum())))
+    #if tp[:3] != 'QSO':
+    #if tp[:3] == 'QSO':
+    #    selnp = dz['LOCATION_ASSIGNED'] == 0
+    #    pv = dz['PRIORITY'] #we will multiply by priority in order to keep priority 3400 over lya follow-up
+    #    pv[selnp] = 0
+        #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
+    #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*pv+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#
+    #else:
         #dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1#*(1+np.clip(dz[tscol],0,200))*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1
-        dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
+    #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*dz['GOODPRI']*1  + dz['GOODHARDLOC']*1 + dz['GOODPRI']*1
     #else:
     #    selnp = dz['LOCATION_ASSIGNED'] == 0
     #    pv = dz['PRIORITY']
     #    pv[selnp] = 0
     #    dz['sort'] = dz['LOCATION_ASSIGNED']*dz['GOODTSNR']*dz['GOODHARDLOC']*1+dz['TILELOCID_ASSIGNED']*dz['GOODHARDLOC']*1+dz['GOODHARDLOC']*1/(dz['PRIORITY_ASSIGNED']+2)
-    if logger is not None:
-        logger.info('about to sort')
-    else:
-        print('about to sort')
+    #if logger is not None:
+    #    logger.info('about to sort')
+    #else:
+    #    print('about to sort')
 
-    dz.sort('sort')
-    if logger is not None:
-        logger.info('sorted')
-    else:
-        print('sorted')
+    #dz.sort('sort')
+    #if logger is not None:
+    #    logger.info('sorted')
+    #else:
+    #    print('sorted')
     
-    dz = unique(dz,keys=['TARGETID'],keep='last')
-    common.printlog('cut to unique targetid',logger)
-    dz.remove_column('sort')
+    #dz = unique(dz,keys=['TARGETID'],keep='last')
+    #common.printlog('cut to unique targetid',logger)
+    #dz.remove_column('sort')
     
     if logger is not None:
         logger.info('cut number assigned '+str(np.sum(dz['LOCATION_ASSIGNED'])))
@@ -3345,40 +3539,62 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         print('cut number assigned at good priority and good hardwared',np.sum(dz['LOCATION_ASSIGNED']*dz['GOODPRI']*dz['GOODHARDLOC']))
 
 
-    if logger is not None:
-        logger.info('length after cutting to unique targets '+str(len(dz)))
-    else:
-        print('length after cutting to unique targets '+str(len(dz)))
+    #if logger is not None:
+    #    logger.info('length after cutting to unique targets '+str(len(dz)))
+    #else:
+    #    print('length after cutting to unique targets '+str(len(dz)))
     #dtl = Table.read(ftiles)
 
     common.printlog('joining to ntile info',logger=logger)
+    #dz = claudet.join_left(dz, dtl, 'TARGETID', fill={'NTILE': 0, 'TILES': 0, 'TILELOCIDS': 0})
     dtl.keep_columns(['TARGETID','NTILE','TILES'])#,'TILELOCIDS'])
     dz = join(dz,dtl,keys='TARGETID',join_type='left')
     tin = np.isin(dz['TARGETID'],dtl['TARGETID'])
     dz['NTILE'][~tin] = 0
-    #print(np.unique(dz['NTILE']))
+    print(np.unique(dz['NTILE']))
     if ftar is not None:
         common.printlog('joining to full imaging',logger)
+        
+        
         remcol = ['RA','DEC','DESI_TARGET','BGS_TARGET']
     
         for col in remcol:
             if col in cols:
                 dz.remove_columns([col]) #these come back in with merge to full target file
-        dz = join(dz,ftar,keys=['TARGETID'])
+        ndatpretar = len(dz)
+        
+        #dz = join(dz,ftar,keys=['TARGETID'])
+        ftar = claudet.as_table(ftar)
+        dz = claudet.join_left(dz, ftar, 'TARGETID')
+        if ndatpretar != len(dz):
+            common.printlog('lost '+str(ndatpretar-len(dz))+' targets after join, should be from dr9->dr11',logger)
+        else:
+            common.printlog('did not lose any targets during join',logger)
     
     if specver == 'daily':
         spec_cols = ['TARGETID','TILEID','LOCATION','Z','ZERR','SPECTYPE','DELTACHI2'\
         ,'COADD_FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','COADD_NUMEXP','COADD_EXPTIME','COADD_NUMNIGHT'\
         ,'MEAN_DELTA_X','MEAN_DELTA_Y','RMS_DELTA_X','RMS_DELTA_Y','MEAN_PSF_TO_FIBER_SPECFLUX']
-        dailydir = '/global/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
+        dailydir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/main/LSS/daily/'
+        common.printlog('adding info from spec file '+dailydir+'datcomb_'+prog+'_spec_zdone.fits',logger)
+        common.printlog('mode1b is '+str(mode1b),logger)
         prog = 'dark'
         if tp[:3] == 'BGS':
             prog = 'bright'
         if tp == 'LGE':
             prog = 'dark1b'
         specdat = fitsio.read(dailydir+'datcomb_'+prog+'_spec_zdone.fits',columns=spec_cols)
+        if mode1b == 2:
+            common.printlog('adding 1b spec info',logger)
+            fs1b = fitsio.read(specf1b,columns=spec_cols)
+            fs1b = fs1b[[b for b in list(specdat.dtype.names)]] #need same columns in same order before concatenating
+            specdat = np.concatenate([specdat,fs1b])
+            del fs1b
+        else:
+            common.printlog('did not add 1b because mode1b is '+str(mode1b),logger)
         dz = join(dz,specdat,keys=['TARGETID','TILEID','LOCATION'],join_type='left')
-    
+        logger.info('joined specdat')
+        del specdat
     if len(imbits) > 0:
         dz = common.cutphotmask(dz,imbits,logger=logger)
         if logger is not None:
@@ -3388,9 +3604,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 
 
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
-        arz = Table(fitsio.read(azf,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
-        arz['TILEID'] = arz['TILEID'].astype(int)
-        dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+        if azf is not None and 'OII_FLUX' not in list(dz.dtype.names):
+            logger.info('doing join to get OII info')
+            arz = Table(fitsio.read(azf.replace('global','dvs_ro'),columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
+            arz['TILEID'] = arz['TILEID'].astype(int)
+            dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
+            
         o2c = np.log10(dz['OII_FLUX'] * np.sqrt(dz['OII_FLUX_IVAR']))+0.2*np.log10(dz['DELTACHI2'])
         w = (o2c*0) != 0
         w |= dz['OII_FLUX'] < 0
@@ -3402,7 +3621,10 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
             print('check length after merge with OII strength file:' +str(len(dz)))
 
     if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
-        arz = Table(fitsio.read(azf))
+        logger.info('adding extra redshift info to QSO with '+azf)
+        if emlin_fn is None:
+            logger.info('will not be adding emline info, because emlin_fn is None')
+        arz = Table(fitsio.read(azf.replace('global','dvs_ro')))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
         #print(arz.dtype.names)
@@ -3410,15 +3632,23 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
         dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
         dz['Z_QF'].name = 'Z' #the redshifts from the quasar file should be used instead
         if emlin_fn is not None:
-            emcat =  Table(fitsio.read(emlin_fn,columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']))
-            emcat['TILEID'] = emcat['TILEID'].astype(int)
-            dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
+            logger.info('adding info from '+emlin_fn)
+            cols = ['TARGETID','LOCATION','TILEID']
+            cols_needed = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
+            for col in cols_needed:
+                if col not in list(dz.dtype.names):
+                    cols.append(col)
+            logger.info('columns to use for match are '+str(cols))
+            if len(cols) > 3:
+                emcat =  Table(fitsio.read(emlin_fn.replace('global','dvs_ro'),columns=cols))
+                emcat['TILEID'] = emcat['TILEID'].astype(int)
+                dz = join(dz,emcat,keys=['TARGETID','LOCATION','TILEID'],join_type='left')
 
-    if tp[:3] == 'ELG' and azf != '':
-        if logger is not None:
-            logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
-        else:
-            print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+    #if tp[:3] == 'ELG' and azf != '' and azf is not None:
+    #    if logger is not None:
+    #        logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
+    #    else:
+    #        print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
         message = 'adding healpix based QSO info'
         common.printlog(message,logger)
@@ -3485,13 +3715,25 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
     #tlsl.sort()
     nts = len(tlsl)
     
-
+    
     if calc_ctile == 'y':
-        tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
-        n_of_tiles = len(tlslu)
-        laa = dz['LOCATION_ASSIGNED']
-        acnts = np.bincount(indices,laa)
-        compa = acnts/cnts
+        claudet.set_column(dz, 'COMP_TILE', claudet.group_fraction(dz['TILES'], dz['LOCATION_ASSIGNED']),
+                   dtype='f8')
+        logger.info('{:d} targets sit where nothing was observed'
+                    .format(int((dz['COMP_TILE'] == 0).sum())))
+    else:
+        claudet.set_column(dz, 'COMP_TILE', 1., dtype='f8')
+    # Of the targets of this tracer sharing a fiber location, the fraction that got observed;
+    # one over it upweights a target for the ones it kept from being reached.
+    claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.group_fraction(dz['TILELOCID'],
+                                                        dz['LOCATION_ASSIGNED']), dtype='f8')
+
+#     if calc_ctile == 'y':
+#         tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
+#         n_of_tiles = len(tlslu)
+#         laa = dz['LOCATION_ASSIGNED']
+#         acnts = np.bincount(indices,laa)
+#         compa = acnts/cnts
         #i = 0
         #while i < len(dz):
         #    tls  = []
@@ -3519,47 +3761,47 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumul',em
 #            compa.append(cp)
 #            tll.append(tlslu[ti])
 #            ti += 1
-        comp_dicta = dict(zip(tlslu, compa))
-        fcompa = []
-        for tl in dz['TILES']:
-            fcompa.append(comp_dicta[tl])
-        dz['COMP_TILE'] = np.array(fcompa)
-        wc0 = dz['COMP_TILE'] == 0
-        common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
-    else:
-        dz['COMP_TILE'] = 1
-
-    locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
+#         comp_dicta = dict(zip(tlslu, compa))
+#         fcompa = []
+#         for tl in dz['TILES']:
+#             fcompa.append(comp_dicta[tl])
+#         dz['COMP_TILE'] = np.array(fcompa)
+#         wc0 = dz['COMP_TILE'] == 0
+#         common.printlog('number of targets in 0 completeness regions '+str(len(dz[wc0])),logger)
+#     else:
+#         dz['COMP_TILE'] = 1
+# 
+#     locl,nlocl = np.unique(dz['TILELOCID'],return_counts=True)
     wz = dz['LOCATION_ASSIGNED'] == 1
-    dzz = dz[wz]
-
-    loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
-    #print(np.max(nloclz),np.min(loclz))
-    
-    #print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
-    natloc = ~np.isin(dz['TILELOCID'],loclz)
-    common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
-
-    common.printlog('getting fraction assigned for each tilelocid',logger)
-    nm = 0
-    nmt =0
-    pd = []
-    nloclt = len(locl)
-    lzs = np.isin(locl,loclz)
-    for i in range(0,len(locl)):
-        if i%100000 == 0:
-            common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
-        nt = nlocl[i]
-        nz = lzs[i]
-        loc = locl[i]
-        pd.append((loc,nz/nt))
-    pd = dict(pd)
-    for i in range(0,len(dz)):
-        probl[i] = pd[dz['TILELOCID'][i]]
-    common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
-    #print(nm,nmt)
-
-    dz['FRACZ_TILELOCID'] = probl
+#     dzz = dz[wz]
+# 
+#     loclz,nloclz = np.unique(dzz['TILELOCID'],return_counts=True)
+#     #print(np.max(nloclz),np.min(loclz))
+#     
+#     #print(len(locl),len(nloclz),sum(nlocl),sum(nloclz))
+#     natloc = ~np.isin(dz['TILELOCID'],loclz)
+#     common.printlog('number of unique targets around unassigned locations is '+str(np.sum(natloc)),logger)
+# 
+#     common.printlog('getting fraction assigned for each tilelocid',logger)
+#     nm = 0
+#     nmt =0
+#     pd = []
+#     nloclt = len(locl)
+#     lzs = np.isin(locl,loclz)
+#     for i in range(0,len(locl)):
+#         if i%100000 == 0:
+#             common.printlog('at row '+str(i)+' of '+str(nloclt),logger)
+#         nt = nlocl[i]
+#         nz = lzs[i]
+#         loc = locl[i]
+#         pd.append((loc,nz/nt))
+#     pd = dict(pd)
+#     for i in range(0,len(dz)):
+#         probl[i] = pd[dz['TILELOCID'][i]]
+#     common.printlog('number of fibers with no observation, number targets on those fibers: '+str(nm)+','+str(nmt),logger)
+#     #print(nm,nmt)
+# 
+#     dz['FRACZ_TILELOCID'] = probl
     common.printlog('sum of 1/FRACZ_TILELOCID, 1/COMP_TILE, and length of input; no longer rejecting unobserved loc, so wont match',logger)
     common.printlog(str(np.sum(1./dz[wz]['FRACZ_TILELOCID']))+','+str(np.sum(1./dz[wz]['COMP_TILE']))+','+str(len(dz)),logger)
 
@@ -3613,6 +3855,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     selobs = ff['ZWARN'] != 999999
     selobs &= ff['TSNR2_ELG'] > tsnrcut
     ff = ff[selobs]
+    ff = common.cut_specdat(ff)
     azf = qsocat
     arz = Table(fitsio.read(azf))
     arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
@@ -3622,7 +3865,18 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
     ff['Z_QF'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
     ff = common.addNS(ff)
-    ff = common.cut_specdat(ff)
+    needed_cols = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
+    em_cols = ['TARGETID','LOCATION','TILEID']
+    for col in needed_cols:
+        if col not in list(ff.dtype.names):
+            em_cols.append(col)
+    if len(em_cols) > 3:
+        common.printlog('adding info from emline file',logger)
+        em_fn = indir + 'emlin_catalog.fits'
+        emlin = fitsio.read(em_fn,columns=em_cols)
+            
+        ff = join(ff,emlin,keys=['TARGETID','TILEID','LOCATION'])
+        del emlin
     outdir = indir+'LSScats/'+version+'/'
     tp = 'QSO'
     ffv = Table.read(outdir+tp+'_full_noveto.dat.fits')
@@ -3718,6 +3972,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
 
 def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmapcut',logger=None):
     import LSS.common_tools as common
+    import LSS.claude_tools as claudet
     from LSS import ssr_tools_new
     '''
     fl is the root of the input/output file
@@ -3758,7 +4013,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
         maxtsnr = 200
         band = 'G'
 
-    if tp == 'LRG':
+    if tp == 'LRG' or tp == 'LGE':
         selobs &= ff['TSNR2_ELG'] > tsnrcut
         mintsnr=500/12.15
         #maxtsnr =2000/12.15
@@ -3826,7 +4081,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
     selobs = ff['ZWARN']*0 == 0
     selobs &= ff['ZWARN'] != 999999
     #selobs &= ff['GOODHARDLOC'] == 1
-    selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
+    #selobs &= ff['TSNR2_'+tp[:3]]*0 == 0
     selgz = common.goodz_infull(tp[:3],ff,zcol='Z')
     for reg,mod in zip(regl,modl):
         selreg = ff['PHOTSYS'] == reg
@@ -3860,7 +4115,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
             ffc.remove_columns(['WEIGHT_ZFAIL'])
         if 'mod_success_rate' in cols:
             ffc.remove_columns(['mod_success_rate'])
-        ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        #ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+        ffc = claudet.as_table(ffc)
+        ff = claudet.as_table(ff)
+        ffc = claudet.join_left(ffc,ff,'TARGETID')
+
         common.write_LSS_scratchcp(ffc,indir+tp+'_full.dat.fits',logger=logger)#,comments='added ZFAIL weight')
         fname_mapveto = indir+tp+'_full_HPmapcut.dat.fits'
         if os.path.isfile(fname_mapveto):
@@ -3871,7 +4130,11 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
                 ffc.remove_columns(['WEIGHT_ZFAIL'])
             if 'mod_success_rate' in cols:
                 ffc.remove_columns(['mod_success_rate'])
-            ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
+            ffc = claudet.as_table(ffc)
+            ff = claudet.as_table(ff)
+            ffc = claudet.join_left(ffc,ff,'TARGETID')
+            
+            #ffc = join(ffc,ff,keys=['TARGETID'],join_type='left')
             common.write_LSS_scratchcp(ffc,fname_mapveto,logger=logger)#,comments='added ZFAIL weight')
     
     
@@ -3907,7 +4170,7 @@ def add_zfail_weight2full(indir,tp='',tsnrcut=80,readpars=False,hpmapcut='_HPmap
 
 
 
-def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None,exttp='.fits'):
+def mkclusdat(fl,redo_fracz=False,NN=False,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,rcut=None,ntilecut=0,ccut=None,ebits=None,zmin=0,zmax=6,write_cat='y',splitNS='n',return_cat='n',compmd='ran',kemd='',wsyscol=None,use_map_veto='',subfrac=1,zsplit=None, ismock=False,logger=None,extradir='', extracols=None,exttp='.fits'):
     import LSS.common_tools as common
     from LSS import ssr_tools
     '''
@@ -3942,7 +4205,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     elif os.path.isfile(in_fn+'.fits'):
         common.printlog('reading '+in_fn+'.fits',logger)
         ff = Table.read(in_fn.replace('global', 'dvs_ro')+'.fits')
-
+    else:
+        common.printlog('did not find file associated with '+in_fn)
+    if redo_fracz and 'NEW_WEIGHTFRACZ' not in list(ff.dtype.names):
+        ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
+        
     #ff = Table.read(fl+'_full'+use_map_veto+'.dat.fits'.replace('global','dvs_ro'))
     if wsyscol is not None:
         ff['WEIGHT_SYS'] = np.copy(ff[wsyscol])
@@ -3979,7 +4246,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
         #    wz &= ff['TSNR2_ELG'] > tsnrcut
         #    common.printlog('length after tsnrcut '+str(len(ff[wz])),logger)
 
-    if tp[:3] == 'LRG':
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
         print('applying extra cut for LRGs')
         # Custom DELTACHI2 vs z cut from Rongpu
         wz = ff['ZWARN'] == 0
@@ -4088,8 +4355,11 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
     #    ff['WEIGHT_ZFAIL'] = 1./ff['relSSR_tile']
     
     if weighttileloc == True:
-        ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
-        if 'FRAC_TLOBS_TILES' in cols and compmd == 'dat':
+        if  redo_fracz:
+            ff['WEIGHT_COMP'] = ff['NEW_WEIGHTFRACZ']
+        else:
+            ff['WEIGHT_COMP'] = 1./ff['FRACZ_TILELOCID']
+        if 'FRAC_TLOBS_TILES' in cols and compmd == 'dat' and NN == False:
             ff['WEIGHT_COMP'] *= 1/ff['FRAC_TLOBS_TILES']
 
         ff['WEIGHT'] *= ff['WEIGHT_COMP']
@@ -4260,6 +4530,7 @@ def mkclusdat(fl,weighttileloc=True,zmask=False,correct_zcmb='n',tp='',dchi2=9,r
 
 def add_tlobs_ran(fl,rann,hpmapcut='',wo=True,logger=None):
     import LSS.common_tools as common
+    #import LSS.claude_tools as claudet
     rf_name = fl+str(rann)+'_full'+hpmapcut+'.ran.fits'
     ranf = Table(fitsio.read(rf_name.replace('global','dvs_ro')))
     tlf = fitsio.read(fl+'frac_tlobs.fits')
@@ -4329,7 +4600,7 @@ def add_tlobs_ran_array(ranf,tlf,logger=None):
     return ranf
   
     
-def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',outext='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
+def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],des_resamp=False,zmask=False,utlid=False,ebits=None,write_cat='y',nosplit='y',return_cat='n',compmd='ran',clus_arrays=None,use_map_veto='',add_tlobs='n',logger=None,extradir='',tp='',outext='.fits'):#,tsnrcut=80,tsnrcol='TSNR2_ELG'
     import LSS.common_tools as common
     rng = np.random.default_rng(seed=rann)
     #first find tilelocids where fiber was wanted, but none was assigned; should take care of all priority issues
@@ -4467,8 +4738,8 @@ def mkclusran(flin,fl,rann,rcols=['Z','WEIGHT'],zmask=False,utlid=False,ebits=No
             ffcn = ffc
         outfn =  fl+ws+wzm+reg+str(rann)+'_clustering.ran'+outext#).replace(tp,extradir+tp)  
         
-        des_resamp = False
-        if 'QSO' in tp:
+        #des_resamp = False
+        if 'QSO' in tp:#QSO should always resample in DES
             if 'S' in reg or reg == '':
                 des_resamp = True
         if reg == '' and des_resamp == False: #N/S resampling
@@ -4916,7 +5187,7 @@ def randomtiles_allmain(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/mai
                 rmtl.write(fname,format='fits', overwrite=True)
                 print('added columns, wrote to '+fname)
 
-def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/',logger=None ):
+def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/catalogs/main/LSS/random',ii=0,randir11 = '/dvs_ro/cfs/cdirs/desi/target/catalogs/dr11/5.4.0/randoms/resolve/',dirrt='/global/cfs/cdirs/desi/target/catalogs/dr9/2.4.0/randoms/resolve/',ranind=1,logger=None ):
     '''
     tiles should be a table containing the relevant info
     '''
@@ -4924,7 +5195,6 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     import desimodel.focalplane
     import desimodel.footprint
     import LSS.common_tools as common
-    common.printlog('making random target files for tiles',logger)
     trad = desimodel.focalplane.get_tile_radius_deg()*1.1 #make 10% greater just in case
     #print(trad)
 
@@ -4944,10 +5214,28 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
     if len(tiles) == 0:
         common.printlog('no tiles to process for '+str(ii),logger)
         return True
-    rtall = read_targets_in_tiles(dirrt,tiles)
-    common.printlog('read targets on all tiles',logger)
-
-    common.printlog('creating files for '+str(len(tiles))+' tiles',logger)
+    common.printlog('making random target files '+str(ii)+' for '+str(len(tiles))+' tiles',logger)
+    rtall = read_targets_in_tiles(dirrt+'randoms-'+str(ranind)+'-'+str(ii),tiles,use_concatenate=True)
+    common.printlog('read dr9 targets on all tiles',logger)
+    rt11 = read_targets_in_tiles(randir11+'randoms-'+str(ranind)+'-'+str(ii),tiles,use_concatenate=True)
+    common.printlog('read dr11 targets on all tiles',logger)
+    if len(rt11) > 0:
+        sbricks = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/ops/surveyops/trunk/mtl/survey-bricks-dr.fits')
+        sel9 = sbricks['DRVERSION'] == 9
+        sel11 = sbricks['DRVERSION'] == 11
+        dr9_bricks = sbricks['BRICKID'][sel9]
+        dr11_bricks = sbricks['BRICKID'][sel11]
+        dr9in = np.isin(rtall['BRICKID'],dr9_bricks)
+        rtall = rtall[dr9in]
+        dr11in = np.isin(rt11['BRICKID'],dr11_bricks)
+        rt11 = rt11[dr11in]
+        #rt11.keep_columns('RA','DEC','TARGETID')
+        #rtall.keep_columns('RA','DEC','TARGETID')
+        rt11 = rt11[[b for b in list(rtall.dtype.names)]]
+        rtall = np.concatenate([rtall,rt11])
+        del rt11
+        
+    common.printlog('Loaded targets, now creating files per tile for '+str(ii),logger)
     #for i in range(0,len(tiles)):
     def _create_rantile(ind):
         fname = dirout+str(ii)+'/tilenofa-'+str(tiles['TILEID'][ind])+'.fits'
@@ -4972,7 +5260,8 @@ def randomtiles_allmain_pix_2step(tiles,dirout='/global/cfs/cdirs/desi/survey/ca
         rmtl['OBSCONDITIONS'] = np.ones(len(rmtl),dtype=int)*516#tiles['OBSCONDITIONS'][i]
         rmtl['SUBPRIORITY'] = np.random.random(len(rmtl))
         #print('added columns for '+fname)
-        rmtl.write(fname,format='fits', overwrite=True)
+        common.write_LSS_scratchcp(rmtl,fname,logger=logger)
+        #rmtl.write(fname,format='fits', overwrite=True)
         del rmtl
         common.printlog('added columns, wrote to '+fname,logger)
         #nd += 1

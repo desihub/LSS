@@ -61,6 +61,7 @@ parser.add_argument("--relax_zbounds", help="Use less restricted redshift bounds
 parser.add_argument("--imsys_finezbin", help="Perform imaging regressions in dz=0.1 bins", action='store_true')
 parser.add_argument("--imsys_1zbin", help="Perform imaging regressions in just 1 z bin", action='store_true')
 parser.add_argument("--imsys_clus", help="Add weights for imaging systematics using eboss method, applied to clustering catalogs", action='store_true')
+parser.add_argument("--renorm", help="if selected, weights get normalized within SGC/NGC", action='store_true')
 parser.add_argument("--imsys_clus_ran", help="Add imaging weights to random catalogs", action='store_true')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
 parser.add_argument("--add_syscol2blind", help="Add the new weight column to the blinded catalogs", action='store_true')
@@ -345,6 +346,59 @@ if args.imsys_clus:
         dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_SGC_clustering.dat.fits'),logger=logger)
 
+
+if args.renorm:
+    GCl = ["NGC",'SGC']
+    for reg in GCl:
+        fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_clustering.dat.fits')
+        dat_reg = Table(fitsio.read(fname))
+        dat_reg[syscol+'_norm'] = dat_reg[syscol]
+        def _renorm(zm,zx):
+            common.printlog('norming weights for region '+reg+' and '+str(zm)+'<z<'+str(zx),logger)
+            selz = dat_reg['Z'] > zm
+            selz &= dat_reg['Z'] < zx
+            if reg == 'SGC':
+                #no DES split option yet
+                weight_mean = np.mean(dat_reg[selz][syscol])
+                dat_reg[syscol+'_norm'][selz] /= weight_mean
+            if reg == 'NGC':
+                seln = dat_reg['PHOTSYS'] == 'N'
+                weight_mean_tot = np.mean(dat_reg[~seln][syscol])
+                weight_mean = np.mean(dat_reg[~seln & selz][syscol])/weight_mean_tot #we want the overall mean to remain the same because of the N/S normalization
+                dat_reg[syscol+'_norm'][~seln & selz] /= weight_mean
+       
+        if args.imsys_finezbin:
+            dz = 0.1
+            zm = zsysmin
+            zx = zm + dz
+            while zm < zsysmax:
+                zx = zm + dz
+                zx = round(zx,1)
+                
+                _renorm(zm,zx)
+                zm = zx
+        elif args.imsys_1zbin:
+            zm = zmin
+            zx = zmax
+            fitmapsbin = fit_maps
+            use_maps = fit_maps#fitmapsbin ; should all be controlled above if this is ever again desired
+            _renorm(zm,zx)
+            
+        elif args.imsys_zbin == 'y':
+       
+            for zr in zrl:
+                zm = zr[0]
+                zx = zr[1]
+
+                _renorm(zm,zx)
+        else:
+            sys.exit('no valid z binning choice in arguments, exiting...')
+        if args.replace_syscol:
+            dat_reg['WEIGHT'] /= dat_reg['WEIGHT_SYS']
+            dat_reg['WEIGHT_SYS'] = dat_reg[syscol+'_norm']
+            dat_reg['WEIGHT'] *= dat_reg['WEIGHT_SYS']
+        common.write_LSS_scratchcp(dat_reg,os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_'+reg+'_clustering.dat.fits'),logger=logger)
+    syscol = syscol+'_norm'
 
 if args.imsys_clus_ran:
     fname = os.path.join(dirout+args.extra_clus_dir, tracer_clus+'_NGC_clustering.dat.fits')

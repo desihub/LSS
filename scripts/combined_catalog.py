@@ -1,14 +1,16 @@
 import LSS.combined_tracer_utils as comb
 import LSS.common_tools as common
-from astropy.table import Table, vstack
+from astropy.table import vstack
 import numpy as np
 import argparse
 import os
 import logging
+from cosmoprimo.fiducial import DESI
+cosmo = DESI()
 
 from multiprocessing import Pool
 
-logname = 'mkCat'
+logname = 'combined_catalog'
 logger = logging.getLogger(logname)
 logger.setLevel(logging.INFO)
 
@@ -25,11 +27,15 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
+bias_dict = {'LRG': 2.0, 'ELG_LOPnotqso': 1.2, 'QSO': 2.1}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--base_dir', help='directory to load from')
+parser.add_argument('--nz_dir', help='directory to load n(z) file, basedir if None', default=None)
 parser.add_argument('--save_dir', help='directory to write combined catalogs to')
-parser.add_argument('--cap', help='NGC or SGC')
+parser.add_argument('--in_tracers', help='input tracers (eg. --in_tracers "LRG" "ELG_LOPnotqso")', nargs='+', default=['LRG','ELG_LOPnotqso'], choices=bias_dict.keys())
+parser.add_argument('--out_tracer', help='name of the tracer in output files', default='LRG+ELG_LOPnotqso')
+parser.add_argument('--cap', help='NGC or SGC', choices=['NGC', 'SGC'])
 parser.add_argument('--nrands', help='number of random files to process',default=18,type=int)
 parser.add_argument('--verbose', help='True of False, prints out progress steps', type=bool, default=False)
 args = parser.parse_args()
@@ -38,114 +44,95 @@ base_dir = args.base_dir
 save_dir = args.save_dir
 cap = args.cap
 verbose = args.verbose
+out_tracer = args.out_tracer
+
+nz_dir = base_dir
+if args.nz_dir:
+    nz_dir = args.nz_dir
+
 if verbose:
-    print(f'Loading from {base_dir}')
-    print(f'Saving to {save_dir}')
-    print(f'cap = {cap}')
+    logger.info(f'Loading from {base_dir}')
+    logger.info(f'Saving to {save_dir}')
+    logger.info(f'cap = {cap}')
     
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 nrands = args.nrands  #Number of random catalogs
-P0 = 6000
+
+# Binning & Tracer Settings
 dz = 0.01
-bias_list = [2.0, 1.2] #LRG, ELG
+tracers = args.in_tracers
+ntracers = len(tracers)
+bias_list = [bias_dict[tracer] for tracer in tracers]
 
-#get comp_ntl
-#if mpicomm.rank == 0:
-fb1 = base_dir + f'LRG_{cap}'
-fb2 = base_dir + f'ELG_LOPnotqso_{cap}'
-comp_ntl1 = comb.get_comp(fb1)
-comp_ntl2 = comb.get_comp(fb2)
-#else:
-#    comp_ntl1, comp_ntl2, comp_ntl3, comp_ntl4 = None, None, None, None
-#comp_ntl1 = mpicomm.bcast(comp_ntl1, root=0)
-#comp_ntl2 = mpicomm.bcast(comp_ntl2, root=0)
+# Setup z-binning
+zmin, zmax = 0.4, 2.1
+nbins = int((zmax - zmin) / dz)
+zmin_comb = np.linspace(zmin, zmax, nbins, endpoint=False)
+zmax_comb = zmin_comb + dz
+z_comb = (zmin_comb + zmax_comb) / 2
 
-#get nz
-nz_file1 = np.loadtxt(base_dir + f'LRG_{cap}_nz.txt')
-nz_file2 = np.loadtxt(base_dir + f'ELG_LOPnotqso_{cap}_nz.txt')
-nz_list = [nz_file1, nz_file2]
+# Setup needed lists
+comp_ntl = [None] * ntracers
+nz = [None] * ntracers
+dcat = [None] * ntracers
+N_d = [None] * ntracers
 
-#zmin, zmax = comb.setup_binning(nz_list, verbose) #setup_binning currently not working as intended
-zmin, zmax = 0.8, 1.1
+# Read completeness and n(z)
+for i, tracer in enumerate(tracers):
+    fb = base_dir + f'{tracer}_{cap}'
+    comp_ntl[i] = comb.get_comp(fb, logger=logger)
+    nz[i] = np.loadtxt(nz_dir + f'{tracer}_{cap}_nz.txt')
 
-#get neff
-neff, nz_comb_all = comb.calc_neff(nz_list, bias_list, zmin, zmax, dz, verbose)
+# get neff
+neff, nz_comb_all, beff = comb.calc_neff(nz, bias_list, zmin, zmax, dz, verbose, logger=logger)
+f = cosmo.growth_rate(z_comb)
+P0 = cosmo.pk_kz(0.14, z_comb) * (beff**2 + 2/3*f*beff + f**2/5)
 
-#Load Data
-d1_fn = base_dir + f'LRG_{cap}_clustering.dat.fits'
-d2_fn = base_dir + f'ELG_LOPnotqso_{cap}_clustering.dat.fits'
+# Read data and compute weights
+for i, tracer in enumerate(tracers):
+    d_fn = base_dir + f'{tracer}_{cap}_clustering.dat.fits'
+    dcat[i], nxfacd_i = comb.read_catalog(d_fn, comp_ntl[i], zmin, zmax, verbose, logger=logger, kind='data')
+    dcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacd_i, dcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
+    del nxfacd_i # no longer needed, free memory
+    N_d[i] = np.sum(dcat[i]['WEIGHT'] * dcat[i]['WEIGHT_FKP']) # default x FKP-weighted count of galaxies in the data catalog
+    dcat[i]['WEIGHT'] *= bias_list[i] # upweight each tracer by its bias
+    dcat[i]['TRACER_TYPE'] = i # mark the tracer type to e.g. easily divide the combined catalog into pieces later if needed
 
-dcat1, nxfacd1 = comb.read_data(d1_fn, comp_ntl1, zmin, zmax, verbose)
-dcat2, nxfacd2 = comb.read_data(d2_fn, comp_ntl2, zmin, zmax, verbose)
+# Concatenate catalogs
+dcat_concat = vstack(dcat)
+del dcat # no longer needed, free memory
 
-#Calculate data fkp weights
-fkp_d1 = comb.calc_fkp(nxfacd1, dcat1['Z'], neff, P0, zmin, zmax, dz)
-fkp_d2 = comb.calc_fkp(nxfacd2, dcat2['Z'], neff, P0, zmin, zmax, dz)
-
-#Total number of data
-N_d1 = np.sum(dcat1['WEIGHT'] * fkp_d1)
-N_d2 = np.sum(dcat2['WEIGHT'] * fkp_d2)
-
-#New data weights
-weight_d1 = dcat1['WEIGHT'] * fkp_d1 * bias_list[0]
-weight_d2 = dcat2['WEIGHT'] * fkp_d2 * bias_list[1]
-
-#Concatenate data tracers into one catalog
-weight_d = np.concatenate((weight_d1, weight_d2))
-fkp_d = np.concatenate((fkp_d1, fkp_d2))
-
-#Data Catalog
-dcat = vstack([Table(dcat1), Table(dcat2)])
-dcat['WEIGHT'] = weight_d / fkp_d
-dcat['WEIGHT_FKP'] = fkp_d
-
-save_data_fn = save_dir + f'LRG+ELG_LOPnotqso_{cap}_clustering.dat.fits'
-
-common.write_LSS_scratchcp(dcat,save_data_fn,logger=logger)
+save_data_fn = save_dir + f'{out_tracer}_{cap}_clustering.dat.fits'
+common.write_LSS_scratchcp(dcat_concat,save_data_fn,logger=logger)
+del dcat_concat # no longer needed, free memory
 
 def _make_rancat(rdmnb):
     '''
     
     rdmnb = int : index of random file
     '''
-    #Load Randoms
-    r1_fn = base_dir + f'LRG_{cap}_{rdmnb}_clustering.ran.fits'
-    r2_fn = base_dir + f'ELG_LOPnotqso_{cap}_{rdmnb}_clustering.ran.fits'
+    # Setup needed lists
+    rcat = [None] * ntracers
+    N_r = [None] * ntracers
+
+    # Read data and compute weights
+    for i, tracer in enumerate(tracers):
+        r_fn = base_dir + f'{tracer}_{cap}_{rdmnb}_clustering.ran.fits'
+        rcat[i], nxfacr_i = comb.read_catalog(r_fn.replace('global','dvs_ro'), comp_ntl[i], zmin, zmax, verbose, logger=logger, kind='random')
+        rcat[i]['WEIGHT_FKP'] = comb.calc_fkp(nxfacr_i, rcat[i]['Z'], neff, P0, zmin, zmax, dz, tracer)
+        del nxfacr_i # no longer needed, free memory
+        N_r[i] = np.sum(rcat[i]['WEIGHT'] * rcat[i]['WEIGHT_FKP']) # default x FKP-weighted count of randoms in the current catalog
+        rcat[i]['WEIGHT'] *= bias_list[i] # upweight each tracer by its bias
+        rcat[i]['WEIGHT'] *= N_d[i] / N_r[i] / (N_d[0] / N_r[0]) # additional step for randoms: match the random-to-data ratio (default x FKP weighted) for each tracer to the first tracer. could just make the ratio 1 for simplicity, but it wouldn't match the description in Equation 4.14 of https://arxiv.org/pdf/2508.05467v2, and that also seems to create an issue with thecov Fourier-space covariances (https://github.com/cosmodesi/thecov) from our experience with BGS_BRIGHT+FAINT
+        rcat[i]['TRACER_TYPE'] = i # mark the tracer type to e.g. easily divide the combined catalogs into pieces later if needed
+
+    # Concatenate catalogs
+    rcat_concat = vstack(rcat)
+    del rcat # no longer needed, free memory
     
-    rcat1, nxfacr1 = comb.read_rand(r1_fn.replace('global','dvs_ro'), comp_ntl1, zmin, zmax, verbose)
-    rcat2, nxfacr2 = comb.read_rand(r2_fn.replace('global','dvs_ro'), comp_ntl2, zmin, zmax, verbose)
-    
-    
-    #Calculate random fkp weights
-    fkp_r1 = comb.calc_fkp(nxfacr1, rcat1['Z'], neff, P0, zmin, zmax, dz)
-    fkp_r2 = comb.calc_fkp(nxfacr2, rcat2['Z'], neff, P0, zmin, zmax, dz)
-    
-    
-    #Total number of randoms
-    N_r1 = np.sum(rcat1['WEIGHT'] * fkp_r1)
-    N_r2 = np.sum(rcat2['WEIGHT'] * fkp_r2)
-    
-    
-    #New random weights
-    weight_r1 = rcat1['WEIGHT'] * fkp_r1 * bias_list[0]
-    weight_r2 = rcat2['WEIGHT'] * fkp_r2 * bias_list[1] * N_d2 * N_r1 / (N_d1 * N_r2)
-    
-    
-    #Concatenate random tracers into one catalog
-    weight_r = np.concatenate((weight_r1, weight_r2))
-    fkp_r = np.concatenate((fkp_r1, fkp_r2))
-    
-    
-    #Random Catalog
-    rcat = vstack([Table(rcat1), Table(rcat2)])
-    rcat['WEIGHT'] = weight_r / fkp_r
-    rcat['WEIGHT_FKP'] = fkp_r
-    
-    #Save Catalogs
-    save_rand_fn = save_dir + f'LRG+ELG_LOPnotqso_{cap}_{rdmnb}_clustering.ran.fits'
-    
-    common.write_LSS_scratchcp(rcat,save_rand_fn,logger=logger)
+    save_ran_fn = save_dir + f'{out_tracer}_{cap}_{rdmnb}_clustering.ran.fits'
+    common.write_LSS_scratchcp(rcat_concat,save_ran_fn,logger=logger)
 
 
 #run main func

@@ -49,7 +49,7 @@ if not os.path.exists(outdir_txt):
 tps = [args.tracers]
 #fkpfac_dict = {'ELG_LOPnotqso':.25,'BGS_BRIGHT':0.1,'QSO':1.,'LRG':0.25}
 if args.tracers == 'all':
-    tps = ['LRG','ELG_LOPnotqso','QSO','BGS_BRIGHT-21.5']
+    tps = ['LRG','LGE','ELG_LOPnotqso','ELG_VLOnotqso','QSO','BGS_BRIGHT','BGS_FAINT']
     
 
 zdw = ''#'zdone'
@@ -122,6 +122,7 @@ for mp in starmaps:
     
 sag = np.load('/dvs_ro/cfs/cdirs/desi/survey/catalogs/extra_regressis_maps/sagittarius_stream_256.npy')
 do_lrgmask = 'n'
+do_elgmask = 'n'
 if args.mapmd == 'all':
     maps = all_maps
     dmaps = all_dmaps
@@ -281,7 +282,7 @@ for tp in tps:
     
     ranl = []
     for ii in range(0,args.nran):
-    
+        
         fcr_ngc = indir+args.extra_dir+tp+zdw+'_NGC_'+str(ii)+'_clustering.ran.fits'
         fcr_sgc = indir+args.extra_dir+tp+zdw+'_SGC_'+str(ii)+'_clustering.ran.fits'
         rn = fitsio.read(fcr_ngc)

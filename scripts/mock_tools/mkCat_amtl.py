@@ -51,11 +51,14 @@ parser.add_argument("--mocknum", help="number for the realization",default=1,typ
 parser.add_argument("--ccut", help="extra-cut",default=None)
 parser.add_argument("--absmagmd", help="flag to indicate how to apply abs mag cut",default='simp')
 parser.add_argument("--base_output", help="base directory for output")
+parser.add_argument("--fbadir", help="base directory for output", default=None)
 parser.add_argument("--outmd", help="whether to write in scratch",default='scratch')
 parser.add_argument("--targDir", help="base directory for target file",default=None)
 parser.add_argument("--pota", help="base directory for target file",default=None)
 parser.add_argument("--simName", help="string to point to type and generation of inputs",default='SecondGenMocks/AbacusSummit_v4_1')
+parser.add_argument("--extra_clusdir", help="string for extra directory for clustering catalogs",default='')
 parser.add_argument("--survey", help="e.g., main (for all), DA02, any future DA",default='DA2')
+parser.add_argument("--surveycat", help="set this if you want to make, e.g. DA2 catalogs from DA3",default=None)
 parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
 parser.add_argument("--dataversion", help="version of LSS catalogs",default='v2')
 parser.add_argument("--combd", help="combine the data tiles together",default='n')
@@ -63,6 +66,7 @@ parser.add_argument("--usepota", help="use the already calculated potential assi
 parser.add_argument("--joindspec", help="combine the target and spec info together",default='n')
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
+parser.add_argument("--apply_oldfoot", help="whether to cut randoms based on old tile list for full survey",default='n')
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data; needed on only for 1st steps",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
@@ -96,6 +100,9 @@ parser.add_argument("--add_bitweights", help="Add bitweights to files before cre
 parser.add_argument("--add_extracols", help="Add bitweights to files before creating the final clustering catalogs.", default=None)
 parser.add_argument("--addNtileweight2full", help="Add NTILE weights to full catalogs to make it compatible with PIP and angular upweithing", default='n')
 parser.add_argument("--compmd",help="use altmtl to use PROB_OBS",default='not_altmtl')
+parser.add_argument("--redo_fracz",help="whether to recalculate the completeness weights based on masked data",default='n')
+parser.add_argument("--nearestneighbor",help="whether to nearest neighbor weights on data instead of frac_tl_obs on randoms",default='n')
+
 parser.add_argument("--add_tlcomp", help="add completeness FRAC_TLOBS_TILES to randoms",default='n')
 parser.add_argument("--add_nt_misspw", help="add WEIGHT_NT_MISSPW in case of PIP weights.",default='n')
 
@@ -168,6 +175,10 @@ else:
 
 pd = pdir
 
+surveycat = args.survey
+if args.surveycat is not None:
+    surveycat = args.surveycat
+
 if args.base_output == None:
     maindir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)
 else:
@@ -175,19 +186,24 @@ else:
 mockz = 'RSDZ'
 
 if args.targDir == None:
-    args.targDir = args.base_altmtl_dir+'/'+args.survey+'/mocks/'+args.simName+'/'
+    args.targDir = args.base_altmtl_dir.replace('global','dvs_ro')+'/'+args.survey+'/mocks/'+args.simName+'/'
 
 
-tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+survey+'/LSS/tiles-'+pr+'.fits'
+tile_fn = '/global/cfs/cdirs/desi/survey/catalogs/'+surveycat+'/LSS/tiles-'+pr+'.fits'
 tiles = fitsio.read(tile_fn)
 
-data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=survey, SPECVER=args.specdata,DATAVER=args.dataversion)
+data_dir = '/global/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/LSScats/{DATAVER}'.format(SURVEY=surveycat, SPECVER=args.specdata,DATAVER=args.dataversion)
 
 gtl = None
 if args.add_gtl == 'y':
 
     filena = data_dir+'/'+pdir+'_unique_good_TILELOCID.txt'
-    gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    if os.path.isfile(filena):
+        gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
+    else:
+        common.printlog('--- Calculate good tiles from goodhardwARE IN DATA ---',logger)
+        tsnrcut = mainp.tsnrcut
+        tnsrcol = mainp.tsnrcol
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
     #    filena = f'unique_TILELOCID_{survey}_{args.specdata}.txt'
     #    common.printlog('--- Reading good tiles from goodhardwARE IN DATA from %s ---' %filena ,logger)
@@ -197,15 +213,19 @@ if args.add_gtl == 'y':
     #    tsnrcut = mainp.tsnrcut
     #    tnsrcol = mainp.tsnrcol        
 
-    #    specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=survey, SPECVER=args.specdata)
-    #    specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
-    #    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+        specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
+        specf = Table(fitsio.read(os.path.join(specdata_dir, 'datcomb_'+ pd + '_spec_zdone.fits')))
+        specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,logger=logger)
-    #    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+        specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     #specfc = common.cut_specdat(specf, badfib=mainp.badfib,logger=logger)
-    #    gtl = np.unique(specfc['TILELOCID'])
-    #    np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
-
+        gtl = np.unique(specfc['TILELOCID'])
+        try:
+            np.savetxt(filena, np.array([gtl]).astype(np.int64).T, fmt='%d')
+        except:
+            print('saving in scratch')
+            np.savetxt(os.path.join(args.targDir, os.path.basename(filena)), np.array([gtl]).astype(np.int64).T, fmt='%d')
+            
 #    specfo = args.specdata_dir+'datcomb_'+args.prog.lower()+'_spec_zdone.fits'
 #logger.info('loading specf file '+specfo)
 #specf = Table(fitsio.read(specfo))
@@ -262,6 +282,8 @@ if args.outmd == 'scratch':
     dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
 test_dir(dirout)
 
+    
+
 #if not os.path.exists(dirout):
 #    os.makedirs(dirout)
 #    print('made '+dirout)
@@ -280,11 +302,18 @@ if '-' not in args.tracer:
 
 asn = None
 pa = None
-outdir = os.path.join(maindir, 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
+outdir = os.path.join(maindir.replace(args.survey,surveycat), 'fba' + str(mocknum)).format(MOCKNUM=mocknum)
 if args.outmd == 'scratch':
     dirout = dirout.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+dirout = dirout.replace(args.survey,surveycat)
+clusdir = dirout #directory for clustering catalogs
+if args.extra_clusdir != '':
+    clusdir += '/'+args.extra_clusdir+'/'
+test_dir(clusdir)
+
 
 test_dir(outdir)
+test_dir(outdir.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/'))
 
 if args.combd == 'y':
     common.printlog('--- START COMBD ---',logger)
@@ -293,8 +322,10 @@ if args.combd == 'y':
     #TEMP tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
     ##tarf = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/Y1/mocks/SecondGenMocks/AbacusSummit/forFA%d.fits' % mocknum #os.path.join(maindir, 'forFA_Real%d.fits' % mocknum)
     #if args.simName is None:
-    fbadir = os.path.join(maindir, 'Univ000/fa/MAIN') #TEMPargs.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
-    #else:
+    if args.fbadir == None:
+        fbadir = os.path.join(maindir, 'Univ000/fa/MAIN') #TEMPargs.base_altmtl_dir+args.survey+'/mocks/'+args.simName+'/altmtl'+str(mocknum)+'/Univ000/fa/MAIN/'
+    else:
+        fbadir = os.path.join(args.fbadir, 'Univ000/fa/MAIN')
     #    sys.exit('code something to define fba directory based on simName')
     #fbadir = os.path.join(maindir, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = mocknum)
     #fbadir = os.path.join(args.simName, 'Univ000', 'fa', 'MAIN').format(MOCKNUM = str(mocknum).zfill(3))
@@ -361,6 +392,8 @@ if args.combd == 'y':
     #outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits')
     #ommon.write_LSS_scratchcp(asn,outf,logger=logger)
     outf = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    if args.outmd == 'scratch':
+        outf = outf.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
     common.write_LSShdf5_scratchcp(asn,outf,logger=logger)
     #if using alt MTL that should have ZWARN_MTL, put that in here
     asn['ZWARN_MTL'] = np.copy(asn['ZWARN'])
@@ -409,7 +442,7 @@ if args.combd == 'y':
             #pota_cols.append('REST_GMR_0P1')
             
         #BGS_TARGET
-        pa = fitsio.read(pota_fn,columns=pota_cols)
+        pa = fitsio.read(pota_fn.replace('global','dvs_ro'),columns=pota_cols)
         common.printlog('read '+str(len(pa))+' potential assignments',logger)
         sel_coll = pa['COLLISION'] == 0
         pa = pa[sel_coll]
@@ -435,6 +468,10 @@ if args.joindspec == 'y':
         pa = Table(fitsio.read(pafn))
         common.printlog('loaded potential assignements',logger)
     pa = Table(pa)
+    lenpa = len(pa)
+    sel_tiles = np.isin(pa['TILEID'],tiles['TILEID'])
+    pa = pa[sel_tiles]
+    common.printlog('length of potential assignments, before/after cutting to tile list '+str(lenpa)+'/'+str(len(pa)),logger)
     pa['TILELOCID'] = 10000*pa['TILEID'] + pa['LOCATION']
     if gtl is not None:
         goodtl = np.isin(pa['TILELOCID'], gtl)
@@ -469,7 +506,7 @@ if args.joindspec == 'y':
         outfs = outfs.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')#.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
     #common.write_LSS_scratchcp(tj,outfs,logger=logger)
-    common.write_LSShdf5_scratchcp(tj,outfs,logger=logger)
+    common.write_LSShdf5_scratchcp(tj,outfs.replace(args.survey,surveycat),logger=logger)
     #tj.write(outfs, format = 'fits', overwrite = True)
     #common.print('wrote ' + outfs)
     #don't do this anymore, it gets done within mkfulld
@@ -490,21 +527,26 @@ if args.tracer[:3] == 'BGS':
     maxp = 2100
 
 dataf = None
+lssdir = lssdir.replace(args.survey,surveycat)
 if args.fulld == 'y':
     common.printlog('--- START FULLD ---',logger=logger)
-    mainp = main(args.tracer, args.specdata, survey=args.survey)
+    mainp = main(args.tracer, args.specdata, survey=surveycat)
 
     ftar = None
     #dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.fits')
     dz = os.path.join(lssdir, 'datcomb_'+pdir+'_tarspecwdup_zdone.h5')
+    mockassigndir = os.path.join(maindir.replace(args.survey,surveycat), 'fba%d' % mocknum)
     if args.outmd == 'scratch':
         dz = dz.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+        mockassigndir = mockassigndir.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
         #dz = dz.replace('/global/cfs/cdirs/desi/survey/catalogs/',os.getenv('SCRATCH')+'/')
 
     tlf = None #os.path.join(lssdir, 'Alltiles_'+pdir+'_tilelocs.dat.fits')
 
     #collisions should already have been masked
-    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.h5'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = os.path.join(maindir, 'fba%d' % mocknum))
+    
+    
+    dataf = ct.mkfulldat(dz, imbits, ftar, args.tracer, bit, os.path.join(dirout, args.tracer + notqso + '_full_noveto.dat.h5'), tlf, return_array='y',calc_ctile='n',survey = args.survey, maxp = maxp, desitarg = desitarg, specver = args.specdata, notqso = notqso, gtl_all = None, mockz = mockz,  mask_coll = False,badfib_status=mainp.badfib_status, badfib = mainp.badfib, min_tsnr2 = mainp.tsnrcut, logger=logger,mocknum = mocknum, mockassigndir = mockassigndir)
     common.printlog('*** END WITH FULLD ***',logger=logger)
     
     gc.collect()
@@ -518,17 +560,21 @@ dz_step = 0.02
 
 zsplit = None
 subfrac = 1
+
+if args.survey == 'DA3':
+    common.printlog('***NO SUBSAMPLING DEFINED FOR DA3, final n(z) could be off***')
+
 if tracer == 'QSO':
     zmin = 0.8
     zmax = 2.1
     if args.survey == 'Y1':
         subfrac = 0.66 #determined from ratio of data with 0.8 < z < 2.1 to mock using subfrac = 1 for altmtl version 3_1
-    if args.survey == 'DA2':
+    if args.survey == 'DA2' and args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
         subfrac = 0.675 #1
-    if 'holi' in args.simName:
-        subfrac = 1
-    if 'GLAM' in args.simName:
-        subfrac = 1
+    #if 'holi' in args.simName:
+    #    subfrac = 1
+    #if 'GLAM' in args.simName:
+    #    subfrac = 1
         #subfrac = [0.97,1]
         #zsplit = 2.1
         
@@ -543,8 +589,8 @@ if args.tracer[:3] == 'LRG':# or notqso == 'notqso':
         subfrac = 0.976
     if args.survey == 'DA2':
         subfrac = 0.966
-    if 'holi' in args.simName:
-        subfrac = 0.985
+        if 'holi' in args.simName:
+            subfrac = 0.985
 if args.tracer[:3] == 'ELG':
     P0 = 4000
     dz_step = 0.01
@@ -554,13 +600,15 @@ if args.tracer[:3] == 'ELG':
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
     if args.survey == 'DA2':
-        subfrac = [0.7,0.545]
-    if 'GLAM' in args.simName:
         subfrac = [0.96,0.76]
+        if args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
+            subfrac = [0.7,0.545]
+    #if 'GLAM' in args.simName:
+    #    subfrac = [0.96,0.76]
         #if int(args.mocknum) < 10 or int(args.mocknum) > 12:
         #    subfrac = [0.96*.97,0.84*.97] #rest of glam has 3% higher ELG for some reason
-    if 'holi' in args.simName:
-        subfrac = [0.96,.76]
+    #if 'holi' in args.simName:
+    #    subfrac = [0.96,.76]
     zsplit=1.49
 if args.tracer[:3] == 'BGS':
     P0 = 7000
@@ -569,6 +617,11 @@ if args.tracer[:3] == 'BGS':
     pthresh = 2000
     zmin = 0.1
     zmax = 0.5
+    if args.survey == 'DA2':
+        subfrac = 0.98
+        if 'holi' in args.simName:
+            subfrac = 0.94
+
 #    if notqso == 'notqso':
 #        maxp = 3200
 
@@ -672,7 +725,7 @@ nside = 256
 
 vermap = args.dataversion
 
-lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/LSScats/{VERMAP}/hpmaps'.format(SURVEY=survey, SPECDATA=args.specdata, VERMAP=vermap)
+lssmapdirout = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECDATA}/LSScats/{VERMAP}/hpmaps'.format(SURVEY=surveycat, SPECDATA=args.specdata, VERMAP=vermap)
 common.printlog('using '+lssmapdirout+' to find healpix maps',logger)
 if args.apply_veto == 'y':
     common.printlog('--- START APPLY_VETO; including HP maps---',logger=logger)
@@ -845,18 +898,52 @@ if args.add_nt_misspw == 'y':
 if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
     abmagcut = -float(args.tracer.split('-')[1])
     common.printlog('using ab mag cut '+str(abmagcut),logger)
-    ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    #ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.fits'
+    ffull = dirout+'/'+args.tracer+notqso+'_full'+args.use_map_veto+'.dat.h5'
     common.printlog("path "+ffull, logger)
     if os.path.isfile(ffull) == False:
 
         if 'BGS_ANY-' in args.tracer:
-            fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
+            fn = dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.h5'
+            if os.path.isfile(fn):
+                fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+            else:
+                common.printlog(fn+' not found!')
+            #fin = fitsio.read(dirout+'/BGS_ANY_full'+args.use_map_veto+'.dat.fits')
         elif 'BGS_BRIGHT-' in args.tracer:
-            fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
-            
+            #fin = fitsio.read(dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits')
+            fn = dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.h5'
+            if os.path.isfile(fn):
+                fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
+            else:
+                common.printlog(fn+' not found!')     
+                fn = dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits'
+                if os.path.isfile(fn):
+                    fin = fitsio.read(fn)  
+                else:
+                    common.printlog(fn+' also not found!')      
         common.printlog("cut method "+args.absmagmd, logger)
+        dcols = list(fin.dtype.names)
+        cutagainst = 'rmag'
+        if 'R_MAG_ABS' not in dcols:
+            tarf = os.path.join(args.targDir, 'forFA%d.fits' % mocknum)
+            tdcol = list(fitsio.read(tarf,rows=1).dtype.names)
+            if 'R_MAG_ABS' in tdcol:
+                td = fitsio.read(tarf,columns=['TARGETID','R_MAG_ABS'])
+            elif 'TRACER_TYPE' in tdcol:
+                td = fitsio.read(tarf,columns=['TARGETID','TRACER_TYPE'])
+                cutagainst = 'string'
+            else:
+                common.printlog('needed column not there',logger)
+            flen = len(fin)
+            fin = join(fin,td,keys=['TARGETID'])
+            if len(fin) != flen:
+                common.printlog('the lengths after join to get R_MAG_ABS changed!!!')
         if args.absmagmd == 'simp':
-            sel = fin['R_MAG_ABS'] < abmagcut
+            if cutagainst == 'rmag':
+                sel = fin['R_MAG_ABS'] < abmagcut
+            elif cutagainst == 'string':
+                sel = fin['TRACER_TYPE'] == args.tracer
         elif args.absmagmd == 'redshiftdep' and abmagcut == -2:
             common.printlog("using z dependent cut", logger)
             fit2_a = np.loadtxt("/pscratch/sd/z/zxzhai/DESI_LSS/BGS_ANY_zmagcut_a.dat")
@@ -876,14 +963,37 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             mock_z_cut = fit3_new(fin['Z_not4clus'])
             sel = fin['R_MAG_ABS'] < mock_z_cut
 
-        common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
+        #common.write_LSS_scratchcp(fin[sel],ffull,logger=logger)
+        common.write_LSShdf5_scratchcp(fin[sel],ffull,logger=logger)
 
+nzcompmd = 'ran'
+wtmd_sysnet = 'fracz'
+if args.compmd == 'altmtl':
+    nzcompmd = args.compmd
 
+redo_fracz = False
+if args.redo_fracz == 'y':
+    redo_fracz=True
+    common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
+NN = False
+if args.nearestneighbor == 'y':
+    NN = True
+    nzcompmd = 'dat'
+    wtmd_sysnet = 'fraczNN'
+    common.printlog('adding nearest neighbor to completeness weight',logger)
+    full_fn = os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5').replace('global','dvs_ro')
+    ff = common.read_hdf5_blosc(full_fn.replace('global', 'dvs_ro'))
+    ff['NEW_WEIGHTFRACZ'] = common.get_fracz_pNNweight(ff, get_nnweight=NN,logger=logger)
+    common.write_LSShdf5_scratchcp(ff,full_fn.replace('dvs_ro','global'),logger=logger)
+    del ff
+    
+if args.compmd == 'altmtl':
+    weightileloc = False
 
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
-    
+    common.printlog('using subfrac '+str(subfrac),logger)
     if args.add_extracols is not None:
         ffile = Table.read(os.path.join(readdir, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.fits').replace('global','dvs_ro'))
         columns_extra = ['TARGETID']
@@ -913,7 +1023,7 @@ if args.mkclusdat == 'y':
 
        #readdir = dirout
     
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5') #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5',extradir=args.extra_clusdir+'/') #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
@@ -922,9 +1032,6 @@ if args.mkclusdat == 'y':
 
     gc.collect()
 
-nzcompmd = 'ran'
-if args.compmd == 'altmtl':
-    nzcompmd = args.compmd
 
    
     
@@ -938,35 +1045,39 @@ if args.mkclusran == 'y':
     #if len(nztl) == 0:
     #    nztl.append('')
     
-    tsnrcol = 'TSNR2_ELG'
-    if args.tracer[:3] == 'BGS':
-        fl = os.path.join(readdir, finaltracer) + '_'
-        cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
-        if 'G_R_OBS' in cols_clustering:
-            rcols.append('G_R_OBS')
-        if 'G_R_REST' in cols_clustering:
-            rcols.append('G_R_REST')
-        if 'R_MAG_ABS' in cols_clustering:
-            rcols.append('R_MAG_ABS')
-
-        tsnrcol = 'TSNR2_BGS'
-        if args.ccut is not None:
-            for rn in range(rannum[0], rannum[1]):
-                if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
-                    os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
-                #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
-            os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
+#     tsnrcol = 'TSNR2_ELG'
+#     if args.tracer[:3] == 'BGS':
+#         fl = os.path.join(readdir, finaltracer) + '_'
+#         cols_clustering = Table.read(fl.replace('global','dvs_ro')+'clustering.dat.fits').columns
+#         if 'G_R_OBS' in cols_clustering:
+#             rcols.append('G_R_OBS')
+#         if 'G_R_REST' in cols_clustering:
+#             rcols.append('G_R_REST')
+#         if 'R_MAG_ABS' in cols_clustering:
+#             rcols.append('R_MAG_ABS')
+# 
+#         tsnrcol = 'TSNR2_BGS'
+#         if args.ccut is not None:
+#             for rn in range(rannum[0], rannum[1]):
+#                 if not os.path.isfile('%s%s_%d_full_HPmapcut.ran.fits'% (os.path.join(pathparent, args.tracer), str(args.ccut), rn)):
+#                     os.system('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirfinal, args.tracer), rn, os.path.join(pathparent, args.tracer), str(args.ccut), rn))
+#                 #print('cp %s_%d_full_HPmapcut.ran.fits %s%s_%d_full_HPmapcut.ran.fits' %(os.path.join(dirout, args.tracer), rn, os.path.join(dirout, args.tracer), str(args.ccut), rn))
+#             os.system('cp %s_frac_tlobs.fits %s%s_frac_tlobs.fits' %(os.path.join(dirout, args.tracer), os.path.join(dirout, args.tracer), str(args.ccut)))
     
     fl = os.path.join(readdir, finaltracer) + '_'
-    common.printlog('adding tlobs to randoms with '+ fl,logger)
+    flclus = os.path.join(clusdir, finaltracer) + '_'
     #clus_arrays = [fitsio.read(fl.replace('global','dvs_ro')+'clustering.dat.fits')]
-    clus_arrays = [common.read_hdf5_blosc(fl.replace('global','dvs_ro')+'clustering.dat.h5')]
+    clus_arrays = [common.read_hdf5_blosc(flclus.replace('global','dvs_ro')+'clustering.dat.h5')]
     common.printlog('read in data catalogs',logger)
     ranin = os.path.join(readdir, finaltracer) + '_'
-    tlf = fitsio.read(fl+'frac_tlobs.fits')
-    common.printlog('read in frac_tlobs file',logger)
     #mockobs = fitsio.read(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.fits'),columns=['TILEID','LOCATION','PRIORITY'])
-    mockobs = common.read_hdf5_blosc(os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5'),columns=['TILEID','LOCATION','PRIORITY'])
+    mockobs_fn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
+    if args.outmd == 'scratch':        
+        mockobs_fn = mockobs_fn.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
+    if os.path.isfile(mockobs_fn):
+        mockobs = common.read_hdf5_blosc(mockobs_fn,columns=['TILEID','LOCATION','PRIORITY'])
+    else:
+        mockobs = fitsio.read(mockobs_fn.replace('h5','fits'),columns=['TILEID','LOCATION','PRIORITY'])
     mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
     badpri = mockobs['PRIORITY'] > maxp
     bad_tlid = mockobs_tlid[badpri]
@@ -975,18 +1086,36 @@ if args.mkclusran == 'y':
         ranin = os.path.join(readdir, 'BGS_BRIGHT') + '_'
     if 'BGS_ANY' in args.tracer:
         ranin = os.path.join(readdir, 'BGS_ANY') + '_'
+    ran_finaltracer = finaltracer
+    if 'BGS_BRIGHT-' in args.tracer:
+        ran_finaltracer = ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
+        common.printlog('changed ran base to '+ran_finaltracer,logger)
+    common.printlog('adding tlobs to randoms with '+ fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits',logger)
+    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
+    common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
+    if args.apply_oldfoot == 'y':
+        from desimodel.footprint import is_point_in_desi
     def _parfun4(rann):
         #ct.add_tlobs_ran(fl, rann, hpmapcut = args.use_map_veto)
 #        print(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols, -1, tsnrcol, args.use_map_veto,  clus_arrays, 'y')
-        common.printlog('about to read input random for '+str(rann),logger)        
-        ranf = data_dir.replace('global','dvs_ro')+'/'+ finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
+        common.printlog('about to read input random for '+str(rann),logger) 
+        #files should be in the data directory; BGS with any absolute magnitude cut should read the file without that       
+        ranf = data_dir.replace('global','dvs_ro')+'/'+ ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.h5' #first look for .h5 files
         if not os.path.isfile(ranf):
-            ranf = data_dir.replace('global','dvs_ro')+'/'+finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
+            ranf = data_dir.replace('global','dvs_ro')+'/'+ran_finaltracer+'_'+str(rann)+'_dupran_masked_HPmapcut.fits'
             datain = fitsio.read(ranf,columns = ['RA','DEC','TARGETID','TILEID','NTILE','PHOTSYS','TILES','LOCATION'])        
         else:
             datain = common.read_hdf5_blosc(ranf)
+        common.printlog(str(rann)+' length after read '+str(len(datain)),logger=logger)
+        if args.apply_oldfoot == 'y':
+            tiles = Table.read('/global/common/software/desi/perlmutter/desiconda/20230111-2.1.0/code/desimodel/main/data/footprint/desi-tiles.ecsv')
+            mask_y5 = mask_y5 = (tiles['PROGRAM'] == 'BRIGHT')&(tiles['IN_DESI']==1) #needing the explicit ==1 here is the new important aspect
+            tiles = tiles[mask_y5]
+            selY5 = is_point_in_desi(tiles, datain['RA'], datain['DEC']) #fr being the array of randoms
+            datain = datain[selY5] #randoms should now be cut to matching footprint
+            common.printlog(str(rann)+' length after cut to old footprint '+str(len(datain)),logger=logger)
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
@@ -998,7 +1127,7 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         #common.printlog(str(datain.dtype),logger)
-        ct.mkclusran(datain, os.path.join(dirout, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5')
+        ct.mkclusran(datain, os.path.join(clusdir, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5',extradir=args.extra_clusdir+'/')
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
         del datain
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
@@ -1022,7 +1151,7 @@ if args.mkclusran == 'y':
 
     gc.collect()
 
-fb = os.path.join(dirout, finaltracer)
+fb = os.path.join(dirout+'/'+args.extra_clusdir+'/', finaltracer)
 nran = rx-rm
 regions = ['NGC', 'SGC']
 
@@ -1055,7 +1184,7 @@ def splitGC(flroot,datran='.dat',rann=0,ftp='.h5'):
         common.write_LSShdf5_scratchcp(fn[~sel_ngc],outf_sgc,logger=logger)
 
 if args.splitGC == 'y':
-    fb_split = os.path.join(dirout,tracer_clus+'_')
+    fb_split = os.path.join(clusdir+'/',tracer_clus+'_')
    # ct.splitclusGC(fb, args.maxr - args.minr,par=args.par)   
     splitGC(fb_split, '.dat',ftp='.h5')
     
@@ -1094,7 +1223,7 @@ if args.resamp == 'y':
 
 if args.nz == 'y':
     for reg in regions:#allreg:
-        fb_nz = os.path.join(dirout,tracer_clus+'_'+reg)
+        fb_nz = os.path.join(clusdir+'/',tracer_clus+'_'+reg)
         fcr = fb_nz+'_0_clustering.ran.h5'#.fits'
         fcd = fb_nz+'_clustering.dat.h5'
         fout = fb_nz+'_nz.txt'
@@ -1185,7 +1314,9 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     else:
         redshift_ranges = zrl
     common.printlog('the redshift bins that will be fit are '+str(redshift_ranges),logger)
-    fit_maps = mainp.fit_maps_allebv
+    fit_maps = mainp.fit_maps
+    if tracer_clus == 'LRG':
+        fit_maps = mainp.fit_maps_allebv
     use_maps = fit_maps
     debv = common.get_debv()
     zcmb = common.mk_zcmbmap()
@@ -1197,23 +1328,23 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     )
         # define the paths for the input files
     fname_ngc_out = os.path.join(
-        dirout, f"{tracer_clus}_NGC_clustering.dat.h5"
+        clusdir, f"{tracer_clus}_NGC_clustering.dat.h5"
     )
 
     fname_sgc_out = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+        clusdir, f"{tracer_clus}_SGC_clustering.dat.h5"
     )
 
     # get paths for random catalogs
     randoms_fnames_out = [
         os.path.join(
-            dirout,
+            clusdir,
             f"{tracer_clus}_NGC_{i}_clustering.ran.h5",
         )
         for i in range(args.nran4imsys)
     ] + [
         os.path.join(
-            dirout,
+            clusdir,
             f"{tracer_clus}_SGC_{i}_clustering.ran.h5",
         )
         for i in range(args.nran4imsys)
@@ -1233,10 +1364,22 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     data_catalogs = vstack([data_sgc, data_ngc])#np.concatenate([data_sgc, data_ngc])
     #common.printlog(str(np.unique(data_catalogs['PHOTSYS'],return_counts=True)),logger)
 
+if args.doimlin == 'y' or args.prep4sysnet == 'y':
+
     #randoms_catalogs = np.concatenate(
-    randoms_catalogs = vstack(
-        [read_file(fname) for fname in randoms_fnames_in]
-    )
+    testran = read_file(randoms_fnames_in[0])
+    if 'PHOTSYS' in list(testran.dtype.names):
+        write_ran = True
+        randoms_catalogs = vstack(
+            [read_file(fname) for fname in randoms_fnames_in]
+        )
+    else:
+        write_ran = False #this should only happen if one is already using the compressed randoms, and those will load the column from the data anyway, so don't add to the randoms
+        randoms_catalogs = vstack(
+            [common.expand_ran(fname, rancols=['TARGETID', 'RA', 'DEC','PHOTSYS'], datacols=['TARGETID', 'Z','WEIGHT_SYS','WEIGHT_COMP','WEIGHT_ZFAIL'], logger=logger) for fname in randoms_fnames_in]
+        )
+        randoms_catalogs['WEIGHT_FKP'] = 1/(1+randoms_catalogs['NX']*P0)    
+    del testran
     #common.printlog(str(np.unique(randoms_catalogs['PHOTSYS'],return_counts=True)),logger)
     
 if args.doimlin == 'y':
@@ -1255,7 +1398,7 @@ if args.doimlin == 'y':
             lssmapdirout, f"{tpmap}_mapprops_healpix_nested_nside{nside}_N.fits"
         ),
         fit_maps=fit_maps,
-        output_directory=dirout,
+        output_directory=clusdir,
         output_catalog_path=None,  # writing to disk will be done later to handle SGC/NGC separately
         output_column_name=syscol,
         save_summary_plots=True,
@@ -1298,55 +1441,58 @@ if args.doimlin == 'y':
 
     #  also write the weights in the randoms
     #if args.imsys_clus_ran:
-    fname = os.path.join(
-        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
-    )
-    dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
-    fname = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
-    )
-    dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
-    dat = vstack([dat_sgc, dat_ngc])
-    dat.rename_column("TARGETID", "TARGETID_DATA")
-    regl = ["NGC", "SGC"]
-    syscolr = syscol
-
-    # if args.replace_syscol == 'y':
-    #    syscolr = 'WEIGHT_SYS'
-    def _add2ran(rann):
-        for reg in regl:
-            ran_fn = os.path.join(
-                dirout,
-                f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
-            )
-            ran = Table(read_file(ran_fn))
-            if syscolr in ran.colnames:
-                ran.remove_column(syscolr)
-            ran = join(ran, dat, keys=["TARGETID_DATA"])
-            if args.replace_syscol:
-                ran["WEIGHT"] /= ran["WEIGHT_SYS"]
-                ran["WEIGHT_SYS"] = ran[syscolr]
-                ran["WEIGHT"] *= ran["WEIGHT_SYS"]
-            common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
-
-    if args.par == "y":
-        from multiprocessing import Pool
-
-        with Pool() as pool:
-            res = pool.map(_add2ran, inds)
-    else:
-        for rn in inds:  # range(rm,rx):
-            _add2ran(rn)
+    if write_ran:
+        fname = os.path.join(
+            clusdir,  f"{tracer_clus}_NGC_clustering.dat.h5"
+        )
+        dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
+        fname = os.path.join(
+            clusdir, f"{tracer_clus}_SGC_clustering.dat.h5"
+        )
+        dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
+        dat = vstack([dat_sgc, dat_ngc])
+        dat.rename_column("TARGETID", "TARGETID_DATA")
+        regl = ["NGC", "SGC"]
+        syscolr = syscol
+    
+        # if args.replace_syscol == 'y':
+        #    syscolr = 'WEIGHT_SYS'
+        def _add2ran(rann):
+            for reg in regl:
+                ran_fn = os.path.join(
+                    clusdir,
+                    f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
+                )
+                ran = Table(read_file(ran_fn))
+                if syscolr in ran.colnames:
+                    ran.remove_column(syscolr)
+                ran = join(ran, dat, keys=["TARGETID_DATA"])
+                if args.replace_syscol:
+                    ran["WEIGHT"] /= ran["WEIGHT_SYS"]
+                    ran["WEIGHT_SYS"] = ran[syscolr]
+                    ran["WEIGHT"] *= ran["WEIGHT_SYS"]
+                common.write_LSShdf5_scratchcp(ran, ran_fn, logger=logger)
+    
+        if args.par == "y":
+            from multiprocessing import Pool
+    
+            with Pool() as pool:
+                res = pool.map(_add2ran, inds)
+        else:
+            for rn in inds:  # range(rm,rx):
+                _add2ran(rn)
 
 if args.prep4sysnet == 'y':
     common.printlog('preparing data to run sysnet regression for '+tracer_clus,logger)
-    if not os.path.exists(dirout+'/sysnet'):
-        os.mkdir(dirout+'/sysnet')
-        print('made '+dirout+'/sysnet')    
+    if not os.path.exists(clusdir+'/sysnet'):
+        os.mkdir(clusdir+'/sysnet')
+        print('made '+clusdir+'/sysnet')    
 
     from LSS.imaging import sysnet_tools
     
     regl = ['N','S']
+    if tracer_clus == 'QSO':
+        regl = ['DES','SnotDES','N']
     
     for zl in zrl:
         zw = ''
@@ -1354,8 +1500,12 @@ if args.prep4sysnet == 'y':
         #if args.imsys_zbin == 'y':
         zw = str(zmin)+'_'+str(zmax)
         for reg in regl:
-            if type == 'LRG':
-                if reg == 'N':
+            if 'DES' in reg:
+                reg_map = 'S'
+            else: 
+                reg_map = reg
+            if tracer_clus == 'LRG':
+                if reg_map == 'N':
                     fitmapsbin = fit_maps
                 else:
                     if zmax == 0.6:
@@ -1369,7 +1519,7 @@ if args.prep4sysnet == 'y':
             #tpmap = tpstr
             #if 'ELG' in tpstr and 'notqso' in tpstr:
             #    tpmap = 'ELG_LOPnotqso'
-            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg+'.fits'
+            pwf = lssmapdirout+'/'+tpmap+'_mapprops_healpix_nested_nside'+str(nside)+'_'+reg_map+'.fits'
             sys_tab = Table.read(pwf)
             cols = list(sys_tab.dtype.names)
             for col in cols:
@@ -1383,10 +1533,25 @@ if args.prep4sysnet == 'y':
                 sys_tab['EBV_DIFF_MPF'] = sys_tab['EBV'] - sys_tab['EBV_MPF_Mean_FW15']
             if 'ZCMB' in fit_maps:
                 sys_tab['ZCMB'] = zcmb
-            seld = data_catalogs['PHOTSYS'] == reg
-            selr = randoms_catalogs['PHOTSYS'] == reg
+            
+            # select regions 
+            if reg == 'N' or reg == 'S':
+                seld = data_catalogs['PHOTSYS']    == reg
+                selr = randoms_catalogs['PHOTSYS'] == reg
+            elif 'DES' in reg:
+                inDES  = common.select_regressis_DES(data_catalogs)
+                inDESr = common.select_regressis_DES(randoms_catalogs)
+                if reg == 'DES':
+                    seld = inDES
+                    selr = inDESr
+                if reg == 'SnotDES':
+                    seld = data_catalogs['PHOTSYS'] == 'S'
+                    seld &= ~inDES
+                    selr = randoms_catalogs['PHOTSYS'] == 'S'
+                    selr &= ~inDESr
+                    
             #if args.use_allsky_rands == 'y':
-            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg}_nran18_nside256_ring.fits"
+            allsky_fn = f"/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/allsky_rpix_{reg_map}_nran18_nside256_ring.fits"
             allsky_rands = fitsio.read(allsky_fn)
             allrands = allsky_rands['RANDS_HPIX'] # randoms count per hp pixel
             #    selr_all = allsky_rands['PHOTSYS'] == reg
@@ -1394,16 +1559,15 @@ if args.prep4sysnet == 'y':
             #else:
             #    allrands = None
             common.printlog(f"{tpstr} {reg} z{zmin}-{zmax}: {fitmapsbin}",logger)
-            wtmd = 'fracz'
-            common.printlog('using '+tpmap +' maps and '+wtmd+' weights')
+            #wtmd = 'fracz'
+            common.printlog('using '+tpmap +' maps and '+wtmd_sysnet+' weights')
             prep_table = sysnet_tools.prep4sysnet(data_catalogs[seld], randoms_catalogs[selr], sys_tab, zcolumn='Z', allsky_rands=allrands, 
                                                   zmin=zl[0], zmax=zl[1], nran_exp=None, nside=nside, nest=True, use_obiwan=False,
-                                                  columns=fitmapsbin,wtmd=wtmd)
-            fnout = dirout+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
-            if not os.path.isdir(dirout+'/sysnet/'):
-                os.makedirs( dirout+'/sysnet/')
+                                                  columns=fitmapsbin,wtmd=wtmd_sysnet)
+            fnout = clusdir+'/sysnet/prep_'+tracer_clus+zw+'_'+reg+'.fits'
+            if not os.path.isdir(clusdir+'/sysnet/'):
+                os.makedirs( clusdir+'/sysnet/')
             common.write_LSS_scratchcp(prep_table,fnout,logger=logger)
-
 
 if args.addsysnet == 'y':
     common.printlog('adding sysnet weights to data catalogs for '+tracer_clus,logger)
@@ -1416,12 +1580,15 @@ if args.addsysnet == 'y':
     dpix = hp.ang2pix(256,dth,dphi)
 
     regl_sysnet = ['N','S']
+    if tracer_clus == 'QSO':
+        regl_sysnet = ['DES','SnotDES','N']
+        
     for reg in regl_sysnet:
         for zl in zrl:
             #zw = ''
             #if args.imsys_zbin == 'y':
             zw = str(zl[0])+'_'+str(zl[1])
-            sn_weights = fitsio.read(dirout+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
+            sn_weights = fitsio.read(clusdir+'/sysnet/'+tracer_clus+zw+'_'+reg+'/nn-weights.fits')
             pred_counts = np.mean(sn_weights['weight'],axis=1)
             #pix_weight = np.mean(pred_counts)/pred_counts
             #pix_weight = np.clip(pix_weight,0.5,2.)
@@ -1433,7 +1600,16 @@ if args.addsysnet == 'y':
             for pix,wt in zip(sn_pix,pix_weight):
                 hpmap[pix] = wt
         
-            sel = data_catalogs['PHOTSYS'] == reg
+            # select regions 
+            if reg == 'N' or reg == 'S':
+                sel = data_catalogs['PHOTSYS'] == reg
+            elif 'DES' in reg:
+                inDES = common.select_regressis_DES(data_catalogs)
+                if reg == 'DES':
+                    sel = inDES
+                if reg == 'SnotDES':
+                    sel = data_catalogs['PHOTSYS'] == 'S'
+                    sel &= ~inDES
             selz = data_catalogs['Z'] > zl[0]
             selz &= data_catalogs['Z'] <= zl[1]
 
@@ -1472,11 +1648,11 @@ if args.addsysnet == 'y':
     #if args.imsys_clus_ran:
     
     fname = os.path.join(
-        dirout,  f"{tracer_clus}_NGC_clustering.dat.h5"
+        clusdir,  f"{tracer_clus}_NGC_clustering.dat.h5"
     )
     dat_ngc = Table(read_file(fname, columns=["TARGETID", syscol]))
     fname = os.path.join(
-        dirout, f"{tracer_clus}_SGC_clustering.dat.h5"
+        clusdir, f"{tracer_clus}_SGC_clustering.dat.h5"
     )
     dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
     dat = vstack([dat_sgc, dat_ngc])
@@ -1489,7 +1665,7 @@ if args.addsysnet == 'y':
     def _add2ran(rann):
         for reg in regl:
             ran_fn = os.path.join(
-                dirout,
+                clusdir,
                 f"{tracer_clus}_{reg}_{rann}_clustering.ran.h5",
             )
             ran = Table(read_file(ran_fn))

@@ -242,11 +242,13 @@ class model_ssr:
     This class will fit a model based on TSNR2_<type> and FIBERFLUX_<band> for the redshift success and produce weights
     that are the inverse of the relative predicted redshift success
     '''
-    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False,overwrite_pars_ssrmaxflux=True):
+    def __init__(self,input_data,tsnr_min=80,tsnr_max=200,tracer='ELG',reg=None,outdir='',band='G',outfn_root='test',readpars=False,overwrite_pars_ssrmaxflux=True,emlincat_fn=''):
         self.cat = input_data
-
-        mask = self.cat['TSNR2_'+tracer]>tsnr_min
-        mask &= self.cat['TSNR2_'+tracer]<tsnr_max
+        traceru = tracer
+        if tracer == 'LGE':
+            traceru = 'LRG'
+        mask = self.cat['TSNR2_'+traceru]>tsnr_min
+        mask &= self.cat['TSNR2_'+traceru]<tsnr_max
         self.tsnr_max = tsnr_max
         self.reg = reg
         if reg is not None:
@@ -254,8 +256,8 @@ class model_ssr:
         self.cat = self.cat[mask]
         if tracer == 'QSO':
             names = list(self.cat.dtype.names)
-            if 'OII_FLUX' not in names:
-                emline = fits.open('/global/cfs/cdirs/desi/survey/catalogs/DA2/LSS/loa-v1/emlin_catalog.fits')[1].data
+            if 'OII_FLUX' not in names or 'OIII_FLUX' not in names:
+                emline = fits.open(emlincat_fn)[1].data
         
                 ss = np.searchsorted(sorted(emline['TARGETID']), self.cat['TARGETID'])
         
@@ -286,9 +288,9 @@ class model_ssr:
         print(len(self.cat))
         self.cat['FIBERFLUX_'+band+'_EC'] = self.cat['FIBERFLUX_'+band]*10**(0.4*extdict[band]*self.cat['EBV'])
         self.selgz = common.goodz_infull(tracer,self.cat,zcol='Z_not4clus')
-        ha,bine = np.histogram(self.cat['TSNR2_'+tracer])
-        medt = np.median(self.cat['TSNR2_'+tracer])
-        hf,_ = np.histogram(self.cat['TSNR2_'+tracer][~self.selgz],bins=bine)
+        ha,bine = np.histogram(self.cat['TSNR2_'+traceru])
+        medt = np.median(self.cat['TSNR2_'+traceru])
+        hf,_ = np.histogram(self.cat['TSNR2_'+traceru][~self.selgz],bins=bine)
         self.nzf = hf/ha
         tot_failrate = np.sum(hf)/np.sum(ha)
         high_failrate = np.sum(hf[5:])/np.sum(ha[5:])
@@ -299,14 +301,14 @@ class model_ssr:
         bs = bine[1]-bine[0]
         for i in range(0,len(bine)-1):
             bc.append(bine[i]+bs/2.) 
-            median_bins.append(np.median(self.cat['TSNR2_'+tracer][(self.cat['TSNR2_'+tracer] >= bine[i]) & (self.cat['TSNR2_'+tracer] < bine[i+1])]))
+            median_bins.append(np.median(self.cat['TSNR2_'+traceru][(self.cat['TSNR2_'+traceru] >= bine[i]) & (self.cat['TSNR2_'+traceru] < bine[i+1])]))
         self.bc = np.array(bc)
         self.median_bins = np.array(median_bins)
         self.bine = bine
         self.vis_5hist = False
         self.outdir = outdir
         self.band = band
-        self.tracer = tracer
+        self.tracer = traceru
         self.outfn_root = outfn_root
         rw = ''
         if self.reg is not None:
@@ -353,9 +355,9 @@ class model_ssr:
         #plt.show()
         plt.clf()
         #fit to fiberflux trend
-        print('self.cat[TSNR2_tracer]',self.cat['TSNR2_'+tracer])
+        print('self.cat[TSNR2_tracer]',self.cat['TSNR2_'+traceru])
         print('self.cat',self.cat)
-        assr = 1. -self.failure_rate_eff(self.cat['TSNR2_'+tracer],*pars)   
+        assr = 1. -self.failure_rate_eff(self.cat['TSNR2_'+traceru],*pars)   
         print('assr',assr)
         relssr = assr/np.max(assr) 
         self.wts_fid = 1/relssr
@@ -370,9 +372,9 @@ class model_ssr:
             sel &= self.cat['FIBERFLUX_'+self.band+'_EC'] < np.percentile(self.cat['FIBERFLUX_'+self.band+'_EC'],(i+1)*pstep)
             mf = np.median(self.cat['FIBERFLUX_'+self.band+'_EC'][sel])
             fper.append(mf)
-            ha,_ = np.histogram(self.cat['TSNR2_'+tracer][sel],bins=self.bine)
-            hf,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],bins=self.bine)
-            hfw,_ = np.histogram(self.cat['TSNR2_'+tracer][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
+            ha,_ = np.histogram(self.cat['TSNR2_'+traceru][sel],bins=self.bine)
+            hf,_ = np.histogram(self.cat['TSNR2_'+traceru][sel&self.selgz],bins=self.bine)
+            hfw,_ = np.histogram(self.cat['TSNR2_'+traceru][sel&self.selgz],weights=self.wts_fid[sel&self.selgz],bins=self.bine)
             nzfper.append(hf/ha)
             sel = ha == hf
             hf[sel] -= 1 #so that the errors aren't 0

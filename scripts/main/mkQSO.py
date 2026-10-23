@@ -1,3 +1,7 @@
+'''
+    Note that this script only works for v1 data assembly redshift files (up to loa)
+    Use mkQSO_v2.py for loa+
+'''
 #standard python
 import sys
 import os

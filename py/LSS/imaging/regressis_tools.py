@@ -67,10 +67,10 @@ def save_desi_data(LSS, survey, tracer, nside, dir_out, z_lim,regl=['_N','_S'],n
     mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
     fracarea = map_randoms / mean
-    fracarea[fracarea == 0] = np.NaN
+    fracarea[fracarea == 0] = np.nan
     # remove pixels with too small fracarea
     sel = 1/fracarea > 5.0
-    fracarea[sel] = np.NaN
+    fracarea[sel] = np.nan
     #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
@@ -188,10 +188,10 @@ def save_desi_data_full(LSS, survey, tracer, nside, dir_out, z_lim,nran=18,fract
     mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
     fracarea = map_randoms / mean
-    fracarea[fracarea == 0] = np.NaN
+    fracarea[fracarea == 0] = np.nan
     # remove pixels with too small fracarea
     sel = 1/fracarea > 5.0
-    fracarea[sel] = np.NaN
+    fracarea[sel] = np.nan
     #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
@@ -327,10 +327,10 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
     fracarea = map_randoms / mean
-    fracarea[fracarea == 0] = np.NaN
+    fracarea[fracarea == 0] = np.nan
     # remove pixels with too small fracarea
     sel = 1/fracarea > 5.0
-    fracarea[sel] = np.NaN
+    fracarea[sel] = np.nan
     #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):
@@ -487,10 +487,10 @@ feature_names=None,pixmap_external=None,feature_names_ext=None,use_sgr=False,use
     mean = nran*2500
     #TO DO IN THE NEXT: or divide by the correct value in each pixel ! /global/cfs/cdirs/desi/target/catalogs/dr9/0.49.0/randoms/resolve/randoms-1-0.fits
     fracarea = map_randoms / mean
-    fracarea[fracarea == 0] = np.NaN
+    fracarea[fracarea == 0] = np.nan
     # remove pixels with too small fracarea
     sel = 1/fracarea > 5.0
-    fracarea[sel] = np.NaN
+    fracarea[sel] = np.nan
     #logger.info(f"{np.sum(sel)} pixels are outlier on {np.sum(fracarea>0)}")
 
     ## savedata (without fracarea and not in degree !! --> we want just the number of object per pixel):

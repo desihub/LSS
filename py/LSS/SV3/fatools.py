@@ -370,7 +370,7 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         gaiadr = 'dr2'
     if np.isin('gaiaedr3',fht['FAARGS'].split()):
         gaiadr = 'edr3'
-
+    
     if mtldir is not None:
         if 'sv3' in indir.lower():
             if verbose:
@@ -390,9 +390,25 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
         elif ('main' in indir.lower()) or ('holding' in indir.lower()):
             if verbose:
                 log.info('main survey')
-            if (not reproducing) or (targver == '1.1.1'):
+
+            # LGN 20260708 - Reading target directory and targver info directly from fiberassign header.
+            tdirfht = fht['TARG']
+
+            targver = None
+            for k in fht.keys():
+                if k.startswith('DEPNAM') and fht[k] == 'desitarget':
+                    targver = fht[k.replace('NAM','VER')]
+
+            if targver is None:
+                log.critical(f'Target File Header: {fa_fn} does not have a desitarget version specification')
+                raise ValueError('Target File Header must contain a desitarget version specification')
+                
+            log.info(f'targver  = {targver}')
+            #LGN 20260708: Now running altcreate_mtl for ALL targvers != 1.0.0
+            #              This adds compatibility for DARK1B and BRIGHT1B target file generation
+            if (not reproducing) or (targver != '1.0.0'):
                 if verbose:
-                    log.info('if reproducing is True, targver must be 1.1.1')
+                    log.info('if reproducing is True, targver must not be 1.0.0')
                     log.info(f'targver  = {targver}')
                     log.info(f'reproducing = {reproducing}')
                 altcreate_mtl(tilef,
@@ -400,23 +416,22 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 gaiadr,
                 fht['PMCORR'],
                 tarfn,
-                tdirMain.format(targver)+prog,
+                tdirfht,
                 survey = 'main',
                 mock = mock)
             #tdirMain+prog,
-            #LGN 06/11/25: Adding compatibility with reproducing tests for DARK1B
-            elif targver == '1.0.0' or targver == '3.0.0':
-                if verbose:
-                    log.info('targver must be 1.0.0 (or at least not 1.1.1) and reproducing must be True')
-                    log.info(f'targver  = {targver}')
-                    log.info(f'reproducing = {reproducing}') 
-            
+            elif targver == '1.0.0':
+                log.info('Copying real targ file')
+                log.info('targver must be 1.0.0 and reproducing must be True')
+                log.info(f'targver  = {targver}')
+                log.info(f'reproducing = {reproducing}') 
+                    
                 if not os.path.exists(outdir):
                     log.info('running makedirs. making {0}'.format(outdir))
                     os.makedirs(outdir)
                   
                 shutil.copyfile(indir+ts+'-targ.fits', tarfn)
-
+    
         else:
             log.critical('invalid input directory. must contain either sv3, main, or holding')
             raise ValueError('indir must contain either sv3, main, or holding')
@@ -459,14 +474,9 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
                 fo.write("module swap fiberassign/"+fht['FA_VER'][:3]+'.0'+"\n")
         elif faver >= 2.4 and faver < 4.0:
             fo.write("module swap fiberassign/"+fht['FA_VER']+"\n")
-        elif faver >= 4.0 and faver < 5.0:
-            #fo.write("module swap fiberassign/5.0.0\n")
-            fo.write("export PATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/bin:$PATH\n")
-            fo.write("export PYTHONPATH=/global/cfs/cdirs/desi/users/raichoor/fiberassign-rerun-main/fiberassign_main_godesi23.10/py:$PYTHONPATH\n")
-            fo.write("export SKYHEALPIXS_DIR=$DESI_ROOT/target/skyhealpixs/v1\n")
         else:
-            #with fiberassign refactor as of May 2025, it is no longer necessary to specify a module swap for faver > 5.00
-            assert faver >= 5.0
+            # 20260610 LGN - Testing shows that we can now use the standard desi environment for all main survey tiles
+            assert faver >= 4.0
     else:
         fo.write("module swap fiberassign/"+str(faver)+"\n")
         faver = float(faver[:3])
@@ -494,7 +504,8 @@ def get_fba_fromnewmtl(tileid,mtldir=None,getosubp=False,outdir=None,faver=None,
     if faver >= 3:
         fo.write(" --ha "+str(fht['FA_HA']))
         fo.write(" --margin-gfa 0.4 --margin-petal 0.4 --margin-pos 0.05")
-    if faver >=5:
+    
+    if faver >=4:
         fo.write(" --fafns_for_stucksky "+fa_fn)
     fo.close()    
     log.info('ping G')
@@ -607,21 +618,44 @@ def altcreate_mtl(
         log.critical(tiles)
         raise ValueError('When processing tile 315, code should strip out processing of all other tiles. ')
     else:
-        log.info(f'mtldir2 = {mtldir}')
-        log.info(f'tiles2 = {tiles}')
-        d = io.read_targets_in_tiles(
-            mtldir,
-            tiles,
-            quick=False,
-            mtl=True,
-            unique=True,
-            isodate=mtltime,
-            verbose=verbose,
-            tabform='ascii.ecsv', 
-            survey = survey
-        )
+
+        # LGN: Adding handling for bright1b/dark1b tiles
+        if 'dark1b' in mtldir or 'bright1b' in mtldir:
+            log.info('Running with maketwostyle=True')
+            is_ext = True
+            # LGN Formatting the path to bright or dark ledgers
+            # LGN Passing list of directories to read_targets_in_tiles
+            mtldir_short = os.path.join(
+                os.path.dirname(mtldir), 
+                os.path.basename(mtldir).replace('1b', '')
+            )
+            mtldirs = [mtldir_short, mtldir]
+            d = io.read_targets_in_tiles(
+                mtldirs,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )
         
-    log.info('ping B')
+        else:
+            is_ext = False
+            d = io.read_targets_in_tiles(
+                mtldir,
+                tiles,
+                quick=False,
+                mtl=True,
+                unique=True,
+                isodate=mtltime,
+                verbose=verbose,
+                tabform='ascii.ecsv',
+                maketwostyle = is_ext
+            )    
+                   
     try:
         log.info('shape of read_targets_in_tiles output')
         log.info(d.shape)

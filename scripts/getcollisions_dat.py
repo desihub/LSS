@@ -19,8 +19,8 @@ import LSS.common_tools as common
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--prog", choices=['DARK','BRIGHT'])
-parser.add_argument("--survey", choices=['Y1','DA2'],default='DA2')
+parser.add_argument("--prog", choices=['DARK','BRIGHT','DARK1B','BRIGHT1B'])
+parser.add_argument("--survey", choices=['Y1','DA2','DA3'],default='DA3')
 parser.add_argument("--outmode", choices=['test','prod'],default='test')
 
 args = parser.parse_args()
@@ -73,7 +73,13 @@ def getcoll(tile):
 
     # Load target files...
     load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits',rundate=dt)
-    load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-scnd.fits',rundate=dt)
+    scnd_fn = '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-scnd.fits'
+    if os.path.isfile(scnd_fn):
+        load_target_file(tgs, tagalong,scnd_fn,rundate=dt)
+    too_fn = '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-too.fits'
+    if os.path.isfile(too_fn):
+        load_target_file(tgs, tagalong,too_fn,rundate=dt)
+
     load_target_file(tgs, tagalong, '/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-sky.fits',rundate=dt)
 
     ttids = fitsio.read('/dvs_ro/cfs/cdirs/desi/survey/fiberassign/main/'+ts[:3]+'/'+ts+'-targ.fits')['TARGETID']

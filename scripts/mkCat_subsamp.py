@@ -1,23 +1,28 @@
-#Script to read in existing LSS catalog information for some tracer and create a sub-sample
-#Expectation is that users will copy this and create their own criteria, following the example
-#Example submission creates Mr < 20.5 catalog based on fastspecfit plus add hoc e correction with a further selection of 35% lowest star formation (percentile at which data looked bimodel)
-#
-#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_ANY --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
-#Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
+Script to read in existing LSS catalog information for some tracer and create a subsample
+Expectation is that users will copy this and create their own criteria, following the example
+Example submission below creates Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 35% lowest star formation rate (percentile at which data looked bimodal)
+
+works in either desihub or cosmodesi, e.g.:
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+PYTHONPATH=$HOME/LSS/py:$PYTHONPATH #change $HOME to wherever you git clone the LSS rep
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --mkfulldat y --clusd y --clusran y --nz y --splitGC y --ccut FSFABSmagwecorr-R-20.5-SFRlper-35 --imsys_clus y --imsys_clus_ran y
+Up to imaging systematics regression takes ~7 minutes ; imaging systematics takes another ~3 minutes
+"""
 #
 #standard python
-import sys
+# import sys
 import os
-import shutil
-import unittest
-from datetime import datetime
-import json
+# import shutil
+# import unittest
+# from datetime import datetime
+# import json
 import numpy as np
 import fitsio
-import glob
+# import glob
 import argparse
-from astropy.table import Table,join,unique,vstack
-from matplotlib import pyplot as plt
+from astropy.table import Table,join,vstack#,unique
+# from matplotlib import pyplot as plt
 
 import logging
 logname = 'mkCat'
@@ -43,48 +48,53 @@ import LSS.common_tools as common
 
 from LSS.globals import main
 
+class RawDescriptionArgumentDefaultsHelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+    "Help message formatter that both retains any formatting in descriptions and adds default values to argument help"
+    pass
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--ccut",help="a string that is used define your subsample",default='FSFABSmagwecorr-R-20.5-umzgper-50')
-#arguments to find input data
-parser.add_argument("--input_tracer", help="tracer type that subsample will come from")
-parser.add_argument("--basedir", help="base directory for input, default is SCRATCH",default='/global/cfs/cdirs/desi/survey/catalogs/')
-parser.add_argument("--outdir", help="directory for out, default is SCRATCH",default=os.environ['SCRATCH'])
-parser.add_argument("--version", help="catalog version for input",default='v2')
-parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
-parser.add_argument("--verspec",help="version for redshifts",default='loa-v1')
-parser.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied",default='_HPmapcut')
-#parser.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawDescriptionArgumentDefaultsHelpFormatter)
 
-parser.add_argument("--compmd",help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs",default='not_altmtl')
+subsample_group = parser.add_argument_group('subsample selection/cut options')
+subsample_group.add_argument("--ccut", help="a string that is used to define your subsample. the default value encodes a Mr < 20.5 cut based on FastSpecFit plus ad hoc e correction with a further selection of 50%% highest u-z color values; for more options, check the code", default='FSFABSmagwecorr-R-20.5-umzgper-50')
 
-#what steps to run (set all to y to get NGC/SGC clustering catalogs output)
-parser.add_argument("--mkfulldat", help="whether to make the initial cut file that gets used throughout",default='n')
-parser.add_argument("--clusd", help="make the 'clustering' catalog intended for paircounts",default='n')
-parser.add_argument("--clusran", help="make the random clustering files; these are cut to a small subset of columns",default='n')
-parser.add_argument("--minr", help="minimum number for random files",default=0,type=int)
-parser.add_argument("--maxr", help="maximum for random files, 18 are available (use parallel script for all)",default=18,type=int) 
-parser.add_argument("--nz", help="get n(z) for type and all subtypes",default='n')
-parser.add_argument("--splitGC",help="convert to NGC/SGC catalogs",default='n')
+input_data_group = parser.add_argument_group('input data options', description='arguments to find input data')
+input_data_group.add_argument("--input_tracer", help="tracer type that subsample will come from", required=True)
+input_data_group.add_argument("--basedir", help="base directory for input, a versioning structure is expected under it", default='/global/cfs/cdirs/desi/survey/catalogs/')
+input_data_group.add_argument("--outdir", help="directory for output, the catalogs will be saved directly under it", default=os.environ['SCRATCH'])
+input_data_group.add_argument("--version", help="catalog version for input", default='v2')
+input_data_group.add_argument("--survey", help="e.g., Y1, DA2", default='DA2')
+input_data_group.add_argument("--verspec", help="version for redshifts", default='loa-v1')
+input_data_group.add_argument("--use_map_veto", help="string to include in full file name denoting whether map veto was applied", default='_HPmapcut')
+#input_data_group.add_argument("--extra_clus_dir", help="an optional extra layer of directory structure for clustering catalog",default='')
 
-#options for linear imaging systematic regressions
-parser.add_argument("--imsys_clus",help="add weights for imaging systematics using eboss method, applied to clustering catalogs?",default='n')
-parser.add_argument("--imsys_clus_ran",help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?",default='n')
-parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=1,type=int)
-parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
-parser.add_argument("--imsys_nside",help="healpix nside used for imaging systematic regressions",default=256,type=int)
+completeness_group = parser.add_argument_group('completeness mode', description='the method for completeness weight computations')
+completeness_group.add_argument("--compmd", choices=['not_altmtl', 'altmtl', 'NN'], help="use altmtl to use PROB_OBS for completeness weights in clustering catalogs", default='not_altmtl')
 
-parser.add_argument("--par", help="run different random number in parallel?",default='y')
+catalog_steps_group = parser.add_argument_group('catalog creation steps', description='options for which steps to run (set all to y to get NGC/SGC clustering catalogs output). for finer selections, keep in mind that next steps often depend on previous steps')
+catalog_steps_group.add_argument("--mkfulldat", choices=['n', 'y'], help="whether to make the initial cut file that gets used throughout", default='n')
+catalog_steps_group.add_argument("--clusd", choices=['n', 'y'], help="make the 'clustering' catalog intended for paircounts", default='n')
+catalog_steps_group.add_argument("--clusran", choices=['n', 'y'], help="make the random clustering files; these are cut to a small subset of columns", default='n')
+catalog_steps_group.add_argument("--splitGC", choices=['n', 'y'], help="convert to NGC/SGC catalogs", default='n')
+catalog_steps_group.add_argument("--nz", choices=['n', 'y'], help="get n(z) for type and all subtypes (splitGC is required to have been done first)", default='n')
+
+random_group = parser.add_argument_group('random catalogs options')
+random_group.add_argument("--minr", help="minimum number for random files", default=0, type=int)
+random_group.add_argument("--maxr", help="maximum number for random files (plus one), 18 (0 through 17) are available (it is worth running all in parallel, see the option below)", default=18, type=int)
+random_group.add_argument("--par", choices=['y', 'n'], help="run different random numbers in parallel? (recommended for processing multiple randoms, but typically requires a compute node with more memory, should not be run in parallel on a login node)", default='y')
+
+imsys_group = parser.add_argument_group('imaging systematics regression options', description='options on linear regression for imaging systematics; the first two can be seen as additional catalog creation steps')
+imsys_group.add_argument("--imsys_clus", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs?", default='n')
+imsys_group.add_argument("--imsys_clus_ran", choices=['n', 'y'], help="add weights for imaging systematics using eboss method, applied to clustering catalogs, to randoms?", default='n')
+imsys_group.add_argument("--nran4imsys", help="number of random files to using for linear regression", default=1, type=int)
+imsys_group.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*', default=None)
+imsys_group.add_argument("--imsys_nside", help="healpix nside used for imaging systematic regressions", default=256, type=int)
+imsys_group.add_argument("--imsys_zbin", choices=['n', 'y', 'hi'], help="use separate redshift bins for imaging systematic regressions? (or a wider redshift range for BGS)", default='n')
 
 
 args = parser.parse_args()
 common.printlog(str(args),logger)
 
-basedir = args.basedir
-version = args.version
-specrel = args.verspec
-ccut = args.ccut
 rm = int(args.minr)
 rx = int(args.maxr)
 
@@ -100,19 +110,14 @@ zmax = mainp.zmax
 
 #set up input directory
 
-maindir = basedir +'/'+args.survey+'/LSS/'
+dirin = os.path.join(args.basedir, args.survey, 'LSS', args.verspec, 'LSScats', args.version) + '/'
 
-ldirspec = maindir+specrel+'/'
-
-dirin = ldirspec+'LSScats/'+version+'/'
-
-lssmapdirout = dirin+'/hpmaps/' #maps for imaging systematics regressions
+lssmapdirout = dirin + 'hpmaps/' #maps for imaging systematics regressions
     
 if not os.path.exists(dirin):
-    
-    sys.exit('issue with '+dirin+' it does not exist')
+    raise RuntimeError('issue with '+dirin+': it does not exist')
 
-common.printlog('running subsampling '+dirin+args.input_tracer +' catalogs according to '+ccut,logger)
+common.printlog('running subsampling '+dirin+args.input_tracer +' catalogs according to '+args.ccut,logger)
 
 #parse arguments to toggle options
     
@@ -136,7 +141,7 @@ def get_FSF_loa(indata,fsf_cols,fsf_dir='/dvs_ro/cfs/cdirs/desi/vac/dr2/fastspec
     #works with the data model that is new as of loa
     fsl = []
     for hp in range(0,12):
-        fsi = fitsio.read(fsf_dir+'fastspec-loa-main-bright-nside1-hp'+str(hp).zfill(2)+'.fits',ext='SPECPHOT',columns = fsf_cols)
+        fsi = fitsio.read(fsf_dir+'fastspec-loa-main-'+prog+'-nside1-hp'+str(hp).zfill(2)+'.fits', ext='SPECPHOT', columns=fsf_cols)
         fsl.append(fsi)
     fs = np.concatenate(fsl)
     del fsl
@@ -153,13 +158,19 @@ if args.mkfulldat == 'y':
     common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
     fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
     
-    
+    def is_float(s):
+        "Short check if an object (string) can be converted to a floating-point (real) number"
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
     
     #for selections based on fastspecfit; other cases can be written similarly
     if 'FSFABSmag' in args.ccut:
         #this is an example that can make subsamples based on fastspecfit absolute magnitudes
         #other critera can be added
-        csplit = args.ccut.split('-')
+        csplit : list[str] = args.ccut.split('-')
         bnd = csplit[1]
         abmag = -float(csplit[2])
         fsf_cols = ['TARGETID','ABSMAG01_SDSS_'+bnd]
@@ -169,40 +180,62 @@ if args.mkfulldat == 'y':
             fsf_cols.append('ABSMAG01_SDSS_Z')
             umz_str = csplit[3]
             umz_split = float(csplit[4]) #value to split on
-            common.printlog('splitting on U-Z percentile '+str(umz_split),logger)
+            common.printlog('splitting on U-Z ' + 'percentile ' * ('per' in umz_str) + str(umz_split), logger)
         if 'SFR' in args.ccut:
             fsf_cols.append('SFR')
             sfr_str = csplit[3]
             sfr_split = float(csplit[4]) #value to split on
-            common.printlog('splitting on SFR percentile '+str(sfr_split),logger)
+            common.printlog('splitting on SFR ' + 'percentile ' * ('per' in sfr_str) + str(sfr_split), logger)
+        if 'gmr' in args.ccut:
+            fsf_cols.append('ABSMAG01_SDSS_G')
+            fsf_cols.append('ABSMAG01_SDSS_R')
+            gmr_str = csplit[3].removeprefix('gmr') # remove the 'gmr' prefix to prevent issues with the g/l logic below for greater/less than
+            gmr_split = float(csplit[4]) #value to split on
+            common.printlog('splitting on G-R ' + 'percentile ' * ('per' in gmr_str) + str(gmr_split), logger)
         common.printlog('about to get columns from fastspecfit '+str(fsf_cols),logger)
         fulldat = get_FSF_loa(fulldat,fsf_cols)
-        ecorr = np.zeros(len(fulldat))
+        ecorr = 0 # doesn't need to be an array at this point
         if 'ecorr' in args.ccut:
             ecorr = -0.8*(fulldat['Z_not4clus']-0.1) #seemed best here for getting constant n(z) /global/cfs/cdirs/desi/survey/catalogs/DA2/analysis/loa-v1/LSScats/BGS_explore.ipynb
         sel = fulldat['ABSMAG01_SDSS_'+bnd] < abmag + ecorr
+        del ecorr # delete arrays to free memory, no longer used
         common.printlog('length after Absmag selection '+str(np.sum(sel)),logger)
-        if 'SFR' in args.ccut and 'per' in args.ccut: #'per' for percentile
-            sel_sfr = fulldat['SFR'] > np.percentile(fulldat[sel]['SFR'],sfr_split)
+        if 'SFR' in args.ccut: # perform SFR cut
+            if 'per' in sfr_str: # 'per' for percentile; otherwise, use the value directly
+                sfr_split = np.percentile(fulldat[sel]['SFR'], sfr_split)
+            sel_sfr = fulldat['SFR'] > sfr_split
             if 'g' in sfr_str: #'g' for greater than
                 sel &= sel_sfr
             else:
                 sel &= ~sel_sfr
             common.printlog('length after SFR selection '+str(np.sum(sel)),logger)
-        if 'umz' in args.ccut and 'per' in args.ccut: #'per' for percentile
-            sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']),umz_split)
+            del sel_sfr # delete arrays to free memory, no longer used
+        if 'umz' in args.ccut: # perform U-Z color cut
+            if 'per' in umz_str: # 'per' for percentile; otherwise, use the value directly
+                umz_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_U']-fulldat[sel]['ABSMAG01_SDSS_Z']), umz_split)
+            sel_umz = (fulldat['ABSMAG01_SDSS_U']-fulldat['ABSMAG01_SDSS_Z']) > umz_split
             if 'g' in umz_str: #'g' for greater than
                 sel &= sel_umz
             else:
                 sel &= ~sel_umz
             common.printlog('length after UMZ selection '+str(np.sum(sel)),logger)
+            del sel_umz # delete arrays to free memory, no longer used
+        if 'gmr' in args.ccut: # perform G-R color cut
+            if 'per' in gmr_str: # 'per' for percentile; otherwise, use the value directly
+                gmr_split = np.percentile((fulldat[sel]['ABSMAG01_SDSS_G']-fulldat[sel]['ABSMAG01_SDSS_R']), gmr_split)
+            sel_gmr = (fulldat['ABSMAG01_SDSS_G']-fulldat['ABSMAG01_SDSS_R']) > gmr_split
+            if 'g' in gmr_str: # 'g' for greater than; 'gmr' prefix was removed earlier to avoid confusion with this logic
+                sel &= sel_gmr
+            else:
+                sel &= ~sel_gmr
+            common.printlog('length after GMR selection '+str(np.sum(sel)),logger)
+            del sel_gmr # delete arrays to free memory, no longer used
 
-        #add any additional selections here
+    # add `elif`s for any additional selections here
         
-        #write output to new "full" catalog at your defined location
-    elif args.ccut == '-21.35': #the sample used in DR2 BAO analysis
-        #don't use any k-correction at all, yields ~constant density
-        common.printlog('applying the -21.35 selection',logger)
+    elif is_float(args.ccut): # following the example of the -21.35 cut used for BGS_BRIGHT in DR2 BAO analysis, which yielded a ~constant density sample, this option allows you to apply a simple cut on absolute magnitude (below the given value) without any k-correction, which yields a ~constant density sample
+        # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
+        common.printlog('applying the '+args.ccut+' selection on absolute magnitude without k-correction',logger)
         from LSS.tabulated_cosmo import TabulatedDESI
         cosmo = TabulatedDESI()
         dis_dc = cosmo.comoving_radial_distance
@@ -214,13 +247,15 @@ if args.mkfulldat == 'y':
         cfluxr = fulldat['FLUX_R']/fulldat['MW_TRANSMISSION_R']
         r_dered = 22.5 - 2.5*np.log10(cfluxr)
         abr = r_dered -dm
-        sel = abr < -21.35
+        sel = abr < float(args.ccut)
         sel &= z2use < 2
+        del z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
 
-    elif args.ccut == 'zcmb-21.35': #the sample used in DR2 BAO analysis
-        #don't use any k-correction at all, yields ~constant density
-        common.printlog('applying the -21.35 selection and correcting redshifts to the cmb frame',logger)
-        tracer_out = tracer_out.replace('zcmb-21.35','-21.35_zcmb')
+    elif args.ccut.startswith('zcmb') and is_float(args.ccut[len('zcmb'):]): # like the above absolute magnitude cut without k-correction, but with redshifts corrected to the CMB frame
+        # might want to check that the float value is negative or within some reasonable range, although it probably depends on the tracer and redshift range
+        ccut_mag_str = args.ccut[len('zcmb'):]
+        common.printlog('applying the '+ccut_mag_str+' selection on absolute magnitude without k-correction and correcting redshifts to the cmb frame',logger)
+        tracer_out = tracer_out.replace('zcmb'+ccut_mag_str, ccut_mag_str+'_zcmb')
         from LSS.tabulated_cosmo import TabulatedDESI
         cosmo = TabulatedDESI()
         dis_dc = cosmo.comoving_radial_distance
@@ -237,14 +272,17 @@ if args.mkfulldat == 'y':
         cfluxr = fulldat['FLUX_R']/fulldat['MW_TRANSMISSION_R']
         r_dered = 22.5 - 2.5*np.log10(cfluxr)
         abr = r_dered -dm
-        sel = abr < -21.35
+        sel = abr < float(ccut_mag_str)
         sel &= z2use < 2
-        
+        del zcmb, newz, z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
 
     else:
-        sys.exit(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
+        raise ValueError(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
+    
+    # write output to new "full" catalog at your defined location
     fout = args.outdir+'/'+tracer_out+'_full'+args.use_map_veto+'.dat.fits'
     common.write_LSS_scratchcp(fulldat[sel],fout,logger=logger)
+    del fulldat, sel # delete arrays to free memory, no longer used
     
     
 #create "clustering" catalogs for data with no NGC/SGC split or FKP weights 
@@ -252,8 +290,20 @@ if args.mkfulldat == 'y':
 weightileloc=True
 if args.compmd == 'altmtl':
     weightileloc = False
+redo_fracz=False
+if args.compmd == 'NN':
+    redo_fracz=True
+    NN = True
+    nzcompmd = 'dat'
+    common.printlog('Using nearest neighbor for completeness weight instead of FRAC_TLOBS_TILES on randoms',logger)
+    #common.printlog('recalculating FRACZ_TILELOCID weight from masked data',logger)
+nzcompmd = 'dat'
+    
+    
+    
 if mkclusdat:
-    ct.mkclusdat(args.outdir+'/'+tracer_out,weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto)
+    common.printlog('about to start mkclusdat',logger)
+    ct.mkclusdat(args.outdir+'/'+tracer_out,redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc,tp=tracer_out,dchi2=dchi2,zmin=zmin,zmax=zmax,use_map_veto=args.use_map_veto,logger=logger)
 
 #make clustering catalogs for randoms
 nzcompmd = 'ran'
@@ -275,6 +325,7 @@ if mkclusran:
     else:
         for ii in inds:#range(rm,rx):
             _parfun_cr(ii)
+    del clus_arrays # free memory, this one is no longer used
 
 #define P0 value used for fiducial FKP weights and dz used for creating n(z)
 if tracer_out[:3] == 'QSO':
@@ -296,8 +347,8 @@ regions = ['NGC', 'SGC']
 #function to take a file and split it NGC/SGC
 def splitGC(flroot,datran='.dat',rann=0):
     import LSS.common_tools as common
-    from astropy.coordinates import SkyCoord
-    import astropy.units as u
+    # from astropy.coordinates import SkyCoord
+    # import astropy.units as u
     app = 'clustering'+datran+'.fits'
     if datran == '.ran':
         app = str(rann)+'_clustering'+datran+'.fits'
@@ -333,26 +384,79 @@ if args.splitGC == 'y':
 #4) refactors the weights (section 8.2 of the KP3 paper arXiv:2411.12020)
 #5) writes the NGC/SGC clustering catalogs back out for data and randoms
 #It needs to take inputs for completeness and mean weight as a function of NTILE, of the non-subsampled catalog, so that the angular upweighting option can remain consistent
-def get_ntile_info(fd):
-    ntl = np.unique(fd['NTILE'])
-    comp_ntl = np.ones(len(ntl))
-    weight_ntl = np.ones(len(ntl))
-    for i in range(0,len(ntl)):
-        sel = fd['NTILE'] == ntl[i]
-        mean_ntweight = np.mean(fd['WEIGHT_COMP'][sel])        
-        weight_ntl[i] = mean_ntweight
-        comp_ntl[i] = 1/mean_ntweight#*mean_fracobs_tiles
-        
-        if args.compmd != 'altmtl':
-            fttl = np.zeros(len(ntl))
-            for i in range(0,len(ntl)): 
-                sel = fd['NTILE'] == ntl[i]
-                mean_fracobs_tiles = np.mean(fd[sel]['FRAC_TLOBS_TILES'])
-                fttl[i] = mean_fracobs_tiles
+def get_ntile_info(clus_orig_fname):
+    fd = fitsio.read(clus_orig_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
+    weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
+    if args.compmd != 'altmtl' and args.compmd != 'NN':
+        fttl = np.bincount(fd['NTILE']-1, weights=fd['FRAC_TLOBS_TILES']) / np.bincount(fd['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
+    return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
+
+def get_ntile_info_from_full(full_orig_fname, tp, reg, ismock=False):
+    columns = ['RA', 'DEC', 'NTILE']
+    if tp[:3] == 'QSO': columns += ['Z', 'ZWARN']
+    if tp[:3] == 'ELG': columns += ['ZWARN', 'o2c', 'LOCATION_ASSIGNED']
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE': columns += ['Z', 'ZWARN', 'DELTACHI2']
+    if tp[:3] == 'BGS': columns += ['ZWARN', 'DELTACHI2']
+    if ismock: columns += ['TARGETID']
+    columns += ['FRACZ_TILELOCID', 'FRAC_TLOBS_TILES'] if weightileloc else ['PROB_OBS']
+    ff = fitsio.read(full_orig_fname, columns=columns)
+    # select region (NGC/SGC)
+    sel = common.splitGC(ff)
+    if reg == 'SGC': sel = ~sel
+    ff = ff[sel]
+    del sel
+    # define "good z" cuts from the full catalog to the clustering catalog, based on the tracer type, in accordance with the mkclusdat function
+    if tp[:3] == 'QSO':
+        #good redshifts are currently just the ones that should have been defined in the QSO file when merged in full
+        wz = ff['Z']*0 == 0
+        wz &= ff['Z'] != 999999
+        wz &= ff['Z'] != 1.e20
+        wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['TARGETID'] < 419430400000000
+    if tp[:3] == 'ELG':
+        wz = ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['o2c'] > dchi2
+        wz &= ff['LOCATION_ASSIGNED'] == 1
+        if ismock:
+            wz &= ff['TARGETID'] < 838860800000000
+    if tp[:3] == 'LRG' or tp[:3] == 'LGE':
+        print('applying extra cut for LRGs')
+        # Custom DELTACHI2 vs z cut from Rongpu
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if ismock:
+            wz &= ff['Z']<1.5
         else:
-            fttl = np.ones(len(ntl))
-    comp_ntl = comp_ntl*fttl
-    return comp_ntl,weight_ntl
+            if dchi2 is not None:
+                from LSS import ssr_tools
+                selg = ssr_tools.LRG_goodz(ff)
+                wz &= selg
+    if tp[:3] == 'BGS':
+        wz = ff['ZWARN'] == 0
+        wz &= ff['ZWARN']*0 == 0
+        wz &= ff['ZWARN'] != 999999
+        if dchi2 is not None:
+            wz &= ff['DELTACHI2'] > dchi2
+    ff = ff[wz] # apply the "good z" cut to get the same objects as in the clustering catalog
+    del wz
+    if args.compmd == 'NN':
+        weights_comp = ff['NEW_WEIGHTFRACZ']
+    elif  weighttileloc:
+        weights_comp = 1./ff['FRACZ_TILELOCID'] 
+    else:
+        weights_comp = 129/(1+128*ff['PROB_OBS']) # compute WEIGHT_COMP in accordance with the mkclusdat function
+    weight_ntl = np.bincount(ff['NTILE']-1, weights=weights_comp) / np.bincount(ff['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+    comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
+    if args.compmd != 'altmtl':
+        fttl = np.bincount(ff['NTILE']-1, weights=ff['FRAC_TLOBS_TILES']) / np.bincount(ff['NTILE']-1) # mean of FRAC_TLOBS_TILES for each (positive integer) NTILE in data (although shouldn't this be computed in randoms?). Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
+        comp_ntl *= fttl # if not using altmtl, also multiply by the mean FRAC_TLOBS_TILES for each NTILE to get the completeness. Both are indexed by NTILE-1
+    return comp_ntl, weight_ntl # both are indexed by NTILE-1 as common.addnbar expects
  
 if args.nz == 'y':
     for reg in regions:#allreg:
@@ -367,15 +471,19 @@ if args.nz == 'y':
         extra_dir = 'nonKP'
         if args.compmd == 'altmtl':
             extra_dir = 'PIP'
-        clus_orig = fitsio.read(dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits')
-        comp_ntl,weight_ntl = get_ntile_info(clus_orig)                        
+        clus_orig = dirin+'/'+extra_dir+'/'+args.input_tracer+'_'+reg+'_clustering.dat.fits' # use original uncut data to get info for consistency / so that angular upweighting can be weighted consistently (for altmtl/PIP)
+        if os.path.isfile(clus_orig): # use clustering catalog if it exists (then the process is simpler)
+            comp_ntl, weight_ntl = get_ntile_info(clus_orig)
+        else: # if the clustering catalog does not exist, use the full catalog to get the NTILE info (particularly for DR3 BGS)
+            comp_ntl, weight_ntl = get_ntile_info_from_full(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits', tp=args.input_tracer, reg=reg)
         common.addnbar(fb,bs=dz,zmin=zmin,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,comp_ntl=comp_ntl,weight_ntl=weight_ntl,logger=logger)
 
 # determine linear weights for imaging systematics
 # this is new for doing after the fact based on clustering catalogs
 if args.imsys_clus == 'y':
     #import package
-    from LSS.imaging import densvar 
+    from LSS.imaging import densvar
+    import numpy.lib.recfunctions as rfn
     
     #setup redshift bins to use for regressions; you might find something else works better!
     if args.input_tracer[:3] == 'ELG':
@@ -394,7 +502,12 @@ if args.imsys_clus == 'y':
         else:
             zrl = [(0.4,1.1)]  
     if args.input_tracer[:3] == 'BGS':
-        zrl = [(0.1,0.4)]
+        if args.imsys_zbin == 'hi':
+            zrl = [(0,0.5)]
+        elif args.imsys_zbin == 'y':
+            zrl = [(0,0.3),(0.3,0.5)]    
+        else:
+            zrl = [(0.1,0.4)]
 
     
     #get maps to regress against
@@ -403,24 +516,36 @@ if args.imsys_clus == 'y':
     else:
         fit_maps = [mapn for mapn in args.usemaps]
 
+    # fiducial column name for imaging systematics weights
+    syscol = 'WEIGHT_IMLIN_CLUS'
     #get NGC/SGC catalogs and stack them (weights will be fit splitting the data into different photometric regions)
     fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
     dat_ngc = Table(fitsio.read(fname))
+    if syscol in dat_ngc.colnames:
+        dat_ngc.remove_column(syscol)
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname))
+    if syscol in dat_sgc.colnames:
+        dat_sgc.remove_column(syscol)
     dat = vstack([dat_sgc,dat_ngc])
     #foutname = os.path.join(dirout, tracer_clus+'_clustering.dat.fits')
     #get randoms
     ranl = []
     for i in range(0,args.nran4imsys):
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits')) 
+        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
+    # ensure that randoms either all have this column or all don't, otherwise the concatenation will fail. the mix may result from previously performed imaging systematics added to randoms with some randoms having been processed and some not
+    ran_has_syscol = [syscol in rfn.get_names_flat(ran.dtype) for ran in ranl]
+    if not all(ran_has_syscol):
+        for i in range(len(ranl)):
+            if ran_has_syscol[i]:
+                ranl[i] = rfn.rec_drop_fields(ranl[i], [syscol]) # drop the column from any randoms that have it, so that all randoms should have the same columns for concatenation
     rands = np.concatenate(ranl)
+    del ranl # delete arrays to free memory, no longer used
     
-    #fiducial column name for weights, initialize as 1.
-    syscol = 'WEIGHT_IMLIN_CLUS' 
+    # initialize the fiducial column name for weights as 1
     dat[syscol] = np.ones(len(dat))
     #photometric regions
     regl = ['S','N']
@@ -434,8 +559,8 @@ if args.imsys_clus == 'y':
         if reg == 'DES' or reg == 'SnotDES':
             regu = 'S'
         mptr = args.input_tracer
-        if args.input_tracer == 'BGS_ANY':
-            mptr = 'BGS_BRIGHT' #bright and any cover the same footprint so the same map is used for both
+        if args.input_tracer[:3] == 'BGS':
+            mptr = 'BGS_BRIGHT' #bright and any/faint cover the same footprint so the same map is used for both
         pwf = lssmapdirout+mptr+'_mapprops_healpix_nested_nside256_'+regu+'.fits'
         sys_tab = Table.read(pwf)
         cols = list(sys_tab.dtype.names)
@@ -449,6 +574,7 @@ if args.imsys_clus == 'y':
         for ec in ['GR','RZ']:
             if 'EBV_DIFF_'+ec in fit_maps: 
                 sys_tab['EBV_DIFF_'+ec] = debv['EBV_DIFF_'+ec]
+        del debv # delete arrays to free memory, no longer used
         
         selr = rands['PHOTSYS'] == reg
 
@@ -475,12 +601,12 @@ if args.imsys_clus == 'y':
             #we want to update the weights for the selection of data just input to the regression
             sel = wsysl != 1 
             dat[syscol][sel] = wsysl[sel]
+            del wsysl # delete arrays to free memory, no longer used
+        del sys_tab # delete arrays to free memory, no longer used
     #attach data to NGC/SGC catalogs, write those out
     #we will do a join
     dat.keep_columns(['TARGETID',syscol])
     
-    if syscol in dat_ngc.colnames:
-        dat_ngc.remove_column(syscol)
     dat_ngc = join(dat_ngc,dat,keys=['TARGETID'])
     #apply weight to final weight columns, remove any previous weighting
     dat_ngc['WEIGHT'] /= dat_ngc['WEIGHT_SYS']
@@ -489,8 +615,6 @@ if args.imsys_clus == 'y':
     #write out NGC
     common.write_LSS_scratchcp(dat_ngc,os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits'),logger=logger)
     #do SGC
-    if syscol in dat_sgc.colnames:
-        dat_sgc.remove_column(syscol)
     dat_sgc = join(dat_sgc,dat,keys=['TARGETID'])
     #apply weight to final weight columns
     dat_sgc['WEIGHT'] /= dat_sgc['WEIGHT_SYS']
@@ -498,6 +622,7 @@ if args.imsys_clus == 'y':
     dat_sgc['WEIGHT'] *= dat_sgc['WEIGHT_SYS']
     #write out SGC
     common.write_LSS_scratchcp(dat_sgc,os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits'),logger=logger)
+    del dat_ngc, dat_sgc, dat, rands # delete arrays to free memory, no longer used
 
 #column needs to be added to randoms
 if args.imsys_clus_ran == 'y':
@@ -508,6 +633,7 @@ if args.imsys_clus_ran == 'y':
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
     dat_sgc = Table(fitsio.read(fname,columns=['TARGETID',syscol]))
     dat = vstack([dat_sgc,dat_ngc])
+    del dat_ngc, dat_sgc # delete arrays to free memory, no longer used
     dat.rename_column('TARGETID','TARGETID_DATA') #randoms have their weights modulated based on the data used for the redshift
     regl = ['NGC','SGC']
     def _add2ran(rann):
@@ -529,4 +655,5 @@ if args.imsys_clus_ran == 'y':
     else:
         for rn in inds:#range(rm,rx):
              _add2ran(rn)
+    del dat # delete arrays to free memory, no longer used (probably useless at the end of the script, but just in case e.g. there is more code added later)
 

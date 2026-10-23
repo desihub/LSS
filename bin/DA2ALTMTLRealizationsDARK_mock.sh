@@ -202,13 +202,9 @@ secondary=''
 #secondary='--secondary'
 
 
-#If running from mocks, must set target directory. 
-#Otherwise this is optional
-#targfile='' #CHANGEME IF RUNNING ON MOCKS
-#targfile='--targfile=/global/cfs/cdirs/desi/target/catalogs/dr9/1.1.1/targets/main/resolve/' #Main survey target directory
+#ACR: we deactivate this option since is not used for mocks, it is not needed
+targfile='' 
 #targfile="--targfile=/pscratch/sd/a/acarnero/test_main/forFA{mock_number}.fits"
-#targfile="--targfile=$DESI_ROOT/survey/catalogs/DA2/mocks/SecondGenMocks/AbacusSummit_v4_1/forFA{mock_number}.fits"
-targfile="--targfile=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/forFA{mock_number}.fits"  #NGEME IF RUNNING ON MOCKS' #/pscratch/sd/j/jlasker/MockAMTLY1/FirstGenMocks/AbacusSummit/forFA2.fits' 
 
 zfix="--zfix=/global/cfs/cdirs/desi/survey/catalogs/DA2/mocks/AbacusHighFidelity/qso{mock_number}.txt" 
 #zfix=''
