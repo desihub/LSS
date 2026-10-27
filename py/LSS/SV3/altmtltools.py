@@ -773,10 +773,15 @@ def makeTileTracker(altmtldir, survey = 'main', obscon = 'DARK', startDate = Non
     veto_in_daterange = (MTLDV['TIMESTAMP'] >= startDate_str) & (MTLDV['TIMESTAMP'] < endDate_str) & (MTLDV['PROGRAM'] == obscon.upper())
 
     for veto_en in MTLDV[veto_in_daterange]:
-        
+
+        #LGN 20261026: Re-adding two second offset to veto actions. Appears necessary via testing.
+        #LGN 20260527: Adding two seconds to veto timestamp due to done-tiles /  done-vetoes alignment issue
+        veto_ts_dt = datetime.fromisoformat(veto_en['TIMESTAMP'])
+        veto_ts_inc2s = (veto_ts_dt+timedelta(seconds=2)).isoformat()
+
         TileIDs.append(-1)
         TypeOfActions.append('veto')
-        TimesOfActions.append(veto_en['TIMESTAMP'])
+        TimesOfActions.append(veto_ts_inc2s)
         doneFlag.append(False)
         archiveDates.append(-1)
 
