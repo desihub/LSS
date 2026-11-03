@@ -253,36 +253,36 @@ else:
 
 
 if prog == 'dark':
-    if args.tracer == 'all':
-        # tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-        # notqsos = ['','','notqso','','']
-        # only do base types because other are subset that can be cut later and this saves i/o
-        tps = ['QSO', 'LRG', 'ELG']
-        notqsos = ['', '', '']
-    else:
-        tps = [args.tracer]
-        notqsos = [args.notqso]
+    # if args.tracer == 'all':
+    # tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+    # notqsos = ['','','notqso','','']
+    # only do base types because other are subset that can be cut later and this saves i/o
+    tps = ['QSO', 'LRG', 'ELG']
+    notqsos = ['', '', '']
+    # else:
+    #    tps = [args.tracer]
+    #    notqsos = [args.notqso]
 if prog == 'dark1b':
-    if args.tracer == 'all':
-        # tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
-        # notqsos = ['','','notqso','','']
-        # only do base types because other are subset that can be cut later and this saves i/o
-        tps = ['LGE', 'QSO', 'LRG', 'ELG']
-        notqsos = ['', '', '', '']
-    else:
-        tps = [args.tracer]
-        notqsos = [args.notqso]
+    # if args.tracer == 'all':
+    # tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
+    # notqsos = ['','','notqso','','']
+    # only do base types because other are subset that can be cut later and this saves i/o
+    tps = ['LGE', 'QSO', 'LRG', 'ELG']
+    notqsos = ['', '', '', '']
+    # else:
+    #    tps = [args.tracer]
+    #    notqsos = [args.notqso]
 
 if 'bright' in prog:
-    if args.tracer == 'all':
-        # tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']
-        # notqsos = ['','']
-        tps = ['BGS_ANY']  # ,'MWS_ANY']
-        notqsos = ['']
+    # if args.tracer == 'all':
+    # tps = ['BGS_ANY','BGS_BRIGHT']#,'MWS_ANY']
+    # notqsos = ['','']
+    tps = ['BGS_ANY']  # ,'MWS_ANY']
+    notqsos = ['']
 
-    else:
-        tps = [args.tracer]
-        notqsos = [args.notqso]
+    # else:
+    #    tps = [args.tracer]
+    #    notqsos = [args.notqso]
 
 
 if args.dotarspec:
