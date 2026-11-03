@@ -223,7 +223,7 @@ if args.dospec:
     test_allin = np.isin(mtd['TILEID'], np.unique(specf['TILEID']))
     if np.sum(test_allin) != len(mtd):
         sys.exit('Not all tiles in mtd are in specf')
-    specf = specf[sel1b]
+    specf = specf[sel_1b]
     logger.info('length of specf is '+str(len(specf)))
 
     extra_cols = [
