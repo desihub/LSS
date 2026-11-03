@@ -1681,6 +1681,14 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
             else:
                 log.info('setting ext flag = True for update')
                 is_ext = True
+
+            # LGN If this is a bright1b tile observed before the MWS_UFD desitarget change: https://github.com/desihub/desitarget/pull/911
+            # LGN We need to pass the pre550_MWS_UFD keyword
+            if obscon.lower() == 'bright1b' and t['ACTIONTIME'] < '2026-09-23T17:42:00+00:00':
+                log.info('setting pre550_MWS_UFD flag for update_ledger')
+                pre550_MWS_UFD = True
+            else:
+                pre550_MWS_UFD = False
         else:
             is_1b = False
             
@@ -1694,9 +1702,9 @@ def update_alt_ledger(altmtldir,althpdirname, altmtltilefn,  actions, tiletracke
 
 
             #Updating the non-1b ledger
-            update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
+            update_ledger(althpdirname_short, altZCat, obscon=obscon_short.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets, pre550_MWS_UFD = pre550_MWS_UFD)
             #Updating the 1b ledger
-            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets)
+            update_ledger(althpdirname, altZCat, obscon=obscon.upper(),numobs_from_ledger=numobs_from_ledger, tabform='ascii.ecsv', ext=is_ext, targets = targets, pre550_MWS_UFD = pre550_MWS_UFD)
              
         else:
             #Updating ledger (No ext keyword)
