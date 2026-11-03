@@ -223,6 +223,7 @@ if args.dospec:
     test_allin = np.isin(mtd['TILEID'], np.unique(specf['TILEID']))
     if np.sum(test_allin) != len(mtd):
         sys.exit('Not all tiles in mtd are in specf')
+    specf = specf[sel1b]
     logger.info('length of specf is '+str(len(specf)))
 
     extra_cols = [
@@ -257,7 +258,7 @@ if prog == 'dark':
     # tps = ['QSO','LRG','ELG_LOP','ELG_LOP','ELG'] #order is not least to most memory intensive
     # notqsos = ['','','notqso','','']
     # only do base types because other are subset that can be cut later and this saves i/o
-    tps = ['QSO', 'LRG', 'ELG']
+    tps = ['ELG', 'QSO', 'LRG']
     notqsos = ['', '', '']
     # else:
     #    tps = [args.tracer]
