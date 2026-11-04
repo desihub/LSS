@@ -162,15 +162,15 @@ def get_good_real(dic,real_num,semaphore):
     if args.mode == 'version':
         indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
     with semaphore:
-		logger.info('getting assignments for realization '+str(real_num))
-		all_asgn = get_all_asgn(indir)
-		asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
-		good_asgn = np.isin(asgn_tloc,gtl)
-		good_tids = all_asgn['TARGETID'][good_asgn]
-		asgn_real = np.isin(alltids,good_tids)
-		#assign_real_dic[int(real_num)] = asgn_real
-		dic[int(real_num)] = asgn_real
-		logger.info('got realization '+str(real_num))
+        logger.info('getting assignments for realization '+str(real_num))
+        all_asgn = get_all_asgn(indir)
+        asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
+        good_asgn = np.isin(asgn_tloc,gtl)
+        good_tids = all_asgn['TARGETID'][good_asgn]
+        asgn_real = np.isin(alltids,good_tids)
+        #assign_real_dic[int(real_num)] = asgn_real
+        dic[int(real_num)] = asgn_real
+        logger.info('got realization '+str(real_num))
     #del asgn_real
     #del all_asgn
 
