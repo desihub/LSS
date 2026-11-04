@@ -1,6 +1,7 @@
 #e.g., run from desica with srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/get_bitweights.py --prog DARK --amtl_dir $SCRATCH/AltMTL/
 import numpy as np
 import os
+import sys
 import fitsio
 import glob
 from astropy.table import Table
@@ -135,7 +136,7 @@ elif os.path.isfile(filenah5):
     gtl = common.read_hdf5_blosc(good_specf)
     gtl = np.unique(gtl['TILELOCID'].astype('i8'))
 else:
-    sys.exit('no gtl file')
+    sys.exit('no gtl file '+filena +' or '+filenah5)
 #else:
 #    common.printlog(filena+' no found, creating bad fiber mask',logger)
 #    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
