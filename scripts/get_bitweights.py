@@ -133,7 +133,7 @@ if os.path.isfile(filena):
     gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
 elif os.path.isfile(filenah5):
-    gtl = common.read_hdf5_blosc(good_specf)
+    gtl = common.read_hdf5_blosc(filenah5)
     gtl = np.unique(gtl['TILELOCID'].astype('i8'))
 else:
     sys.exit('no gtl file '+filena +' or '+filenah5)
