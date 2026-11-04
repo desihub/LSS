@@ -128,7 +128,7 @@ else:
 
 ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/'
 filena = lssdir+'/'+pdir+'_unique_good_TILELOCID.txt'
-filenah5 = lssdir+'/'+pdir+'_goodspecdata.h5'
+filenah5 = lssdir+'/'+args.prog+'_goodspecdata.h5'
 if os.path.isfile(filena):
     gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
