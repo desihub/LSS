@@ -22,6 +22,7 @@ parser.add_argument("--amtl_dir",default=os.getenv('SCRATCH')+'/AltMTL/')
 parser.add_argument("--specrel",default='matterhorn-v2')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--nreal",default=128,type=int)
+parser.add_argument("--nproc",default=64,type=int) #getting ooms
 args = parser.parse_args()
 
 
@@ -155,20 +156,21 @@ else:
 
 
 
-def get_good_real(dic,real_num):
+def get_good_real(dic,real_num,semaphore):
     if args.mode == 'running':
         indir = args.amtl_dir+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
     if args.mode == 'version':
         indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
-    logger.info('getting assignments for realization '+str(real_num))
-    all_asgn = get_all_asgn(indir)
-    asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
-    good_asgn = np.isin(asgn_tloc,gtl)
-    good_tids = all_asgn['TARGETID'][good_asgn]
-    asgn_real = np.isin(alltids,good_tids)
-    #assign_real_dic[int(real_num)] = asgn_real
-    dic[int(real_num)] = asgn_real
-    logger.info('got realization '+str(real_num))
+    with semaphore:
+		logger.info('getting assignments for realization '+str(real_num))
+		all_asgn = get_all_asgn(indir)
+		asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
+		good_asgn = np.isin(asgn_tloc,gtl)
+		good_tids = all_asgn['TARGETID'][good_asgn]
+		asgn_real = np.isin(alltids,good_tids)
+		#assign_real_dic[int(real_num)] = asgn_real
+		dic[int(real_num)] = asgn_real
+		logger.info('got realization '+str(real_num))
     #del asgn_real
     #del all_asgn
 
@@ -184,7 +186,7 @@ for ind in allposinds:
         indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
 
     if os.path.exists(indir):
-        inds.append(ind)
+        inds.append(int(ind))
     else:
         logger.info('directory '+indir+' not found, will not be used for bitweight')
 #inds = np.arange(0,Nreal)
@@ -197,7 +199,8 @@ logger.info('about to get '+str(len(inds))+' realizations in parallel')
 from multiprocessing import Process, Manager
 manager = Manager()
 assign_real_dic = manager.dict()
-job = [Process(target=get_good_real, args=(assign_real_dic, i)) for i in inds]
+semaphore = manager.Semaphore(args.nproc)
+job = [Process(target=get_good_real, args=(assign_real_dic, i,semaphore)) for i in inds]
 _ = [p.start() for p in job]
 _ = [p.join() for p in job]
 
