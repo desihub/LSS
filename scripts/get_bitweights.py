@@ -14,11 +14,11 @@ import logging
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
-parser.add_argument("--survey",default='DA2')
+parser.add_argument("--survey",default='DA3')
 parser.add_argument("--mode",choices=['version','running'],default='running')
 parser.add_argument("--amtl_version",default='Y3Run2')
-parser.add_argument("--amtl_dir",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/altmtl/')
-parser.add_argument("--specrel",default='loa-v1')
+parser.add_argument("--amtl_dir",default=os.getenv('SCRATCH')+'/AltMTL/')
+parser.add_argument("--specrel",default='matterhorn-v2')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--nreal",default=128,type=int)
 args = parser.parse_args()
@@ -47,19 +47,22 @@ logger.info('script is starting')
 
 lssdir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/LSScats/'+args.cat_version+'/'
 
+tidl = []
+
 if args.prog == 'BRIGHT':
-    alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
-    alltids = np.unique(alltids['TARGETID'])
+    #alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
+    #alltids = np.unique(alltids['TARGETID'])
+    tpl = ['BGS_BRIGHT','BGS_FAINT']
 
 
 if args.prog == 'DARK':
-    tpl = ['LRG','QSO','ELGnotqso']
-    tidl = []
-    for tp in tpl:
-        f = fitsio.read(lssdir+tp+'_full_noveto.dat.fits',columns=['TARGETID'])
-        tidl.append(f)
-    alltids = np.concatenate(tidl)
-    alltids = np.unique(alltids['TARGETID'])
+    tpl = ['LRG','QSO','ELG_LOPnotqso','ELG_VLOnotqso']
+    
+for tp in tpl:
+    f = fitsio.read(lssdir+tp+'_full_noveto.dat.fits',columns=['TARGETID'])
+    tidl.append(f)
+alltids = np.concatenate(tidl)
+alltids = np.unique(alltids['TARGETID'])
 
 logger.info(str(len(alltids))+ ' TARGETID will get their number of assignments tracked')
 
@@ -105,41 +108,47 @@ else:
     mainp = main('BGS',args.specrel)
     pdir = 'bright'
 
-mt = mainp.mtld
-tiles = mainp.tiles
+#mt = mainp.mtld
+#tiles = mainp.tiles
 
 
-tsnrcut = mainp.tsnrcut
+#tsnrcut = mainp.tsnrcut
 #dchi2 = mainp.dchi2
-tnsrcol = mainp.tsnrcol        
-badfib = mainp.badfib
+#tnsrcol = mainp.tsnrcol        
+#badfib = mainp.badfib
 
 
-wd = mt['SURVEY'] == 'main'
-wd &= mt['ZDONE'] == 'true'
-wd &= mt['FAPRGRM'] == pdir
-if args.survey == 'DA2':
-    wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
+#wd = mt['SURVEY'] == 'main'
+#wd &= mt['ZDONE'] == 'true'
+#wd &= mt['FAPRGRM'] == pdir
+#if args.survey == 'DA2':
+#    wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
+#mtld = mt[wd]
 
-mtld = mt[wd]
-ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
+ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/'
 filena = lssdir+'/'+pdir+'_unique_good_TILELOCID.txt'
+filenah5 = lssdir+'/'+pdir+'_goodspecdata.h5'
 if os.path.isfile(filena):
     gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
+elif os.path.isfile(filenah5):
+    gtl = common.read_hdf5_blosc(good_specf)
+    gtl = np.unique(gtl['TILELOCID'].astype('i8'))
 else:
-    common.printlog(filena+' no found, creating bad fiber mask',logger)
-    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-    logger.info('loading specf file '+specfo)
-    specf = Table(fitsio.read(specfo))
-    sel = np.isin(specf['TILEID'],mtld['TILEID'])
-    specf = specf[sel]
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    sys.exit('no gtl file')
+#else:
+#    common.printlog(filena+' no found, creating bad fiber mask',logger)
+#    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+#    logger.info('loading specf file '+specfo)
+#    specf = Table(fitsio.read(specfo))
+#    sel = np.isin(specf['TILEID'],mtld['TILEID'])
+#    specf = specf[sel]
+#    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-    logger.info('loaded specf file '+specfo)
+#    logger.info('loaded specf file '+specfo)
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-    gtl = np.unique(specfc['TILELOCID'])
+#    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+#    gtl = np.unique(specfc['TILELOCID'])
 
 #assign_real_dic = {}
 
