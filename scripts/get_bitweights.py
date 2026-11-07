@@ -1,6 +1,7 @@
 #e.g., run from desica with srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/scripts/get_bitweights.py --prog DARK --amtl_dir $SCRATCH/AltMTL/
 import numpy as np
 import os
+import sys
 import fitsio
 import glob
 from astropy.table import Table
@@ -14,13 +15,14 @@ import logging
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--prog", choices=['DARK','BRIGHT'])
-parser.add_argument("--survey",default='DA2')
+parser.add_argument("--survey",default='DA3')
 parser.add_argument("--mode",choices=['version','running'],default='running')
 parser.add_argument("--amtl_version",default='Y3Run2')
-parser.add_argument("--amtl_dir",default='/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/altmtl/')
-parser.add_argument("--specrel",default='loa-v1')
+parser.add_argument("--amtl_dir",default=os.getenv('SCRATCH')+'/AltMTL/')
+parser.add_argument("--specrel",default='matterhorn-v2')
 parser.add_argument("--cat_version",default='test')
 parser.add_argument("--nreal",default=128,type=int)
+parser.add_argument("--nproc",default=64,type=int) #getting ooms
 args = parser.parse_args()
 
 
@@ -47,19 +49,22 @@ logger.info('script is starting')
 
 lssdir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/LSScats/'+args.cat_version+'/'
 
+tidl = []
+
 if args.prog == 'BRIGHT':
-    alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
-    alltids = np.unique(alltids['TARGETID'])
+    #alltids = fitsio.read(lssdir+'BGS_ANY_full_noveto.dat.fits',columns=['TARGETID'])
+    #alltids = np.unique(alltids['TARGETID'])
+    tpl = ['BGS_BRIGHT','BGS_FAINT']
 
 
 if args.prog == 'DARK':
-    tpl = ['LRG','QSO','ELGnotqso']
-    tidl = []
-    for tp in tpl:
-        f = fitsio.read(lssdir+tp+'_full_noveto.dat.fits',columns=['TARGETID'])
-        tidl.append(f)
-    alltids = np.concatenate(tidl)
-    alltids = np.unique(alltids['TARGETID'])
+    tpl = ['LRG','QSO','ELG_LOPnotqso','ELG_VLOnotqso']
+    
+for tp in tpl:
+    f = fitsio.read(lssdir+tp+'_full_noveto.dat.fits',columns=['TARGETID'])
+    tidl.append(f)
+alltids = np.concatenate(tidl)
+alltids = np.unique(alltids['TARGETID'])
 
 logger.info(str(len(alltids))+ ' TARGETID will get their number of assignments tracked')
 
@@ -105,60 +110,67 @@ else:
     mainp = main('BGS',args.specrel)
     pdir = 'bright'
 
-mt = mainp.mtld
-tiles = mainp.tiles
+#mt = mainp.mtld
+#tiles = mainp.tiles
 
 
-tsnrcut = mainp.tsnrcut
+#tsnrcut = mainp.tsnrcut
 #dchi2 = mainp.dchi2
-tnsrcol = mainp.tsnrcol        
-badfib = mainp.badfib
+#tnsrcol = mainp.tsnrcol        
+#badfib = mainp.badfib
 
 
-wd = mt['SURVEY'] == 'main'
-wd &= mt['ZDONE'] == 'true'
-wd &= mt['FAPRGRM'] == pdir
-if args.survey == 'DA2':
-    wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
+#wd = mt['SURVEY'] == 'main'
+#wd &= mt['ZDONE'] == 'true'
+#wd &= mt['FAPRGRM'] == pdir
+#if args.survey == 'DA2':
+#    wd &=mt['ZDATE'] < 20240410 #DR2 cutoff
+#mtld = mt[wd]
 
-mtld = mt[wd]
-ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/DA2/LSS/'+args.specrel+'/'
+ldirspec = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/'+args.specrel+'/'
 filena = lssdir+'/'+pdir+'_unique_good_TILELOCID.txt'
+filenah5 = lssdir+'/'+args.prog+'_goodspecdata.h5'
 if os.path.isfile(filena):
     gtl = np.loadtxt(filena, unpack = True, dtype = np.int64)
     #if os.path.isfile(f'unique_TILELOCID_{survey}_{args.specdata}.txt'):
+elif os.path.isfile(filenah5):
+    gtl = common.read_hdf5_blosc(filenah5)
+    gtl = np.unique(gtl['TILELOCID'].astype('i8'))
 else:
-    common.printlog(filena+' no found, creating bad fiber mask',logger)
-    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
-    logger.info('loading specf file '+specfo)
-    specf = Table(fitsio.read(specfo))
-    sel = np.isin(specf['TILEID'],mtld['TILEID'])
-    specf = specf[sel]
-    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
+    sys.exit('no gtl file '+filena +' or '+filenah5)
+#else:
+#    common.printlog(filena+' no found, creating bad fiber mask',logger)
+#    specfo = ldirspec+'datcomb_'+pdir+'_spec_zdone.fits'
+#    logger.info('loading specf file '+specfo)
+#    specf = Table(fitsio.read(specfo))
+#    sel = np.isin(specf['TILEID'],mtld['TILEID'])
+#    specf = specf[sel]
+#    specf['TILELOCID'] = 10000*specf['TILEID'] +specf['LOCATION']
     
-    logger.info('loaded specf file '+specfo)
+#    logger.info('loaded specf file '+specfo)
     #specfc = common.cut_specdat(specf,badfib=mainp.badfib,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status)
-    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
-    gtl = np.unique(specfc['TILELOCID'])
+#    specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+#    gtl = np.unique(specfc['TILELOCID'])
 
 #assign_real_dic = {}
 
 
 
-def get_good_real(dic,real_num):
+def get_good_real(dic,real_num,semaphore):
     if args.mode == 'running':
         indir = args.amtl_dir+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
     if args.mode == 'version':
         indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(real_num).zfill(3)+'/fa/MAIN'
-    logger.info('getting assignments for realization '+str(real_num))
-    all_asgn = get_all_asgn(indir)
-    asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
-    good_asgn = np.isin(asgn_tloc,gtl)
-    good_tids = all_asgn['TARGETID'][good_asgn]
-    asgn_real = np.isin(alltids,good_tids)
-    #assign_real_dic[int(real_num)] = asgn_real
-    dic[int(real_num)] = asgn_real
-    logger.info('got realization '+str(real_num))
+    with semaphore:
+        logger.info('getting assignments for realization '+str(real_num))
+        all_asgn = get_all_asgn(indir)
+        asgn_tloc = 10000*all_asgn['TILEID'] +all_asgn['LOCATION']
+        good_asgn = np.isin(asgn_tloc,gtl)
+        good_tids = all_asgn['TARGETID'][good_asgn]
+        asgn_real = np.isin(alltids,good_tids)
+        #assign_real_dic[int(real_num)] = asgn_real
+        dic[int(real_num)] = asgn_real
+        logger.info('got realization '+str(real_num))
     #del asgn_real
     #del all_asgn
 
@@ -174,7 +186,7 @@ for ind in allposinds:
         indir = args.amtl_dir+args.amtl_version+args.prog+'/Univ'+str(ind).zfill(3)+'/fa/MAIN'
 
     if os.path.exists(indir):
-        inds.append(ind)
+        inds.append(int(ind))
     else:
         logger.info('directory '+indir+' not found, will not be used for bitweight')
 #inds = np.arange(0,Nreal)
@@ -187,7 +199,8 @@ logger.info('about to get '+str(len(inds))+' realizations in parallel')
 from multiprocessing import Process, Manager
 manager = Manager()
 assign_real_dic = manager.dict()
-job = [Process(target=get_good_real, args=(assign_real_dic, i)) for i in inds]
+semaphore = manager.Semaphore(args.nproc)
+job = [Process(target=get_good_real, args=(assign_real_dic, i,semaphore)) for i in inds]
 _ = [p.start() for p in job]
 _ = [p.join() for p in job]
 

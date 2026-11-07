@@ -74,6 +74,7 @@ parser.add_argument("--mode1b", help="integer to encode what to do with 1b data,
 parser.add_argument("--add_veto", help="add veto column for given type, matching to targets",default='n')
 parser.add_argument("--join_etar", help="whether or not to join to the target files with extra brick pixel info",default='n')
 parser.add_argument("--apply_veto", help="apply vetos for imaging, priorities, and hardware failures",default='n')
+parser.add_argument("--mask_petalnight_tids", help="apply a mask to all TARGETID associated TILELOCID in the bad petalnight mask",action="store_true")
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--usemaps", help="the list of maps to use; defaults to what is set by globals", type=str, nargs='*',default=None)
 parser.add_argument("--apply_map_veto", help="apply vetos to data and randoms based on values in healpix maps",default='n')
@@ -395,9 +396,12 @@ else:
 gtl_fn = dirout+prog+'_goodspecdata.h5'
 if args.mkgtl:
     tscol = 'TSNR2_ELG'
+    fn_badpetalnight = mainp.bad_petal_night_dark
     if 'BRIGHT' in prog:
         tscol = 'TSNR2_BGS'
+        fn_badpetalnight = mainp.bad_petal_night_bright
     logger.info('TSNR2 info for cut is '+tscol)
+    logger.info('bad petal night file is is '+fn_badpetalnight)
     specf = ldirspec+'datcomb_'+prog.lower()+'_spec_zdone.fits'
     prog1b = prog.lower()+'1b'
     specf1b = ldirspec+'datcomb_'+prog1b+'_spec_zdone.fits'
@@ -416,9 +420,9 @@ if args.mkgtl:
     badfib=mainp.badfib_td
     badfib_status=mainp.badfib_status
     if args.verspec == 'daily':
-        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,logger=logger)
     else:
-        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
+        fs = common.cut_specdat(fs,badfib,tsnr_min=min_tsnr2,tsnr_col=tscol,fibstatusbits=badfib_status,fn_spike_nz1=mainp.badnzfib1,fn_spike_nz2=mainp.badnzfib2,fn_badpetalnight=fn_badpetalnight ,logger=logger)
     fs = Table(fs)
     won = Table({'TILELOCID': (10000 * fs['TILEID'].value
                                + fs['LOCATION'].value).astype('i8', copy=False),
@@ -555,19 +559,50 @@ if args.fillran == 'y':
 if args.apply_veto == 'y':
     common.printlog('applying vetos',logger)
     logf.write('applied vetos to data catalogs for '+tp+' '+str(datetime.now()))
-
+    tids2mask = None
+    if args.mask_petalnight_tids:
+        common.printlog('getting badpetalnight tilelocid mask',logger)
+        file_tloc_bp = ldirspec+'/'+progl+'_badpetalnight_TILELOCID.txt'
+        if os.path.isfile(file_tloc_bp):
+            tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+            common.printlog('loaded badpetalnight tilelocid mask file',logger)
+        else:
+            common.printlog('did not find '+file_tloc_bp,logger)
+            specf = fitsio.read(os.path.join(ldirspec, 'datcomb_'+ progl + '_spec_zdone.fits'),columns=['TARGETID','LASTNIGHT','FIBER','TILEID','LOCATION'])
+            tloc_bp = common.get_bad_petal_nights_tloc(specf,prog=progl)
+            np.savetxt(file_tloc_bp, tloc_bp.astype(np.int64).T, fmt='%d')
+            del specf
     if args.ranonly != 'y':
         fin = dirout.replace('global','dvs_ro')+type+notqso+'_full_noveto.dat.fits'
         fout = dirout+type+notqso+'_full.dat.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
+        if args.mask_petalnight_tids:
+            tspec = fitsio.read(ldirspec+'datcomb_'+tp+'_tarspecwdup_zdone.fits',columns=['TARGETID','TILELOCID'])
+            totin = np.isin(tspec['TILELOCID'],tloc_bp)
+            tids2mask = np.unique(tspec['TARGETID'][totin])
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=tids2mask)
+        del tids2mask
     common.printlog('data veto done, now doing randoms',logger)
     def _parfun(rn):
         #fin = dirout.replace('global','dvs_ro')+type+notqso+'_'+str(rn)+'_full_noveto.ran.fits'
+        rtids2mask = None
         fin = dirout.replace('global','dvs_ro')+progl+'_'+str(rn)+'_full_noveto.ran.fits'
         if mode1b == 2:
             fin = dirout.replace('global','dvs_ro')+progl+'p1b_'+str(rn)+'_full_noveto.ran.fits'
         fout = dirout+type+notqso+'_'+str(rn)+'_full.ran.fits'
-        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger)
+        if args.mask_petalnight_tids:
+            common.printlog(str(rn)+' finding bad petal targetids to mask',logger)
+            filer = ldirspec+'/ran_'+str(rn)+'_'+progl+'_badpetalnight_TARGETID.txt'
+            if os.path.isfile(filer):
+                rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
+            else:    
+                common.printlog(filer +' does not exist, need to find petal targetids to mask',logger)
+                ranf = fitsio.read(ldirspec+'rancomb_0'+progl+'wdupspec_zdone.fits',columns=['TARGETID','TILELOCID'])
+                trtotin = np.isin(ranf['TILELOCID'],tloc_bp)
+                rtids2mask = np.unique(ranf['TARGETID'][trtotin])
+                del ranf
+                np.savetxt(filer, ran_tids2mask.astype(np.int64).T, fmt='%d')
+            common.printlog(str(rn)+' found bad petal targetids to mask',logger)
+        common.apply_veto(fin,fout,ebits=ebits,zmask=False,maxp=maxp,reccircmasks=mainp.reccircmasks,logger=logger,tids2mask=rtids2mask)
         print('random veto '+str(rn)+' done')
     if args.par == 'n':
         for rn in range(rm,rx):
@@ -1476,9 +1511,9 @@ if mkclusran:
     if 'BGS_BRIGHT' in args.type:
         ranin = dirin + 'BGS_BRIGHT' + notqso + '_'
     
-    clus_arrays = [fitsio.read(out_name+'_clustering.dat.fits')]
+    clus_arrays = [fitsio.read(out_name.replace('global','dvs_ro')+'_clustering.dat.fits')]
     def _parfun_cr(ii):
-        ct.mkclusran(ranin,out_name+'_',ii,rcols=rcols,des_resamp=args.des_resamp,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
+        ct.mkclusran(ranin.replace('global','dvs_ro'),out_name+'_',ii,rcols=rcols,des_resamp=args.des_resamp,ebits=ebits,utlid=utlid,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,extradir=args.extra_clus_dir,tp=type)
     if args.par == 'y':
         from multiprocessing import Pool
         with Pool() as pool:
@@ -1559,7 +1594,7 @@ if args.nz == 'y':
         zmu = (zmin//dz)*dz #make sure some integer multiple of dz
         common.printlog('minimum z used in n(z) calc is '+str(zmu),logger)
         common.mknz(fcd,fcr,fout,bs=dz,zmin=zmu,zmax=zmax,compmd=nzcompmd)
-        common.addnbar(fb,bs=dz,zmin=zmu,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd)
+        common.addnbar(fb,bs=dz,zmin=zmu,zmax=zmax,P0=P0,nran=nran,par=args.par,compmd=nzcompmd,logger=logger)
 
 if args.addNtileweight2full == 'y':
     froot = dirout+tracer_clus

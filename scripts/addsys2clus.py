@@ -44,6 +44,7 @@ logger.addHandler(ch)
 #try:
 import LSS.main.cattools as ct
 import LSS.common_tools as common
+import LSS.claude_tools as claudet
 
 from LSS.globals import main
 #except:
@@ -161,6 +162,7 @@ if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
     if "LRG" in tracer_clus:
         tpstr = "LRG"
     tpmap = tpstr
+    tpmap = tpmap.replace('_zcmb','')
     inds = np.arange(rm, rx)
     print(tracer_clus[:3])
     if tracer_clus[:3] == "ELG":
@@ -325,7 +327,8 @@ if args.doimlin == 'y':
         fname_ngc_out,
         logger=logger,
     )
-
+    del data_sgc
+    del data_ngc
     #  also write the weights in the randoms
     #if args.imsys_clus_ran:
     fname = os.path.join(
@@ -337,6 +340,8 @@ if args.doimlin == 'y':
     )
     dat_sgc = Table(read_file(fname, columns=["TARGETID", syscol]))
     dat = vstack([dat_sgc, dat_ngc])
+    del dat_ngc
+    del dat_sgc
     dat.rename_column("TARGETID", "TARGETID_DATA")
     regl = ["NGC", "SGC"]
     syscolr = syscol
@@ -352,7 +357,8 @@ if args.doimlin == 'y':
             ran = Table(read_file(ran_fn))
             if syscolr in ran.colnames:
                 ran.remove_column(syscolr)
-            ran = join(ran, dat, keys=["TARGETID_DATA"])
+            #ran = join(ran, dat, keys=["TARGETID_DATA"])
+            ran = claudet.join_left(ran,dat,keys=['TARGETID_DATA'])
             if args.replace_syscol:
                 ran["WEIGHT"] /= ran["WEIGHT_SYS"]
                 ran["WEIGHT_SYS"] = ran[syscolr]

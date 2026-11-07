@@ -67,6 +67,8 @@ parser.add_argument("--joindspec", help="combine the target and spec info togeth
 parser.add_argument("--fulld", help="make the 'full' data files ",default='n')
 parser.add_argument("--fullr", help="make the random files associated with the full data files",default='n')
 parser.add_argument("--apply_oldfoot", help="whether to cut randoms based on old tile list for full survey",default='n')
+parser.add_argument("--mask_petalnight_tids", help="apply a mask to all TARGETID associated TILELOCID in the bad petalnight mask",action="store_true")
+
 parser.add_argument("--add_gtl", help="whether to get the list of good tileloc from observed data; needed on only for 1st steps",default='n')
 parser.add_argument("--mkHPmaps", help="make healpix maps for imaging properties using sample randoms",default='n')
 parser.add_argument("--add_veto", help="add veto column to the full files",default='n')
@@ -599,7 +601,7 @@ if args.tracer[:3] == 'ELG':
     zmax = 1.6
     if args.survey == 'Y1':
         subfrac = [0.69,0.54]#0.676
-    if args.survey == 'DA2':
+    if args.survey == 'DA2' or args.surveycat == 'DA2':
         subfrac = [0.96,0.76]
         if args.simName == 'SecondGenMocks/AbacusSummit_v4_1':
             subfrac = [0.7,0.545]
@@ -788,11 +790,50 @@ if args.apply_veto == 'y':
     fout = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
     dataf = common.apply_veto(in_use, fout,ebits = mainp.ebits, zmask = False, maxp = maxp, reccircmasks = mainp.reccircmasks,wo='n',mapveto=args.use_map_veto,logger=logger) #returns vetoed array
     dataf = common.apply_map_veto_arrays(dataf,mapn,maps,mapcuts,logger=logger)
+    #if args.mask_petalnight_tids:
+    #    common.printlog('getting badpetalnight tilelocid mask',logger)
+    #    file_tloc_bp = ldirspec+'/'+pdir+'_badpetalnight_TILELOCID.txt'
+    #    tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+    #    tspec = fitsio.read(maindir+'/fba'+str(mocknum)+'/'+pdir+'datcomb_'+progl+'assignwdup.h5',columns=['TARGETID','TILELOCID'])
+    #    totin = np.isin(tspec['TILELOCID'],tloc_bp)
+    #    tids2mask = np.unique(tspec['TARGETID'][totin])
+    #    dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
+    #    dataf = dataf[~dataf_inmask]
+        
+    
     #common.write_LSS_scratchcp(dataf,fout,logger=logger)
     common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
-    print('data veto done, now doing randoms')
+    common.printlog('data veto done, now doing randoms',logger)
 
     gc.collect()
+
+
+if args.mask_petalnight_tids:
+    fin = os.path.join(dirout, args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
+    dataf = common.read_hdf5_blosc(fin.replace('global','dvs_ro'))
+
+    common.printlog('getting badpetalnight tilelocid mask',logger)
+    specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
+    file_tloc_bp = specdata_dir+'/'+pdir+'_badpetalnight_TILELOCID.txt'
+    tloc_bp = np.loadtxt(file_tloc_bp, unpack = True, dtype = np.int64)
+    tspec = common.read_hdf5_blosc(maindir+'/fba'+str(mocknum)+'/datcomb_'+pdir+'assignwdup.h5',columns=['TARGETID','TILEID','LOCATION'])
+    tlocids = 10000*tspec['TILEID'] + tspec['LOCATION']
+    totin = np.isin(tlocids,tloc_bp)
+    tids2mask = np.unique(tspec['TARGETID'][totin])
+    dataf_inmask = np.isin(dataf['TARGETID'],tids2mask)
+    common.printlog('will mask '+str(np.sum(dataf_inmask))+' targetid out of '+str(len(dataf)),logger)
+    dataf = dataf[~dataf_inmask]
+        
+    
+    #common.write_LSS_scratchcp(dataf,fout,logger=logger)
+    
+    fout = os.path.join(dirout+'/'+args.extra_clusdir+'/', args.tracer + notqso + '_full'+args.use_map_veto + '.dat.h5')
+    common.write_LSShdf5_scratchcp(dataf,fout,logger=logger)
+    common.printlog('petalnight veto done for data',logger)
+    del dataf
+    gc.collect()
+
+
 if args.apply_veto_ran == 'y':
     mapn = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_N.fits'))       
     maps = fitsio.read(os.path.join(lssmapdirout, tracer_clus + '_mapprops_healpix_nested_nside' + str(nside) + '_S.fits'))
@@ -916,7 +957,12 @@ if 'BGS_ANY-' in args.tracer or 'BGS_BRIGHT-' in args.tracer:
             if os.path.isfile(fn):
                 fin = common.read_hdf5_blosc(fn.replace('global','dvs_ro'))
             else:
-                common.printlog(fn+' not found!')            
+                common.printlog(fn+' not found!')     
+                fn = dirout+'/BGS_BRIGHT_full'+args.use_map_veto+'.dat.fits'
+                if os.path.isfile(fn):
+                    fin = fitsio.read(fn)  
+                else:
+                    common.printlog(fn+' also not found!')      
         common.printlog("cut method "+args.absmagmd, logger)
         dcols = list(fin.dtype.names)
         cutagainst = 'rmag'
@@ -985,6 +1031,12 @@ if args.nearestneighbor == 'y':
 if args.compmd == 'altmtl':
     weightileloc = False
 
+edir=args.extra_clusdir+'/'
+if args.mask_petalnight_tids:
+    readdir += '/'+args.extra_clusdir+'/'
+    edir = ''
+
+
 if args.mkclusdat == 'y':
     common.printlog('--- START MKCLUSDAT ---',logger)
     #nztl.append('')
@@ -1017,8 +1069,7 @@ if args.mkclusdat == 'y':
         #readdir = dirout
 
        #readdir = dirout
-    
-    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5',extradir=args.extra_clusdir+'/') #, return_cat='y', write_cat='n')
+    ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), redo_fracz=redo_fracz,NN=NN,weighttileloc=weightileloc, tp=args.tracer, dchi2= None, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut,logger=logger,exttp='.h5',extradir=edir) #, return_cat='y', write_cat='n')
 #    common.write_LSS(clusdat, os.path.join(dirout, args.tracer + notqso + '_clustering.dat.fits'))
 
     ###ct.mkclusdat(os.path.join(readdir, args.tracer + notqso), weightileloc, tp=args.tracer, dchi2= mainp.dchi2, tsnrcut=mainp.tsnrcut, zmin=mainp.zmin, zmax=mainp.zmax, use_map_veto=args.use_map_veto, subfrac=subfrac, zsplit=zsplit, ismock=True, ccut=args.ccut)
@@ -1069,7 +1120,10 @@ if args.mkclusran == 'y':
     mockobs_fn = os.path.join(outdir, 'datcomb_' + pdir + 'assignwdup.h5')
     if args.outmd == 'scratch':        
         mockobs_fn = mockobs_fn.replace(args.base_altmtl_dir,os.getenv('SCRATCH')+'/')
-    mockobs = common.read_hdf5_blosc(mockobs_fn,columns=['TILEID','LOCATION','PRIORITY'])
+    if os.path.isfile(mockobs_fn):
+        mockobs = common.read_hdf5_blosc(mockobs_fn,columns=['TILEID','LOCATION','PRIORITY'])
+    else:
+        mockobs = fitsio.read(mockobs_fn.replace('h5','fits'),columns=['TILEID','LOCATION','PRIORITY'])
     mockobs_tlid = 10000*mockobs['TILEID'] +mockobs['LOCATION']
     badpri = mockobs['PRIORITY'] > maxp
     bad_tlid = mockobs_tlid[badpri]
@@ -1083,7 +1137,7 @@ if args.mkclusran == 'y':
         ran_finaltracer = ran_finaltracer.replace(args.tracer,'BGS_BRIGHT')
         common.printlog('changed ran base to '+ran_finaltracer,logger)
     common.printlog('adding tlobs to randoms with '+ fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits',logger)
-    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer)+'frac_tlobs.fits')
+    tlf = fitsio.read(fl.replace(finaltracer,ran_finaltracer).replace(args.extra_clusdir,'')+'frac_tlobs.fits')
     common.printlog('read in frac_tlobs file',logger)
 
     global _parfun4
@@ -1108,6 +1162,14 @@ if args.mkclusran == 'y':
             selY5 = is_point_in_desi(tiles, datain['RA'], datain['DEC']) #fr being the array of randoms
             datain = datain[selY5] #randoms should now be cut to matching footprint
             common.printlog(str(rann)+' length after cut to old footprint '+str(len(datain)),logger=logger)
+        if args.mask_petalnight_tids:
+            common.printlog(str(rann)+' finding bad petal targetids to mask',logger)
+            specdata_dir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/{SURVEY}/LSS/{SPECVER}/'.format(SURVEY=surveycat, SPECVER=args.specdata)
+            filer = specdata_dir+'/ran_'+str(rann)+'_'+pdir+'_badpetalnight_TARGETID.txt'
+            if os.path.isfile(filer):
+                rtids2mask =np.loadtxt(filer, unpack = True, dtype = np.int64)
+                common.printlog('loaded '+filer+' has '+str(len(rtids2mask)),logger)
+
         common.printlog(str(rann)+' length before mask for PRIORITY '+str(len(datain)),logger=logger)
         in_tlid = 10000*datain['TILEID'] +datain['LOCATION']
         #datain = join(datain,mockobs,keys=['TILEID','LOCATION'])
@@ -1117,9 +1179,15 @@ if args.mkclusran == 'y':
         common.printlog(str(rann)+' length after PRIORITY mask '+str(len(datain)),logger=logger)
         datain = unique(Table(datain),keys=['TARGETID'])
         common.printlog(str(rann)+' length after cut to unique '+str(len(datain)),logger=logger)
+        if args.mask_petalnight_tids:
+            badtids = np.isin(datain['TARGETID'],rtids2mask)
+            common.printlog(str(rann)+' length before cutting bad petal night targetid '+str(len(datain)),logger=logger)
+            common.printlog(str(rann)+' length length of bad targetid '+str(sum(badtids)),logger=logger)
+            datain = datain[~badtids]
+            common.printlog(str(rann)+' length after cutting bad petal night targetid '+str(len(datain)),logger=logger)
         datain = ct.add_tlobs_ran_array(datain,tlf,logger)
         #common.printlog(str(datain.dtype),logger)
-        ct.mkclusran(datain, os.path.join(clusdir, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5',extradir=args.extra_clusdir+'/')
+        ct.mkclusran(datain, os.path.join(clusdir, finaltracer) + '_', rann, add_tlobs='y',rcols=rcols, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd, logger=logger,outext='.h5',extradir=args.extra_clusdir+'/',tp=finaltracer[:3] )
         #TEMPct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols=rcols, tsnrcut= -1, tsnrcol=tsnrcol, ebits=mainp.ebits, clus_arrays=clus_arrays, use_map_veto=args.use_map_veto, compmd=nzcompmd,logger=logger)
         del datain
         ####ct.mkclusran(os.path.join(readdir, finaltracer) + '_', os.path.join(dirout, finaltracer) + '_', rann, rcols = rcols,  tsnrcut = -1, tsnrcol = tsnrcol, use_map_veto = args.use_map_veto,clus_arrays=clus_arrays,add_tlobs='y')#,ntilecut=ntile,ccut=ccut)
