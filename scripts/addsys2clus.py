@@ -84,6 +84,7 @@ parser.add_argument("--doimlin",help="add weights for imaging systematics using 
 #parser.add_argument("--imsys_clus_fb",help="perform linear weight fits in fine redshift bins",default='n')
 parser.add_argument("--replace_syscol", help="Replace any existing WEIGHT_SYS with new weights", action='store_true')
 parser.add_argument("--splitDES", help="whether to split into SnotDES, DES, N instead of just N/S", action='store_true')
+parser.add_argument("--imsys_colname_out",help="name of the output column for the linear imaging weights",default='WEIGHT_IMLIN')
 parser.add_argument("--nran4imsys",help="number of random files to using for linear regression",default=10,type=int)
 
 parser.add_argument("--imsys_colname",help="column name for fiducial imaging systematics weight, if there is one (array of ones by default)",default=None)
@@ -154,7 +155,7 @@ def read_file(fn,columns=None):
 nside=256
 tracer_clus = args.type
 if args.doimlin == 'y' or args.prep4sysnet == 'y' or args.addsysnet=='y':
-    syscol = 'WEIGHT_IMLIN'
+    syscol = args.imsys_colname_out
     tpstr = args.type
     if "BGS" in tracer_clus:
         tpstr = "BGS_BRIGHT"
