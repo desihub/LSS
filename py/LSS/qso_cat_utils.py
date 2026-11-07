@@ -288,16 +288,16 @@ def is_target_in_survey(QSO_cat, DESI_TARGET, target_name):
             mask_bit = scnd_mask.mask('WISE_VAR_QSO')
         elif DESI_TARGET == 'SV3_DESI_TARGET':
             mask_bit = sv3_scnd_mask.mask('WISE_VAR_QSO')
-        elif DESI_TARGET == 'SV2_DESI_TARGET':
-            DESI_TARGET = 'SV2_SCND_TARGET'
-            mask_bit = sv2_scnd_mask.mask('WISE_VAR_QSO')
+        #elif DESI_TARGET == 'SV2_DESI_TARGET': --> see below, SV2 does not work for this... 
+        #    DESI_TARGET = 'SV2_SCND_TARGET'
+        #    mask_bit = sv2_scnd_mask.mask('WISE_VAR_QSO')
         elif DESI_TARGET == 'SV1_DESI_TARGET':
             DESI_TARGET = 'SV1_SCND_TARGET'
             mask_bit = sv1_scnd_mask.mask('WISE_VAR_QSO')
         else:
-            # to avoid error, return one of the column, SV2_SCND_TARGET should be full of 0.
+            # to avoid error, return one of the column, SV2_SCND_TARGET should be full of 0. 
             DESI_TARGET = 'SV2_SCND_TARGET'
-            mask_bit = sv2_scnd_mask.mask('WISE_VAR_QSO')
+            mask_bit = 32
     else:
         print("not ready for other targets than BGS / ELG / QSO / WISE_VAR_QSO")
         sys.exit(1)
@@ -363,7 +363,7 @@ def qso_catalog_maker(redrock, mgii, qn, use_old_extname_for_redrock=False, use_
 
     # add DESI_TARGET column to avoid error of conversion when concatenate the different files with pd.concat() which fills with NaN columns that do not exit in a DataFrame.
     # convert int64 to float 64 --> destructive tranformation !!
-    for DESI_TARGET_TMP in ['CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET', 'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET']:
+    for DESI_TARGET_TMP in ['CMX_TARGET', 'SV1_DESI_TARGET', 'SV2_DESI_TARGET', 'SV3_DESI_TARGET', 'DESI_TARGET', 'SV1_SCND_TARGET', 'SV2_SCND_TARGET', 'SV3_SCND_TARGET', 'SCND_TARGET', 'WISE_VAR_QSO']:
         if not(DESI_TARGET_TMP in fibermap.columns):
             fibermap[DESI_TARGET_TMP] = np.zeros(fibermap['TARGETID'].size, dtype=np.int64)
 

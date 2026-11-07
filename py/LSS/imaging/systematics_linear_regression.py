@@ -951,7 +951,7 @@ def produce_imweights(
     photometric_regions = ["S", "N"]
     if splitDES:
         photometric_regions = ["DES", "SnotDES", "N"]
-    if tracer_type == "QSO": #QSO always get split
+    if tracer_type[:3] == "QSO":  # QSO always get split (also QSO_zcmb, QSO_*...)
         photometric_regions = ["DES", "SnotDES", "N"]
 
     # Check if fit_maps is a list of strings or a dictionary
