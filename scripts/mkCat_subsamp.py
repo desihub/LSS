@@ -275,7 +275,8 @@ if args.mkfulldat == 'y':
         sel = abr < float(ccut_mag_str)
         sel &= z2use < 2
         del zcmb, newz, z2use, selz, dm, cfluxr, r_dered, abr # delete arrays to free memory, no longer used
-
+    elif args.ccut == 'stQSO':
+        sel = fulldat['SPECTYPE'] == 'QSO'
     else:
         raise ValueError(args.ccut+' should not have made it here, whatever you entered for --ccut did not trigger a cut, check code')
     
