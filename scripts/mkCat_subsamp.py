@@ -552,7 +552,7 @@ if args.imsys_clus == 'y':
     dat[syscol] = np.ones(len(dat))
     #photometric regions
     regl = ['S','N']
-    if args.input_tracer == 'QSO':
+    if args.input_tracer[:3] == 'QSO':
         regl = ['DES','SnotDES','N']
     
     #do fit looping over regions and redshift bins
