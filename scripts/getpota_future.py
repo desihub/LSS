@@ -7,7 +7,6 @@ source /global/common/software/desi/desi_environment.sh main
 '''
 
 import multiprocessing
-from multiprocessing import Pool
 from datetime import datetime
 import time
 import bisect
@@ -35,6 +34,10 @@ trad = desimodel.focalplane.get_tile_radius_deg()*1.1
 # from LSS.imaging import get_nobsandmask
 
 
+t_start = time.time()
+
+log = Logger.get()
+log.info('Script started at %s' % time.asctime())
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--prog", help=" DARK or BRIGHT program", default='DARK', choices=['DARK', 'BRIGHT'])
@@ -66,6 +69,49 @@ def parse_datetime(s):
         d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
         # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
         d = d.replace(tzinfo=timezone.utc)
+
+
+margins = get_default_exclusion_margins()
+rann = 0
+n = 0
+
+tile4hw = 15645  # a tile observed on 20261107
+ts = '%06i' % tile4hw
+
+fbah = fitsio.read_header(os.path.join(
+    desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
+dt = fbah['RUNDATE']  # [:19]
+hw = load_hardware(
+    rundate=dt)
+assert (hw is not None)
+obsha = fbah['FA_HA']
+obstheta = fbah['FIELDROT']
+
+infn = args.input
+tars = fitsio.read(infn, columns=['TARGETID', 'RA', 'DEC'])
+log.info('read targets at %s' % time.asctime())
+tarcols = list(tars.dtype.names)
+tileoutdir = os.path.join(os.getenv('SCRATCH'),
+                          'temp_tilefiles', 'tartiles'+args.realization)
+
+# Ensure that the targets file is sorted by Dec.
+t0 = time.time()
+is_sorted = np.all(tars['DEC'][:-1] <= tars['DEC'][1:])
+if not is_sorted:
+    I = np.argsort(tars['DEC'])
+    tars = tars[I]
+t1 = time.time()
+log.info('Sorted targets: %.1f' % (t1-t0))
+
+if not os.path.exists(tileoutdir):
+    os.makedirs(tileoutdir)
+    # print('made '+tileoutdir)
+
+log.info('Reading tile data: %.3f' % (time.time() - t_start))
+
+tiletab = Table.read(args.tiles_fn)
+
+log.info('Read in all targets/tiles/hardware: %.3f' % (time.time() - t_start))
 
 
 def get_tile_targ(tile):
@@ -241,50 +287,7 @@ def read_fba_header(ind):
 
 
 def main():
-
-    margins = get_default_exclusion_margins()
-    rann = 0
-    n = 0
-
-    tile4hw = 15645  # a tile observed on 20261107
-    ts = '%06i' % tile4hw
-
-    fbah = fitsio.read_header(os.path.join(
-        desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
-    dt = fbah['RUNDATE']  # [:19]
-    hw = load_hardware(
-        rundate=dt)
-    assert (hw is not None)
-    obsha = fbah['FA_HA']
-    obstheta = fbah['FIELDROT']
-
-    infn = args.input
-    tars = fitsio.read(infn, columns=['TARGETID', 'RA', 'DEC'])
-    log.info('read targets at %s' % time.asctime())
-    tarcols = list(tars.dtype.names)
-    tileoutdir = os.path.join(os.getenv('SCRATCH'),
-                              'temp_tilefiles', 'tartiles'+args.realization)
-
-    # Ensure that the targets file is sorted by Dec.
-    t0 = time.time()
-    is_sorted = np.all(tars['DEC'][:-1] <= tars['DEC'][1:])
-    if not is_sorted:
-        I = np.argsort(tars['DEC'])
-        tars = tars[I]
-    t1 = time.time()
-    log.info('Sorted targets: %.1f' % (t1-t0))
-
-    if not os.path.exists(tileoutdir):
-        os.makedirs(tileoutdir)
-        # print('made '+tileoutdir)
-
-    log.info('Reading tile data: %.3f' % (time.time() - t_start))
-
-    tiletab = Table.read(args.tiles_fn)
-
-    log.info('Read in all targets/tiles/hardware: %.3f' %
-             (time.time() - t_start))
-
+    from multiprocessing import Pool
     tls = list(tiletab['TILEID'])
     # inds = np.flatnonzero(np.array(tls) == 1230)
     # inds = np.arange(256)
