@@ -146,8 +146,10 @@ fbah = fitsio.read_header(os.path.join(
     desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
 dt = fbah['RUNDATE']  # [:19]
 hw = load_hardware(
-    rundate=dt)
+    rundate=parse_datetime(dt))
 assert (hw is not None)
+obsha = fbah['FA_HA']
+obstheta = fbah['FIELDROT']
 
 
 def getpa(ind):
@@ -162,8 +164,6 @@ def getpa(ind):
     t['MTLTIME'] = fbah['MTLTIME']
     t['FA_RUN'] = fbah['FA_RUN']
     t['PROGRAM'] = pr
-    obsha = fbah['FA_HA']
-    obstheta = fbah['FIELDROT']
     tile = tiletab[ind]['TILEID']
     tilefn = os.path.join(args.tile_temp_dir, str(
         tile)+'-'+str(rann)+'-tiles.fits')
