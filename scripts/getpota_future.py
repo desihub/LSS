@@ -37,7 +37,7 @@ trad = desimodel.focalplane.get_tile_radius_deg()*1.1
 t_start = time.time()
 
 log = Logger.get()
-
+log.info('Script started at %s' % time.asctime())
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--prog", help=" DARK or BRIGHT program", default='DARK', choices=['DARK', 'BRIGHT'])
@@ -133,6 +133,15 @@ def write_tile_targ(ind):
     # print('added columns for', fname)
     rmtl.write(fname, format='fits', overwrite=True)
     # print('added columns, wrote to', fname)
+
+
+def parse_datetime(s):
+    try:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
+    except ValueError:
+        d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+        # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
+        d = d.replace(tzinfo=timezone.utc)
 
 
 margins = get_default_exclusion_margins()
@@ -267,15 +276,6 @@ def read_fba_header(ind):
     fbah = fitsio.read_header(os.path.join(
         desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
     return dict([(k, fbah[k]) for k in ['RUNDATE', 'MTLTIME', 'FA_RUN', 'FA_HA', 'FIELDROT']])
-
-
-def parse_datetime(s):
-    try:
-        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
-    except ValueError:
-        d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
-        # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
-        d = d.replace(tzinfo=timezone.utc)
 
 
 def main():
