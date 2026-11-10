@@ -1,5 +1,5 @@
 '''
-Find all potential assignment and counts tiles for some input (must have data model needed for fiberassign) 
+Find all potential assignment and counts tiles for some input (must have data model needed for fiberassign)
 and some set of future tiles
 Use the following environment
 source /global/common/software/desi/desi_environment.sh main
@@ -61,6 +61,31 @@ desi_input_dir = os.getenv(
 args = parser.parse_args()
 print(args)
 
+
+def parse_datetime(s):
+    try:
+        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
+    except ValueError:
+        d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+        # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
+        d = d.replace(tzinfo=timezone.utc)
+
+
+margins = get_default_exclusion_margins()
+rann = 0
+n = 0
+
+tile4hw = 15645  # a tile observed on 20261107
+ts = '%06i' % tile4hw
+
+fbah = fitsio.read_header(os.path.join(
+    desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
+dt = fbah['RUNDATE']  # [:19]
+hw = load_hardware(
+    rundate=dt)
+assert (hw is not None)
+obsha = fbah['FA_HA']
+obstheta = fbah['FIELDROT']
 
 infn = args.input
 tars = fitsio.read(infn)
@@ -133,32 +158,6 @@ def write_tile_targ(ind):
     # print('added columns for', fname)
     rmtl.write(fname, format='fits', overwrite=True)
     # print('added columns, wrote to', fname)
-
-
-def parse_datetime(s):
-    try:
-        return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S%z")
-    except ValueError:
-        d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
-        # msg = "Requested run date '{}' is not timezone-aware.  Assuming UTC.".format(runtime)
-        d = d.replace(tzinfo=timezone.utc)
-
-
-margins = get_default_exclusion_margins()
-rann = 0
-n = 0
-
-tile4hw = 15645  # a tile observed on 20261107
-ts = '%06i' % tile4hw
-
-fbah = fitsio.read_header(os.path.join(
-    desi_input_dir, 'target', 'fiberassign', 'tiles', 'trunk', ts[:3], 'fiberassign-'+ts+'.fits.gz'))
-dt = fbah['RUNDATE']  # [:19]
-hw = load_hardware(
-    rundate=parse_datetime(dt))
-assert (hw is not None)
-obsha = fbah['FA_HA']
-obstheta = fbah['FIELDROT']
 
 
 def getpa(ind):
