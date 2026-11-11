@@ -219,6 +219,11 @@ def getpa(ind):
         out['LOCATION'] = np.array([], dtype=int)
         out['FIBER'] = np.array([], dtype=int)
         out['TARGETID'] = np.array([], dtype=int)
+        for col in tarcols:
+            if col == 'TARGETID':
+                continue
+            out[col] = np.array(
+                [], dtype=tar_tab[col].dtype if col in tar_tab.colnames else np.float64)
         out['COLLISION'] = np.array([], dtype=bool)
         out['TILEID'] = np.array([], dtype=int)
         return out
