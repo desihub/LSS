@@ -316,7 +316,7 @@ def main():
     # inds = np.arange(256)
     inds = np.arange(len(tls))
 
-    t0 = time.time()
+    t2 = time.time()
 
     # Keeping this old code because it's a little easier to understand than what we're doing
     # below (streaming results to disk).
