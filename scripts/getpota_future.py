@@ -209,7 +209,10 @@ def getpa(ind):
     tilenofafn = os.path.join(tileoutdir, 'tilenofa-%i.fits' % tile)
     load_target_file(tgs, tagalong, tilenofafn)
     # loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
-    tar_tab = fitsio.read(tilenofafn, columns=tarcols)
+    try:
+        tar_tab = fitsio.read(tilenofafn, columns=tarcols)
+    except IOError:
+        tar_tab = []  # just make it empty if the file doesn't exist, which can happen if there are no targets in the tile, and triggers the line below that returns an empty table
     # If there are no targets in this tile, return an empty result table
     if len(tar_tab) == 0:
         out = Table()
