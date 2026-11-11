@@ -212,7 +212,14 @@ def getpa(ind):
     try:
         tar_tab = fitsio.read(tilenofafn, columns=tarcols)
     except IOError:
-        tar_tab = []  # just make it empty if the file doesn't exist, which can happen if there are no targets in the tile, and triggers the line below that returns an empty table
+        tar_tab = Table()
+        for col in tarcols:
+            if col == 'TARGETID':
+                tar_tab[col] = np.array([], dtype=np.int64)
+            elif col in ('RA', 'DEC'):
+                tar_tab[col] = np.array([], dtype=np.float64)
+            else:
+                tar_tab[col] = np.array([], dtype=np.float64)
     # If there are no targets in this tile, return an empty result table
     if len(tar_tab) == 0:
         out = Table()
