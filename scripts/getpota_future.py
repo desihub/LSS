@@ -210,7 +210,15 @@ def getpa(ind):
     load_target_file(tgs, tagalong, tilenofafn)
     # loading it again straight to table format because I can't quickly figure out exactly where targetid,ra,dec gets stored
     tar_tab = fitsio.read(tilenofafn, columns=tarcols)
-
+    # If there are no targets in this tile, return an empty result table
+    if len(tar_tab) == 0:
+        out = Table()
+        out['LOCATION'] = np.array([], dtype=int)
+        out['FIBER'] = np.array([], dtype=int)
+        out['TARGETID'] = np.array([], dtype=int)
+        out['COLLISION'] = np.array([], dtype=bool)
+        out['TILEID'] = np.array([], dtype=int)
+        return out
     # Find targets within tiles, and project their RA,Dec positions
     # into focal-plane coordinates.
     tile_targetids, tile_x, tile_y, tile_xy_cs5 = targets_in_tiles(
