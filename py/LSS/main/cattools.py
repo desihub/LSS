@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 import healpy as hp
 
 #from LSS.Cosmo import distance
-from LSS.imaging import densvar
+#from LSS.imaging import densvar
 
 
 #from LSS.common_tools import find_znotposs
