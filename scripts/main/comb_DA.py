@@ -135,7 +135,7 @@ if not os.path.exists(dirout):
     logger.info('made '+dirout)
 
 dailydir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/daily/'
-ldirspec = maindir+specrel+args.verspec_extra'/'
+ldirspec = maindir+specrel+args.verspec_extra+'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
     logger.info('made '+ldirspec)
