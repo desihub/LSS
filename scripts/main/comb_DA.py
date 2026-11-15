@@ -76,7 +76,8 @@ parser.add_argument(
     "--survey", help="e.g., DA3, DA02, any future DA", default='DA3')
 parser.add_argument(
     "--prog", help="dark or bright is supported", default='dark')
-parser.add_argument("--verspec", help="version for redshifts", default='nevis')
+parser.add_argument("--verspec", help="version for redshifts", default='nevis-v2')
+parser.add_argument("--verspec_extra", help="extra string to add to verspec name", default='')
 # options about what to run
 parser.add_argument("--make_tile_file",
                     help="whether or not to make a tile file", action='store_true')
@@ -134,7 +135,7 @@ if not os.path.exists(dirout):
     logger.info('made '+dirout)
 
 dailydir = '/dvs_ro/cfs/cdirs/desi/survey/catalogs/'+args.survey+'/LSS/daily/'
-ldirspec = maindir+specrel+'/'
+ldirspec = maindir+specrel+args.verspec_extra'/'
 if not os.path.exists(ldirspec):
     os.mkdir(ldirspec)
     logger.info('made '+ldirspec)
