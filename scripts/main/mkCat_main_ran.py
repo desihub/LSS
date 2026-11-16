@@ -271,13 +271,14 @@ if os.path.isfile(gtl_fn) == False or args.combwspec == 'y':
     
     if specrel == 'daily':
         specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=False,mask_petal_nights=False,logger=logger)
-    else:
+    elif specfc is None:
         specfc = common.cut_specdat(specf,badfib=mainp.badfib_td,tsnr_min=tsnrcut,tsnr_col=tnsrcol,fibstatusbits=mainp.badfib_status,remove_badfiber_spike_nz=True,mask_petal_nights=True,logger=logger)
     kc = ['LOCATION','FIBER','TILEID','TILELOCID','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG','PRIORITY']
     specf.keep_columns(kc)
 
 gtl = np.unique(specfc['TILELOCID'])
 del specfc
+
 
 if mkfullr and args.fullr_mode != 'prog':
     logger.info('loading '+ldirspec+'datcomb_'+type+notqso+'_tarspecwdup_zdone.fits')
