@@ -487,7 +487,8 @@ if mkfulld:
     maskcoll = False
     if args.survey != 'main':
         maskcoll = True
-    common.printlog('the emline file is '+emlin_fn)
+    if emlin_fn is not None:
+        common.printlog('the emline file is '+emlin_fn)
     ct.mkfulldat(dz,imbits,ftar,type,bit,dirout+type+notqso+'_full_noveto.dat.fits',tlf,good_specf=gtl_fn,mode1b=mode1b,emlin_fn=emlin_fn,survey=args.survey,maxp=maxp,azf=azf,azfm=azfm,desitarg=desitarg,specver=specrel,notqso=notqso,min_tsnr2=tsnrcut,badfib=mainp.badfib_td,badfib_status=mainp.badfib_status,mask_coll=maskcoll,logger=logger)
 
 
