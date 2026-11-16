@@ -3681,8 +3681,11 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     #if specver == 'mock':
     #    dz[mockz].name = 'Z' 
         
-    if tp == 'QSO' and azf != '':
+    if tp == 'QSO' and azf != '' and azf != 'input':
         common.printlog('number of good z according to qso file '+str(len(dz)-np.sum(dz['Z'].mask)),logger)
+    elif tp == 'QSO' and azf == 'input':
+        sel_goodz = dz['Z'] != 999999
+        common.printlog('number of good z according to qso file '+str(np.sum(sel_goodz)),logger)
     try:
     #if dz.masked:
         common.printlog('filling masked Z rows with 999999',logger)
