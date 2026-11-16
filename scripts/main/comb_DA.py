@@ -219,7 +219,7 @@ if args.dospec:
                     'TARGET_DEC', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'PRIORITY', 'DESI_TARGET', 'BGS_TARGET', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'Z_BEST', 'Z_CONF', 'GOOD_SPEC']
 
     specf = Table(fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                              specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative.fits', columns=primary_cols))  # this will get used again below
+                              specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.replace('1b','')+'-cumulative.fits', columns=primary_cols))  # this will get used again below
     sel_1b = np.isin(specf['TILEID'], np.unique(mtd['TILEID']))
     test_allin = np.isin(mtd['TILEID'], np.unique(specf['TILEID']))
     if np.sum(test_allin) != len(mtd):
