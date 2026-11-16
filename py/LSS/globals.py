@@ -220,7 +220,7 @@ class main:
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA3/QSO/matterhorn/QSO_cat_matterhorn_cumulative_v1.fits'
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/emlin_catalog.fits'
             
-         if 'nevis' in specver:
+        if 'nevis' in specver:
             self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
             self.badfib_status  = [13,14]
             self.qsozf = 'input'
