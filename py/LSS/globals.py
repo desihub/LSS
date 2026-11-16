@@ -224,7 +224,7 @@ class main:
             self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
             self.badfib_status  = [13,14]
             self.qsozf = 'input'
-            self.elgzf = 'input'
+            self.elgzf = None #should get em line info from inputs
            
             #print(self.elgzf)
         

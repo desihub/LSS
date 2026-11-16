@@ -3606,6 +3606,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     if tp[:3] == 'ELG' and azf != '' and azfm == 'cumul':# or tp == 'ELG_HIP':
         if azf is not None and 'OII_FLUX' not in list(dz.dtype.names):
             logger.info('doing join to get OII info')
+            
             arz = Table(fitsio.read(azf.replace('global','dvs_ro'),columns=['TARGETID','LOCATION','TILEID','OII_FLUX','OII_FLUX_IVAR']))
             arz['TILEID'] = arz['TILEID'].astype(int)
             dz = join(dz,arz,keys=['TARGETID','LOCATION','TILEID'],join_type='left')#,uniq_col_name='{col_name}{table_name}',table_names=['', '_OII'])
@@ -3620,7 +3621,13 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         else:
             print('check length after merge with OII strength file:' +str(len(dz)))
 
-    if tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
+    if tp[:3] == 'QSO' and azf == 'input':
+        logger.info('getting QSO info from inputs')
+        sel_good = dz['GOOD_Z_QSO']
+        dz['Z'].name = 'Z_RR' #rename the original redrock redshifts
+        dz['Z_QSO'].name = 'Z'
+        dz['Z'][~sel_good] = 999999 #set the bad QSO redshifts to the null value we've always used
+    elif tp[:3] == 'QSO' and azf != '' and azfm == 'cumul':
         logger.info('adding extra redshift info to QSO with '+azf)
         if emlin_fn is None:
             logger.info('will not be adding emline info, because emlin_fn is None')
@@ -3649,7 +3656,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
     #        logger.info('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
     #    else:
     #        print('number of masked oII row (hopefully matches number not assigned) '+ str(np.sum(dz['o2c'].mask)))
-    if tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
+    elif tp[:3] == 'QSO' and azf != '' and azfm == 'hp':
         message = 'adding healpix based QSO info'
         common.printlog(message,logger)
         arz = Table(fitsio.read(azf))
