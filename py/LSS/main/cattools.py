@@ -2079,7 +2079,7 @@ def combran_wdupspec(rann,tp,lspecdir,specf,infile,keepcols=[],mask_coll=True,co
     #specf.keep_columns(['ZWARN','LOCATION','TILEID','TILELOCID','FIBERSTATUS','FIBERASSIGN_X','FIBERASSIGN_Y','PRIORITY','DELTA_X','DELTA_Y','EXPTIME','PSF_TO_FIBER_SPECFLUX','TSNR2_ELG_B','TSNR2_LYA_B','TSNR2_BGS_B','TSNR2_QSO_B','TSNR2_LRG_B','TSNR2_ELG_R','TSNR2_LYA_R','TSNR2_BGS_R','TSNR2_QSO_R','TSNR2_LRG_R','TSNR2_ELG_Z','TSNR2_LYA_Z','TSNR2_BGS_Z','TSNR2_QSO_Z','TSNR2_LRG_Z','TSNR2_ELG','TSNR2_LYA','TSNR2_BGS','TSNR2_QSO','TSNR2_LRG'])
     printlog('joining to spec data',logger)
     #fgu = join(fgu,specf,keys=['LOCATION','TILEID','FIBER'],join_type='left')
-    fgu = claudet.join_left(fgu,specf,keys=['LOCATION','TILEID','FIBER'],fill=claudet.NULL)
+    fgu = claudet.join_left(fgu,specf,keys=['LOCATION','TILEID','FIBER'])
     #fgu.sort('TARGETID')
     if alt_out != None:
         #outf = alt_out + '/comb' + tp + '_' + mock_tr + '_'+ 'wdupspec_zdone.fits'
