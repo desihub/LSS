@@ -223,6 +223,7 @@ if args.dospec:
     sel_1b = np.isin(specf['TILEID'], np.unique(mtd['TILEID']))
     test_allin = np.isin(mtd['TILEID'], np.unique(specf['TILEID']))
     if np.sum(test_allin) != len(mtd):
+        logger.info('tiles not in specf '+str(mtd['TILEID'][~test_allin]))
         sys.exit('Not all tiles in mtd are in specf')
     specf = specf[sel_1b]
     logger.info('length of specf is '+str(len(specf)))
