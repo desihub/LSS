@@ -72,6 +72,11 @@ class main:
         self.badfib = None
         self.badfib_td = None
         self.badfib_status = None
+        self.badnzfib1 = None
+        self.badnzfib2 = None
+        self.bad_petal_night_dark = None
+        self.bad_petal_night_bright = None
+
         self.tsnrcol = 'TSNR2_ELG' 
         #self.tsnrcut = 0 #better to throw an error having this undefined rather than having code use a bad value
         #self.dchi2 = 0
@@ -215,7 +220,12 @@ class main:
             self.qsozf = '/global/cfs/cdirs/desi/survey/catalogs//DA3/QSO/matterhorn/QSO_cat_matterhorn_cumulative_v1.fits'
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/emlin_catalog.fits'
             
-            
+         if 'nevis' in specver:
+            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
+            self.badfib_status  = [13,14]
+            self.qsozf = 'input'
+            self.elgzf = 'input'
+           
             #print(self.elgzf)
         
         #self.darkbitweightfile = '/global/cfs/cdirs/desi/survey/catalogs/Y1/LSS/iron/LSScats/mainbw-dark-allTiles_v1.fits'
