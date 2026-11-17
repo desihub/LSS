@@ -97,24 +97,24 @@ PYTHONPATH=$LSS/LSS/py:$PYTHONPATH
 #32 minutes
 #python $LSS/LSS/scripts/main/mkCat_main.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 #16 minutes
-python $LSS/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
+#python $LSS/LSS/scripts/main/mkCat_main.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 #25 minutes, most of time because of multiple writes
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 #7 minutes, most of time because of multiple writes
-srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_VLO --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
+#srun -N 1 -C cpu -t 04:00:00 -q interactive python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_VLO --notqso y --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 
 #clustering catalogs; 85 minutes total; was reading not using dvs_ro, so that likely made it much longer than need be
 #11 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type QSO  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type QSO  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
 #10 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type LRG  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type LRG  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
 #15 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_LOP --notqso y  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
 #19 minutes (why so long?)
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_VLO --notqso y  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type ELG_VLO --notqso y  --fulld n --survey $survey --verspec $verspec --clusd y --clusran y --splitGC y --nz y --par y  --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --extra_clus_dir 'nonKP/' --redo_fracz y --nearestneighbor y --des_resamp #--imsys_colname WEIGHT_IMLIN
 
 #imaging systematics for non-ELG samples; 47 minutes total
 #13 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec matterhorn-v2 --doimlin y --imsys_zbin fine --replace_syscol --splitDES
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec $verspec --doimlin y --imsys_zbin fine --replace_syscol --splitDES
 #10 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec matterhorn-v2 --doimlin y --imsys_zbin split --replace_syscol --splitDES
+srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec $verspec --doimlin y --imsys_zbin split --replace_syscol --splitDES
