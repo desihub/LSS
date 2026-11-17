@@ -115,6 +115,6 @@ PYTHONPATH=$LSS/LSS/py:$PYTHONPATH
 
 #imaging systematics for non-ELG samples; 47 minutes total
 #13 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec $verspec --doimlin y --imsys_zbin fine --replace_syscol --splitDES
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type LRG --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec $verspec --doimlin y --imsys_zbin fine --replace_syscol --splitDES
 #10 minutes
 srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/addsys2clus.py --type QSO --basedir /global/cfs/cdirs/desi/survey/catalogs/ --version $1 --survey DA3 --extra_clus_dir nonKP --verspec $verspec --doimlin y --imsys_zbin split --replace_syscol --splitDES
