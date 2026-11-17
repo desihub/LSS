@@ -3867,7 +3867,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     ff = ff[selobs]
     ff = common.cut_specdat(ff)
     azf = qsocat
-    if azf is not None:
+    if azf is not None and azf is not 'input':
         arz = Table(fitsio.read(azf))
         arz.keep_columns(['TARGETID','LOCATION','TILEID','Z','Z_QN'])
         arz['TILEID'] = arz['TILEID'].astype(int)
