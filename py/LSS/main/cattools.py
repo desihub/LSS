@@ -3861,7 +3861,7 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
     import LSS.common_tools as common
     from LSS import ssr_tools_new
 
-    ff = fitsio.read(indir+'datcomb_QSO_tarspecwdup_zdone.fits')
+    ff = Table(fitsio.read(indir+'datcomb_QSO_tarspecwdup_zdone.fits'))
     selobs = ff['ZWARN'] != 999999
     selobs &= ff['TSNR2_ELG'] > tsnrcut
     ff = ff[selobs]
