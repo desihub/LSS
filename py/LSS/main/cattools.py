@@ -3873,8 +3873,14 @@ def add_zfail_weight2fullQSO(indir,version,qsocat,tsnrcut=80,readpars=False,logg
         arz['TILEID'] = arz['TILEID'].astype(int)
         print(arz.dtype.names)
         ff = join(ff,arz,keys=['TARGETID','TILEID','LOCATION'],join_type='left',uniq_col_name='{col_name}{table_name}',table_names=['','_QF'])
+        ff['Z_QF'].name = 'Z_not4clus'
+    else:
+        ff['Z_QSO'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
+        sel_goodz = ff['GOOD_Z_QSO']
+        ff['Z_not4clus'][~sel_goodz] = 999999  
     ff['Z'].name = 'Z_RR' #rename the original redrock redshifts
-    ff['Z_QSO'].name = 'Z_not4clus' #the redshifts from the quasar file should be used instead
+    
+    
     ff = common.addNS(ff)
     needed_cols = ['OII_FLUX','OII_FLUX_IVAR','OIII_FLUX','OIII_FLUX_IVAR']
     em_cols = ['TARGETID','LOCATION','TILEID']
