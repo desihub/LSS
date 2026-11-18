@@ -181,13 +181,14 @@ tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']  # mtd['LASTNIGHT']
 
-
-tiles.keep_columns(['TILEID', 'RA', 'DEC'])
+sel_desi_tiles = tiles['IN_DESI']
+logger.info(str(np.sum(sel_desi_tiles))' number of tiles in DESI')
+tiles[sel_desi_tiles].keep_columns(['TILEID', 'RA', 'DEC'])
 # print(tiles.dtype.names)
 
 tiles4comb = join(tiles4comb, tiles, keys=['TILEID'])
 
-logger.info('check that length of tiles4comb matches '+str(len(tiles4comb)))
+logger.info('check that length of tiles4comb matches; might be lower because of IN_DESI False tiles '+str(len(tiles4comb)))
 
 
 if args.make_tile_file:
