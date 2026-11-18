@@ -182,7 +182,7 @@ tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']  # mtd['LASTNIGHT']
 
 sel_desi_tiles = tiles['IN_DESI']
-logger.info(str(np.sum(sel_desi_tiles))' number of tiles in DESI')
+logger.info(str(np.sum(sel_desi_tiles))+' number of tiles in DESI')
 tiles[sel_desi_tiles].keep_columns(['TILEID', 'RA', 'DEC'])
 # print(tiles.dtype.names)
 
