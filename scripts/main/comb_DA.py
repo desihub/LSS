@@ -172,7 +172,7 @@ if args.survey == 'DA3':
 
 
 sel_desi_tiles = tiles['IN_DESI'] 
-wd &= np.isin(mtd['TILED'],tiles[sel_desi_tiles]['TILEID']
+wd &= np.isin(mtd['TILED'],tiles[sel_desi_tiles]['TILEID'])
 mtd = mt[wd]
 # print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 logger.info('found '+str(len(mtd))+' '+prog+' time '+args.survey +
