@@ -13,7 +13,7 @@
 #
 
 import collections.abc
-from time import time 
+from time import time, sleep
 import astropy
 import astropy.io
 import astropy.io.fits as pf
@@ -70,7 +70,6 @@ import os
 import pickle
 import subprocess
 import sys
-from time import sleep
 
 import cProfile, pstats
 import io as ProfileIO
@@ -2057,7 +2056,7 @@ def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey,
     yaml_fn = os.path.join(YAMLdir,f'{obscon.upper()}-ledgers.yaml')
     with open(yaml_fn) as f:
         hp_tracker = yaml.safe_load(f)
-        new_hps = np.array(hp_tracker[date_short]).astype(int)
+        new_hps = np.array(hp_tracker[date_short]).astype(int) 
 
     # initializeAlternateMTLs expects these to be strings
     #startDate = str(altMTLTileTracker.meta['StartDate']) #actually we don't want to pass startDate, if we don't it just uses all initial entries.
@@ -2077,7 +2076,7 @@ def add_new_ledgers(altmtldir, altmtlbasedir, action, altMTLTileTracker, survey,
     for hpnum in new_hps:
         exampleLedger = mtldir + '/{0}/{2}/mtl-{2}-hp-{1}.ecsv'.format(survey, hpnum, obscon.lower())
 
-        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = nproc, seed = seed,obscon = obscon.lower(), survey = survey,\
+        initializeAlternateMTLs(exampleLedger, altmtldir, genSubset = int(nproc), seed = seed,obscon = obscon.lower(), survey = survey,\
                         saveBackup = False, hpnum = hpnum,overwrite = False, reproducing = reproducing,\
                         shuffleSubpriorities = shuffleSubpriorities,endDate = endDate, profile = False, usetmp=False,\
                         debug = debug, verbose = verbose, shuffleBrightPriorities = shuffleBrightPriorities,\
