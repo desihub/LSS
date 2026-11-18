@@ -221,7 +221,10 @@ class main:
             self.elgzf = '/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/emlin_catalog.fits'
             
         if 'nevis' in specver:
-            self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
+            try:
+                self.badfib_td = open('/global/cfs/cdirs/desi/survey/catalogs/DA3/LSS/'+specver+'/unique_badfibers_time-dependent.txt').readlines()
+            except:
+                print('did not load badfibers file')
             self.badfib_status  = [13,14]
             self.qsozf = 'input'
             self.elgzf = None #should get em line info from inputs
