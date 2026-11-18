@@ -243,7 +243,7 @@ if args.dospec:
     ]
     logger.info('reading extra file')
     specfe = Table(fitsio.read('/dvs_ro/cfs/cdirs/desi/spectro/redux/' +
-                               specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.strip('1b')+'-cumulative-extra.fits', columns=extra_cols))
+                               specrell[0]+'/zcatalog/'+specrell[1]+'/main/ztile-main-'+prog.replace('1b','')+'-cumulative-extra.fits', columns=extra_cols))
     # To construct zmtl ZWARN from Redrock ZWARN:
     zwarn_mtl = specfe['ZWARN'] | qafiberstatus_to_zwarn(
         specfe['QAFIBERSTATUS'])
