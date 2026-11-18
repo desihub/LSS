@@ -170,6 +170,9 @@ if args.survey == 'DA2':
 if args.survey == 'DA3':
     wd &= mt['ZDATE'] < 20260415
 
+
+sel_desi_tiles = tiles['IN_DESI'] 
+wd &= np.isin(mtd['TILED'],tiles[sel_desi_tiles]['TILEID']
 mtd = mt[wd]
 # print('found '+str(len(mtd))+' '+prog+' time main survey tiles that are greater than 85% of goaltime')
 logger.info('found '+str(len(mtd))+' '+prog+' time '+args.survey +
@@ -181,7 +184,7 @@ tiles4comb['TILEID'] = mtd['TILEID']
 tiles4comb['ZDATE'] = mtd['ARCHIVEDATE']
 tiles4comb['THRUDATE'] = mtd['LASTNIGHT']  # mtd['LASTNIGHT']
 
-sel_desi_tiles = tiles['IN_DESI']
+sel_desi_tiles = tiles['IN_DESI'] 
 logger.info(str(np.sum(sel_desi_tiles))+' number of tiles in DESI')
 tiles[sel_desi_tiles].keep_columns(['TILEID', 'RA', 'DEC'])
 # print(tiles.dtype.names)
