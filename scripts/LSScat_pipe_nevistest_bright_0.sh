@@ -88,9 +88,9 @@ PYTHONPATH=$LSS/LSS/py:$PYTHONPATH
 
 #redshift failure modeling; 106 minutes total
 #32 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type BGS_BRIGHT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 #16 minutes
-srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type BGS_FAINT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
+#srun -N 1 -C cpu -t 04:00:00 --qos interactive --account desi python $LSS/LSS/scripts/main/mkCat_main.py --type BGS_FAINT --basedir /global/cfs/cdirs/desi/survey/catalogs/  --fulld n --verspec $verspec --add_weight_zfail y --survey $survey  --use_map_veto _HPmapcut --version $1
 
 outdir=/global/cfs/cdirs/desi/survey/catalogs/$survey/LSS/$verspec/LSScats/$1/nonKP/
 srun -N 1 -C cpu -t 01:00:00 --qos interactive --account desi python $LSS/LSS/scripts/mkCat_subsamp.py --input_tracer BGS_BRIGHT --ccut -21.35 --version $1 --survey $survey --verspec $verspec --outdir $outdir --compmd NN --mkfulldat y --clusd y --clusran y --splitGC y --nz y --imsys_clus y --imsys_clus_ran y --nran4imsys 10 --imsys_zbin y
