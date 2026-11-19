@@ -3498,7 +3498,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,fracz_mode='ran',mode1b=0,maxp=3
             + dz['GOODHARDLOC'] + dz['GOODPRI'])
     if fracz_mode == 'smooth':
         dz_rep = dz[['TARGETID','TILELOCID','LOCATION_ASSIGNED']]
-        dz_rep = dz_rep[usable] #we don't want contributions from tilelocid that will be masked
+        sel_rep = usable | dz['LOCATION_ASSIGNED']
+        dz_rep = dz_rep[sel_rep] #we don't want contributions from tilelocid_assigned that will be masked
     dz = dz[claudet.last_of_each(dz['TARGETID'], sort=sort, tie=dz['TILELOCID'])]
     logger.info('cut to {:d} unique targets, {:d} of them assigned'
                 .format(len(dz), int(dz['LOCATION_ASSIGNED'].sum())))
