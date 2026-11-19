@@ -3193,7 +3193,7 @@ def mkfulldat_mock(zf,imbits,ftar,tp,bit,outf,ftiles,maxp=3400,azf='',azfm='cumu
     common.write_LSS_scratchcp(dz,outf,logger=logger)
     #common.write_LSS(dz,outf)
 
-def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=None,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
+def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,fracz_mode='ran',mode1b=0,maxp=3400,good_specf=None,azf='',azfm='cumul',emlin_fn=None,desitarg='DESI_TARGET',survey='Y1',specver='daily',notqso='',qsobit=4,min_tsnr2=0,badfib=None,badfib_status=None,gtl_all=None,mockz=None, mask_coll=False,logger=None, mocknum=None, mockassigndir=None,return_array='n',calc_ctile='y'):
     import LSS.common_tools as common
     import LSS.claude_tools as claudet
     """Make 'full' data catalog, contains all targets that were reachable, with columns denoted various vetos to apply
@@ -3209,6 +3209,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         argument.
     outf : :class:`str`, path to write output to
     ftiles : :class:`str`, path to file containing information on how and where each target
+    fracz_mode : :`str`, mode for calculating FRACZ_TILELOCID "ran" for original and "smooth" for spreading weights among all possible assignments
     mode1b : :`int`, 0 (no 1b), 1 (1b only), or 2 (combine 1b with no 1b)
     azf : :class:`str`, path to where to find extra redshift info for ELG/QSO catalogs
     azfm : :class:`str`, whether to use per tile ('cumul') or healpix redshifts ('hp')
@@ -3495,6 +3496,8 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         value = 1
     sort = (dz['LOCATION_ASSIGNED'] * usable * value + dz['TILELOCID_ASSIGNED'] * usable
             + dz['GOODHARDLOC'] + dz['GOODPRI'])
+    if fracz_mode == 'smooth':
+        dz_rep = dz[['TARGETID','TILELOCID','LOCATION_ASSIGNED']]
     dz = dz[claudet.last_of_each(dz['TARGETID'], sort=sort, tie=dz['TILELOCID'])]
     logger.info('cut to {:d} unique targets, {:d} of them assigned'
                 .format(len(dz), int(dz['LOCATION_ASSIGNED'].sum())))
@@ -3735,9 +3738,12 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,mode1b=0,maxp=3400,good_specf=No
         claudet.set_column(dz, 'COMP_TILE', 1., dtype='f8')
     # Of the targets of this tracer sharing a fiber location, the fraction that got observed;
     # one over it upweights a target for the ones it kept from being reached.
-    claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.group_fraction(dz['TILELOCID'],
-                                                        dz['LOCATION_ASSIGNED']), dtype='f8')
-
+    if fracz_mode == 'ran':
+        claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.group_fraction(dz['TILELOCID'],
+                            dz['LOCATION_ASSIGNED']), dtype='f8')
+    elif fracz_mode == 'smooth':
+        claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.fractional_tileloc_fraction(dz_rep['TARGETID'], dz_rep['TILELOCID'], dz_rep['LOCATION_ASSIGNED'],
+                                dz['TARGETID'], dz['TILELOCID'], dz['LOCATION_ASSIGNED'],dtype='f8')
 #     if calc_ctile == 'y':
 #         tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
 #         n_of_tiles = len(tlslu)
