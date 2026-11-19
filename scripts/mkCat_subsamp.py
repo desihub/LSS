@@ -525,7 +525,7 @@ if args.imsys_clus == 'y':
     syscol = 'WEIGHT_IMLIN_CLUS'
     #get NGC/SGC catalogs and stack them (weights will be fit splitting the data into different photometric regions)
     fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
-    dat_ngc = Table(fitsio.read(fname.replace('global','dvs_ro'))))
+    dat_ngc = Table(fitsio.read(fname.replace('global','dvs_ro')))
     if syscol in dat_ngc.colnames:
         dat_ngc.remove_column(syscol)
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
