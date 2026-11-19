@@ -156,7 +156,7 @@ tracer_out = args.input_tracer+args.ccut
 if args.mkfulldat == 'y':
 
     common.printlog('reading full data file '+dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits',logger)
-    fulldat = fitsio.read(dirin+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
+    fulldat = fitsio.read(dirin.replace('global','dvs_ro')+args.input_tracer+'_full'+args.use_map_veto+'.dat.fits')
     
     def is_float(s):
         "Short check if an object (string) can be converted to a floating-point (real) number"
@@ -317,7 +317,7 @@ inds = np.arange(rm,rx)
 if mkclusran:
     ranin = dirin + args.input_tracer +'_'
 
-    clus_arrays = [fitsio.read(args.outdir+'/'+tracer_out+'_clustering.dat.fits')]
+    clus_arrays = [fitsio.read(args.outdir.replace('global','dvs_ro')+'/'+tracer_out+'_clustering.dat.fits')]
     def _parfun_cr(ii):
         ct.mkclusran(ranin,args.outdir+'/'+tracer_out+'_',ii,rcols=rcols,clus_arrays=clus_arrays,use_map_veto=args.use_map_veto,compmd=nzcompmd,logger=logger,tp=args.input_tracer)
     if args.par == 'y':
@@ -388,7 +388,7 @@ if args.splitGC == 'y':
 #5) writes the NGC/SGC clustering catalogs back out for data and randoms
 #It needs to take inputs for completeness and mean weight as a function of NTILE, of the non-subsampled catalog, so that the angular upweighting option can remain consistent
 def get_ntile_info(clus_orig_fname):
-    fd = fitsio.read(clus_orig_fname, columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
+    fd = fitsio.read(clus_orig_fname.replace('global','dvs_ro'), columns=['NTILE', 'WEIGHT_COMP', 'FRAC_TLOBS_TILES'])
     weight_ntl = np.bincount(fd['NTILE']-1, weights=fd['WEIGHT_COMP']) / np.bincount(fd['NTILE']-1) # mean of WEIGHT_COMP for each (positive integer) NTILE in the data. Note that the NTILE values are shifted down by 1 to avoid guaranteed division by zero for NTILE=0
     comp_ntl = 1 / weight_ntl # the completeness is the inverse of the mean weight (for each NTILE). Indexed by NTILE-1
     if args.compmd != 'altmtl' and args.compmd != 'NN':
@@ -525,11 +525,11 @@ if args.imsys_clus == 'y':
     syscol = 'WEIGHT_IMLIN_CLUS'
     #get NGC/SGC catalogs and stack them (weights will be fit splitting the data into different photometric regions)
     fname = os.path.join(dirout, tracer_out+'_NGC_clustering.dat.fits')
-    dat_ngc = Table(fitsio.read(fname))
+    dat_ngc = Table(fitsio.read(fname.replace('global','dvs_ro'))))
     if syscol in dat_ngc.colnames:
         dat_ngc.remove_column(syscol)
     fname = os.path.join(dirout, tracer_out+'_SGC_clustering.dat.fits')
-    dat_sgc = Table(fitsio.read(fname))
+    dat_sgc = Table(fitsio.read(fname.replace('global','dvs_ro')))
     if syscol in dat_sgc.colnames:
         dat_sgc.remove_column(syscol)
     dat = vstack([dat_sgc,dat_ngc])
@@ -537,9 +537,9 @@ if args.imsys_clus == 'y':
     #get randoms
     ranl = []
     for i in range(0,args.nran4imsys):
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits'))
+        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro'), tracer_out+'_NGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
-        ran = fitsio.read(os.path.join(dirout, tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
+        ran = fitsio.read(os.path.join(dirout.replace('global','dvs_ro'), tracer_out+'_SGC_'+str(i)+'_clustering.ran.fits'))
         ranl.append(ran)
     # ensure that randoms either all have this column or all don't, otherwise the concatenation will fail. the mix may result from previously performed imaging systematics added to randoms with some randoms having been processed and some not
     ran_has_syscol = [syscol in rfn.get_names_flat(ran.dtype) for ran in ranl]
