@@ -406,7 +406,7 @@ def get_ntile_info_from_full(full_orig_fname, tp, reg, ismock=False):
     columns += ['FRACZ_TILELOCID', 'FRAC_TLOBS_TILES'] if weightileloc else ['PROB_OBS']
     if args.compmd == 'NN':
        columns += ['NEW_WEIGHTFRACZ']
-    ff = fitsio.read(full_orig_fname, columns=columns)
+    ff = fitsio.read(full_orig_fname.replace('global','dvs_ro'), columns=columns)
     # select region (NGC/SGC)
     sel = common.splitGC(ff)
     if reg == 'SGC': sel = ~sel
