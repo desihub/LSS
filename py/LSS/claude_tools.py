@@ -371,12 +371,12 @@ def fractional_tileloc_fraction(targetid, tilelocid, assigned,
     Each retained assigned target contributes one to both the numerator and
     denominator at its retained location. Each retained unassigned target
     contributes one to the denominator, split equally among its distinct
-    reachable TILELOCIDs with an assignment in the repeat catalog. Locations
-    without a retained assignment have zero completeness.
+    reachable TILELOCIDs with a retained assignment. Locations without a
+    retained assignment have zero completeness.
 
-    The ``retained`` arrays describe the final catalog, one row per TARGETID.
-    Repeat rows of targets removed from that catalog are excluded before the
-    assigned locations and fractional reach are computed.
+    The retained arrays describe the final catalog, one row per TARGETID.
+    Repeat rows of targets removed from that catalog and assigned repeat rows
+    whose target and location pair was not retained are excluded.
     """
     # Convert the repeat and retained catalog columns to NumPy arrays.
     targetid = np.asarray(targetid)
@@ -386,12 +386,18 @@ def fractional_tileloc_fraction(targetid, tilelocid, assigned,
     retained_tilelocid = np.asarray(retained_tilelocid)
     retained_assigned = np.asarray(retained_assigned, dtype=bool)
 
-    # Keep every repeat row belonging to a target in the final catalog.
+    # Keep repeat rows belonging to a target in the final catalog.
     keep = np.isin(targetid, retained_targetid)
     targetid, tilelocid, assigned = targetid[keep], tilelocid[keep], assigned[keep]
 
-    # Find locations with an assignment, including assignments not retained
-    # when the repeat rows were reduced to one row per target.
+    # Remove assigned repeat rows at locations other than the retained row's
+    # location; keep all unassigned repeat rows for reachability.
+    order = np.argsort(retained_targetid)
+    retained_index = order[np.searchsorted(retained_targetid[order], targetid)]
+    keep = ~assigned | (tilelocid == retained_tilelocid[retained_index])
+    targetid, tilelocid, assigned = targetid[keep], tilelocid[keep], assigned[keep]
+
+    # Find locations with a retained assignment.
     locations = np.unique(tilelocid[assigned])
     result = np.zeros(len(retained_targetid), dtype='f8')
     if not len(locations):
@@ -433,6 +439,6 @@ def fractional_tileloc_fraction(targetid, tilelocid, assigned,
     np.divide(numerator, denominator, out=frac, where=denominator > 0)
 
     # Return the fraction at each retained row's location; rows at locations
-    # without any assignment in the repeat catalog remain zero.
+    # without any retained assignment remain zero.
     result[present] = frac[selected_index]
     return result
