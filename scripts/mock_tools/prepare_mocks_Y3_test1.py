@@ -35,13 +35,12 @@ def create_dir(value):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--survey", help="e.g., Y1, DA2",default='DA2')
-parser.add_argument("--specdata", help="mountain range for spec prod",default='loa-v1')
 parser.add_argument("--mockname", help="name of mocks: holimock, EZmock, abacushf, uchuu") #, default='EZmock')
 parser.add_argument("--input_mockpath", help="full directory path to input mocks",default='')
 parser.add_argument("--input_mockfile", help="mock file name",default='')
 parser.add_argument("--output_fullpathfn", help="output mock file and full path",default='')
 #parser.add_argument("--nproc", help="number of processors for multiprocessing",default=128)
-parser.add_argument("--tracer", help="LRG, ELG or QSO") #,default='LRG')
+parser.add_argument("--tracer", help="BGS, LRG, ELG or QSO") #,default='LRG')
 parser.add_argument("--ztruecol", help="name of column with true redshift in the input catalog")
 parser.add_argument("--zrsdcol", help="name of column with redshift, including RSD", default='Z')
 parser.add_argument("--need_footprint", help="Do we need to prune by rounded tile footprint?", default='y')
@@ -346,6 +345,32 @@ if tracer == 'BGS':
         mask_bright = (data['BGS_TYPE'] == 'BRIGHT')
         mask_faint  = (data['BGS_TYPE'] == 'FAINT')
         dat_bright  = data[mask_bright]
+        dat_faint   = data[mask_faint]
+        print('size of BRIGHT', len(dat_bright))
+        print('size of FAINT', len(dat_faint))
+
+        dat_bright['BGS_TARGET'] = 2**1
+                
+        dat_faint['BGS_TARGET'] = 2**0
+        
+        PromoteFracBGSFaint=0.2
+        ran_hip = np.random.uniform(size = len(dat_faint))
+        faint_hip_mask = (ran_hip <= PromoteFracBGSFaint)
+        
+        dat_faint['BGS_TARGET'][faint_hip_mask] += 2**3   # for high-priority BGS faint
+    
+        dat_faint['PRIORITY_INIT'][~faint_hip_mask] = 2000
+        dat_faint['PRIORITY'][~faint_hip_mask] = 2000
+
+        data = vstack([dat_faint, dat_bright])
+        print("Unique PRIORITY_INIT: ", np.unique(data['PRIORITY_INIT']))
+        print("Unique PRIORITY: ", np.unique(data['PRIORITY']))
+        print("Unique BGS_TARGET: ", np.unique(data['BGS_TARGET']))
+        print("High_priority_BGS_faint/BGS_faint: ", np.sum(dat_faint['BGS_TARGET']==9)/len(dat_faint))
+
+    if args.mockname.lower() == 'glam':
+        mask_faint  = (data['TRACER_TYPE'] == 'BGS_FAINT')
+        dat_bright  = data[~mask_faint]
         dat_faint   = data[mask_faint]
         print('size of BRIGHT', len(dat_bright))
         print('size of FAINT', len(dat_faint))
