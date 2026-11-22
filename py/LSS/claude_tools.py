@@ -442,3 +442,70 @@ def fractional_tileloc_fraction(targetid, tilelocid, assigned,
     # without any retained assignment remain zero.
     result[present] = frac[selected_index]
     return result
+
+
+def fractional_tileloc_fraction_new(targetid, tilelocid,
+                                    retained_targetid, retained_tilelocid, retained_assigned):
+    """
+    Return fractional-reach completeness for each retained target.
+
+    Each retained assigned target contributes one to both the numerator and
+    denominator at its retained location. Each retained unassigned target
+    contributes one to the denominator, split among retained assignments at
+    its distinct reachable TILELOCIDs.
+
+    targetid and tilelocid describe the repeat catalog. The retained arrays
+    describe the final catalog, with one row per TARGETID.
+    """
+    # Convert the repeat and retained catalog columns to NumPy arrays.
+    targetid = np.asarray(targetid)
+    tilelocid = np.asarray(tilelocid)
+    retained_targetid = np.asarray(retained_targetid)
+    retained_tilelocid = np.asarray(retained_tilelocid)
+    retained_assigned = np.asarray(retained_assigned, dtype=bool)
+
+    # Count retained assignments at each location; this is also the numerator.
+    locations, numerator = np.unique(retained_tilelocid[retained_assigned],
+                                     return_counts=True)
+    result = np.zeros(len(retained_targetid), dtype='f8')
+    if not len(locations):
+        return result
+
+    # Find repeat rows of retained unassigned targets at assigned locations.
+    reachable = np.isin(tilelocid, locations) & np.isin(
+        targetid, retained_targetid[~retained_assigned])
+    targets = targetid[reachable]
+    locs = tilelocid[reachable]
+
+    # Remove duplicate (target, location) pairs, so a location is counted
+    # only once when calculating a target's reachable assignments.
+    # order = np.lexsort((locs, targets))
+    # targets, locs = targets[order], locs[order]
+    # distinct = np.ones(len(targets), dtype=bool)
+    # distinct[1:] = (targets[1:] != targets[:-1]) | (locs[1:] != locs[:-1])
+    # targets, locs = targets[distinct], locs[distinct]
+
+    # Count all retained assignments reachable by each unassigned target.
+    _, inverse = np.unique(targets, return_inverse=True)
+    loc_index = np.searchsorted(locations, locs)
+    assignments_per_target = np.bincount(inverse, weights=numerator[loc_index])
+
+    # Split each target's unit contribution among those assignments, then sum
+    # the contributions at each location.
+    unassigned_count = np.bincount(
+        loc_index,
+        weights=numerator[loc_index] / assignments_per_target[inverse],
+        minlength=len(locations))
+
+    # Map each retained row to its location, if that location has an assignment.
+    present = np.isin(retained_tilelocid, locations)
+    selected_index = np.searchsorted(locations, retained_tilelocid[present])
+
+    # Add assigned and fractional unassigned counts for the denominator.
+    denominator = numerator + unassigned_count
+    frac = np.zeros(len(locations), dtype='f8')
+    np.divide(numerator, denominator, out=frac, where=denominator > 0)
+
+    # Rows at locations without a retained assignment remain zero.
+    result[present] = frac[selected_index]
+    return result
