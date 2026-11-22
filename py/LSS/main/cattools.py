@@ -3745,7 +3745,7 @@ def mkfulldat(zf,imbits,ftar,tp,bit,outf,ftiles,fracz_mode='ran',mode1b=0,maxp=3
                             dz['LOCATION_ASSIGNED']), dtype='f8')
     elif fracz_mode == 'smooth':
         #claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.fractional_tileloc_fraction(dz_rep['TARGETID'], dz_rep['TILELOCID'], dz_rep['LOCATION_ASSIGNED'],dz['TARGETID'], dz['TILELOCID'], dz['LOCATION_ASSIGNED']),dtype='f8')
-        claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.fractional_tileloc_fraction(dz_rep['TARGETID'], dz_rep['TILELOCID'],dz['TARGETID'], dz['TILELOCID'], dz['LOCATION_ASSIGNED']),dtype='f8')
+        claudet.set_column(dz, 'FRACZ_TILELOCID', claudet.fractional_tileloc_fraction_new(dz_rep['TARGETID'], dz_rep['TILELOCID'],dz['TARGETID'], dz['TILELOCID'], dz['LOCATION_ASSIGNED']),dtype='f8')
 #     if calc_ctile == 'y':
 #         tlslu,indices,cnts= np.unique(tlsl,return_inverse=True,return_counts=True)
 #         n_of_tiles = len(tlslu)
