@@ -2469,6 +2469,28 @@ def loop_alt_ledger(
     -----
     - Assumes all of the relevant ledgers have already been made by,
       e.g., :func:`~LSS.SV3.altmtltools.initializeAlternateMTLs()`.
+    - The processing order is driven by the TileTracker file (see
+      :func:`~LSS.SV3.altmtltools.makeTileTracker`), which lists one row
+      per pending action with an ``ACTIONTYPE`` of:
+
+      - ``fa``: run fiber assignment for a tile
+        (:func:`~LSS.SV3.altmtltools.do_fiberassignment`).
+      - ``update``: update the ledger with the first observation/redshift
+        of a tile (:func:`~LSS.SV3.altmtltools.update_alt_ledger`).
+      - ``reproc``: reprocess a tile that has already been observed, using
+        new redshifts (:func:`~LSS.SV3.altmtltools.reprocess_alt_ledger`).
+      - ``lya1b``: bump ``NUMOBS`` for Lyman-alpha QSOs to reproduce the
+        real survey's Lya 1B decision
+        (:func:`~desitarget.mtl.update_lya_1b`).
+      - ``addnew``: create new ledgers for HEALPixels added after the
+        fact (:func:`~LSS.SV3.altmtltools.add_new_ledgers`).
+      - ``veto``: apply a posteriori target vetoes
+        (:func:`~LSS.SV3.altmtltools.process_vetoes_altmtl`).
+
+      Actions are processed in ``ACTIONTIME`` order, and each one is
+      marked done (``DONEFLAG``) in the TileTracker file as soon as it
+      completes, which is what allows the loop to resume where it left
+      off after an interruption.
     """
 
     if debug:
